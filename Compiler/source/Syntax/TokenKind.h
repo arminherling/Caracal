@@ -19,6 +19,7 @@ enum class COMPILER_API TokenKind
     DoubleColon,
     Comma,
     Equal,
+    ColonEqual,
     Underscore,
     OpenParenthesis,
     CloseParenthesis,

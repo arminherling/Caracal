@@ -247,6 +247,12 @@ static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, con
                     AdvanceCurrentIndex(currentIndex, currentColumn);
                     break;
                 }
+                else if (PeekNextChar(source, currentIndex) == QChar(u'='))
+                {
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::ColonEqual);
+                    AdvanceCurrentIndex(currentIndex, currentColumn);
+                    break;
+                }
 
                 AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Colon);
                 break;

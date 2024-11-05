@@ -42,6 +42,7 @@ namespace
             std::make_tuple(QString("DoubleColon") , QString("::") , TokenKind::DoubleColon),
             std::make_tuple(QString("Comma") , QString(",") , TokenKind::Comma),
             std::make_tuple(QString("Equal") , QString("=") , TokenKind::Equal),
+            std::make_tuple(QString("ColonEqual") , QString(":=") , TokenKind::ColonEqual),
             std::make_tuple(QString("Underscore") , QString("_") , TokenKind::Underscore),
 
             std::make_tuple(QString("OpenParenthesis") , QString("(") , TokenKind::OpenParenthesis),

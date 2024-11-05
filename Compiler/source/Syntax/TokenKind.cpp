@@ -22,6 +22,8 @@ QString Stringify(TokenKind kind)
 			return QString("Comma");
 		case TokenKind::Equal:
 			return QString("Equal");
+		case TokenKind::ColonEqual:
+			return QString("ColonEqual");
 		case TokenKind::Underscore:
 			return QString("Underscore");
 		case TokenKind::OpenParenthesis:
