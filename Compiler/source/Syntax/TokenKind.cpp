@@ -1,6 +1,6 @@
 #include <Syntax/TokenKind.h>
 
-QString Stringify(TokenKind kind)
+QString Stringify(TokenKind kind, bool /*quoteStrings*/)
 {
 	switch (kind)
 	{
