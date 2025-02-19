@@ -99,6 +99,7 @@ TypedStatement* TypeChecker::typeCheckStatement(Statement* statement)
             TODO("Missing Statement!!");
         }
     }
+    return nullptr;
 }
 
 TypedExpression* TypeChecker::typeCheckExpression(Expression* expression)
@@ -146,6 +147,7 @@ TypedExpression* TypeChecker::typeCheckExpression(Expression* expression)
             TODO("Missing Expression!!");
         }
     }
+    return nullptr;
 }
 
 TypedStatement* TypeChecker::typeCheckAssignmentStatement(AssignmentStatement* statement)

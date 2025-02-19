@@ -32,4 +32,5 @@ QString StringifyBinaryOperation(BinaryOperatornKind operation)
 		default:
 			TODO("String for BinaryOperatorn value was not defined yet");
 	}
+	return QString();
 }

@@ -57,4 +57,5 @@ QString StringifyOp(Op op)
         default:
             TODO("String for Op code value was not defined yet");
     }
+    return QString();
 }

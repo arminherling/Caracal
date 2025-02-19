@@ -22,4 +22,5 @@ QString StringifyUnaryOperation(UnaryOperatornKind kind)
         default:
             TODO("String for UnaryOperatorn value was not defined yet");
     }
+    return QString();
 }

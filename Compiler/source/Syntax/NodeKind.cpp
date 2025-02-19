@@ -127,4 +127,5 @@ QString StringifyNodeKind(NodeKind kind)
         default:
             TODO("String for NodeKind value was not defined yet");
     }
+    return QString();
 }

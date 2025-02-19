@@ -51,6 +51,7 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
 		default:
 			TODO("String for TokenKind value was not defined yet");
 	}
+    return QString();
 }
 
 i32 UnaryOperatorPrecedence(TokenKind kind)
