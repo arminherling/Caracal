@@ -30,7 +30,16 @@ enum class COMPILER_API TokenKind
     Number,
     String,
 
-    ReferenceOf,
+    DefKeyword,
+    EnumKeyword,
+    TypeKeyword,
+    IfKeyword,
+    WhileKeyword,
+    ReturnKeyword,
+    TrueKeyword,
+    FalseKeyword,
+    RefKeyword,
+    CppKeyword,
 
     EndOfFile
 };

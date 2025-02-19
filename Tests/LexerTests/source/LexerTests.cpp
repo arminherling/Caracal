@@ -13,7 +13,7 @@ using namespace AalTest;
 
 namespace
 {
-    void SingleCharacter(const QString& testName, const QString& input, TokenKind expectedKind)
+    void ExpectedTokenKind(const QString& testName, const QString& input, TokenKind expectedKind)
     {
         auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -37,12 +37,12 @@ namespace
             std::make_tuple(QString("Star") , QString("*") , TokenKind::Star),
             std::make_tuple(QString("Slash") , QString("/") , TokenKind::Slash),
 
+            std::make_tuple(QString("Comma") , QString(",") , TokenKind::Comma),
             std::make_tuple(QString("Dot") , QString(".") , TokenKind::Dot),
             std::make_tuple(QString("Colon") , QString(":") , TokenKind::Colon),
             std::make_tuple(QString("DoubleColon") , QString("::") , TokenKind::DoubleColon),
-            std::make_tuple(QString("Comma") , QString(",") , TokenKind::Comma),
-            std::make_tuple(QString("Equal") , QString("=") , TokenKind::Equal),
             std::make_tuple(QString("ColonEqual") , QString(":=") , TokenKind::ColonEqual),
+            std::make_tuple(QString("Equal") , QString("=") , TokenKind::Equal),
             std::make_tuple(QString("Underscore") , QString("_") , TokenKind::Underscore),
 
             std::make_tuple(QString("OpenParenthesis") , QString("(") , TokenKind::OpenParenthesis),
@@ -53,6 +53,22 @@ namespace
             std::make_tuple(QString("Unknown") , QString("$") , TokenKind::Unknown),
             std::make_tuple(QString("EOF") , QString("") , TokenKind::EndOfFile),
             std::make_tuple(QString("EOF \\0") , QString("\0") , TokenKind::EndOfFile)
+        };
+    }
+
+    QList<std::tuple<QString, QString, TokenKind>> Keyword_Data()
+    {
+        return {
+            std::make_tuple(QString("Def") , QString("def") , TokenKind::DefKeyword),
+            std::make_tuple(QString("Enum") , QString("enum") , TokenKind::EnumKeyword),
+            std::make_tuple(QString("Type") , QString("type") , TokenKind::TypeKeyword),
+            std::make_tuple(QString("If") , QString("if") , TokenKind::IfKeyword),
+            std::make_tuple(QString("While") , QString("while") , TokenKind::WhileKeyword),
+            std::make_tuple(QString("Return") , QString("return") , TokenKind::ReturnKeyword),
+            std::make_tuple(QString("True") , QString("true") , TokenKind::TrueKeyword),
+            std::make_tuple(QString("False") , QString("false") , TokenKind::FalseKeyword),
+            std::make_tuple(QString("Ref") , QString("ref") , TokenKind::RefKeyword),
+            std::make_tuple(QString("C++") , QString("cpp") , TokenKind::CppKeyword),
         };
     }
 
@@ -112,13 +128,13 @@ namespace
             std::make_tuple(QString(" bar "), QString("bar")),
             std::make_tuple(QString("i32"), QString("i32")),
             std::make_tuple(QString("use"), QString("use")),
-            std::make_tuple(QString("enum"), QString("enum")),
             std::make_tuple(QString("class"), QString("class")),
             std::make_tuple(QString("define"), QString("define")),
-            std::make_tuple(QString("\n return"), QString("return")),
             std::make_tuple(QString(" _name"), QString("_name")),
             std::make_tuple(QString("m_index"), QString("m_index")),
-            std::make_tuple(QString("_10"), QString("_10"))
+            std::make_tuple(QString("_10"), QString("_10")),
+            std::make_tuple(QString("\n returned"), QString("returned")),
+            std::make_tuple(QString("enumeration"), QString("enumeration")),
         };
     }
 
@@ -213,22 +229,6 @@ namespace
         };
     }
 
-    void Ref()
-    {
-        auto startTime = std::chrono::high_resolution_clock::now();
-
-        auto source = std::make_shared<SourceText>(QString("ref"));
-        DiagnosticsBag diagnostics;
-
-        auto tokens = Lex(source, diagnostics);
-        auto& token = tokens[0];
-
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
-
-        AalTest::AreEqual(TokenKind::ReferenceOf, token.kind);
-    }
-
     void WholeInput(QString input, i32 tokenCount)
     {
         auto startTime = std::chrono::high_resolution_clock::now();
@@ -285,13 +285,13 @@ namespace
 AalTest::TestSuite LexerTestsSuite()
 {
     AalTest::TestSuite suite{};
-    suite.add(QString("SingleCharacter"), SingleCharacter, SingleCharacter_Data);
+    suite.add(QString("SingleCharacter"), ExpectedTokenKind, SingleCharacter_Data);
     suite.add(QString("IgnoresWhitespaces"), IgnoresWhitespaces, IgnoresWhitespaces_Data);
     suite.add(QString("Identifiers"), Identifiers, Identifiers_Data);
     suite.add(QString("Numbers"), Numbers, Numbers_Data);
     suite.add(QString("Strings"), Strings, Strings_Data);
     suite.add(QString("UnterminatedStrings"), UnterminatedStrings, UnterminatedStrings_Data);
-    suite.add(QString("Ref"), Ref);
+    suite.add(QString("Keywords"), ExpectedTokenKind, Keyword_Data);
     suite.add(QString("WholeInput"), WholeInput, WholeInput_Data);
     suite.add(QString("OneMillionLinesTime"), OneMillionLinesTime);
 

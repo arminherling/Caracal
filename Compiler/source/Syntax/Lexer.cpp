@@ -1,6 +1,7 @@
 #include <Syntax/Lexer.h>
 
 #include <unordered_map>
+#include <QHash>
 
 [[nodiscard]] static auto InitializeTokenSizes() noexcept
 {
@@ -20,6 +21,22 @@
         { TokenKind::OpenBracket, 1 },
         { TokenKind::CloseBracket, 1 },
         { TokenKind::EndOfFile, 0 },
+    };
+}
+
+[[nodiscard]] static auto InitializeKeywords() noexcept
+{
+    return std::unordered_map<QStringView, TokenKind>{
+        { QStringView(u"def"), TokenKind::DefKeyword},
+        { QStringView(u"enum") ,TokenKind::EnumKeyword },
+        { QStringView(u"type") ,TokenKind::TypeKeyword },
+        { QStringView(u"if") ,TokenKind::IfKeyword },
+        { QStringView(u"while") ,TokenKind::WhileKeyword },
+        { QStringView(u"return") ,TokenKind::ReturnKeyword },
+        { QStringView(u"true") ,TokenKind::TrueKeyword },
+        { QStringView(u"false") ,TokenKind::FalseKeyword },
+        { QStringView(u"ref") ,TokenKind::RefKeyword },
+        { QStringView(u"cpp") ,TokenKind::CppKeyword },
     };
 }
 
@@ -106,11 +123,16 @@ static auto AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, const SourceTextSha
     return tokenBuffer.addToken({ .kind = tokenKind, .lexemeIndex = identifierIndex, .locationIndex = locationIndex });
 };
 
-static auto IsRefKeyword(const QString& source, i32 currentIndex, i32 startIndex) noexcept
+static auto IsKeyword(const QString& source, i32 currentIndex, i32 startIndex) noexcept
 {
-    static const auto refStringView = QStringView(u"ref");
+    static const auto keywords = InitializeKeywords();
     const auto length = currentIndex - startIndex;
-    return refStringView == QStringView(source).sliced(startIndex, length);
+    const auto lexeme = QStringView(source).sliced(startIndex, length);
+
+    if (const auto result = keywords.find(lexeme); result != keywords.end())
+        return result->second;
+
+    return TokenKind::Unknown;
 }
 
 static auto LexIdentifier(TokenBuffer& tokenBuffer, const SourceTextSharedPtr& source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
@@ -121,8 +143,9 @@ static auto LexIdentifier(TokenBuffer& tokenBuffer, const SourceTextSharedPtr& s
     while (IsLetterOrNumberOrUnderscore(PeekCurrentChar(source, currentIndex)))
         AdvanceCurrentIndex(currentIndex, currentColumn);
 
-    if(IsRefKeyword(source->text, currentIndex, startIndex))
-        return AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::ReferenceOf);
+    const auto maybeKeyword = IsKeyword(source->text, currentIndex, startIndex);
+    if(maybeKeyword != TokenKind::Unknown)
+        return AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, maybeKeyword);
 
     return AddLexemeAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Identifier, startIndex, startColumn, startLine);
 };
