@@ -280,6 +280,11 @@ static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, con
                 AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Colon);
                 break;
             }
+            case u';':
+            {
+                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Semicolon);
+                break;
+            }
             case u',':
             {
                 AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Comma);

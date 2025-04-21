@@ -32,43 +32,44 @@ namespace
     QList<std::tuple<QString, QString, TokenKind>> SingleCharacter_Data()
     {
         return {
-            std::make_tuple(QString("Plus") , QString("+") , TokenKind::Plus),
-            std::make_tuple(QString("Minus") , QString("-") , TokenKind::Minus),
-            std::make_tuple(QString("Star") , QString("*") , TokenKind::Star),
-            std::make_tuple(QString("Slash") , QString("/") , TokenKind::Slash),
+            std::make_tuple(QString("Plus"), QString("+"), TokenKind::Plus),
+            std::make_tuple(QString("Minus"), QString("-"), TokenKind::Minus),
+            std::make_tuple(QString("Star"), QString("*"), TokenKind::Star),
+            std::make_tuple(QString("Slash"), QString("/"), TokenKind::Slash),
 
-            std::make_tuple(QString("Comma") , QString(",") , TokenKind::Comma),
-            std::make_tuple(QString("Dot") , QString(".") , TokenKind::Dot),
-            std::make_tuple(QString("Colon") , QString(":") , TokenKind::Colon),
-            std::make_tuple(QString("DoubleColon") , QString("::") , TokenKind::DoubleColon),
-            std::make_tuple(QString("ColonEqual") , QString(":=") , TokenKind::ColonEqual),
-            std::make_tuple(QString("Equal") , QString("=") , TokenKind::Equal),
-            std::make_tuple(QString("Underscore") , QString("_") , TokenKind::Underscore),
+            std::make_tuple(QString("Dot"), QString("."), TokenKind::Dot),
+            std::make_tuple(QString("Comma"), QString(","), TokenKind::Comma),
+            std::make_tuple(QString("Colon"), QString(":"), TokenKind::Colon),
+            std::make_tuple(QString("DoubleColon"), QString("::"), TokenKind::DoubleColon),
+            std::make_tuple(QString("Equal"), QString("="), TokenKind::Equal),
+            std::make_tuple(QString("ColonEqual"), QString(":="), TokenKind::ColonEqual),
+            std::make_tuple(QString("Semicolon"), QString(";"), TokenKind::Semicolon),
+            std::make_tuple(QString("Underscore"), QString("_"), TokenKind::Underscore),
 
-            std::make_tuple(QString("OpenParenthesis") , QString("(") , TokenKind::OpenParenthesis),
-            std::make_tuple(QString("CloseParenthesis") , QString(")") , TokenKind::CloseParenthesis),
-            std::make_tuple(QString("OpenBracket") , QString("{") , TokenKind::OpenBracket),
-            std::make_tuple(QString("CloseBracket") , QString("}") , TokenKind::CloseBracket),
+            std::make_tuple(QString("OpenParenthesis"), QString("("), TokenKind::OpenParenthesis),
+            std::make_tuple(QString("CloseParenthesis"), QString(")"), TokenKind::CloseParenthesis),
+            std::make_tuple(QString("OpenBracket"), QString("{"), TokenKind::OpenBracket),
+            std::make_tuple(QString("CloseBracket"), QString("}"), TokenKind::CloseBracket),
 
-            std::make_tuple(QString("Unknown") , QString("$") , TokenKind::Unknown),
-            std::make_tuple(QString("EOF") , QString("") , TokenKind::EndOfFile),
-            std::make_tuple(QString("EOF \\0") , QString("\0") , TokenKind::EndOfFile)
+            std::make_tuple(QString("Unknown"), QString("$"), TokenKind::Unknown),
+            std::make_tuple(QString("EOF"), QString(""), TokenKind::EndOfFile),
+            std::make_tuple(QString("EOF \\0"), QString("\0"), TokenKind::EndOfFile)
         };
     }
 
     QList<std::tuple<QString, QString, TokenKind>> Keyword_Data()
     {
         return {
-            std::make_tuple(QString("Def") , QString("def") , TokenKind::DefKeyword),
-            std::make_tuple(QString("Enum") , QString("enum") , TokenKind::EnumKeyword),
-            std::make_tuple(QString("Type") , QString("type") , TokenKind::TypeKeyword),
-            std::make_tuple(QString("If") , QString("if") , TokenKind::IfKeyword),
-            std::make_tuple(QString("While") , QString("while") , TokenKind::WhileKeyword),
-            std::make_tuple(QString("Return") , QString("return") , TokenKind::ReturnKeyword),
-            std::make_tuple(QString("True") , QString("true") , TokenKind::TrueKeyword),
-            std::make_tuple(QString("False") , QString("false") , TokenKind::FalseKeyword),
-            std::make_tuple(QString("Ref") , QString("ref") , TokenKind::RefKeyword),
-            std::make_tuple(QString("C++") , QString("cpp") , TokenKind::CppKeyword),
+            std::make_tuple(QString("Def"), QString("def"), TokenKind::DefKeyword),
+            std::make_tuple(QString("Enum"), QString("enum"), TokenKind::EnumKeyword),
+            std::make_tuple(QString("Type"), QString("type"), TokenKind::TypeKeyword),
+            std::make_tuple(QString("If"), QString("if"), TokenKind::IfKeyword),
+            std::make_tuple(QString("While"), QString("while"), TokenKind::WhileKeyword),
+            std::make_tuple(QString("Return"), QString("return"), TokenKind::ReturnKeyword),
+            std::make_tuple(QString("True"), QString("true"), TokenKind::TrueKeyword),
+            std::make_tuple(QString("False"), QString("false"), TokenKind::FalseKeyword),
+            std::make_tuple(QString("Ref"), QString("ref"), TokenKind::RefKeyword),
+            std::make_tuple(QString("C++"), QString("cpp"), TokenKind::CppKeyword),
         };
     }
 

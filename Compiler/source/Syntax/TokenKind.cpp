@@ -22,6 +22,8 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
             return QString("Colon");
         case TokenKind::DoubleColon:
             return QString("DoubleColon");
+        case TokenKind::Semicolon:
+            return QString("Semicolon");
         case TokenKind::Comma:
             return QString("Comma");
         case TokenKind::Equal:
