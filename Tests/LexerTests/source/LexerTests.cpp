@@ -21,7 +21,7 @@ namespace
         DiagnosticsBag diagnostics;
 
         auto tokens = Lex(source, diagnostics);
-        auto& token = tokens[0];
+        auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
         std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
@@ -82,7 +82,7 @@ namespace
         DiagnosticsBag diagnostics;
 
         auto tokens = Lex(source, diagnostics);
-        auto& token = tokens[0];
+        auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
         std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
@@ -111,7 +111,7 @@ namespace
         DiagnosticsBag diagnostics;
 
         auto tokens = Lex(source, diagnostics);
-        auto& token = tokens[0];
+        auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
         std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
@@ -147,7 +147,7 @@ namespace
         DiagnosticsBag diagnostics;
 
         auto tokens = Lex(source, diagnostics);
-        auto& token = tokens[0];
+        auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
         std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
@@ -180,7 +180,7 @@ namespace
         DiagnosticsBag diagnostics;
 
         auto tokens = Lex(source, diagnostics);
-        auto& token = tokens[0];
+        auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
         std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
@@ -208,7 +208,7 @@ namespace
         DiagnosticsBag diagnostics;
 
         auto tokens = Lex(source, diagnostics);
-        auto& token = tokens[0];
+        auto& token = tokens.getToken(0);
 
         AalTest::IsTrue(!diagnostics.Diagnostics().empty());
 

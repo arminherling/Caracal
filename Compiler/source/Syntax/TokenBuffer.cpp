@@ -1,3 +1,4 @@
+#include "TokenBuffer.h"
 #include <Syntax/TokenBuffer.h>
 
 TokenBuffer::TokenBuffer(const SourceTextSharedPtr& source)
@@ -12,10 +13,9 @@ TokenBuffer::TokenBuffer(const SourceTextSharedPtr& source)
     sourceLocations.reserve(initialSize);
 }
 
-Token TokenBuffer::addToken(const Token& token) noexcept
+void TokenBuffer::addToken(const Token& token) noexcept
 {
     tokens.push_back(token);
-    return token;
 }
 
 i32 TokenBuffer::addLexeme(QStringView lexeme) noexcept
@@ -35,9 +35,14 @@ i32 TokenBuffer::size() const noexcept
     return tokens.size();
 }
 
-const Token& TokenBuffer::operator[](i32 position) const noexcept
+const Token& TokenBuffer::getToken(i32 position) const noexcept
 {
     return tokens.at(position);
+}
+
+const Token& TokenBuffer::getLastToken() const noexcept
+{
+    return tokens.at(tokens.size() - 1);
 }
 
 const SourceLocation& TokenBuffer::getSourceLocation(const Token& token) const noexcept

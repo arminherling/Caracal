@@ -75,20 +75,20 @@
 
 [[nodiscard]] static auto PeekNextChar(QStringView source, i32& currentIndex) noexcept { return PeekCurrentChar(source, currentIndex + 1); }
 
-static auto AdvanceCurrentIndex(i32& currentIndex, i32& currentColumn) noexcept
+static void AdvanceCurrentIndex(i32& currentIndex, i32& currentColumn) noexcept
 {
     currentIndex++;
     currentColumn++;
 };
 
-static auto AdvanceCurrentIndexAndResetLine(i32& currentIndex, i32& currentLine, i32& currentColumn) noexcept
+static void AdvanceCurrentIndexAndResetLine(i32& currentIndex, i32& currentLine, i32& currentColumn) noexcept
 {
     currentIndex++;
     currentLine++;
     currentColumn = 1;
 };
 
-static auto AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, i32& currentLine, i32& currentIndex, i32& currentColumn, TokenKind tokenKind) noexcept
+static void AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, i32& currentLine, i32& currentIndex, i32& currentColumn, TokenKind tokenKind) noexcept
 {
     const auto tokenSize = TokenSize(tokenKind);
     const auto locationIndex = tokenBuffer.addSourceLocation(
@@ -101,10 +101,10 @@ static auto AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, i32& currentLine, i
             .endLine = currentLine
         });
     AdvanceCurrentIndex(currentIndex, currentColumn);
-    return tokenBuffer.addToken({ .kind = tokenKind, .locationIndex = locationIndex });
+    tokenBuffer.addToken({ .kind = tokenKind, .locationIndex = locationIndex });
 };
 
-[[nodiscard]] static auto AddKindAndLexeme(TokenBuffer& tokenBuffer, QStringView source, i32 currentLine, i32 currentIndex, i32 currentColumn, TokenKind tokenKind, i32 startIndex, i32 startColumn, i32 startLine) noexcept
+[[nodiscard]] static void AddKindAndLexeme(TokenBuffer& tokenBuffer, QStringView source, i32 currentLine, i32 currentIndex, i32 currentColumn, TokenKind tokenKind, i32 startIndex, i32 startColumn, i32 startLine) noexcept
 {
     const auto length = currentIndex - startIndex;
     const auto identifierIndex = tokenBuffer.addLexeme(source.sliced(startIndex, length));
@@ -117,7 +117,7 @@ static auto AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, i32& currentLine, i
             .startLine = startLine,
             .endLine = currentLine
         });
-    return tokenBuffer.addToken({ .kind = tokenKind, .lexemeIndex = identifierIndex, .locationIndex = locationIndex });
+    tokenBuffer.addToken({ .kind = tokenKind, .lexemeIndex = identifierIndex, .locationIndex = locationIndex });
 };
 
 static auto IdentifierKind(QStringView source, i32 currentIndex, i32 startIndex) noexcept
@@ -132,7 +132,7 @@ static auto IdentifierKind(QStringView source, i32 currentIndex, i32 startIndex)
     return TokenKind::Identifier;
 }
 
-static auto LexIdentifier(TokenBuffer& tokenBuffer, QStringView source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
+static void LexIdentifier(TokenBuffer& tokenBuffer, QStringView source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
 {
     const auto startIndex = currentIndex;
     const auto startLine = currentLine;
@@ -142,10 +142,10 @@ static auto LexIdentifier(TokenBuffer& tokenBuffer, QStringView source, i32& cur
 
     const auto maybeKeywordKind = IdentifierKind(source, currentIndex, startIndex);
 
-    return AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, maybeKeywordKind, startIndex, startColumn, startLine);
+    AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, maybeKeywordKind, startIndex, startColumn, startLine);
 };
 
-static auto LexNumber(TokenBuffer& tokenBuffer, QStringView source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
+static void LexNumber(TokenBuffer& tokenBuffer, QStringView source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
 {
     const auto startIndex = currentIndex;
     const auto startLine = currentLine;
@@ -166,10 +166,10 @@ static auto LexNumber(TokenBuffer& tokenBuffer, QStringView source, i32& current
             AdvanceCurrentIndex(currentIndex, currentColumn);
     }
 
-    return AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Number, startIndex, startColumn, startLine);
+    AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Number, startIndex, startColumn, startLine);
 };
 
-static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, QStringView source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
+static void LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, QStringView source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
 {
     const auto startIndex = currentIndex;
     const auto startLine = currentLine;
@@ -184,14 +184,14 @@ static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, QSt
     {
         // Consume closing quotation mark
         AdvanceCurrentIndex(currentIndex, currentColumn);
-        return AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::String, startIndex, startColumn, startLine);
+        AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::String, startIndex, startColumn, startLine);
     }
     else
     {
-        const auto token = AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Error, startIndex, startColumn, startLine);
-        const auto& location = tokenBuffer.getSourceLocation(token);
+        AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Error, startIndex, startColumn, startLine);
+        const auto& lastToken = tokenBuffer.getLastToken();
+        const auto& location = tokenBuffer.getSourceLocation(lastToken);
         diagnostics.AddError(DiagnosticKind::_0002_UnterminatedString, location);
-        return token;
     }
 };
 
@@ -334,8 +334,9 @@ static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, QSt
                     break;
                 }
 
-                const auto token = AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Unknown);
-                const auto& location = tokenBuffer.getSourceLocation(token);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Unknown);
+                const auto& lastToken = tokenBuffer.getLastToken();
+                const auto& location = tokenBuffer.getSourceLocation(lastToken);
                 diagnostics.AddError(DiagnosticKind::_0001_FoundIllegalCharacter, location);
                 break;
             }
