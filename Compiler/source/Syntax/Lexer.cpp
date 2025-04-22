@@ -15,6 +15,7 @@
         { TokenKind::DoubleColon, 2 },
         { TokenKind::Comma, 1 },
         { TokenKind::Equal, 1 },
+        { TokenKind::ColonEqual, 2 },
         { TokenKind::Underscore, 1 },
         { TokenKind::OpenParenthesis, 1 },
         { TokenKind::CloseParenthesis, 1 },
@@ -49,32 +50,30 @@
     return 1;
 }
 
-[[nodiscard]] static auto PeekChar(const SourceTextSharedPtr& source, i32& currentIndex, i32 offset) noexcept
+[[nodiscard]] static auto IsNumberOrUnderscore(QChar c) noexcept
 {
-    const auto charIndex = currentIndex + offset;
-    if (charIndex >= source->text.length())
+    return c == QChar(u'_') || c.isNumber();
+}
+
+[[nodiscard]] static auto IsLetterOrUnderscore(QChar c) noexcept
+{
+    return c == QChar(u'_') || c.isLetter();
+}
+
+[[nodiscard]] static auto IsLetterOrNumberOrUnderscore(QChar c) noexcept
+{
+    return c == QChar(u'_') || c.isLetterOrNumber();
+}
+
+[[nodiscard]] static auto PeekCurrentChar(QStringView source, i32 charIndex) noexcept
+{
+    if (charIndex >= source.length())
         return QChar(u'\0');
 
-    return source->text[charIndex];
-};
-
-[[nodiscard]] static auto IsNumberOrUnderscore(const QChar& c) noexcept
-{
-    return c.isNumber() || c == QChar(u'_');
+    return source[charIndex];
 }
 
-[[nodiscard]] static auto IsLetterOrUnderscore(const QChar& c) noexcept
-{
-    return c.isLetter() || c == QChar(u'_');
-}
-
-[[nodiscard]] static auto IsLetterOrNumberOrUnderscore(const QChar& c) noexcept
-{
-    return c.isLetterOrNumber() || c == QChar(u'_');
-}
-
-[[nodiscard]] static auto PeekCurrentChar(const SourceTextSharedPtr& source, i32& currentIndex) noexcept { return PeekChar(source, currentIndex, 0); };
-[[nodiscard]] static auto PeekNextChar(const SourceTextSharedPtr& source, i32& currentIndex) noexcept { return PeekChar(source, currentIndex, 1); };
+[[nodiscard]] static auto PeekNextChar(QStringView source, i32& currentIndex) noexcept { return PeekCurrentChar(source, currentIndex + 1); }
 
 static auto AdvanceCurrentIndex(i32& currentIndex, i32& currentColumn) noexcept
 {
@@ -89,12 +88,11 @@ static auto AdvanceCurrentIndexAndResetLine(i32& currentIndex, i32& currentLine,
     currentColumn = 1;
 };
 
-static auto AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, const SourceTextSharedPtr& source, i32& currentLine, i32& currentIndex, i32& currentColumn, TokenKind tokenKind) noexcept
+static auto AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, i32& currentLine, i32& currentIndex, i32& currentColumn, TokenKind tokenKind) noexcept
 {
     const auto tokenSize = TokenSize(tokenKind);
     const auto locationIndex = tokenBuffer.addSourceLocation(
         {
-            .source = source,
             .startIndex = currentIndex,
             .endIndex = currentIndex + tokenSize,
             .startColumn = currentColumn,
@@ -106,13 +104,12 @@ static auto AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, const SourceTextSha
     return tokenBuffer.addToken({ .kind = tokenKind, .locationIndex = locationIndex });
 };
 
-[[nodiscard]] static auto AddLexemeAndAdvance(TokenBuffer& tokenBuffer, const SourceTextSharedPtr& source, i32& currentLine, i32& currentIndex, i32& currentColumn, TokenKind tokenKind, i32 startIndex, i32 startColumn, i32 startLine) noexcept
+[[nodiscard]] static auto AddKindAndLexeme(TokenBuffer& tokenBuffer, QStringView source, i32 currentLine, i32 currentIndex, i32 currentColumn, TokenKind tokenKind, i32 startIndex, i32 startColumn, i32 startLine) noexcept
 {
     const auto length = currentIndex - startIndex;
-    const auto identifierIndex = tokenBuffer.addLexeme(QStringView(source->text).sliced(startIndex, length));
+    const auto identifierIndex = tokenBuffer.addLexeme(source.sliced(startIndex, length));
     const auto locationIndex = tokenBuffer.addSourceLocation(
         {
-            .source = source,
             .startIndex = startIndex,
             .endIndex = currentIndex,
             .startColumn = startColumn,
@@ -123,19 +120,19 @@ static auto AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, const SourceTextSha
     return tokenBuffer.addToken({ .kind = tokenKind, .lexemeIndex = identifierIndex, .locationIndex = locationIndex });
 };
 
-static auto IsKeyword(const QString& source, i32 currentIndex, i32 startIndex) noexcept
+static auto IdentifierKind(QStringView source, i32 currentIndex, i32 startIndex) noexcept
 {
     static const auto keywords = InitializeKeywords();
     const auto length = currentIndex - startIndex;
-    const auto lexeme = QStringView(source).sliced(startIndex, length);
+    const auto lexeme = source.sliced(startIndex, length);
 
     if (const auto result = keywords.find(lexeme); result != keywords.end())
         return result->second;
 
-    return TokenKind::Unknown;
+    return TokenKind::Identifier;
 }
 
-static auto LexIdentifier(TokenBuffer& tokenBuffer, const SourceTextSharedPtr& source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
+static auto LexIdentifier(TokenBuffer& tokenBuffer, QStringView source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
 {
     const auto startIndex = currentIndex;
     const auto startLine = currentLine;
@@ -143,14 +140,12 @@ static auto LexIdentifier(TokenBuffer& tokenBuffer, const SourceTextSharedPtr& s
     while (IsLetterOrNumberOrUnderscore(PeekCurrentChar(source, currentIndex)))
         AdvanceCurrentIndex(currentIndex, currentColumn);
 
-    const auto maybeKeyword = IsKeyword(source->text, currentIndex, startIndex);
-    if(maybeKeyword != TokenKind::Unknown)
-        return AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, maybeKeyword);
+    const auto maybeKeywordKind = IdentifierKind(source, currentIndex, startIndex);
 
-    return AddLexemeAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Identifier, startIndex, startColumn, startLine);
+    return AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, maybeKeywordKind, startIndex, startColumn, startLine);
 };
 
-static auto LexNumber(TokenBuffer& tokenBuffer, const SourceTextSharedPtr& source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
+static auto LexNumber(TokenBuffer& tokenBuffer, QStringView source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
 {
     const auto startIndex = currentIndex;
     const auto startLine = currentLine;
@@ -171,10 +166,10 @@ static auto LexNumber(TokenBuffer& tokenBuffer, const SourceTextSharedPtr& sourc
             AdvanceCurrentIndex(currentIndex, currentColumn);
     }
 
-    return AddLexemeAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Number, startIndex, startColumn, startLine);
+    return AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Number, startIndex, startColumn, startLine);
 };
 
-static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, const SourceTextSharedPtr& source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
+static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, QStringView source, i32& currentLine, i32& currentIndex, i32& currentColumn) noexcept
 {
     const auto startIndex = currentIndex;
     const auto startLine = currentLine;
@@ -189,27 +184,28 @@ static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, con
     {
         // Consume closing quotation mark
         AdvanceCurrentIndex(currentIndex, currentColumn);
-        return AddLexemeAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::String, startIndex, startColumn, startLine);
+        return AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::String, startIndex, startColumn, startLine);
     }
     else
     {
-        const auto token = AddLexemeAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Error, startIndex, startColumn, startLine);
+        const auto token = AddKindAndLexeme(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Error, startIndex, startColumn, startLine);
         const auto& location = tokenBuffer.getSourceLocation(token);
         diagnostics.AddError(DiagnosticKind::_0002_UnterminatedString, location);
         return token;
     }
 };
 
-[[nodiscard]] TokenBuffer Lex(const SourceTextSharedPtr& source, DiagnosticsBag& diagnostics) noexcept
+[[nodiscard]] TokenBuffer Lex(const SourceTextSharedPtr& sourceText, DiagnosticsBag& diagnostics) noexcept
 {
-    TokenBuffer tokenBuffer{ static_cast<i32>(source->text.size()) };
+    TokenBuffer tokenBuffer{ sourceText };
+    const auto source = QStringView(sourceText->text);
     i32 currentIndex = 0;
     i32 currentLine = 1;
     i32 currentColumn = 1;
 
     while (true)
     {
-        auto current = PeekCurrentChar(source, currentIndex);
+        const auto current = PeekCurrentChar(source, currentIndex);
 
         switch (current.unicode())
         {
@@ -234,85 +230,85 @@ static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, con
             }
             case u'\0':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::EndOfFile);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::EndOfFile);
                 return tokenBuffer;
             }
             case u'+':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Plus);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Plus);
                 break;
             }
             case u'-':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Minus);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Minus);
                 break;
             }
             case u'*':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Star);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Star);
                 break;
             }
             case u'/':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Slash);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Slash);
                 break;
             }
             case u'.':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Dot);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Dot);
                 break;
             }
             case u':':
             {
                 if (PeekNextChar(source, currentIndex) == QChar(u':'))
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::DoubleColon);
+                    AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::DoubleColon);
                     AdvanceCurrentIndex(currentIndex, currentColumn);
                     break;
                 }
                 else if (PeekNextChar(source, currentIndex) == QChar(u'='))
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::ColonEqual);
+                    AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::ColonEqual);
                     AdvanceCurrentIndex(currentIndex, currentColumn);
                     break;
                 }
 
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Colon);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Colon);
                 break;
             }
             case u';':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Semicolon);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Semicolon);
                 break;
             }
             case u',':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Comma);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Comma);
                 break;
             }
             case u'=':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Equal);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Equal);
                 break;
             }
             case u'(':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::OpenParenthesis);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::OpenParenthesis);
                 break;
             }
             case u')':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::CloseParenthesis);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::CloseParenthesis);
                 break;
             }
             case u'{':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::OpenBracket);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::OpenBracket);
                 break;
             }
             case u'}':
             {
-                AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::CloseBracket);
+                AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::CloseBracket);
                 break;
             }
             case u'\"':
@@ -324,7 +320,7 @@ static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, con
             {
                 if (current == QChar(u'_') && !IsLetterOrNumberOrUnderscore(PeekNextChar(source, currentIndex)))
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Underscore);
+                    AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Underscore);
                     break;
                 }
                 else if (IsLetterOrUnderscore(current))
@@ -338,7 +334,7 @@ static auto LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, con
                     break;
                 }
 
-                const auto token = AddTokenKindAndAdvance(tokenBuffer, source, currentLine, currentIndex, currentColumn, TokenKind::Unknown);
+                const auto token = AddTokenKindAndAdvance(tokenBuffer, currentLine, currentIndex, currentColumn, TokenKind::Unknown);
                 const auto& location = tokenBuffer.getSourceLocation(token);
                 diagnostics.AddError(DiagnosticKind::_0001_FoundIllegalCharacter, location);
                 break;

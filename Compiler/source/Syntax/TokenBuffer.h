@@ -12,7 +12,7 @@
 class COMPILER_API TokenBuffer
 {
 public:
-    TokenBuffer(i32 initialSize);
+    explicit TokenBuffer(const SourceTextSharedPtr& source);
 
     Token addToken(const Token& token) noexcept;
     i32 addLexeme(QStringView lexeme) noexcept;
@@ -25,6 +25,7 @@ public:
     QStringView getLexeme(const Token& token) const noexcept;
 
 private:
+    SourceTextSharedPtr source;
     std::vector<Token> tokens;
     std::vector<QStringView> lexemes;
     std::vector<SourceLocation> sourceLocations;

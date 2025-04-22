@@ -1,10 +1,12 @@
 #include <Syntax/TokenBuffer.h>
 
-TokenBuffer::TokenBuffer(i32 initialSize)
-    : tokens{}
+TokenBuffer::TokenBuffer(const SourceTextSharedPtr& source)
+    : source{source}
+    , tokens{}
     , lexemes{}
     , sourceLocations{}
 {
+    const auto initialSize = static_cast<i32>(source->text.size());
     tokens.reserve(initialSize);
     lexemes.reserve(initialSize);
     sourceLocations.reserve(initialSize);

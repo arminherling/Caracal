@@ -6,7 +6,6 @@
 
 struct COMPILER_API SourceLocation
 {
-    SourceTextSharedPtr source;
     i32 startIndex = -1;
     i32 endIndex = -1;
     i32 startColumn = -1;

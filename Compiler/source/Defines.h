@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QtCore/qglobal.h>
 #include <cstdint>
 
 #define TODO(X) __debugbreak();
