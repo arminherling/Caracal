@@ -1,0 +1,13 @@
+﻿; Registering the package
+[$RootKey$\InstalledProducts\CaracalPackage]
+"Package"="{d1bde016-49d9-472b-a1bd-98caa768e486}"
+[$RootKey$\BindingPaths\{d1bde016-49d9-472b-a1bd-98caa768e486}]
+"$PackageFolder$"=""
+
+; Registering the TextMate grammar
+[$RootKey$\TextMate\Repositories]
+"Caracal"="$PackageFolder$\Syntaxes"
+
+; Match file extensions with icons. See full icon list at https://glyphlist.azurewebsites.net/knownmonikers/
+[$RootKey$\ShellFileAssociations\.cara]
+"DefaultIconMoniker"="KnownMonikers.CFile"

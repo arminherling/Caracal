@@ -1,0 +1,49 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Caracal",
+	"fileTypes": [
+		"cara"
+	],
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.caracal",
+					"match": "\\bcpp\\b"
+				},
+				{
+					"name": "keyword.control.def.caracal",
+					"match": "\\bdef\\b"
+				},
+				{
+					"name": "keyword.control.type.caracal",
+					"match": "\\btype\\b"
+				},
+				{
+					"name": "keyword.control.enum.caracal",
+					"match": "\\benum\\b"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.caracal",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.caracal",
+					"match": "\\\\[abfnrtv'\"\\\\]"
+				}
+			]
+		}
+	},
+	"scopeName": "source.caracal"
+}
