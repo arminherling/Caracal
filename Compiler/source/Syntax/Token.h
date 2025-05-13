@@ -4,8 +4,6 @@
 #include <Compiler/API.h>
 #include <Syntax/TokenKind.h>
 
-#include <QString>
-
 struct COMPILER_API Token
 {
     TokenKind kind = TokenKind::Unknown;

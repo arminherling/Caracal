@@ -1,8 +1,8 @@
-#include "ParserTests.h"
+#include "CppCodeGenTests.h"
 #include <AalTest.h>
+#include <CodeGen/CppCodeGenerator.h>
 #include <Compiler/DiagnosticsBag.h>
 #include <Compiler/File.h>
-#include <Debug/ParseTreePrinter.h>
 #include <iostream>
 #include <QDirIterator>
 #include <Syntax/Lexer.h>
@@ -22,15 +22,13 @@ namespace
         Caracal::DiagnosticsBag diagnostics;
 
         auto tokens = Caracal::lex(source, diagnostics);
+        auto parseTree = Caracal::parse(tokens, diagnostics);
 
         auto startTime = std::chrono::high_resolution_clock::now();
-        auto parseTree = Caracal::parse(tokens, diagnostics);
+        auto output = Caracal::generateCpp(parseTree);
         auto endTime = std::chrono::high_resolution_clock::now();
 
-        std::cout << "      parse(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
-
-        Caracal::ParseTreePrinter printer{ parseTree };
-        auto output = printer.prettyPrint();
+        std::cout << "      generateCpp(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         AalTest::EqualsFile(output, QFileInfo(outputFilePath));
         AalTest::IsTrue(diagnostics.Diagnostics().empty());
@@ -51,8 +49,8 @@ namespace
             auto fullFilePathWithoutExtension = directory.filePath(file.baseName());
 
             auto inPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".cara"));
-            auto outPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".out_parse"));
-            auto errorPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".error_parse"));
+            auto outPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".out_cppCode"));
+            auto errorPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".error_cppCode"));
 
             auto testName = directory.dirName() + '/' + file.completeBaseName();
             data.append(std::make_tuple(testName, inPath, outPath, errorPath));
@@ -61,7 +59,7 @@ namespace
     }
 }
 
-AalTest::TestSuite ParserTestsSuite()
+AalTest::TestSuite CppCodeGenTestsSuite()
 {
     AalTest::TestSuite suite{};
 

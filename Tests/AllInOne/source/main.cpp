@@ -1,4 +1,5 @@
 #include <AalTest.h>
+#include "../../CppCodeGenTests/source/CppCodeGenTests.h"
 #include "../../LexerTests/source/LexerTests.h"
 #include "../../ParserTests/source/ParserTests.h"
 #include "../../TypeCheckerTests/source/TypeCheckerTests.h"
@@ -12,6 +13,7 @@ int main()
     testSuites << LexerTestsSuite();
     testSuites << ParserTestsSuite();
     testSuites << TypeCheckerTestsSuite();
+    testSuites << CppCodeGenTestsSuite();
     testSuites << SourceLocationTests();
     testSuites << VirtualMachineTests();
 
