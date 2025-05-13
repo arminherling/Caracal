@@ -7,16 +7,14 @@
 #include <Text/SourceLocation.h>
 #include <Text/SourceText.h>
 
-using namespace Caracal;
-
 namespace 
 {
-    void SingleSourceLocation(const QString& testName, const SourceTextSharedPtr& input, const SourceLocation& expectedLocation)
+    void SingleSourceLocation(const QString& testName, const Caracal::SourceTextSharedPtr& input, const Caracal::SourceLocation& expectedLocation)
     {
-        DiagnosticsBag diagnostics;
+        Caracal::DiagnosticsBag diagnostics;
 
         auto startTime = std::chrono::high_resolution_clock::now();
-        auto tokens = lex(input, diagnostics);
+        auto tokens = Caracal::lex(input, diagnostics);
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
@@ -27,52 +25,52 @@ namespace
         AalTest::AreEqual(location.endIndex, expectedLocation.endIndex);
     }
 
-    QList<std::tuple<QString, SourceTextSharedPtr, SourceLocation>> SingleSourceLocation_Data()
+    QList<std::tuple<QString, Caracal::SourceTextSharedPtr, Caracal::SourceLocation>> SingleSourceLocation_Data()
     {
-        auto source1 = std::make_shared<SourceText>(QString("+"));
-        auto source2 = std::make_shared<SourceText>(QString(" bar "));
-        auto source3 = std::make_shared<SourceText>(QString("\nreturn"));
-        auto source4 = std::make_shared<SourceText>(QString("\r\nreturn"));
-        auto source5 = std::make_shared<SourceText>(QString("  1_234 "));
-        auto source6 = std::make_shared<SourceText>(QString(" \"1234567890\""));
-        auto source7 = std::make_shared<SourceText>(QString("$"));
+        auto source1 = std::make_shared<Caracal::SourceText>(QString("+"));
+        auto source2 = std::make_shared<Caracal::SourceText>(QString(" bar "));
+        auto source3 = std::make_shared<Caracal::SourceText>(QString("\nreturn"));
+        auto source4 = std::make_shared<Caracal::SourceText>(QString("\r\nreturn"));
+        auto source5 = std::make_shared<Caracal::SourceText>(QString("  1_234 "));
+        auto source6 = std::make_shared<Caracal::SourceText>(QString(" \"1234567890\""));
+        auto source7 = std::make_shared<Caracal::SourceText>(QString("$"));
 
         return {
             std::make_tuple(
                 QString("+"), 
                 source1,
-                SourceLocation{ .startIndex = 0, .endIndex = 1 }),
+                Caracal::SourceLocation{ .startIndex = 0, .endIndex = 1 }),
             std::make_tuple(
                 QString(" bar "),
                 source2,
-                SourceLocation{ .startIndex = 1, .endIndex = 4 }),
+                Caracal::SourceLocation{ .startIndex = 1, .endIndex = 4 }),
             std::make_tuple(
                 QString("\\nreturn"),
                 source3,
-                SourceLocation{ .startIndex = 1, .endIndex = 7 }),
+                Caracal::SourceLocation{ .startIndex = 1, .endIndex = 7 }),
             std::make_tuple(
                 QString("\\r\\nreturn"),
                 source4,
-                SourceLocation{ .startIndex = 2, .endIndex = 8 }),
+                Caracal::SourceLocation{ .startIndex = 2, .endIndex = 8 }),
             std::make_tuple(
                 QString("  1_234 "),
                 source5,
-                SourceLocation{ .startIndex = 2, .endIndex = 7 }),
+                Caracal::SourceLocation{ .startIndex = 2, .endIndex = 7 }),
             std::make_tuple(
                 QString(" \"1234567890\""),
                 source6,
-                SourceLocation{ .startIndex = 1, .endIndex = 13 }),
+                Caracal::SourceLocation{ .startIndex = 1, .endIndex = 13 }),
             std::make_tuple(
                 QString("$"),
                 source7,
-                SourceLocation{ .startIndex = 0, .endIndex = 1 })
+                Caracal::SourceLocation{ .startIndex = 0, .endIndex = 1 })
         };
     }
 
     void MultipleSourceLocations()
     {
-        auto input = std::make_shared<SourceText>(QString("define sum(a int, b int) \r\n {\r\n return a + b \r\n}\r\n"));
-        auto expectedList = QList<SourceLocation>
+        auto input = std::make_shared<Caracal::SourceText>(QString("define sum(a int, b int) \r\n {\r\n return a + b \r\n}\r\n"));
+        auto expectedList = QList<Caracal::SourceLocation>
         {
             { .startIndex = 0, .endIndex = 6 },  // define
             { .startIndex = 7, .endIndex = 10 }, // sum
@@ -91,10 +89,10 @@ namespace
             { .startIndex = 47, .endIndex = 48 },  // }
             { .startIndex = 50, .endIndex = 50 }, // EOL
         };
-        DiagnosticsBag diagnostics;
+        Caracal::DiagnosticsBag diagnostics;
 
         auto startTime = std::chrono::high_resolution_clock::now();
-        auto tokens = lex(input, diagnostics);
+        auto tokens = Caracal::lex(input, diagnostics);
 
         auto endTime = std::chrono::high_resolution_clock::now();
         std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
