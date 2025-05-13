@@ -111,9 +111,19 @@ namespace Caracal
     {
         const auto cppKeyword = advanceOnMatch(TokenKind::CppKeyword);
         const auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
+
+        auto current = currentToken();
+        std::vector<Token> lines;
+        while (current.kind == TokenKind::String)
+        {
+            lines.push_back(current);
+            advanceCurrentIndex();
+            current = currentToken();
+        }
+
         const auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
 
-        return std::make_unique<CppBlockStatement>(cppKeyword, openBracket, std::vector<Token>(), closeBracket);
+        return std::make_unique<CppBlockStatement>(cppKeyword, openBracket, lines, closeBracket);
     }
 
     Token Parser::peek(i32 offset)
