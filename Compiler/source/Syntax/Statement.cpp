@@ -1,6 +1,6 @@
 #include "Statement.h"
 
-Statement::Statement(NodeKind kind)
-    : Node(kind)
+Statement::Statement(NodeKind kind, const Type& type)
+    : Node(kind, type)
 {
 }

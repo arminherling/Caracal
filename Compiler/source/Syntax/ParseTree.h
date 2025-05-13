@@ -12,12 +12,18 @@ class COMPILER_API ParseTree
 public:
     ParseTree(
         const TokenBuffer& tokens, 
-        const QList<Statement*>& statements);
+        std::vector<StatementUPtr>&& statements);
 
-    [[nodiscard]] QList<Statement*> globalStatements() const noexcept { return m_statements; };
+    ParseTree(const ParseTree&) = delete;
+    ParseTree& operator=(const ParseTree&) = delete;
+
+    ParseTree(ParseTree&&) = default;
+    ParseTree& operator=(ParseTree&&) = default;
+
+    [[nodiscard]] const std::vector<StatementUPtr>& statements() const noexcept { return m_statements; };
     [[nodiscard]] const TokenBuffer& tokens() const noexcept { return m_tokens; }
 
 private:
     TokenBuffer m_tokens;
-    QList<Statement*> m_statements;
+    std::vector<StatementUPtr> m_statements;
 };

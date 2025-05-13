@@ -9,6 +9,7 @@
 #include <Syntax/Parser.h>
 
 using namespace AalTest;
+using namespace Caracal;
 
 namespace
 {
@@ -16,8 +17,6 @@ namespace
     {
         if (!QFile::exists(inputFilePath))
             AalTest::Fail();// ("In file missing");
-        if (!QFile::exists(outputFilePath))
-            AalTest::Skip();// ("Out file missing");
 
         auto input = File::ReadAllText(inputFilePath);
         auto source = std::make_shared<SourceText>(input);
@@ -26,32 +25,16 @@ namespace
         auto tokens = Lex(source, diagnostics);
 
         auto startTime = std::chrono::high_resolution_clock::now();
-        auto parseTree = Parse(tokens, diagnostics);
+        auto parseTree = parse(tokens, diagnostics);
         auto endTime = std::chrono::high_resolution_clock::now();
 
         std::cout << "      Parse(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         ParseTreePrinter printer{ parseTree };
-        auto output = printer.PrettyPrint();
-        auto expectedOutput = File::ReadAllText(outputFilePath);
+        auto output = printer.prettyPrint();
 
-        AalTest::AreEqual(expectedOutput, output);
-        if (!QFile::exists(errorFilePath))
-        {
-            // TODO maybe split up errors and warnings
-            for (const auto& diagnostic : diagnostics.Diagnostics())
-            {
-                if (diagnostic.level == DiagnosticLevel::Error)
-                {
-                    AalTest::Fail();
-                    break;
-                }
-            }
-        }
-        else
-        {
-            AalTest::Fail();// ("TODO compare errors with error file once we got some");
-        }
+        AalTest::EqualsFile(output, QFileInfo(outputFilePath));
+        AalTest::IsTrue(diagnostics.Diagnostics().empty());
     }
 
     QList<std::tuple<QString, QString, QString, QString>> FileTests_Data()
@@ -61,14 +44,14 @@ namespace
 
         QList<std::tuple<QString, QString, QString, QString>> data{};
 
-        QDirIterator it(absolutePath, QStringList() << QString("*.aal"), QDir::Filter::Files, QDirIterator::IteratorFlag::Subdirectories);
+        QDirIterator it(absolutePath, QStringList() << QString("*.cara"), QDir::Filter::Files, QDirIterator::IteratorFlag::Subdirectories);
         while (it.hasNext())
         {
             auto file = QFileInfo(it.next());
             auto directory = QDir(file.absolutePath());
             auto fullFilePathWithoutExtension = directory.filePath(file.baseName());
 
-            auto inPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".aal"));
+            auto inPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".cara"));
             auto outPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".out_parse"));
             auto errorPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".error_parse"));
 

@@ -2,8 +2,8 @@
 
 ParseTree::ParseTree(
     const TokenBuffer& tokens, 
-    const QList<Statement*>& statements)
+    std::vector<StatementUPtr>&& statements)
     : m_tokens{ tokens }
-    , m_statements{ statements }
+    , m_statements{ std::move(statements) }
 {
 }

@@ -6,5 +6,5 @@
 class COMPILER_API Expression : public Node
 {
 public:
-    Expression(NodeKind kind);
+    Expression(NodeKind kind, const Type& type);
 };

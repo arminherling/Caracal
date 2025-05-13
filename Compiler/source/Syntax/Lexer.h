@@ -5,4 +5,7 @@
 #include <Syntax/TokenBuffer.h>
 #include <Text/SourceText.h>
 
-COMPILER_API TokenBuffer Lex(const SourceTextSharedPtr& source, DiagnosticsBag& diagnostics) noexcept;
+namespace Caracal 
+{
+    COMPILER_API TokenBuffer Lex(const SourceTextSharedPtr& source, DiagnosticsBag& diagnostics) noexcept;
+}

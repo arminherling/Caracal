@@ -33,6 +33,7 @@
 #  define COMPILER_DEPRECATED_NO_EXPORT COMPILER_NO_EXPORT COMPILER_DEPRECATED
 #endif
 
+/* NOLINTNEXTLINE(readability-avoid-unconditional-preprocessor-if) */
 #if 0 /* DEFINE_NO_DEPRECATED */
 #  ifndef COMPILER_NO_DEPRECATED
 #    define COMPILER_NO_DEPRECATED

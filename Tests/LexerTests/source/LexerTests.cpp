@@ -10,6 +10,7 @@
 #include <QDir>
 
 using namespace AalTest;
+using namespace Caracal;
 
 namespace
 {

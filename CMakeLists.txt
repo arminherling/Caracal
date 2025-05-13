@@ -11,6 +11,7 @@ qt_standard_project_setup()
 include(CMake/AalTest.cmake)
 
 add_subdirectory(Compiler)
+add_subdirectory(Driver)
 
 add_subdirectory(Tests/AllInOne)
 add_subdirectory(Tests/LexerTests)

@@ -1,7 +1,7 @@
-#include "Error.h"
-
-Error::Error(const Token& token)
-    : Expression(NodeKind::Error)
-    , m_token{ token }
-{
-}
+//#include "Error.h"
+//
+//Error::Error(const Token& token)
+//    : Expression(NodeKind::Error, Type::Undefined())
+//    , m_token{ token }
+//{
+//}
