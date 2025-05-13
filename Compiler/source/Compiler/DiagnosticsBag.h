@@ -2,19 +2,21 @@
 
 #include <Compiler/API.h>
 #include <Compiler/Diagnostic.h>
-
 #include <vector>
 
-class COMPILER_API DiagnosticsBag
+namespace Caracal
 {
-public:
-    DiagnosticsBag() = default;
+    class COMPILER_API DiagnosticsBag
+    {
+    public:
+        DiagnosticsBag() = default;
 
-    void AddWarning(DiagnosticKind kind, const SourceLocation& location);
-    void AddError(DiagnosticKind kind, const SourceLocation& location);
+        void AddWarning(DiagnosticKind kind, const SourceLocation& location);
+        void AddError(DiagnosticKind kind, const SourceLocation& location);
 
-    const std::vector<Diagnostic>& Diagnostics();
+        const std::vector<Diagnostic>& Diagnostics();
 
-private:
-    std::vector<Diagnostic> diagnostics;
-};
+    private:
+        std::vector<Diagnostic> diagnostics;
+    };
+}

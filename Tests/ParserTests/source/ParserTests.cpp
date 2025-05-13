@@ -8,29 +8,28 @@
 #include <Syntax/Lexer.h>
 #include <Syntax/Parser.h>
 
-using namespace AalTest;
-using namespace Caracal;
-
 namespace
 {
     void FileTests(const QString& fileName, const QString& inputFilePath, const QString& outputFilePath, const QString& errorFilePath)
     {
         if (!QFile::exists(inputFilePath))
             AalTest::Fail();// ("In file missing");
+        if (!QFile::exists(outputFilePath))
+            AalTest::Skip();// ("Out file missing");
 
-        auto input = File::ReadAllText(inputFilePath);
-        auto source = std::make_shared<SourceText>(input);
-        DiagnosticsBag diagnostics;
+        auto input = Caracal::File::readAllText(inputFilePath);
+        auto source = std::make_shared<Caracal::SourceText>(input);
+        Caracal::DiagnosticsBag diagnostics;
 
-        auto tokens = Lex(source, diagnostics);
+        auto tokens = Caracal::lex(source, diagnostics);
 
         auto startTime = std::chrono::high_resolution_clock::now();
         auto parseTree = parse(tokens, diagnostics);
         auto endTime = std::chrono::high_resolution_clock::now();
 
-        std::cout << "      Parse(): " << Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      parse(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
-        ParseTreePrinter printer{ parseTree };
+        Caracal::ParseTreePrinter printer{ parseTree };
         auto output = printer.prettyPrint();
 
         AalTest::EqualsFile(output, QFileInfo(outputFilePath));

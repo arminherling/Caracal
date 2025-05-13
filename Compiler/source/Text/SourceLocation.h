@@ -2,10 +2,12 @@
 
 #include <Defines.h>
 #include <Compiler/API.h>
-#include <Text/SourceText.h>
 
-struct COMPILER_API SourceLocation
+namespace Caracal
 {
-    i32 startIndex = -1;
-    i32 endIndex = -1;
-};
+    struct COMPILER_API SourceLocation
+    {
+        i32 startIndex = -1;
+        i32 endIndex = -1;
+    };
+}

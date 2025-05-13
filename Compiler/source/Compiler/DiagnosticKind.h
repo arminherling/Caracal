@@ -1,9 +1,12 @@
 #pragma once
 
-enum class DiagnosticKind
+namespace Caracal
 {
-    Unknown,
-    _0001_FoundIllegalCharacter,
-    _0002_UnterminatedString,
-    _0003_ExpectedXButGotY,
-};
+    enum class DiagnosticKind
+    {
+        Unknown,
+        _0001_FoundIllegalCharacter,
+        _0002_UnterminatedString,
+        _0003_ExpectedXButGotY,
+    };
+}

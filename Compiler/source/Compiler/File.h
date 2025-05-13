@@ -5,10 +5,12 @@
 #include <QByteArray>
 #include <QString>
 
-class COMPILER_API File
+namespace Caracal
 {
-public:
-    static QByteArray ReadAll(const QString& filePath);
-    static QString ReadAllText(const QString& filePath);
-};
-
+    class COMPILER_API File
+    {
+    public:
+        static QByteArray readAll(const QString& filePath);
+        static QString readAllText(const QString& filePath);
+    };
+}

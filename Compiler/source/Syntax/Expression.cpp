@@ -1,6 +1,9 @@
 #include "Expression.h"
 
-Expression::Expression(NodeKind kind, const Type& type)
-    : Node(kind, type)
+namespace Caracal
 {
+    Expression::Expression(NodeKind kind, const Type& type)
+        : Node(kind, type)
+    {
+    }
 }

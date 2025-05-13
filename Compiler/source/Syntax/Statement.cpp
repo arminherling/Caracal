@@ -1,6 +1,9 @@
 #include "Statement.h"
 
-Statement::Statement(NodeKind kind, const Type& type)
-    : Node(kind, type)
+namespace Caracal
 {
+    Statement::Statement(NodeKind kind, const Type& type)
+        : Node(kind, type)
+    {
+    }
 }

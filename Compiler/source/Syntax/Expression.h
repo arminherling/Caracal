@@ -3,8 +3,11 @@
 #include <Compiler/API.h>
 #include <Syntax/Node.h>
 
-class COMPILER_API Expression : public Node
+namespace Caracal
 {
-public:
-    Expression(NodeKind kind, const Type& type);
-};
+    class COMPILER_API Expression : public Node
+    {
+    public:
+        Expression(NodeKind kind, const Type& type);
+    };
+}

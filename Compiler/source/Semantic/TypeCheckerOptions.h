@@ -3,8 +3,11 @@
 #include <Compiler/API.h>
 #include <Semantic/Type.h>
 
-struct COMPILER_API TypeCheckerOptions
+namespace Caracal
 {
-    Type defaultIntegerType;
-    Type defaultEnumBaseType;
-};
+    struct COMPILER_API TypeCheckerOptions
+    {
+        Type defaultIntegerType;
+        Type defaultEnumBaseType;
+    };
+}

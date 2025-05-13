@@ -1,8 +1,11 @@
 #pragma once
 
-enum class DiagnosticLevel
+namespace Caracal
 {
-    Unknown,
-    Warning,
-    Error
-};
+    enum class DiagnosticLevel
+    {
+        Unknown,
+        Warning,
+        Error
+    };
+}

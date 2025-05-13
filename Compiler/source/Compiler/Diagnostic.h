@@ -5,9 +5,12 @@
 #include <Compiler/DiagnosticKind.h>
 #include <Text/SourceLocation.h>
 
-struct COMPILER_API Diagnostic
+namespace Caracal
 {
-    DiagnosticLevel level = DiagnosticLevel::Unknown;
-    DiagnosticKind kind = DiagnosticKind::Unknown;
-    SourceLocation location;
-};
+    struct COMPILER_API Diagnostic
+    {
+        DiagnosticLevel level = DiagnosticLevel::Unknown;
+        DiagnosticKind kind = DiagnosticKind::Unknown;
+        SourceLocation location;
+    };
+}

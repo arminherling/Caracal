@@ -1,15 +1,17 @@
 #include <Compiler/File.h>
+#include <QFile>
 
-#include <qfile.h>
-
-QByteArray File::ReadAll(const QString& filePath)
+namespace Caracal 
 {
-    auto file = QFile(filePath);
-    file.open(QIODevice::ReadOnly);
-    return file.readAll();
-}
+    QByteArray File::readAll(const QString& filePath)
+    {
+        auto file = QFile(filePath);
+        file.open(QIODevice::ReadOnly);
+        return file.readAll();
+    }
 
-QString File::ReadAllText(const QString& filePath)
-{
-    return QString::fromUtf8(File::ReadAll(filePath));
+    QString File::readAllText(const QString& filePath)
+    {
+        return QString::fromUtf8(File::readAll(filePath));
+    }
 }

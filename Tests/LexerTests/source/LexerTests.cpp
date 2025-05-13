@@ -14,8 +14,8 @@ namespace
     {
         auto startTime = std::chrono::high_resolution_clock::now();
 
-        auto source = std::make_shared<SourceText>(input);
-        DiagnosticsBag diagnostics;
+        auto source = std::make_shared<Caracal::SourceText>(input);
+        Caracal::DiagnosticsBag diagnostics;
 
         auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
@@ -75,8 +75,8 @@ namespace
         auto expectedToken = TokenKind::EndOfFile;
         auto startTime = std::chrono::high_resolution_clock::now();
 
-        auto source = std::make_shared<SourceText>(input);
-        DiagnosticsBag diagnostics;
+        auto source = std::make_shared<Caracal::SourceText>(input);
+        Caracal::DiagnosticsBag diagnostics;
 
         auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
@@ -104,8 +104,8 @@ namespace
     {
         auto startTime = std::chrono::high_resolution_clock::now();
 
-        auto source = std::make_shared<SourceText>(input);
-        DiagnosticsBag diagnostics;
+        auto source = std::make_shared<Caracal::SourceText>(input);
+        Caracal::DiagnosticsBag diagnostics;
 
         auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
@@ -140,8 +140,8 @@ namespace
     {
         auto startTime = std::chrono::high_resolution_clock::now();
 
-        auto source = std::make_shared<SourceText>(input);
-        DiagnosticsBag diagnostics;
+        auto source = std::make_shared<Caracal::SourceText>(input);
+        Caracal::DiagnosticsBag diagnostics;
 
         auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
@@ -173,8 +173,8 @@ namespace
     {
         auto startTime = std::chrono::high_resolution_clock::now();
 
-        auto source = std::make_shared<SourceText>(input);
-        DiagnosticsBag diagnostics;
+        auto source = std::make_shared<Caracal::SourceText>(input);
+        Caracal::DiagnosticsBag diagnostics;
 
         auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
@@ -217,8 +217,8 @@ namespace
     {
         auto startTime = std::chrono::high_resolution_clock::now();
 
-        auto source = std::make_shared<SourceText>(input);
-        DiagnosticsBag diagnostics;
+        auto source = std::make_shared<Caracal::SourceText>(input);
+        Caracal::DiagnosticsBag diagnostics;
 
         auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
@@ -247,8 +247,8 @@ namespace
     {
         auto startTime = std::chrono::high_resolution_clock::now();
 
-        auto source = std::make_shared<SourceText>(input);
-        DiagnosticsBag diagnostics;
+        auto source = std::make_shared<Caracal::SourceText>(input);
+        Caracal::DiagnosticsBag diagnostics;
 
         auto tokens = Caracal::lex(source, diagnostics);
 
@@ -285,8 +285,8 @@ namespace
 
         QString data = file.readAll();
 
-        auto source = std::make_shared<SourceText>(data);
-        DiagnosticsBag diagnostics;
+        auto source = std::make_shared<Caracal::SourceText>(data);
+        Caracal::DiagnosticsBag diagnostics;
 
         auto startTime = std::chrono::high_resolution_clock::now();
         auto tokens = Caracal::lex(source, diagnostics);
