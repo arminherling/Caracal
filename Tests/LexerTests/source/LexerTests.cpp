@@ -5,12 +5,8 @@
 #include <Syntax/TokenKind.h>
 #include <Syntax/TokenBuffer.h>
 #include <Text/SourceText.h>
-#include <Text/SourceLocation.h>
 #include <iostream>
 #include <QDir>
-
-using namespace AalTest;
-using namespace Caracal;
 
 namespace
 {
@@ -21,11 +17,11 @@ namespace
         auto source = std::make_shared<SourceText>(input);
         DiagnosticsBag diagnostics;
 
-        auto tokens = Lex(source, diagnostics);
+        auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         AalTest::AreEqual(expectedKind, token.kind);
     }
@@ -82,11 +78,11 @@ namespace
         auto source = std::make_shared<SourceText>(input);
         DiagnosticsBag diagnostics;
 
-        auto tokens = Lex(source, diagnostics);
+        auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         AalTest::AreEqual(TokenKind::EndOfFile, token.kind);
     }
@@ -111,11 +107,11 @@ namespace
         auto source = std::make_shared<SourceText>(input);
         DiagnosticsBag diagnostics;
 
-        auto tokens = Lex(source, diagnostics);
+        auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         AalTest::AreEqual(TokenKind::Identifier, token.kind);
         auto lexeme = tokens.getLexeme(token);
@@ -147,11 +143,11 @@ namespace
         auto source = std::make_shared<SourceText>(input);
         DiagnosticsBag diagnostics;
 
-        auto tokens = Lex(source, diagnostics);
+        auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         AalTest::AreEqual(TokenKind::Number, token.kind);
         auto lexeme = tokens.getLexeme(token);
@@ -180,11 +176,11 @@ namespace
         auto source = std::make_shared<SourceText>(input);
         DiagnosticsBag diagnostics;
 
-        auto tokens = Lex(source, diagnostics);
+        auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         AalTest::AreEqual(TokenKind::String, token.kind);
         auto lexeme = tokens.getLexeme(token);
@@ -201,6 +197,22 @@ namespace
         };
     }
 
+    QList<std::tuple<QString, QString>> StringsWithEscapes_Data()
+    {
+        return {
+            std::make_tuple(QString("\"single quote\\'\""), QString("\"single quote\\'\"")),
+            std::make_tuple(QString("\"double quote\\\"\""), QString("\"double quote\\\"\"")),
+            std::make_tuple(QString("\"backslash\\\\\""), QString("\"backslash\\\\\"")),
+            std::make_tuple(QString("\"audible bell\\a\""), QString("\"audible bell\\a\"")),
+            std::make_tuple(QString("\"backspace\\b\""), QString("\"backspace\\b\"")),
+            std::make_tuple(QString("\"form feed\\f\""), QString("\"form feed\\f\"")),
+            std::make_tuple(QString("\"line feed\\n\""), QString("\"line feed\\n\"")),
+            std::make_tuple(QString("\"carriage return\\r\""), QString("\"carriage return\\r\"")),
+            std::make_tuple(QString("\"horizonal tab\\t\""), QString("\"horizonal tab\\t\"")),
+            std::make_tuple(QString("\"vertical tab\\v\""), QString("\"vertical tab\\v\"")),
+        };
+    }
+
     void UnterminatedStrings(const QString& input, const QString& expectedLexeme)
     {
         auto startTime = std::chrono::high_resolution_clock::now();
@@ -208,13 +220,13 @@ namespace
         auto source = std::make_shared<SourceText>(input);
         DiagnosticsBag diagnostics;
 
-        auto tokens = Lex(source, diagnostics);
+        auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
 
         AalTest::IsTrue(!diagnostics.Diagnostics().empty());
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         AalTest::AreEqual(TokenKind::Error, token.kind);
         auto lexeme = tokens.getLexeme(token);
@@ -238,10 +250,10 @@ namespace
         auto source = std::make_shared<SourceText>(input);
         DiagnosticsBag diagnostics;
 
-        auto tokens = Lex(source, diagnostics);
+        auto tokens = Caracal::lex(source, diagnostics);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         AalTest::IsTrue(diagnostics.Diagnostics().empty());
         AalTest::AreEqual(tokenCount, tokens.size());
@@ -277,10 +289,10 @@ namespace
         DiagnosticsBag diagnostics;
 
         auto startTime = std::chrono::high_resolution_clock::now();
-        auto tokens = Lex(source, diagnostics);
+        auto tokens = Caracal::lex(source, diagnostics);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      Lex(): " << Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
     }
 }
 
@@ -292,6 +304,7 @@ AalTest::TestSuite LexerTestsSuite()
     suite.add(QString("Identifiers"), Identifiers, Identifiers_Data);
     suite.add(QString("Numbers"), Numbers, Numbers_Data);
     suite.add(QString("Strings"), Strings, Strings_Data);
+    suite.add(QString("StringsWithEscapes"), Strings, StringsWithEscapes_Data);
     suite.add(QString("UnterminatedStrings"), UnterminatedStrings, UnterminatedStrings_Data);
     suite.add(QString("Keywords"), ExpectedTokenKind, Keyword_Data);
     suite.add(QString("WholeInput"), WholeInput, WholeInput_Data);

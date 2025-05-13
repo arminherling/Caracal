@@ -52,17 +52,17 @@ namespace Caracal
         return 1;
     }
 
-    [[nodiscard]] static auto IsNumberOrUnderscore(QChar c) noexcept
+    [[nodiscard]] static auto IsUnderscoreOrNumber(QChar c) noexcept
     {
         return c == QChar(u'_') || c.isNumber();
     }
 
-    [[nodiscard]] static auto IsLetterOrUnderscore(QChar c) noexcept
+    [[nodiscard]] static auto IsUnderscoreOrLetter(QChar c) noexcept
     {
         return c == QChar(u'_') || c.isLetter();
     }
 
-    [[nodiscard]] static auto IsLetterOrNumberOrUnderscore(QChar c) noexcept
+    [[nodiscard]] static auto IsUnderscoreOrLetterOrNumber(QChar c) noexcept
     {
         return c == QChar(u'_') || c.isLetterOrNumber();
     }
@@ -116,7 +116,7 @@ namespace Caracal
     static void LexIdentifier(TokenBuffer& tokenBuffer, QStringView source, i32& currentIndex) noexcept
     {
         const auto startIndex = currentIndex;
-        while (IsLetterOrNumberOrUnderscore(PeekCurrentChar(source, currentIndex)))
+        while (IsUnderscoreOrLetterOrNumber(PeekCurrentChar(source, currentIndex)))
             currentIndex++;
 
         const auto maybeKeywordKind = IdentifierKind(source, currentIndex, startIndex);
@@ -139,7 +139,7 @@ namespace Caracal
         {
             currentIndex++;
 
-            while (IsNumberOrUnderscore(PeekCurrentChar(source, currentIndex)))
+            while (IsUnderscoreOrNumber(PeekCurrentChar(source, currentIndex)))
                 currentIndex++;
         }
 
@@ -152,10 +152,18 @@ namespace Caracal
 
         // Consume opening quotation mark
         currentIndex++;
-        while (PeekCurrentChar(source, currentIndex) != QChar(u'\"') && PeekCurrentChar(source, currentIndex) != QChar(u'\0'))
+        auto current = PeekCurrentChar(source, currentIndex);
+        while (current != QChar(u'\"') && current != QChar(u'\0'))
+        {
+            if (current == QChar(u'\\'))
+            {
+                currentIndex++;
+            }
             currentIndex++;
+            current = PeekCurrentChar(source, currentIndex);
+        }
 
-        if (PeekCurrentChar(source, currentIndex) == QChar(u'\"'))
+        if (current == QChar(u'\"'))
         {
             // Consume closing quotation mark
             currentIndex++;
@@ -170,7 +178,7 @@ namespace Caracal
         }
     };
 
-    [[nodiscard]] TokenBuffer Lex(const SourceTextSharedPtr& sourceText, DiagnosticsBag& diagnostics) noexcept
+    [[nodiscard]] TokenBuffer lex(const SourceTextSharedPtr& sourceText, DiagnosticsBag& diagnostics) noexcept
     {
         TokenBuffer tokenBuffer{ sourceText };
         const auto source = QStringView(sourceText->text);
@@ -291,12 +299,12 @@ namespace Caracal
                 }
                 default:
                 {
-                    if (current == QChar(u'_') && !IsLetterOrNumberOrUnderscore(PeekNextChar(source, currentIndex)))
+                    if (current == QChar(u'_') && !IsUnderscoreOrLetterOrNumber(PeekNextChar(source, currentIndex)))
                     {
                         AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Underscore);
                         break;
                     }
-                    else if (IsLetterOrUnderscore(current))
+                    else if (IsUnderscoreOrLetter(current))
                     {
                         LexIdentifier(tokenBuffer, source, currentIndex);
                         break;
