@@ -1,0 +1,13 @@
+﻿CppBlockStatement: {
+    Lines (1): {
+        "#include <iostream>"
+    }
+}
+CppBlockStatement: {
+    Lines (4): {
+        "int main() {"
+        "    std::cout << \"Hello, World!\" << std::endl;"
+        "    return 0;"
+        "}"
+    }
+}

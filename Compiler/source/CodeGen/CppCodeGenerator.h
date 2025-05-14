@@ -4,6 +4,7 @@
 #include <Debug/BasePrinter.h>
 #include <Defines.h>
 #include <Syntax/ParseTree.h>
+#include <Syntax/CppBlockStatement.h>
 
 namespace Caracal
 {
@@ -13,6 +14,10 @@ namespace Caracal
         CppCodeGenerator(ParseTree& parseTree, i32 indentation = 4);
 
         [[nodiscard]] QString generate();
+
+    private:
+        void generateNode(Node* node);
+        void generateCppBlock(CppBlockStatement* node);
 
         ParseTree& m_parseTree;
     };

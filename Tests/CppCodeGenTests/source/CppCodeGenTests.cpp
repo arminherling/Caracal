@@ -49,8 +49,8 @@ namespace
             auto fullFilePathWithoutExtension = directory.filePath(file.baseName());
 
             auto inPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".cara"));
-            auto outPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".out_cppCode"));
-            auto errorPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".error_cppCode"));
+            auto outPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".out_cpp"));
+            auto errorPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".error_cpp"));
 
             auto testName = directory.dirName() + '/' + file.completeBaseName();
             data.append(std::make_tuple(testName, inPath, outPath, errorPath));
