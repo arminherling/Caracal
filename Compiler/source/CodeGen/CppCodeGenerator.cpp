@@ -43,9 +43,16 @@ namespace Caracal
                 generateCppBlock((CppBlockStatement*)node);
                 break;
             }
-            default:
-                TODO("Implement other node kinds in CppCodeGenerator");
+            case NodeKind::FunctionDefinitionStatement:
+            {
+                generateFunctionDefinition((FunctionDefinitionStatement*)node);
                 break;
+            }
+            default:
+            {
+                stream() << indentation() << QString("Missing NodeKind!!") << newLine();
+                break;
+            }
         }
     }
 
@@ -60,6 +67,44 @@ namespace Caracal
             const auto result = ReplaceEscapeSequences(lexeme);
             stream() << indentation() << result << newLine();
         }
+    }
+
+    void CppCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node)
+    {
+        const auto hasReturnTypes = node->returnTypes()->returnTypes().empty() == false;
+        const auto functionName = m_parseTree.tokens().getLexeme(node->name());
+        const auto isMainFunction = functionName == QStringLiteral("main");
+        if (!hasReturnTypes && isMainFunction)
+        {
+            stream() << indentation() << "int";
+        }
+        else
+        {
+            TODO("Implement return types in CppCodeGenerator");
+        }
+        stream() << indentation() << " " << functionName;
+
+        const auto hasParameters = node->parameters()->parameters().empty() == false;
+        if (!hasParameters)
+        {
+            stream() << indentation() << "()" << newLine();
+        }
+        else
+        {
+            TODO("Implement parameters in CppCodeGenerator");
+        }
+
+        const auto& body = node->body();
+        stream() << indentation() << "{" << newLine();
+        pushIndentation();
+
+        for (const auto& statement : body->statements())
+        {
+            generateNode(statement.get());
+        }
+
+        popIndentation();
+        stream() << indentation() << "}" << newLine();
     }
 
     QString generateCpp(ParseTree& parseTree) noexcept

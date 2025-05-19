@@ -5,6 +5,7 @@
 #include <Defines.h>
 #include <Syntax/ParseTree.h>
 #include <Syntax/CppBlockStatement.h>
+#include <Syntax/FunctionDefinitionStatement.h>
 
 namespace Caracal
 {
@@ -18,6 +19,7 @@ namespace Caracal
     private:
         void generateNode(Node* node);
         void generateCppBlock(CppBlockStatement* node);
+        void generateFunctionDefinition(FunctionDefinitionStatement* node);
 
         ParseTree& m_parseTree;
     };

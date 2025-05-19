@@ -1,6 +1,8 @@
-FunctionDefinitionStatement: {
-    NameExpression: func
+﻿FunctionDefinitionStatement: {
+    Name: main
     ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
     }
     BlockNode(0): {
     }

@@ -7,7 +7,7 @@
 //#include <Syntax/ArgumentsNode.h>
 //#include <Syntax/AssignmentStatement.h>
 //#include <Syntax/BinaryExpression.h>
-//#include <Syntax/BlockNode.h>
+#include <Syntax/BlockNode.h>
 //#include <Syntax/BoolLiteral.h>
 //#include <Syntax/DiscardLiteral.h>
 //#include <Syntax/EnumDefinitionStatement.h>
@@ -16,7 +16,7 @@
 //#include <Syntax/ExpressionStatement.h>
 //#include <Syntax/FieldDefinitionStatement.h>
 //#include <Syntax/FunctionCallExpression.h>
-//#include <Syntax/FunctionDefinitionStatement.h>
+#include <Syntax/FunctionDefinitionStatement.h>
 //#include <Syntax/GroupingExpression.h>
 //#include <Syntax/IfStatement.h>
 //#include <Syntax/MemberAccessExpression.h>
@@ -24,7 +24,7 @@
 //#include <Syntax/NameExpression.h>
 //#include <Syntax/NumberLiteral.h>
 //#include <Syntax/ParameterNode.h>
-//#include <Syntax/ParametersNode.h>
+#include <Syntax/ParametersNode.h>
 #include <Syntax/ParseTree.h>
 //#include <Syntax/ReturnStatement.h>
 //#include <Syntax/TypeDefinitionStatement.h>
@@ -46,7 +46,7 @@ namespace Caracal
         void prettyPrintCppBlockStatement(CppBlockStatement* node);
         //    void PrettyPrintAssignmentStatement(AssignmentStatement* statement);
     //    void PrettyPrintExpressionStatement(ExpressionStatement* statement);
-    //    void PrettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
+        void prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
     //    void PrettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement);
     //    void PrettyPrintEnumFieldDefinitionStatement(EnumFieldDefinitionStatement* statement);
     //    void PrettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement);
@@ -57,8 +57,9 @@ namespace Caracal
     //    void PrettyPrintReturnStatement(ReturnStatement* statement);
     //    void PrettyPrintArgumentsNode(ArgumentsNode* arguments);
     //    void PrettyPrintParameterNode(ParameterNode* parameter);
-    //    void PrettyPrintParametersNode(ParametersNode* parameters);
-    //    void PrettyPrintBlockNode(BlockNode* block);
+        void prettyPrintParametersNode(ParametersNode* parameters);
+        void prettyPrintReturnTypesNode(ReturnTypesNode* returnTypes);
+        void prettyPrintBlockNode(BlockNode* block);
     //
     //    void PrettyPrintDiscardLiteral(DiscardLiteral* discard);
     //    void PrettyPrintFunctionCallExpression(FunctionCallExpression* functionCall);

@@ -1,12 +1,12 @@
-//#include "BlockNode.h"
-//
-//BlockNode::BlockNode(
-//    const Token& openBracket,
-//    const QList<Statement*>& statements,
-//    const Token& closeBracket)
-//    : Node(NodeKind::BlockNode)
-//    , m_openBracket{ openBracket }
-//    , m_statements{ statements }
-//    , m_closeBracket{ closeBracket }
-//{
-//}
+#include "BlockNode.h"
+
+namespace Caracal 
+{
+    BlockNode::BlockNode(const Token& openBracket, std::vector<StatementUPtr>&& statements, const Token& closeBracket)
+        : Statement(NodeKind::BlockNode, Type::Undefined())
+        , m_openBracket{ openBracket }
+        , m_statements{ std::move(statements) }
+        , m_closeBracket{ closeBracket }
+    {
+    }
+}

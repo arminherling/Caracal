@@ -14,12 +14,25 @@ namespace Caracal
 
             case NodeKind::CppBlockStatement:
                 return QString("CppBlockStatement");
+            case NodeKind::FunctionDefinitionStatement:
+                return QString("FunctionDefinitionStatement");
+            case NodeKind::BlockNode:
+                return QString("BlockNode");
+
+            case NodeKind::ParameterNode:
+                return QString("ParameterNode");
+            case NodeKind::ParametersNode:
+                return QString("ParametersNode");
+
+            case NodeKind::ReturnTypesNode:
+                return QString("ReturnTypesNode");
+            case NodeKind::ReturnTypeNode:
+                return QString("ReturnTypeNode");
+
                 //case NodeKind::AssignmentStatement:
                 //    return QString("AssignmentStatement");
                 //case NodeKind::ExpressionStatement:
                 //    return QString("ExpressionStatement");
-                //case NodeKind::FunctionDefinitionStatement:
-                //    return QString("FunctionDefinitionStatement");
                 //case NodeKind::EnumDefinitionStatement:
                 //    return QString("EnumDefinitionStatement");
                 //case NodeKind::EnumFieldDefinitionStatement:
@@ -63,10 +76,6 @@ namespace Caracal
                 //    return QString("TypeName");
                 //case NodeKind::ArgumentsNode:
                 //    return QString("ArgumentsNode");
-                //case NodeKind::ParameterNode:
-                //    return QString("ParameterNode");
-                //case NodeKind::ParametersNode:
-                //    return QString("ParametersNode");
                 //case NodeKind::BlockNode:
                 //    return QString("BlockNode");
 

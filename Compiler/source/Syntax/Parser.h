@@ -5,14 +5,15 @@
 #include <Compiler/DiagnosticsBag.h>
 //#include <Syntax/ArgumentsNode.h>
 //#include <Syntax/BinaryExpression.h>
-//#include <Syntax/BlockNode.h>
+#include <Syntax/BlockNode.h>
 //#include <Syntax/BoolLiteral.h>
 //#include <Syntax/EnumFieldDefinitionStatement.h>
 //#include <Syntax/Expression.h>
 //#include <Syntax/GroupingExpression.h>
 //#include <Syntax/NumberLiteral.h>
 //#include <Syntax/ParameterNode.h>
-//#include <Syntax/ParametersNode.h>
+#include <Syntax/ParametersNode.h>
+#include <Syntax/ReturnTypesNode.h>
 #include <Syntax/ParseTree.h>
 //#include <Syntax/Statement.h>
 #include <Syntax/TokenBuffer.h>
@@ -41,7 +42,7 @@ namespace Caracal
         StatementUPtr parseCppBlock();
         //Statement* parseAssignmentStatement();
         //Statement* parseExpressionStatement();
-        //Statement* parseFunctionDefinitionStatement();
+        StatementUPtr parseFunctionDefinitionStatement();
         //Statement* parseEnumDefinitionStatement();
         //QList<EnumFieldDefinitionStatement*> parseEnumFieldDefinitions();
         //Statement* parseTypeDefinitionStatement();
@@ -55,13 +56,14 @@ namespace Caracal
         //Expression* parsePrimaryExpression();
         //Expression* parseFunctionCallOrNameExpression();
         //Expression* parseFunctionCallExpression();
-        //ParametersNode* parseParametersNode();
+        ParametersNodeUPtr parseParametersNode();
+        ReturnTypesNodeUPtr parseReturnTypesNode();
         //ArgumentsNode* parseArgumentsNode();
-        //BlockNode* parseFunctionBody();
+        BlockNodeUPtr parseFunctionBody();
         //BlockNode* parseTypeBody();
         //BlockNode* parseMethodBody();
-        //BlockNode* parseBlockNode(StatementScope scope);
-        //ParameterNode* parseParameterNode();
+        BlockNodeUPtr parseBlockNode(StatementScope scope);
+        //ParameterNodeUPtr parseParameterNode();
         //TypeName parseTypeNode();
         //NameExpression* parseNameExpression();
         //NumberLiteral* parseNumberLiteral();

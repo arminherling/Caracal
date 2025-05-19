@@ -11,10 +11,17 @@ namespace Caracal
         Error,
 
         CppBlockStatement,
+        FunctionDefinitionStatement,
+        BlockNode,
+
+        ParametersNode,
+        ParameterNode,
+
+        ReturnTypesNode,
+        ReturnTypeNode
 
         //AssignmentStatement,
         //ExpressionStatement,
-        //FunctionDefinitionStatement,
         //EnumDefinitionStatement,
         //EnumFieldDefinitionStatement,
         //TypeDefinitionStatement,
@@ -38,9 +45,6 @@ namespace Caracal
 
         //TypeName,
         //ArgumentsNode,
-        //ParameterNode,
-        //ParametersNode,
-        //BlockNode,
 
         //TypedAssignmentStatement,
         //TypedExpressionStatement,

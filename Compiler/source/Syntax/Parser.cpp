@@ -2,7 +2,7 @@
 #include <Syntax/CppBlockStatement.h>
 //#include <Syntax/AssignmentStatement.h>
 //#include <Syntax/ExpressionStatement.h>
-//#include <Syntax/FunctionDefinitionStatement.h>
+#include <Syntax/FunctionDefinitionStatement.h>
 //#include <Syntax/EnumDefinitionStatement.h>
 //#include <Syntax/TypeDefinitionStatement.h>
 //#include <Syntax/FieldDefinitionStatement.h>
@@ -67,6 +67,12 @@ namespace Caracal
     ParseTree Parser::parse()
     {
         auto statements = parseStatements(StatementScope::Global);
+        if (m_currentIndex < m_tokens.size() - 1)
+        {
+            const auto& location = m_tokens.getSourceLocation(m_tokens.getToken(m_currentIndex));
+            m_diagnostics.AddError(DiagnosticKind::_0004_ExtraTokensRemaining, location);
+        }
+
         return ParseTree(m_tokens, std::move(statements));
     }
 
@@ -79,6 +85,16 @@ namespace Caracal
         {
             switch (current.kind)
             {
+                case TokenKind::DefKeyword:
+                {
+                    if (scope == StatementScope::Global)
+                    {
+                        statements.emplace_back(parseFunctionDefinitionStatement());
+                        break;
+                    }
+                    TODO("Function definition in other scopes");
+                    break;
+                }
                 case TokenKind::CppKeyword:
                 {
                     if (scope == StatementScope::Global)
@@ -86,7 +102,20 @@ namespace Caracal
                         statements.emplace_back(parseCppBlock());
                         break;
                     }
+                    TODO("Cpp block in other scopes");
                     break;
+                }
+                case TokenKind::CloseBracket:
+                {
+                    if (scope == StatementScope::Global)
+                    {
+                        const auto& location = m_tokens.getSourceLocation(current);
+                        m_diagnostics.AddError(DiagnosticKind::Unknown, location);
+
+                        advanceCurrentIndex();
+                        break;
+                    }
+                    [[fallthrough]];
                 }
                 case TokenKind::EndOfFile:
                 {
@@ -112,8 +141,8 @@ namespace Caracal
         const auto cppKeyword = advanceOnMatch(TokenKind::CppKeyword);
         const auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
 
-        auto current = currentToken();
         std::vector<Token> lines;
+        auto current = currentToken();
         while (current.kind == TokenKind::String)
         {
             lines.push_back(current);
@@ -126,6 +155,31 @@ namespace Caracal
         return std::make_unique<CppBlockStatement>(cppKeyword, openBracket, lines, closeBracket);
     }
 
+    StatementUPtr Parser::parseFunctionDefinitionStatement()
+    {
+        auto keyword = advanceOnMatch(TokenKind::DefKeyword);
+        auto name = advanceOnMatch(TokenKind::Identifier);
+        auto parameters = parseParametersNode();
+        auto returnTypes = parseReturnTypesNode();
+        auto body = parseFunctionBody();
+
+        return std::make_unique<FunctionDefinitionStatement>(keyword, name, std::move(parameters), std::move(returnTypes), std::move(body));
+    }
+
+    BlockNodeUPtr Parser::parseFunctionBody()
+    {
+        return parseBlockNode(StatementScope::Function);
+    }
+
+    BlockNodeUPtr Parser::parseBlockNode(StatementScope scope)
+    {
+        auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
+        auto statements = parseStatements(scope);
+        auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
+
+        return std::make_unique<BlockNode>(openBracket, std::move(statements), closeBracket);
+    }
+
     Token Parser::peek(i32 offset)
     {
         auto index = m_currentIndex + offset;
@@ -133,6 +187,37 @@ namespace Caracal
             return Token{ .kind = TokenKind::EndOfFile };
 
         return m_tokens.getToken(index);
+    }
+
+    ParametersNodeUPtr Parser::parseParametersNode()
+    {
+        auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
+
+        std::vector<ParameterNodeUPtr> parameters;
+        //    auto current = currentToken();
+        //    while (current.kind != TokenKind::CloseParenthesis)
+        //    {
+        //        parameters.append(parseParameterNode());
+        //        // TODO we need a function like skipUntil but for multiple tokens until we find a comma, identifier closing parent or EOF
+        //        if (currentToken().kind == TokenKind::Comma)
+        //        {
+        //            advanceCurrentIndex();
+        //
+        //            // if(CurrentToken().kind == TokenKind::CloseParenthesis)
+        //            // Too many commas or too few parameters
+        //        }
+        //        current = currentToken();
+        //    }
+        //
+        auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
+
+        return std::make_unique<ParametersNode>(openParenthesis, std::move(parameters), closeParenthesis);
+    }
+
+    ReturnTypesNodeUPtr Parser::parseReturnTypesNode()
+    {
+        std::vector<ReturnTypeNodeUPtr> returnTypes;
+        return std::make_unique<ReturnTypesNode>(std::move(returnTypes));
     }
 
     Token Parser::advanceOnMatch(TokenKind kind)
@@ -298,15 +383,6 @@ namespace Caracal
 //    return new ExpressionStatement(expression);
 //}
 //
-//Statement* Parser::parseFunctionDefinitionStatement()
-//{
-//    auto keyword = advanceOnMatch(TokenKind::Identifier);
-//    auto name = advanceOnMatch(TokenKind::Identifier);
-//    auto signature = parseParametersNode();
-//    auto body = parseFunctionBody();
-//
-//    return new FunctionDefinitionStatement(keyword, name, signature, body);
-//}
 //
 //Statement* Parser::parseEnumDefinitionStatement()
 //{
@@ -444,30 +520,6 @@ namespace Caracal
 //        expression = parseExpression();
 //
 //    return new ReturnStatement(keyword, expression);
-//}
-//
-//ParametersNode* Parser::parseParametersNode()
-//{
-//    auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
-//    auto current = currentToken();
-//
-//    QList<ParameterNode*> parameters;
-//    while (current.kind != TokenKind::CloseParenthesis)
-//    {
-//        parameters.append(parseParameterNode());
-//        // TODO we need a function like skipUntil but for multiple tokens until we find a comma, identifier closing parent or EOF
-//        if (currentToken().kind == TokenKind::Comma)
-//        {
-//            advanceCurrentIndex();
-//
-//            // if(CurrentToken().kind == TokenKind::CloseParenthesis)
-//            // Too many commas or too few parameters
-//        }
-//        current = currentToken();
-//    }
-//
-//    auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
-//    return new ParametersNode(openParenthesis, parameters, closeParenthesis);
 //}
 //
 //Expression* Parser::parseExpression()
@@ -661,12 +713,7 @@ namespace Caracal
 //
 //    return new EnumFieldDefinitionStatement(memberName);
 //}
-//
-//BlockNode* Parser::parseFunctionBody()
-//{
-//    return parseBlockNode(StatementScope::Function);
-//}
-//
+
 //BlockNode* Parser::parseTypeBody()
 //{
 //    return parseBlockNode(StatementScope::Type);
@@ -677,14 +724,7 @@ namespace Caracal
 //    return parseBlockNode(StatementScope::Method);
 //}
 //
-//BlockNode* Parser::parseBlockNode(StatementScope scope)
-//{
-//    auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
-//    auto statements = parseStatements(scope);
-//    auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
-//
-//    return new BlockNode(openBracket, statements, closeBracket);
-//}
+
 //
 //ParameterNode* Parser::parseParameterNode()
 //{

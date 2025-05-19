@@ -27,119 +27,16 @@ namespace Caracal
                 prettyPrintCppBlockStatement((CppBlockStatement*)node);
                 break;
             }
-            //case NodeKind::AssignmentStatement:
-            //{
-            //    PrettyPrintAssignmentStatement((AssignmentStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::ExpressionStatement:
-            //{
-            //    PrettyPrintExpressionStatement((ExpressionStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::FunctionDefinitionStatement:
-            //{
-            //    PrettyPrintFunctionDefinitionStatement((FunctionDefinitionStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::EnumDefinitionStatement:
-            //{
-            //    PrettyPrintEnumDefinitionStatement((EnumDefinitionStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::EnumFieldDefinitionStatement:
-            //{
-            //    PrettyPrintEnumFieldDefinitionStatement((EnumFieldDefinitionStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::TypeDefinitionStatement:
-            //{
-            //    PrettyPrintTypeDefinitionStatement((TypeDefinitionStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::FieldDefinitionStatement:
-            //{
-            //    PrettyPrintFieldDefinitionStatement((FieldDefinitionStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::MethodDefinitionStatement:
-            //{
-            //    PrettyPrintMethodDefinitionStatement((MethodDefinitionStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::IfStatement:
-            //{
-            //    PrettyPrintIfStatement((IfStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::WhileStatement:
-            //{
-            //    PrettyPrintWhileStatement((WhileStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::ReturnStatement:
-            //{
-            //    PrettyPrintReturnStatement((ReturnStatement*)node);
-            //    break;
-            //}
-            //case NodeKind::ParameterNode:
-            //{
-            //    PrettyPrintParameterNode((ParameterNode*)node);
-            //    break;
-            //}
-            //case NodeKind::DiscardLiteral:
-            //{
-            //    PrettyPrintDiscardLiteral((DiscardLiteral*)node);
-            //    break;
-            //}
-            //case NodeKind::FunctionCallExpression:
-            //{
-            //    PrettyPrintFunctionCallExpression((FunctionCallExpression*)node);
-            //    break;
-            //}
-            //case NodeKind::BoolLiteral:
-            //{
-            //    PrettyPrintBoolLiteral((BoolLiteral*)node);
-            //    break;
-            //}
-            //case NodeKind::NameExpression:
-            //{
-            //    PrettyPrintNameExpression((NameExpression*)node);
-            //    break;
-            //}
-            //case NodeKind::NumberLiteral:
-            //{
-            //    PrettyPrintNumberLiteral((NumberLiteral*)node);
-            //    break;
-            //}
-            //case NodeKind::GroupingExpression:
-            //{
-            //    PrettyPrintGroupingExpression((GroupingExpression*)node);
-            //    break;
-            //}
-            //case NodeKind::UnaryExpression:
-            //{
-            //    PrettyPrintUnaryExpression((UnaryExpression*)node);
-            //    break;
-            //}
-            //case NodeKind::BinaryExpression:
-            //{
-            //    PrettyPrintBinaryExpression((BinaryExpression*)node);
-            //    break;
-            //}
-            //case NodeKind::MemberAccessExpression:
-            //{
-            //    PrettyPrintMemberAccessExpression((MemberAccessExpression*)node);
-            //    break;
-            //}
-            //case NodeKind::Error:
-            //{
-            //    PrettyPrintError((Error*)node);
-            //    break;
-            //}
-            default:
+            case NodeKind::FunctionDefinitionStatement:
+            {
+                prettyPrintFunctionDefinitionStatement((FunctionDefinitionStatement*)node);
+                break;
+            }
+            default: 
+            {
                 stream() << indentation() << QString("Missing NodeKind!!") << newLine();
                 break;
+            }
         }
     }
 
@@ -161,6 +58,61 @@ namespace Caracal
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }
+    
+    void ParseTreePrinter::prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
+    {
+        const auto& nameToken = statement->name();
+        auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
+
+        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
+        pushIndentation();
+        stream() << indentation() << QString("Name: %1").arg(nameLexeme) << newLine();
+        prettyPrintParametersNode(statement->parameters().get());
+        prettyPrintReturnTypesNode(statement->returnTypes().get());
+        prettyPrintBlockNode(statement->body().get());
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+    
+    void ParseTreePrinter::prettyPrintParametersNode(ParametersNode* node)
+    {
+        const auto& parameters = node->parameters();
+        stream() << indentation() << stringify(node->kind()) << QString("(%1): {").arg(parameters.size()) << newLine();
+        pushIndentation();
+
+        for (const auto& parameter : parameters)
+            prettyPrintNode(parameter.get());
+
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintReturnTypesNode(ReturnTypesNode* node)
+    {
+        const auto& returnTypes = node->returnTypes();
+        stream() << indentation() << stringify(node->kind()) << QString("(%1): {").arg(returnTypes.size()) << newLine();
+        pushIndentation();
+
+        for (const auto& returnType : returnTypes)
+            prettyPrintNode(returnType.get());
+        
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintBlockNode(BlockNode* block)
+    {
+        const auto& statements = block->statements();
+        stream() << indentation() << stringify(block->kind()) << QString("(%1): {").arg(statements.size()) << newLine();
+        pushIndentation();
+    
+        for (const auto& statement : block->statements())
+            prettyPrintNode(statement.get());
+    
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+    
 }
 //void ParseTreePrinter::PrettyPrintAssignmentStatement(AssignmentStatement* statement)
 //{
@@ -192,20 +144,7 @@ namespace Caracal
 //    PopIndentation();
 //    stream() << Indentation() << QString("}") << NewLine();
 //}
-//
-//void ParseTreePrinter::PrettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
-//{
-//    auto nameToken = statement->name();
-//    auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
-//
-//    stream() << Indentation() << stringify(statement->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
-//    stream() << Indentation() << stringify(NodeKind::NameExpression) << QString(": %1").arg(nameLexeme) << NewLine();
-//    PrettyPrintParametersNode(statement->parameters());
-//    PrettyPrintBlockNode(statement->body());
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//}
+
 //
 //void ParseTreePrinter::PrettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement)
 //{
@@ -375,33 +314,7 @@ namespace Caracal
 //    PopIndentation();
 //    stream() << Indentation() << QString("}") << NewLine();
 //}
-//
-//void ParseTreePrinter::PrettyPrintParametersNode(ParametersNode* node)
-//{
-//    const auto& parameters = node->parameters();
-//    stream() << Indentation() << stringify(node->kind()) << QString("(%1): {").arg(parameters.size()) << NewLine();
-//    PushIndentation();
-//
-//    for (const auto& parameter : parameters)
-//        PrettyPrintNode(parameter);
-//
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//}
-//
-//void ParseTreePrinter::PrettyPrintBlockNode(BlockNode* block)
-//{
-//    const auto& statements = block->statements();
-//    stream() << Indentation() << stringify(block->kind()) << QString("(%1): {").arg(statements.size()) << NewLine();
-//    PushIndentation();
-//
-//    for (const auto& statement : block->statements())
-//        PrettyPrintNode(statement);
-//
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//}
-//
+
 //void ParseTreePrinter::PrettyPrintDiscardLiteral(DiscardLiteral* discard)
 //{
 //    stream() << Indentation() << stringify(discard->kind()) << ": _" << NewLine();

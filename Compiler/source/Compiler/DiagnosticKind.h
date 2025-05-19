@@ -8,5 +8,6 @@ namespace Caracal
         _0001_FoundIllegalCharacter,
         _0002_UnterminatedString,
         _0003_ExpectedXButGotY,
+        _0004_ExtraTokensRemaining,
     };
 }
