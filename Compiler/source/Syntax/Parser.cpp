@@ -97,7 +97,7 @@ namespace Caracal
                 }
                 case TokenKind::CppKeyword:
                 {
-                    if (scope == StatementScope::Global)
+                    if (scope == StatementScope::Global || scope == StatementScope::Function)
                     {
                         statements.emplace_back(parseCppBlock());
                         break;

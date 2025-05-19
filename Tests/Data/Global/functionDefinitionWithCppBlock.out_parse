@@ -1,0 +1,20 @@
+﻿CppBlockStatement: {
+    Lines (1): {
+        "#include <iostream>"
+    }
+}
+FunctionDefinitionStatement: {
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        CppBlockStatement: {
+            Lines (2): {
+                "std::cout << \"Hello, World!\" << std::endl;"
+                "return 0;"
+            }
+        }
+    }
+}
