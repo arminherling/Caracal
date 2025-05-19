@@ -18,8 +18,10 @@ namespace Caracal
         ParameterNode,
 
         ReturnTypesNode,
-        ReturnTypeNode
+        ReturnTypeNode,
 
+        ReturnStatement
+        
         //AssignmentStatement,
         //ExpressionStatement,
         //EnumDefinitionStatement,
@@ -29,7 +31,6 @@ namespace Caracal
         //MethodDefinitionStatement,
         //IfStatement,
         //WhileStatement,
-        //ReturnStatement,
 
         //UnaryExpression,
         //BinaryExpression,

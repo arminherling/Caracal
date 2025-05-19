@@ -48,6 +48,11 @@ namespace Caracal
                 generateFunctionDefinition((FunctionDefinitionStatement*)node);
                 break;
             }
+            case NodeKind::ReturnStatement:
+            {
+                generateReturnStatement((ReturnStatement*)node);
+                break;
+            }
             default:
             {
                 stream() << indentation() << QString("Missing NodeKind!!") << newLine();
@@ -74,9 +79,16 @@ namespace Caracal
         const auto hasReturnTypes = node->returnTypes()->returnTypes().empty() == false;
         const auto functionName = m_parseTree.tokens().getLexeme(node->name());
         const auto isMainFunction = functionName == QStringLiteral("main");
-        if (!hasReturnTypes && isMainFunction)
+        if (!hasReturnTypes)
         {
-            stream() << indentation() << "int";
+            if (isMainFunction)
+            {
+                stream() << indentation() << "int";
+            }
+            else
+            {
+                stream() << indentation() << "void";
+            }
         }
         else
         {
@@ -105,6 +117,17 @@ namespace Caracal
 
         popIndentation();
         stream() << indentation() << "}" << newLine();
+    }
+
+    void CppCodeGenerator::generateReturnStatement(ReturnStatement* node)
+    {
+        stream() << indentation() << "return";
+        if (node->expression().has_value())
+        {
+            stream() << " ";
+            generateNode(node->expression().value().get());
+        }
+        stream() << ";" << newLine();
     }
 
     QString generateCpp(ParseTree& parseTree) noexcept

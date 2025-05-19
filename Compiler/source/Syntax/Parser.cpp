@@ -9,7 +9,7 @@
 //#include <Syntax/MethodDefinitionStatement.h>
 //#include <Syntax/IfStatement.h>
 //#include <Syntax/WhileStatement.h>
-//#include <Syntax/ReturnStatement.h>
+#include <Syntax/ReturnStatement.h>
 //#include <Syntax/DiscardLiteral.h>
 //#include <Syntax/MemberAccessExpression.h>
 //#include <Syntax/ScopeAccessExpression.h>
@@ -105,6 +105,16 @@ namespace Caracal
                     TODO("Cpp block in other scopes");
                     break;
                 }
+                case TokenKind::ReturnKeyword:
+                {
+                    if (scope == StatementScope::Function)
+                    {
+                        statements.emplace_back(parseReturnStatement());
+                        break;
+                    }
+                    TODO("Return statement in other scopes");
+                    break;
+                }
                 case TokenKind::CloseBracket:
                 {
                     if (scope == StatementScope::Global)
@@ -180,13 +190,13 @@ namespace Caracal
         return std::make_unique<BlockNode>(openBracket, std::move(statements), closeBracket);
     }
 
-    Token Parser::peek(i32 offset)
+    StatementUPtr Parser::parseReturnStatement()
     {
-        auto index = m_currentIndex + offset;
-        if (index >= m_tokens.size())
-            return Token{ .kind = TokenKind::EndOfFile };
+        auto returnKeyword = advanceOnMatch(TokenKind::ReturnKeyword);
+        auto expression = std::optional<ExpressionUPtr>{};
+        auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
-        return m_tokens.getToken(index);
+        return std::make_unique<ReturnStatement>(returnKeyword, std::move(expression), semicolon);
     }
 
     ParametersNodeUPtr Parser::parseParametersNode()
@@ -234,6 +244,15 @@ namespace Caracal
             m_diagnostics.AddError(DiagnosticKind::_0003_ExpectedXButGotY, location);
             return Token::ToError(current);
         }
+    }
+
+    Token Parser::peek(i32 offset)
+    {
+        auto index = m_currentIndex + offset;
+        if (index >= m_tokens.size())
+            return Token{ .kind = TokenKind::EndOfFile };
+
+        return m_tokens.getToken(index);
     }
 
     ParseTree parse(const TokenBuffer& tokens, DiagnosticsBag& diagnostics) noexcept

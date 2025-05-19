@@ -29,6 +29,9 @@ namespace Caracal
             case NodeKind::ReturnTypeNode:
                 return QString("ReturnTypeNode");
 
+            case NodeKind::ReturnStatement:
+                return QString("ReturnStatement");
+
                 //case NodeKind::AssignmentStatement:
                 //    return QString("AssignmentStatement");
                 //case NodeKind::ExpressionStatement:
@@ -47,8 +50,7 @@ namespace Caracal
                 //    return QString("IfStatement");
                 //case NodeKind::WhileStatement:
                 //    return QString("WhileStatement");
-                //case NodeKind::ReturnStatement:
-                //    return QString("ReturnStatement");
+
 
                 //case NodeKind::UnaryExpression:
                 //    return QString("UnaryExpression");

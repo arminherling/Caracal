@@ -26,7 +26,7 @@
 //#include <Syntax/ParameterNode.h>
 #include <Syntax/ParametersNode.h>
 #include <Syntax/ParseTree.h>
-//#include <Syntax/ReturnStatement.h>
+#include <Syntax/ReturnStatement.h>
 //#include <Syntax/TypeDefinitionStatement.h>
 //#include <Syntax/TypeName.h>
 //#include <Syntax/UnaryExpression.h>
@@ -54,7 +54,7 @@ namespace Caracal
     //    void PrettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement);
     //    void PrettyPrintIfStatement(IfStatement* statement);
     //    void PrettyPrintWhileStatement(WhileStatement* statement);
-    //    void PrettyPrintReturnStatement(ReturnStatement* statement);
+        void prettyPrintReturnStatement(ReturnStatement* statement);
     //    void PrettyPrintArgumentsNode(ArgumentsNode* arguments);
     //    void PrettyPrintParameterNode(ParameterNode* parameter);
         void prettyPrintParametersNode(ParametersNode* parameters);

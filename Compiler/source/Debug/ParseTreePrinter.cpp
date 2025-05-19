@@ -32,6 +32,11 @@ namespace Caracal
                 prettyPrintFunctionDefinitionStatement((FunctionDefinitionStatement*)node);
                 break;
             }
+            case NodeKind::ReturnStatement:
+            {
+                prettyPrintReturnStatement((ReturnStatement*)node);
+                break;
+            }
             default: 
             {
                 stream() << indentation() << QString("Missing NodeKind!!") << newLine();
@@ -113,6 +118,17 @@ namespace Caracal
         stream() << indentation() << QString("}") << newLine();
     }
     
+    void ParseTreePrinter::prettyPrintReturnStatement(ReturnStatement* statement)
+    {
+        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
+        pushIndentation();
+
+        if (statement->expression().has_value())
+            prettyPrintNode(statement->expression().value().get());
+
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
 }
 //void ParseTreePrinter::PrettyPrintAssignmentStatement(AssignmentStatement* statement)
 //{
@@ -277,18 +293,7 @@ namespace Caracal
 //    PopIndentation();
 //    stream() << Indentation() << QString("}") << NewLine();
 //}
-//
-//void ParseTreePrinter::PrettyPrintReturnStatement(ReturnStatement* statement)
-//{
-//    stream() << Indentation() << stringify(statement->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
-//
-//    if (statement->expression().has_value())
-//        PrettyPrintNode(statement->expression().value());
-//
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//}
+
 //
 //void ParseTreePrinter::PrettyPrintArgumentsNode(ArgumentsNode* node)
 //{

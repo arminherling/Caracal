@@ -8,7 +8,7 @@
 #include <Syntax/BlockNode.h>
 //#include <Syntax/BoolLiteral.h>
 //#include <Syntax/EnumFieldDefinitionStatement.h>
-//#include <Syntax/Expression.h>
+#include <Syntax/Expression.h>
 //#include <Syntax/GroupingExpression.h>
 //#include <Syntax/NumberLiteral.h>
 //#include <Syntax/ParameterNode.h>
@@ -50,7 +50,7 @@ namespace Caracal
         //Statement* parseMethodDefinitionStatement();
         //Statement* parseIfStatement(StatementScope scope);
         //Statement* parseWhileStatement(StatementScope scope);
-        //Statement* parseReturnStatement();
+        StatementUPtr parseReturnStatement();
         //Expression* parseExpression();
         //Expression* parseBinaryExpression(i32 parentPrecedence);
         //Expression* parsePrimaryExpression();
