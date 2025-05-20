@@ -32,6 +32,13 @@ namespace Caracal
             case NodeKind::ReturnStatement:
                 return QString("ReturnStatement");
 
+            case NodeKind::BoolLiteral:
+                return QString("BoolLiteral");
+            case NodeKind::NumberLiteral:
+                return QString("NumberLiteral");
+            case NodeKind::StringLiteral:
+                return QString("StringLiteral");
+
                 //case NodeKind::AssignmentStatement:
                 //    return QString("AssignmentStatement");
                 //case NodeKind::ExpressionStatement:

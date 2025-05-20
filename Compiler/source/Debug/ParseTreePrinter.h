@@ -27,6 +27,9 @@
 #include <Syntax/ParametersNode.h>
 #include <Syntax/ParseTree.h>
 #include <Syntax/ReturnStatement.h>
+#include <Syntax/BoolLiteral.h>
+#include <Syntax/StringLiteral.h>
+#include <Syntax/NumberLiteral.h>
 //#include <Syntax/TypeDefinitionStatement.h>
 //#include <Syntax/TypeName.h>
 //#include <Syntax/UnaryExpression.h>
@@ -59,14 +62,16 @@ namespace Caracal
     //    void PrettyPrintParameterNode(ParameterNode* parameter);
         void prettyPrintParametersNode(ParametersNode* parameters);
         void prettyPrintReturnTypesNode(ReturnTypesNode* returnTypes);
+        void prettyPrintReturnTypeNode(ReturnTypeNode* returnType);
         void prettyPrintBlockNode(BlockNode* block);
     //
     //    void PrettyPrintDiscardLiteral(DiscardLiteral* discard);
     //    void PrettyPrintFunctionCallExpression(FunctionCallExpression* functionCall);
     //    void PrettyPrintTypeName(const TypeName& type);
-    //    void PrettyPrintBoolLiteral(BoolLiteral* node);
+        void prettyPrintBoolLiteral(BoolLiteral* node);
     //    void PrettyPrintNameExpression(NameExpression* name);
-    //    void PrettyPrintNumberLiteral(NumberLiteral* number);
+        void prettyPrintNumberLiteral(NumberLiteral* number);
+        void prettyPrintStringLiteral(StringLiteral* string);
     //    void PrettyPrintGroupingExpression(GroupingExpression* grouping);
     //    void PrettyPrintUnaryExpression(UnaryExpression* unaryExpression);
     //    void PrettyPrintBinaryExpression(BinaryExpression* binaryExpression);

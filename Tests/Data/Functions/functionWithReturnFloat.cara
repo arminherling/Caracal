@@ -1,0 +1,4 @@
+def func() f32
+{
+    return 1.23;
+}

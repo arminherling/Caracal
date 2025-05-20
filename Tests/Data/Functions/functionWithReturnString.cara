@@ -1,0 +1,4 @@
+def func() string
+{
+    return "hello";
+}

@@ -2,8 +2,9 @@
 
 namespace Caracal
 {
-    ReturnTypeNode::ReturnTypeNode()
-        : Node(NodeKind::ReturnTypeNode, Type::Undefined())
+    ReturnTypeNode::ReturnTypeNode(const Token& typeName, const Type& type)
+        : Node(NodeKind::ReturnTypeNode, type)
+        , m_typeName{ typeName }
     {
     }
 }

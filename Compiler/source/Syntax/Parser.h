@@ -51,9 +51,9 @@ namespace Caracal
         //Statement* parseIfStatement(StatementScope scope);
         //Statement* parseWhileStatement(StatementScope scope);
         StatementUPtr parseReturnStatement();
-        //Expression* parseExpression();
+        ExpressionUPtr parseExpression();
         //Expression* parseBinaryExpression(i32 parentPrecedence);
-        //Expression* parsePrimaryExpression();
+        ExpressionUPtr parsePrimaryExpression();
         //Expression* parseFunctionCallOrNameExpression();
         //Expression* parseFunctionCallExpression();
         ParametersNodeUPtr parseParametersNode();

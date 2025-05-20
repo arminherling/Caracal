@@ -20,7 +20,11 @@ namespace Caracal
         ReturnTypesNode,
         ReturnTypeNode,
 
-        ReturnStatement
+        ReturnStatement,
+
+        BoolLiteral,
+        NumberLiteral,
+        StringLiteral,
         
         //AssignmentStatement,
         //ExpressionStatement,

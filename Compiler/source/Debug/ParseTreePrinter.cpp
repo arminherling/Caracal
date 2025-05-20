@@ -1,4 +1,5 @@
 #include <Debug/ParseTreePrinter.h>
+#include <Semantic/TypeDatabase.h>
 
 namespace Caracal
 {
@@ -37,6 +38,26 @@ namespace Caracal
                 prettyPrintReturnStatement((ReturnStatement*)node);
                 break;
             }
+            case NodeKind::ReturnTypeNode:
+            {
+                prettyPrintReturnTypeNode((ReturnTypeNode*)node);
+                break;
+            }
+            case NodeKind::BoolLiteral:
+            {
+                prettyPrintBoolLiteral((BoolLiteral*)node);
+                break;
+            }
+            case NodeKind::NumberLiteral:
+            {
+                prettyPrintNumberLiteral((NumberLiteral*)node);
+                break;
+            }
+            case NodeKind::StringLiteral:
+            {
+                prettyPrintStringLiteral((StringLiteral*)node);
+                break;
+            }
             default: 
             {
                 stream() << indentation() << QString("Missing NodeKind!!") << newLine();
@@ -67,7 +88,7 @@ namespace Caracal
     void ParseTreePrinter::prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
     {
         const auto& nameToken = statement->name();
-        auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
+        const auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
 
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
         pushIndentation();
@@ -105,6 +126,19 @@ namespace Caracal
         stream() << indentation() << QString("}") << newLine();
     }
 
+    void ParseTreePrinter::prettyPrintReturnTypeNode(ReturnTypeNode* node)
+    {
+        stream() << indentation() << stringify(node->kind()) << QString(": {") << newLine();
+        pushIndentation();
+
+        const auto type = node->type();
+        const auto typeName = TypeDatabase::TryFindName(type);
+        stream() << indentation() << QString("Type: %1").arg(typeName) << newLine();
+
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+
     void ParseTreePrinter::prettyPrintBlockNode(BlockNode* block)
     {
         const auto& statements = block->statements();
@@ -116,6 +150,24 @@ namespace Caracal
     
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintBoolLiteral(BoolLiteral* node)
+    {
+        const auto lexeme = m_parseTree.tokens().getLexeme(node->token());
+        stream() << indentation() << stringify(node->kind()) << QString(": %1").arg(lexeme) << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintNumberLiteral(NumberLiteral* number)
+    {
+        const auto lexeme = m_parseTree.tokens().getLexeme(number->token());
+        stream() << indentation() << stringify(number->kind()) << QString(": %1").arg(lexeme) << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintStringLiteral(StringLiteral* string)
+    {
+        const auto lexeme = m_parseTree.tokens().getLexeme(string->token());
+        stream() << indentation() << stringify(string->kind()) << QString(": %1").arg(lexeme) << newLine();
     }
     
     void ParseTreePrinter::prettyPrintReturnStatement(ReturnStatement* statement)

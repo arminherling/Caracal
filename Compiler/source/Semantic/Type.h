@@ -2,6 +2,7 @@
 
 #include <Compiler/API.h>
 #include <Defines.h>
+#include <functional>
 
 namespace Caracal
 {
@@ -41,6 +42,16 @@ namespace Caracal
         //[[nodiscard]] static Type NullableI32() noexcept { return Type(12, TypeKind::Builtin); }
         //[[nodiscard]] static Type NullableRefI32() noexcept { return Type(13, TypeKind::Builtin); }
 
+        [[nodiscard]] static Type F32() noexcept { return Type(14, TypeKind::Builtin); }
+        [[nodiscard]] static Type RefF32() noexcept { return Type(15, TypeKind::Builtin); }
+        //[[nodiscard]] static Type NullableF32() noexcept { return Type(16, TypeKind::Builtin); }
+        //[[nodiscard]] static Type NullableRefF32() noexcept { return Type(17, TypeKind::Builtin); }
+
+        [[nodiscard]] static Type String() noexcept { return Type(18, TypeKind::Builtin); }
+        [[nodiscard]] static Type RefString() noexcept { return Type(19, TypeKind::Builtin); }
+        //[[nodiscard]] static Type NullableString() noexcept { return Type(20, TypeKind::Builtin); }
+        //[[nodiscard]] static Type NullableRefString() noexcept { return Type(21, TypeKind::Builtin); }
+
     private:
         i32 m_id;
         TypeKind m_kind;
@@ -48,4 +59,15 @@ namespace Caracal
 
     COMPILER_API bool operator==(Type lhs, Type rhs) noexcept;
     COMPILER_API bool operator!=(Type lhs, Type rhs) noexcept;
+}
+
+namespace std {
+    template<>
+    struct hash<Caracal::Type>
+    {
+        std::size_t operator()(const Caracal::Type& t) const noexcept
+        {
+            return std::hash<int>()(t.id());
+        }
+    };
 }

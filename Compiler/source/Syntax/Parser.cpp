@@ -1,5 +1,10 @@
 #include <Syntax/Parser.h>
 #include <Syntax/CppBlockStatement.h>
+#include <Syntax/BoolLiteral.h>
+#include <Syntax/NumberLiteral.h>
+#include <Syntax/StringLiteral.h>
+#include <Syntax/ErrorExpression.h>
+#include <Semantic/TypeDatabase.h>
 //#include <Syntax/AssignmentStatement.h>
 //#include <Syntax/ExpressionStatement.h>
 #include <Syntax/FunctionDefinitionStatement.h>
@@ -193,10 +198,54 @@ namespace Caracal
     StatementUPtr Parser::parseReturnStatement()
     {
         auto returnKeyword = advanceOnMatch(TokenKind::ReturnKeyword);
-        auto expression = std::optional<ExpressionUPtr>{};
+        std::optional<ExpressionUPtr> expression;
+        if (currentToken().kind != TokenKind::Semicolon)
+        {
+            expression = parseExpression();
+        }
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
         return std::make_unique<ReturnStatement>(returnKeyword, std::move(expression), semicolon);
+    }
+
+    ExpressionUPtr Parser::parseExpression()
+    {
+        return parsePrimaryExpression();
+    }
+
+    ExpressionUPtr Parser::parsePrimaryExpression()
+    {
+        auto current = currentToken();
+        switch (current.kind)
+        {
+            case TokenKind::TrueKeyword:
+            {
+                advanceCurrentIndex();
+                return std::make_unique<BoolLiteral>(current, true);
+            }
+            case TokenKind::FalseKeyword:
+            {
+                advanceCurrentIndex();
+                return std::make_unique<BoolLiteral>(current, false);
+            }
+            case TokenKind::Number:
+            {
+                advanceCurrentIndex();
+                return std::make_unique<NumberLiteral>(current);
+            }
+            case TokenKind::String:
+            {
+                advanceCurrentIndex();
+                return std::make_unique<StringLiteral>(current);
+            }
+            default:
+            {
+                advanceCurrentIndex();
+                const auto& location = m_tokens.getSourceLocation(current);
+                m_diagnostics.AddError(DiagnosticKind::Unknown, location);
+                return std::make_unique<ErrorExpression>(current);
+            }
+        }
     }
 
     ParametersNodeUPtr Parser::parseParametersNode()
@@ -227,6 +276,14 @@ namespace Caracal
     ReturnTypesNodeUPtr Parser::parseReturnTypesNode()
     {
         std::vector<ReturnTypeNodeUPtr> returnTypes;
+        auto current = currentToken();
+        if (current.kind == TokenKind::Identifier)
+        {
+            advanceCurrentIndex();
+            auto type = TypeDatabase::TryFindBuiltin(m_tokens.getLexeme(current));
+            returnTypes.push_back(std::make_unique<ReturnTypeNode>(current, type));
+        }
+
         return std::make_unique<ReturnTypesNode>(std::move(returnTypes));
     }
 

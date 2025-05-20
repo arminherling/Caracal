@@ -6,16 +6,14 @@
 
 namespace Caracal
 {
-    class COMPILER_API BoolLiteral : public Expression
+    class COMPILER_API ErrorExpression : public Expression
     {
     public:
-        BoolLiteral(const Token& token, bool value);
+        explicit ErrorExpression(const Token& token);
 
         [[nodiscard]] const Token& token() const noexcept { return m_token; }
-        [[nodiscard]] bool value() const noexcept { return m_value; }
 
     private:
         Token m_token;
-        bool m_value;
     };
 }

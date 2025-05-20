@@ -1,0 +1,15 @@
+﻿FunctionDefinitionStatement: {
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        ReturnTypeNode: {
+            Type: string
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            StringLiteral: "hello"
+        }
+    }
+}
