@@ -1,0 +1,7 @@
+﻿#include <string>
+
+std::string func()
+{
+    return std::string{"hello"};
+}
+

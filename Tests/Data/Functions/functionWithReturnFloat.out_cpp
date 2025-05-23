@@ -1,0 +1,5 @@
+﻿float func()
+{
+    return 1.23;
+}
+

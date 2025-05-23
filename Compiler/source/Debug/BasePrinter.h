@@ -19,7 +19,7 @@ namespace Caracal
         [[nodiscard]] QByteArray toUtf8() const noexcept { return m_output.toUtf8(); }
 
         [[nodiscard]] QString indentation() const noexcept { return QString(" ").repeated(m_indentation * m_indentationLevel); }
-        [[nodiscard]] QString newLine() const noexcept { return QString("\r\n"); }
+        [[nodiscard]] QString newLine() const noexcept { return QString("\n"); }
 
         i32 m_indentation;
         i32 m_indentationLevel;

@@ -1,4 +1,5 @@
 #include <CodeGen/CppCodeGenerator.h>
+#include <QStringBuilder>
 
 namespace Caracal
 {
@@ -18,9 +19,46 @@ namespace Caracal
         return result;
     }
 
+    [[nodiscard]] static auto InitializeTypeToCppName() noexcept
+    {
+        return std::unordered_map<Type, QStringView>{
+            { Type::Bool(), QStringView(u"bool") },
+            { Type::I32(), QStringView(u"int") },
+            { Type::F32(), QStringView(u"float") },
+            { Type::String(), QStringView(u"std::string") },
+        };
+    }
+
+    [[nodiscard]] static auto InitializeTypeToCppInclude() noexcept
+    {
+        return std::unordered_map<Type, QString>{
+            { Type::String(), QStringLiteral("#include <string>") },
+        };
+    }
+
+    [[nodiscard]] static QStringView GetCppNameForType(Type type) noexcept
+    {
+        static const auto cppTypeNames = InitializeTypeToCppName();
+        if (const auto result = cppTypeNames.find(type); result != cppTypeNames.end())
+            return result->second;
+        
+        TODO("Type not found in GetCppNameForType");
+        return QStringView(u"");
+    }
+
+    [[nodiscard]] static std::optional<QString> GetCppIncludeForType(Type type) noexcept
+    {
+        static const auto cppIncludes = InitializeTypeToCppInclude();
+        if (const auto result = cppIncludes.find(type); result != cppIncludes.end())
+            return result->second;
+    
+        return std::nullopt;
+    }
+
     CppCodeGenerator::CppCodeGenerator(ParseTree& parseTree, i32 indentation)
         : BasePrinter(indentation)
         , m_parseTree{ parseTree }
+        , m_cppIncludes{ }
     {
     }
 
@@ -31,7 +69,13 @@ namespace Caracal
             generateNode(statement.get());
         }
 
-        return toUtf8();
+        if (!m_cppIncludes.isEmpty())
+        {
+            m_cppIncludes.append(newLine());
+        }
+        const auto includes = m_cppIncludes.join("");
+
+        return includes % toUtf8();
     }
 
     void CppCodeGenerator::generateNode(Node* node)
@@ -53,6 +97,22 @@ namespace Caracal
                 generateReturnStatement((ReturnStatement*)node);
                 break;
             }
+            case NodeKind::BoolLiteral:
+            {
+                generateBoolLiteral((BoolLiteral*)node);
+                break;
+            }
+            case NodeKind::NumberLiteral:
+            {
+                generateNumberLiteral((NumberLiteral*)node);
+                break;
+            }
+            case NodeKind::StringLiteral:
+            {
+                generateStringLiteral((StringLiteral*)node);
+                break;
+            }
+
             default:
             {
                 stream() << indentation() << QString("Missing NodeKind!!") << newLine();
@@ -76,7 +136,8 @@ namespace Caracal
 
     void CppCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node)
     {
-        const auto hasReturnTypes = node->returnTypes()->returnTypes().empty() == false;
+        const auto& returnTypes = node->returnTypes()->returnTypes();
+        const auto hasReturnTypes = returnTypes.empty() == false;
         const auto functionName = m_parseTree.tokens().getLexeme(node->name());
         const auto isMainFunction = functionName == QStringLiteral("main");
         if (!hasReturnTypes)
@@ -92,7 +153,20 @@ namespace Caracal
         }
         else
         {
-            TODO("Implement return types in CppCodeGenerator");
+            if (returnTypes.size() != 1)
+            {
+                TODO("Implement multiple return types in CppCodeGenerator");
+            }
+
+            const auto type = returnTypes[0]->type();
+            const auto include = GetCppIncludeForType(type);
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+
+            const auto typeName = GetCppNameForType(type);
+            stream() << indentation() << typeName;
         }
         stream() << indentation() << " " << functionName;
 
@@ -116,7 +190,7 @@ namespace Caracal
         }
 
         popIndentation();
-        stream() << indentation() << "}" << newLine();
+        stream() << indentation() << "}" << newLine() << newLine();
     }
 
     void CppCodeGenerator::generateReturnStatement(ReturnStatement* node)
@@ -128,6 +202,24 @@ namespace Caracal
             generateNode(node->expression().value().get());
         }
         stream() << ";" << newLine();
+    }
+
+    void CppCodeGenerator::generateBoolLiteral(BoolLiteral* node)
+    {
+        auto value = node->value() ? QStringLiteral("true") : QStringLiteral("false");
+        stream() << value;
+    }
+
+    void CppCodeGenerator::generateNumberLiteral(NumberLiteral* node)
+    {
+        auto lexeme = m_parseTree.tokens().getLexeme(node->token());
+        stream() << lexeme;
+    }
+
+    void CppCodeGenerator::generateStringLiteral(StringLiteral* node)
+    {
+        auto lexeme = m_parseTree.tokens().getLexeme(node->token());
+        stream() <<  QString("std::string{%1}").arg(lexeme);
     }
 
     QString generateCpp(ParseTree& parseTree) noexcept

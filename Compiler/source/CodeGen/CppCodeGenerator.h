@@ -7,6 +7,10 @@
 #include <Syntax/CppBlockStatement.h>
 #include <Syntax/FunctionDefinitionStatement.h>
 #include <Syntax/ReturnStatement.h>
+#include <Syntax/BoolLiteral.h>
+#include <Syntax/NumberLiteral.h>
+#include <Syntax/StringLiteral.h>
+#include <QStringList>
 
 namespace Caracal
 {
@@ -22,8 +26,12 @@ namespace Caracal
         void generateCppBlock(CppBlockStatement* node);
         void generateFunctionDefinition(FunctionDefinitionStatement* node);
         void generateReturnStatement(ReturnStatement* node);
+        void generateBoolLiteral(BoolLiteral* node);
+        void generateNumberLiteral(NumberLiteral* node);
+        void generateStringLiteral(StringLiteral* node);
 
         ParseTree& m_parseTree;
+        QStringList m_cppIncludes;
     };
 
     COMPILER_API QString generateCpp(ParseTree& parseTree) noexcept;

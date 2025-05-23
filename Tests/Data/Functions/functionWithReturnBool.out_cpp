@@ -1,0 +1,5 @@
+﻿bool func()
+{
+    return true;
+}
+
