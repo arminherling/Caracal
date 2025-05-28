@@ -37,9 +37,7 @@ namespace
             std::make_tuple(QString("Dot"), QString("."), TokenKind::Dot),
             std::make_tuple(QString("Comma"), QString(","), TokenKind::Comma),
             std::make_tuple(QString("Colon"), QString(":"), TokenKind::Colon),
-            std::make_tuple(QString("DoubleColon"), QString("::"), TokenKind::DoubleColon),
             std::make_tuple(QString("Equal"), QString("="), TokenKind::Equal),
-            std::make_tuple(QString("ColonEqual"), QString(":="), TokenKind::ColonEqual),
             std::make_tuple(QString("Semicolon"), QString(";"), TokenKind::Semicolon),
             std::make_tuple(QString("Underscore"), QString("_"), TokenKind::Underscore),
 

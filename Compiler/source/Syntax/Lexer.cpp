@@ -14,10 +14,8 @@ namespace Caracal
             { TokenKind::Slash, 1 },
             { TokenKind::Dot, 1 },
             { TokenKind::Colon, 1 },
-            { TokenKind::DoubleColon, 2 },
             { TokenKind::Comma, 1 },
             { TokenKind::Equal, 1 },
-            { TokenKind::ColonEqual, 2 },
             { TokenKind::Underscore, 1 },
             { TokenKind::OpenParenthesis, 1 },
             { TokenKind::CloseParenthesis, 1 },
@@ -241,19 +239,6 @@ namespace Caracal
                 }
                 case u':':
                 {
-                    if (PeekNextChar(source, currentIndex) == QChar(u':'))
-                    {
-                        AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::DoubleColon);
-                        currentIndex++;
-                        break;
-                    }
-                    else if (PeekNextChar(source, currentIndex) == QChar(u'='))
-                    {
-                        AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::ColonEqual);
-                        currentIndex++;
-                        break;
-                    }
-
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Colon);
                     break;
                 }

@@ -20,16 +20,12 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
             return QString("Dot");
         case TokenKind::Colon:
             return QString("Colon");
-        case TokenKind::DoubleColon:
-            return QString("DoubleColon");
         case TokenKind::Semicolon:
             return QString("Semicolon");
         case TokenKind::Comma:
             return QString("Comma");
         case TokenKind::Equal:
             return QString("Equal");
-        case TokenKind::ColonEqual:
-            return QString("ColonEqual");
         case TokenKind::Underscore:
             return QString("Underscore");
         case TokenKind::OpenParenthesis:
@@ -92,7 +88,6 @@ i32 BinaryOperatorPrecedence(TokenKind kind)
     switch (kind)
     {
         case TokenKind::Dot:
-        case TokenKind::DoubleColon:
             return 3;
         case TokenKind::Star:
         case TokenKind::Slash:
