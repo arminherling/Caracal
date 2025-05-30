@@ -1,23 +1,30 @@
-//#pragma once
-//
-//#include <Compiler/API.h>
-//#include <Syntax/Statement.h>
-//#include <Syntax/Expression.h>
-//#include <Syntax/Token.h>
-//
-//class COMPILER_API AssignmentStatement : public Statement
-//{
-//public:
-//    AssignmentStatement(
-//        Expression* leftExpression, 
-//        const Token& equalsToken, 
-//        Expression* rightExpression);
-//
-//    [[nodiscard]] Expression* leftExpression() const noexcept { return m_leftExpression; }
-//    [[nodiscard]] Expression* rightExpression() const noexcept { return m_rightExpression; }
-//
-//private:
-//    Expression* m_leftExpression;
-//    Token m_equalsToken;
-//    Expression* m_rightExpression;
-//};
+#pragma once
+
+#include <Compiler/API.h>
+#include <Syntax/Statement.h>
+#include <Syntax/Expression.h>
+#include <Syntax/Token.h>
+
+namespace Caracal
+{
+    class COMPILER_API AssignmentStatement : public Statement
+    {
+    public:
+        AssignmentStatement(
+            const Token& identifier,
+            const Token& equal,
+            ExpressionUPtr&& expression,
+            const Token& semicolon);
+
+        [[nodiscard]] const Token& identifier() const noexcept { return m_identifier; }
+        [[nodiscard]] const Token& equal() const noexcept { return m_equal; }
+        [[nodiscard]] const ExpressionUPtr& expression() const noexcept { return m_expression; }
+        [[nodiscard]] const Token& semicolon() const noexcept { return m_semicolon; }
+
+    private:
+        Token m_identifier;
+        Token m_equal;
+        ExpressionUPtr m_expression;
+        Token m_semicolon;
+    };
+}

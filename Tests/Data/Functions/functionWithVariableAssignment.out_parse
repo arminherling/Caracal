@@ -1,0 +1,23 @@
+﻿FunctionDefinitionStatement: {
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Identifier: foo
+            Expression: {
+                BoolLiteral: true
+            }
+        }
+        AssignmentStatement: {
+            Left: {
+                Identifier: foo
+            }
+            Right: {
+                BoolLiteral: false
+            }
+        }
+    }
+}

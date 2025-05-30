@@ -1,12 +1,17 @@
-//#include "AssignmentStatement.h"
-//
-//AssignmentStatement::AssignmentStatement(
-//    Expression* leftExpression, 
-//    const Token& equalsToken, 
-//    Expression* rightExpression)
-//    : Statement(NodeKind::AssignmentStatement)
-//    , m_leftExpression{ leftExpression }
-//    , m_equalsToken{ equalsToken }
-//    , m_rightExpression{ rightExpression }
-//{
-//}
+#include "AssignmentStatement.h"
+
+namespace Caracal
+{
+    AssignmentStatement::AssignmentStatement(
+        const Token& identifier,
+        const Token& equal,
+        ExpressionUPtr&& expression,
+        const Token& semicolon)
+        : Statement(NodeKind::AssignmentStatement, expression->type())
+        , m_identifier{ identifier }
+        , m_equal{ equal }
+        , m_expression{ std::move(expression) }
+        , m_semicolon{ semicolon }
+    {
+    }
+}

@@ -32,6 +32,7 @@
 #include <Syntax/BoolLiteral.h>
 #include <Syntax/StringLiteral.h>
 #include <Syntax/NumberLiteral.h>
+#include <Syntax/AssignmentStatement.h>
 //#include <Syntax/TypeDefinitionStatement.h>
 //#include <Syntax/TypeName.h>
 //#include <Syntax/UnaryExpression.h>
@@ -49,10 +50,10 @@ namespace Caracal
     private:
         void prettyPrintNode(Node* node);
         void prettyPrintCppBlockStatement(CppBlockStatement* node);
-        //    void PrettyPrintAssignmentStatement(AssignmentStatement* statement);
     //    void PrettyPrintExpressionStatement(ExpressionStatement* statement);
         void prettyPrintConstantDeclaration(ConstantDeclaration* statement);
         void prettyPrintVariableDeclaration(VariableDeclaration* statement);
+        void prettyPrintAssignmentStatement(AssignmentStatement* statement);
         void prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
     //    void PrettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement);
     //    void PrettyPrintEnumFieldDefinitionStatement(EnumFieldDefinitionStatement* statement);

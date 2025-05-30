@@ -18,6 +18,8 @@ namespace Caracal
                 return QString("ConstantDeclaration");
             case NodeKind::VariableDeclaration:
                 return QString("VariableDeclaration");
+            case NodeKind::AssignmentStatement:
+                return QString("AssignmentStatement");
             case NodeKind::FunctionDefinitionStatement:
                 return QString("FunctionDefinitionStatement");
             case NodeKind::BlockNode:

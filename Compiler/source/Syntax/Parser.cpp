@@ -17,6 +17,7 @@
 //#include <Syntax/IfStatement.h>
 //#include <Syntax/WhileStatement.h>
 #include <Syntax/ReturnStatement.h>
+#include "AssignmentStatement.h"
 //#include <Syntax/DiscardLiteral.h>
 //#include <Syntax/MemberAccessExpression.h>
 //#include <Syntax/ScopeAccessExpression.h>
@@ -144,6 +145,16 @@ namespace Caracal
                         }
                         TODO("Variable declaration in other scopes");
                     }
+                    if (currentToken().kind == TokenKind::Equal)
+                    {
+                        if (scope == StatementScope::Function)
+                        {
+                             statements.emplace_back(parseAssignmentStatement(identifier));
+                             break;
+                        }
+                        TODO("Assignment statement in other scopes");
+                        break;
+                    }
 
                     TODO("Identifier in other scopes");
                     break;
@@ -227,6 +238,15 @@ namespace Caracal
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
         return std::make_unique<VariableDeclaration>(identifier, colon, equal, std::move(expression), semicolon);
+    }
+
+    StatementUPtr Parser::parseAssignmentStatement(const Token& identifier)
+    {
+        auto equal = advanceOnMatch(TokenKind::Equal);
+        auto expression = parseExpression();
+        auto semicolon = advanceOnMatch(TokenKind::Semicolon);
+     
+        return std::make_unique<AssignmentStatement>(identifier, equal, std::move(expression), semicolon);
     }
 
     BlockNodeUPtr Parser::parseFunctionBody()
@@ -492,14 +512,7 @@ namespace Caracal
 //        current = currentToken();
 //    }
 //}
-//
-//Statement* Parser::parseAssignmentStatement()
-//{
-//    auto leftExpression = parsePrimaryExpression();
-//    auto equals = advanceOnMatch(TokenKind::Equal);
-//    auto rightExpression = parseExpression();
-//    return new AssignmentStatement(leftExpression, equals, rightExpression);
-//}
+
 //
 //Statement* Parser::parseExpressionStatement()
 //{
