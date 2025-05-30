@@ -43,6 +43,7 @@ namespace Caracal
         //Statement* parseAssignmentStatement();
         //Statement* parseExpressionStatement();
         StatementUPtr parseFunctionDefinitionStatement();
+        StatementUPtr parseConstantDeclaration(const Token& identifier);
         //Statement* parseEnumDefinitionStatement();
         //QList<EnumFieldDefinitionStatement*> parseEnumFieldDefinitions();
         //Statement* parseTypeDefinitionStatement();

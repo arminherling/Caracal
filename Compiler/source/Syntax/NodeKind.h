@@ -11,6 +11,7 @@ namespace Caracal
         Error,
 
         CppBlockStatement,
+        ConstantDeclaration,
         FunctionDefinitionStatement,
         BlockNode,
 

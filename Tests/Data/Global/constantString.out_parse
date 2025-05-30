@@ -1,0 +1,6 @@
+﻿ConstantDeclaration: {
+    Identifier: world
+    Expression: {
+        StringLiteral: "Hello, World!"
+    }
+}

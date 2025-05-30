@@ -6,6 +6,7 @@
 #include <Syntax/ErrorExpression.h>
 #include <Semantic/TypeDatabase.h>
 //#include <Syntax/AssignmentStatement.h>
+#include <Syntax/ConstantDeclaration.h>
 //#include <Syntax/ExpressionStatement.h>
 #include <Syntax/FunctionDefinitionStatement.h>
 //#include <Syntax/EnumDefinitionStatement.h>
@@ -120,6 +121,22 @@ namespace Caracal
                     TODO("Return statement in other scopes");
                     break;
                 }
+                case TokenKind::Identifier:
+                {
+                    const auto identifier = advanceOnMatch(TokenKind::Identifier);
+                    if (scope == StatementScope::Global || scope == StatementScope::Function)
+                    {
+                        if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Colon)
+                        {
+                            statements.emplace_back(parseConstantDeclaration(identifier));
+                            break;
+                        }
+                        TODO("Global identifier statement");
+                        break;
+                    }
+                    TODO("Identifier in other scopes");
+                    break;
+                }
                 case TokenKind::CloseBracket:
                 {
                     if (scope == StatementScope::Global)
@@ -179,6 +196,16 @@ namespace Caracal
         auto body = parseFunctionBody();
 
         return std::make_unique<FunctionDefinitionStatement>(keyword, name, std::move(parameters), std::move(returnTypes), std::move(body));
+    }
+
+    StatementUPtr Parser::parseConstantDeclaration(const Token& identifier)
+    {
+        auto firstColon = advanceOnMatch(TokenKind::Colon);
+        auto secondColon = advanceOnMatch(TokenKind::Colon);
+        auto expression = parsePrimaryExpression();
+        auto semicolon = advanceOnMatch(TokenKind::Semicolon);
+
+        return std::make_unique<ConstantDeclaration>(identifier, firstColon, secondColon, std::move(expression), semicolon);
     }
 
     BlockNodeUPtr Parser::parseFunctionBody()

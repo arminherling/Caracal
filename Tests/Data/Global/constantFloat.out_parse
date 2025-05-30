@@ -1,0 +1,6 @@
+﻿ConstantDeclaration: {
+    Identifier: PI
+    Expression: {
+        NumberLiteral: 3.14159265358979323846264338327950288
+    }
+}

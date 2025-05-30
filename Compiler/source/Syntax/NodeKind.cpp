@@ -14,6 +14,8 @@ namespace Caracal
 
             case NodeKind::CppBlockStatement:
                 return QString("CppBlockStatement");
+            case NodeKind::ConstantDeclaration:
+                return QString("ConstantDeclaration");
             case NodeKind::FunctionDefinitionStatement:
                 return QString("FunctionDefinitionStatement");
             case NodeKind::BlockNode:
