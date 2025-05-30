@@ -7,6 +7,7 @@
 #include <Semantic/TypeDatabase.h>
 //#include <Syntax/AssignmentStatement.h>
 #include <Syntax/ConstantDeclaration.h>
+#include <Syntax/VariableDeclaration.h>
 //#include <Syntax/ExpressionStatement.h>
 #include <Syntax/FunctionDefinitionStatement.h>
 //#include <Syntax/EnumDefinitionStatement.h>
@@ -124,16 +125,26 @@ namespace Caracal
                 case TokenKind::Identifier:
                 {
                     const auto identifier = advanceOnMatch(TokenKind::Identifier);
-                    if (scope == StatementScope::Global || scope == StatementScope::Function)
+                    if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Colon)
                     {
-                        if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Colon)
+                        if (scope == StatementScope::Global || scope == StatementScope::Function)
                         {
                             statements.emplace_back(parseConstantDeclaration(identifier));
                             break;
                         }
-                        TODO("Global identifier statement");
+                        TODO("Emit an error");
                         break;
                     }
+                    if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Equal)
+                    {
+                        if (scope == StatementScope::Function)
+                        {
+                            statements.emplace_back(parseVariableDeclaration(identifier));
+                            break;
+                        }
+                        TODO("Variable declaration in other scopes");
+                    }
+
                     TODO("Identifier in other scopes");
                     break;
                 }
@@ -206,6 +217,16 @@ namespace Caracal
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
         return std::make_unique<ConstantDeclaration>(identifier, firstColon, secondColon, std::move(expression), semicolon);
+    }
+
+    StatementUPtr Parser::parseVariableDeclaration(const Token& identifier)
+    {
+        auto colon = advanceOnMatch(TokenKind::Colon);
+        auto equal = advanceOnMatch(TokenKind::Equal);
+        auto expression = parseExpression();
+        auto semicolon = advanceOnMatch(TokenKind::Semicolon);
+
+        return std::make_unique<VariableDeclaration>(identifier, colon, equal, std::move(expression), semicolon);
     }
 
     BlockNodeUPtr Parser::parseFunctionBody()

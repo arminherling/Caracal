@@ -17,6 +17,7 @@
 //#include <Syntax/FieldDefinitionStatement.h>
 //#include <Syntax/FunctionCallExpression.h>
 #include <Syntax/ConstantDeclaration.h>
+#include <Syntax/VariableDeclaration.h>
 #include <Syntax/FunctionDefinitionStatement.h>
 //#include <Syntax/GroupingExpression.h>
 //#include <Syntax/IfStatement.h>
@@ -51,6 +52,7 @@ namespace Caracal
         //    void PrettyPrintAssignmentStatement(AssignmentStatement* statement);
     //    void PrettyPrintExpressionStatement(ExpressionStatement* statement);
         void prettyPrintConstantDeclaration(ConstantDeclaration* statement);
+        void prettyPrintVariableDeclaration(VariableDeclaration* statement);
         void prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
     //    void PrettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement);
     //    void PrettyPrintEnumFieldDefinitionStatement(EnumFieldDefinitionStatement* statement);

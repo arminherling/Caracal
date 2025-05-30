@@ -12,6 +12,7 @@ namespace Caracal
 
         CppBlockStatement,
         ConstantDeclaration,
+        VariableDeclaration,
         FunctionDefinitionStatement,
         BlockNode,
 

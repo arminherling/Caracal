@@ -33,6 +33,11 @@ namespace Caracal
                 prettyPrintConstantDeclaration((ConstantDeclaration*)node);
                 break;
             }
+            case NodeKind::VariableDeclaration:
+            {
+                prettyPrintVariableDeclaration((VariableDeclaration*)node);
+                break;
+            }
             case NodeKind::FunctionDefinitionStatement:
             {
                 prettyPrintFunctionDefinitionStatement((FunctionDefinitionStatement*)node);
@@ -91,6 +96,22 @@ namespace Caracal
     }
 
     void ParseTreePrinter::prettyPrintConstantDeclaration(ConstantDeclaration* statement)
+    {
+        const auto& identifierToken = statement->identifier();
+        const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
+        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
+        pushIndentation();
+        stream() << indentation() << QString("Identifier: %1").arg(identifierLexeme) << newLine();
+        stream() << indentation() << QString("Expression: {") << newLine();
+        pushIndentation();
+        prettyPrintNode(statement->expression().get());
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintVariableDeclaration(VariableDeclaration* statement)
     {
         const auto& identifierToken = statement->identifier();
         const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);

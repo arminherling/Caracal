@@ -12,6 +12,7 @@
 #include <Syntax/StringLiteral.h>
 #include <QStringList>
 #include <Syntax/ConstantDeclaration.h>
+#include <Syntax/VariableDeclaration.h>
 
 namespace Caracal
 {
@@ -26,6 +27,7 @@ namespace Caracal
         void generateNode(Node* node);
         void generateCppBlock(CppBlockStatement* node);
         void generateConstantDeclaration(ConstantDeclaration* node);
+        void generateVariableDeclaration(VariableDeclaration* node);
         void generateFunctionDefinition(FunctionDefinitionStatement* node);
         void generateReturnStatement(ReturnStatement* node);
         void generateBoolLiteral(BoolLiteral* node);
