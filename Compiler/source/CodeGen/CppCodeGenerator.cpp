@@ -87,6 +87,11 @@ namespace Caracal
                 generateCppBlock((CppBlockStatement*)node);
                 break;
             }
+            case NodeKind::ConstantDeclaration:
+            {
+                generateConstantDeclaration((ConstantDeclaration*)node);
+                break;
+            }
             case NodeKind::FunctionDefinitionStatement:
             {
                 generateFunctionDefinition((FunctionDefinitionStatement*)node);
@@ -132,6 +137,20 @@ namespace Caracal
             const auto result = ReplaceEscapeSequences(lexeme);
             stream() << indentation() << result << newLine();
         }
+    }
+
+    void CppCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node)
+    {
+        const auto& identifier = m_parseTree.tokens().getLexeme(node->identifier());
+        const auto type = node->expression()->type();
+        const auto include = GetCppIncludeForType(type);
+        if (include.has_value())
+        {
+            m_cppIncludes.append(include.value() % newLine());
+        }
+        stream() << indentation() << "constexpr auto " << identifier << " = ";
+        generateNode(node->expression().get());
+        stream() << ";" << newLine();
     }
 
     void CppCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node)

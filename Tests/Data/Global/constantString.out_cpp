@@ -1,0 +1,3 @@
+﻿#include <string>
+
+constexpr auto world = std::string{"Hello, World!"};
