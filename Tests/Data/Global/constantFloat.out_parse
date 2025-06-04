@@ -1,6 +1,10 @@
 ﻿ConstantDeclaration: {
-    Identifier: PI
-    Expression: {
+    Left: {
+        NameExpression: {
+            Identifier: PI
+        }
+    }
+    Right: {
         NumberLiteral: 3.14159265358979323846264338327950288
     }
 }

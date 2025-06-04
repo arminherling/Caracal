@@ -1,6 +1,10 @@
 ﻿ConstantDeclaration: {
-    Identifier: world
-    Expression: {
+    Left: {
+        NameExpression: {
+            Identifier: world
+        }
+    }
+    Right: {
         StringLiteral: "Hello, World!"
     }
 }

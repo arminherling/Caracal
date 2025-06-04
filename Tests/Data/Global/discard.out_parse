@@ -1,6 +1,8 @@
 ﻿ConstantDeclaration: {
-    Discard: _
-    Expression: {
+    Left: {
+        Discard: _
+    }
+    Right: {
         BinaryExpression: {
             Left: {
                 NumberLiteral: 100

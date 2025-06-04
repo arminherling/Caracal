@@ -8,7 +8,6 @@
 //#include <Syntax/AssignmentStatement.h>
 #include <Syntax/BinaryExpression.h>
 #include <Syntax/BlockNode.h>
-//#include <Syntax/DiscardLiteral.h>
 //#include <Syntax/EnumDefinitionStatement.h>
 //#include <Syntax/EnumFieldDefinitionStatement.h>
 //#include <Syntax/Error.h>
@@ -22,10 +21,11 @@
 //#include <Syntax/IfStatement.h>
 //#include <Syntax/MemberAccessExpression.h>
 //#include <Syntax/MethodDefinitionStatement.h>
-//#include <Syntax/NameExpression.h>
+#include <Syntax/NameExpression.h>
 #include <Syntax/ParametersNode.h>
 #include <Syntax/ParseTree.h>
 #include <Syntax/ReturnStatement.h>
+#include <Syntax/DiscardLiteral.h>
 #include <Syntax/BoolLiteral.h>
 #include <Syntax/StringLiteral.h>
 #include <Syntax/NumberLiteral.h>
@@ -67,16 +67,16 @@ namespace Caracal
         void prettyPrintReturnTypeNode(ReturnTypeNode* returnType);
         void prettyPrintBlockNode(BlockNode* block);
     //
-    //    void PrettyPrintDiscardLiteral(DiscardLiteral* discard);
+        void prettyPrintBinaryExpression(BinaryExpression* binaryExpression);
+        void prettyPrintNameExpression(NameExpression* name);
     //    void PrettyPrintFunctionCallExpression(FunctionCallExpression* functionCall);
     //    void PrettyPrintTypeName(const TypeName& type);
+        void prettyPrintDiscardLiteral(DiscardLiteral* discard);
         void prettyPrintBoolLiteral(BoolLiteral* node);
-    //    void PrettyPrintNameExpression(NameExpression* name);
         void prettyPrintNumberLiteral(NumberLiteral* number);
         void prettyPrintStringLiteral(StringLiteral* string);
     //    void PrettyPrintGroupingExpression(GroupingExpression* grouping);
     //    void PrettyPrintUnaryExpression(UnaryExpression* unaryExpression);
-        void prettyPrintBinaryExpression(BinaryExpression* binaryExpression);
     //    void PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess);
     //    void PrettyPrintError(Error* error);
 

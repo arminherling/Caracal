@@ -78,6 +78,7 @@ namespace Caracal
         , m_parseTree{ parseTree }
         , m_cppIncludes{ }
         , m_currentScope(Scope::Global)
+        , m_discardCount(0)
     {
     }
 
@@ -103,13 +104,39 @@ namespace Caracal
         {
             case NodeKind::ConstantDeclaration:
             {
-                generateConstantDeclaration((ConstantDeclaration*)node);
+                const auto declaration = (ConstantDeclaration*)node;
+                const auto isDiscard = declaration->leftExpression()->kind() == NodeKind::DiscardLiteral;
+                if (isDiscard)
+                {
+                    if (m_currentScope == Scope::Global)
+                    {
+                        generateGlobalDiscardedExpression(declaration->rightExpression().get());
+                    }
+                    else
+                    {
+                        generateLocalDiscardedExpression(declaration->rightExpression().get());
+                    }
+                }
+                else
+                {
+                    generateConstantDeclaration((ConstantDeclaration*)node);
+                }
                 break;
             }
             case NodeKind::VariableDeclaration:
             {
-                generateVariableDeclaration((VariableDeclaration*)node);
-                break;
+                const auto declaration = (VariableDeclaration*)node;
+                const auto isDiscard = declaration->leftExpression()->kind() == NodeKind::DiscardLiteral;
+                if (isDiscard)
+                {
+                    generateLocalDiscardedExpression(declaration->rightExpression().get());
+                    return;
+                }
+                else
+                {
+                    generateVariableDeclaration((VariableDeclaration*)node);
+                    break;
+                }
             }
             case NodeKind::CppBlockStatement:
             {
@@ -134,6 +161,11 @@ namespace Caracal
             case NodeKind::BinaryExpression:
             {
                 generateBinaryExpression((BinaryExpression*)node);
+                break;
+            }
+            case NodeKind::NameExpression:
+            {
+                generateNameExpression((NameExpression*)node);
                 break;
             }
             case NodeKind::BoolLiteral:
@@ -175,70 +207,54 @@ namespace Caracal
 
     void CppCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node)
     {
-        const auto& identifierToken = node->identifier();
-        const auto isDiscard = identifierToken.kind == TokenKind::Underscore;
-        if (isDiscard)
+        const auto type = node->rightExpression()->type();
+        const auto include = GetCppIncludeForType(type);
+        if (include.has_value())
         {
-            if (m_currentScope == Scope::Function)
-            {
-                stream() << indentation() << "static_cast<void>(";
-                generateNode(node->expression().get());
-                stream() << ");" << newLine();
-            }
-            else
-            {
-                stream() << indentation() << "constexpr auto _ = ";
-                generateNode(node->expression().get());
-                stream() << ";" << newLine();
-            }
+            m_cppIncludes.append(include.value() % newLine());
         }
-        else
-        {
-            const auto& identifier = m_parseTree.tokens().getLexeme(node->identifier());
-            const auto type = node->expression()->type();
-            const auto include = GetCppIncludeForType(type);
-            if (include.has_value())
-            {
-                m_cppIncludes.append(include.value() % newLine());
-            }
-            stream() << indentation() << "constexpr auto " << identifier << " = ";
-            generateNode(node->expression().get());
-            stream() << ";" << newLine();
-        }
+        stream() << indentation() << "constexpr auto " ;
+        generateNode(node->leftExpression().get());
+        stream() << " = ";
+        generateNode(node->rightExpression().get());
+        stream() << ";" << newLine();
     }
 
     void CppCodeGenerator::generateVariableDeclaration(VariableDeclaration* node)
     {
-        const auto& identifierToken = node->identifier();
-        const auto isDiscard = identifierToken.kind == TokenKind::Underscore;
-        if (isDiscard)
+        const auto type = node->rightExpression()->type();
+        const auto include = GetCppIncludeForType(type);
+        if (include.has_value())
         {
-            stream() << indentation() << "static_cast<void>(";
-            generateNode(node->expression().get());
-            stream() << ");" << newLine();
+            m_cppIncludes.append(include.value() % newLine());
         }
-        else
-        {
-            const auto& identifier = m_parseTree.tokens().getLexeme(node->identifier());
-            const auto type = node->expression()->type();
-            const auto include = GetCppIncludeForType(type);
-            if (include.has_value())
-            {
-                m_cppIncludes.append(include.value() % newLine());
-            }
-            stream() << indentation() << "auto " << identifier << " = ";
-        generateNode(node->expression().get());
+        stream() << indentation() << "auto ";
+        generateNode(node->leftExpression().get());
+        stream() << " = ";
+        generateNode(node->rightExpression().get());
         stream() << ";" << newLine();
-        }
+    }
+
+    void CppCodeGenerator::generateGlobalDiscardedExpression(Expression* expression)
+    {
+        stream() << indentation() << "constexpr auto _" << m_discardCount++ << " = ";
+        generateNode(expression);
+        stream() << ";" << newLine();
+    }
+
+    void CppCodeGenerator::generateLocalDiscardedExpression(Expression* expression)
+    {
+        stream() << indentation() << "static_cast<void>(";
+        generateNode(expression);
+        stream() << ");" << newLine();
     }
 
     void CppCodeGenerator::generateAssignmentStatement(AssignmentStatement* node)
     {
-        const auto& identifier = m_parseTree.tokens().getLexeme(node->identifier());
-        const auto type = node->expression()->type();
-        
-        stream() << indentation() << identifier << " = ";
-        generateNode(node->expression().get());
+        stream() << indentation();
+        generateNode(node->leftExpression().get());
+        stream() << " = ";
+        generateNode(node->rightExpression().get());
         stream() << ";" << newLine();
     }
 
@@ -324,6 +340,11 @@ namespace Caracal
         generateNode(node->leftExpression().get());
         stream() << " " << binaryOperator << " ";
         generateNode(node->rightExpression().get());
+    }
+
+    void CppCodeGenerator::generateNameExpression(NameExpression* node)
+    {
+        stream() << m_parseTree.tokens().getLexeme(node->token());
     }
 
     void CppCodeGenerator::generateBoolLiteral(BoolLiteral* node)

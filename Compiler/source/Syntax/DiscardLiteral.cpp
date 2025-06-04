@@ -1,6 +1,8 @@
-//#include "DiscardLiteral.h"
-//
-//DiscardLiteral::DiscardLiteral(const Token& token)
-//    : Expression(NodeKind::DiscardLiteral, Type::Discard())
-//{
-//}
+#include "DiscardLiteral.h"
+
+namespace Caracal {
+    DiscardLiteral::DiscardLiteral(const Token& token)
+        : Expression(NodeKind::DiscardLiteral, Type::Discard())
+    {
+    }
+}

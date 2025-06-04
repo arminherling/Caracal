@@ -6,14 +6,20 @@
     }
     BlockNode(2): {
         VariableDeclaration: {
-            Identifier: foo
-            Expression: {
+            Left: {
+                NameExpression: {
+                    Identifier: foo
+                }
+            }
+            Right: {
                 BoolLiteral: true
             }
         }
         AssignmentStatement: {
             Left: {
-                Identifier: foo
+                NameExpression: {
+                    Identifier: foo
+                }
             }
             Right: {
                 BoolLiteral: false

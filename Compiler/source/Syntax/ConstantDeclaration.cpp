@@ -3,16 +3,16 @@
 namespace Caracal
 {
     ConstantDeclaration::ConstantDeclaration(
-        const Token& identifier,
+        ExpressionUPtr&& leftExpression,
         const Token& firstColon,
         const Token& secondColon,
-        ExpressionUPtr&& expression,
+        ExpressionUPtr&& rightExpression,
         const Token& semicolon)
-        : Statement(NodeKind::ConstantDeclaration, expression->type())
-        , m_identifier{ identifier }
+        : Statement(NodeKind::ConstantDeclaration, rightExpression->type())
+        , m_leftExpression{ std::move(leftExpression) }
         , m_firstColon{ firstColon }
         , m_secondColon{ secondColon }
-        , m_expression{ std::move(expression) }
+        , m_rightExpression{ std::move(rightExpression) }
         , m_semicolon{ semicolon }
     {
     }

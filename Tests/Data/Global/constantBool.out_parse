@@ -1,6 +1,10 @@
 ﻿ConstantDeclaration: {
-    Identifier: a
-    Expression: {
+    Left: {
+        NameExpression: {
+            Identifier: a
+        }
+    }
+    Right: {
         BoolLiteral: true
     }
 }

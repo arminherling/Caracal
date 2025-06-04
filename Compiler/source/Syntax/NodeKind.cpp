@@ -28,7 +28,11 @@ namespace Caracal
 
             case NodeKind::BinaryExpression:
                 return QString("BinaryExpression");
+            case NodeKind::NameExpression:
+                return QString("NameExpression");
 
+            case NodeKind::DiscardLiteral:
+                return QString("DiscardLiteral");
             case NodeKind::BoolLiteral:
                 return QString("BoolLiteral");
             case NodeKind::NumberLiteral:
@@ -71,21 +75,12 @@ namespace Caracal
 
                 //case NodeKind::FunctionCallExpression:
                 //    return QString("FunctionCallExpression");
-                //case NodeKind::NameExpression:
-                //    return QString("NameExpression");
                 //case NodeKind::GroupingExpression:
                 //    return QString("GroupingExpression");
                 //case NodeKind::ScopeAccessExpression:
                 //    return QString("ScopeAccessExpression");
                 //case NodeKind::MemberAccessExpression:
                 //    return QString("MemberAccessExpression");
-
-                //case NodeKind::DiscardLiteral:
-                //    return QString("DiscardLiteral");
-                //case NodeKind::BoolLiteral:
-                //    return QString("BoolLiteral");
-                //case NodeKind::NumberLiteral:
-                //    return QString("NumberLiteral");
 
                 //case NodeKind::TypeName:
                 //    return QString("TypeName");

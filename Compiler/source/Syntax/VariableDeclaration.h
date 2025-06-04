@@ -11,23 +11,23 @@ namespace Caracal
     {
     public:
         VariableDeclaration(
-            const Token& identifier,
+            ExpressionUPtr&& leftExpression,
             const Token& colon,
             const Token& equal,
-            ExpressionUPtr&& expression,
+            ExpressionUPtr&& rightExpression,
             const Token& semicolon);
 
-        [[nodiscard]] const Token& identifier() const noexcept { return m_identifier; }
+        [[nodiscard]] const ExpressionUPtr& leftExpression() const noexcept { return m_leftExpression; }
         [[nodiscard]] const Token& colon() const noexcept { return m_colon; }
         [[nodiscard]] const Token& equal() const noexcept { return m_equal; }
-        [[nodiscard]] const ExpressionUPtr& expression() const noexcept { return m_expression; }
+        [[nodiscard]] const ExpressionUPtr& rightExpression() const noexcept { return m_rightExpression; }
         [[nodiscard]] const Token& semicolon() const noexcept { return m_semicolon; }
 
     private:
-        Token m_identifier;
+        ExpressionUPtr m_leftExpression;
         Token m_colon;
         Token m_equal;
-        ExpressionUPtr m_expression;
+        ExpressionUPtr m_rightExpression;
         Token m_semicolon;
     };
 }

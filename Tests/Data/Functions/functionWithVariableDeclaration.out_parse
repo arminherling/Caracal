@@ -6,8 +6,12 @@
     }
     BlockNode(1): {
         VariableDeclaration: {
-            Identifier: isMain
-            Expression: {
+            Left: {
+                NameExpression: {
+                    Identifier: isMain
+                }
+            }
+            Right: {
                 BoolLiteral: true
             }
         }

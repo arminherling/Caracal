@@ -19,7 +19,9 @@ namespace Caracal
         ReturnStatement,
 
         BinaryExpression,
+        NameExpression,
 
+        DiscardLiteral,
         BoolLiteral,
         NumberLiteral,
         StringLiteral,
@@ -42,7 +44,6 @@ namespace Caracal
 
         //UnaryExpression,
         //FunctionCallExpression,
-        //NameExpression,
         //GroupingExpression,
         //ScopeAccessExpression,
         //MemberAccessExpression,

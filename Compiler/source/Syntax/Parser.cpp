@@ -5,7 +5,7 @@
 #include <Syntax/StringLiteral.h>
 #include <Syntax/ErrorExpression.h>
 #include <Semantic/TypeDatabase.h>
-//#include <Syntax/AssignmentStatement.h>
+#include <Syntax/AssignmentStatement.h>
 #include <Syntax/ConstantDeclaration.h>
 #include <Syntax/VariableDeclaration.h>
 //#include <Syntax/ExpressionStatement.h>
@@ -15,55 +15,15 @@
 //#include <Syntax/FieldDefinitionStatement.h>
 //#include <Syntax/MethodDefinitionStatement.h>
 #include <Syntax/BinaryExpression.h>
+#include <Syntax/NameExpression.h>
 //#include <Syntax/IfStatement.h>
 //#include <Syntax/WhileStatement.h>
 #include <Syntax/ReturnStatement.h>
-#include "AssignmentStatement.h"
-//#include <Syntax/DiscardLiteral.h>
+#include <Syntax/DiscardLiteral.h>
 //#include <Syntax/MemberAccessExpression.h>
 //#include <Syntax/ScopeAccessExpression.h>
-//#include <Syntax/Error.h>
 //#include <Syntax/FunctionCallExpression.h>
-//
-//static bool IsFunctionDefinitionKeyword(QStringView lexeme)
-//{
-//    return lexeme == QString("def");
-//}
-//
-//static bool IsEnumDefinitionKeyword(QStringView lexeme)
-//{
-//    return lexeme == QString("enum");
-//}
-//
-//static bool IsTypeDefinitionKeyword(QStringView lexeme)
-//{
-//    return lexeme == QString("type");
-//}
-//
-//static bool IsIfKeyword(QStringView lexeme)
-//{
-//    return lexeme == QString("if");
-//}
-//
-//static bool IsWhileKeyword(QStringView lexeme)
-//{
-//    return lexeme == QString("while");
-//}
-//
-//static bool IsReturnKeyword(QStringView lexeme)
-//{
-//    return lexeme == QString("return");
-//}
-//
-//static bool IsTrueKeyword(QStringView lexeme)
-//{
-//    return lexeme == QString("true");
-//}
-//
-//static bool IsFalseKeyword(QStringView lexeme)
-//{
-//    return lexeme == QString("false");
-//}
+
 namespace Caracal
 {
     Parser::Parser(const TokenBuffer& tokens, DiagnosticsBag& diagnostics)
@@ -127,12 +87,12 @@ namespace Caracal
                 case TokenKind::Underscore:
                 case TokenKind::Identifier:
                 {
-                    const auto discardOrIdentifier = advanceOnMatchEither(TokenKind::Underscore, TokenKind::Identifier);
+                    auto expression = parsePrimaryExpression();
                     if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Colon)
                     {
                         if (scope == StatementScope::Global || scope == StatementScope::Function)
                         {
-                            statements.emplace_back(parseConstantDeclaration(discardOrIdentifier));
+                            statements.emplace_back(parseConstantDeclaration(std::move(expression)));
                             break;
                         }
                         TODO("Emit an error");
@@ -142,16 +102,16 @@ namespace Caracal
                     {
                         if (scope == StatementScope::Function)
                         {
-                            statements.emplace_back(parseVariableDeclaration(discardOrIdentifier));
+                            statements.emplace_back(parseVariableDeclaration(std::move(expression)));
                             break;
                         }
                         TODO("Variable declaration in other scopes");
                     }
-                    if (discardOrIdentifier.kind == TokenKind::Identifier && currentToken().kind == TokenKind::Equal)
+                    if (expression->kind() == NodeKind::NameExpression && currentToken().kind == TokenKind::Equal)
                     {
                         if (scope == StatementScope::Function)
                         {
-                             statements.emplace_back(parseAssignmentStatement(discardOrIdentifier));
+                             statements.emplace_back(parseAssignmentStatement(std::move(expression)));
                              break;
                         }
                         TODO("Assignment statement in other scopes");
@@ -222,33 +182,33 @@ namespace Caracal
         return std::make_unique<FunctionDefinitionStatement>(keyword, name, std::move(parameters), std::move(returnTypes), std::move(body));
     }
 
-    StatementUPtr Parser::parseConstantDeclaration(const Token& identifier)
+    StatementUPtr Parser::parseConstantDeclaration(ExpressionUPtr&& leftExpression)
     {
         auto firstColon = advanceOnMatch(TokenKind::Colon);
         auto secondColon = advanceOnMatch(TokenKind::Colon);
-        auto expression = parseExpression();
+        auto rightExpression = parseExpression();
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
-        return std::make_unique<ConstantDeclaration>(identifier, firstColon, secondColon, std::move(expression), semicolon);
+        return std::make_unique<ConstantDeclaration>(std::move(leftExpression), firstColon, secondColon, std::move(rightExpression), semicolon);
     }
 
-    StatementUPtr Parser::parseVariableDeclaration(const Token& identifier)
+    StatementUPtr Parser::parseVariableDeclaration(ExpressionUPtr&& leftExpression)
     {
         auto colon = advanceOnMatch(TokenKind::Colon);
         auto equal = advanceOnMatch(TokenKind::Equal);
-        auto expression = parseExpression();
+        auto rightExpression = parseExpression();
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
-        return std::make_unique<VariableDeclaration>(identifier, colon, equal, std::move(expression), semicolon);
+        return std::make_unique<VariableDeclaration>(std::move(leftExpression), colon, equal, std::move(rightExpression), semicolon);
     }
 
-    StatementUPtr Parser::parseAssignmentStatement(const Token& identifier)
+    StatementUPtr Parser::parseAssignmentStatement(ExpressionUPtr&& leftExpression)
     {
         auto equal = advanceOnMatch(TokenKind::Equal);
-        auto expression = parseExpression();
+        auto rightExpression = parseExpression();
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
      
-        return std::make_unique<AssignmentStatement>(identifier, equal, std::move(expression), semicolon);
+        return std::make_unique<AssignmentStatement>(std::move(leftExpression), equal, std::move(rightExpression), semicolon);
     }
 
     BlockNodeUPtr Parser::parseFunctionBody()
@@ -324,6 +284,17 @@ namespace Caracal
         auto current = currentToken();
         switch (current.kind)
         {
+            case TokenKind::Underscore:
+            {
+                advanceCurrentIndex();
+                return std::make_unique<DiscardLiteral>(current);
+            }
+            case TokenKind::Identifier:
+            {
+                advanceCurrentIndex();
+                // TODO replace with parseFunctionCallOrNameExpression once we can parse function calls
+                return std::make_unique<NameExpression>(current);
+            }
             case TokenKind::TrueKeyword:
             {
                 advanceCurrentIndex();
@@ -438,11 +409,6 @@ namespace Caracal
     }
 }
 
-//
-//QList<Statement*> Parser::parseGlobalStatements()
-//{
-//    return parseStatements(StatementScope::Global);
-//}
 //
 //QList<Statement*> Parser::parseStatements(StatementScope scope)
 //{
@@ -691,121 +657,6 @@ namespace Caracal
 //    return new WhileStatement(keyword, condition, block);
 //}
 //
-//Statement* Parser::parseReturnStatement()
-//{
-//    auto keyword = advanceOnMatch(TokenKind::Identifier);
-//    auto current = currentToken();
-//
-//    std::optional<Expression*> expression;
-//    if (current.kind != TokenKind::CloseBracket && tokenIsOnNextLine())
-//    {
-//        // TODO add proper warning for expressions on the next line after returns
-//        const auto& location = m_tokens.getSourceLocation(current);
-//        m_diagnostics.AddWarning(DiagnosticKind::Unknown, location);
-//    }
-//
-//    if (current.kind != TokenKind::CloseBracket && !hasEmptyLineSinceLastToken())
-//        expression = parseExpression();
-//
-//    return new ReturnStatement(keyword, expression);
-//}
-//
-//Expression* Parser::parseExpression()
-//{
-//    return parseBinaryExpression(0);
-//}
-//
-//Expression* Parser::parseBinaryExpression(i32 parentPrecedence)
-//{
-//    Expression* left = nullptr;
-//    auto unaryOperatorToken = currentToken();
-//
-//    auto unaryPrecedence = UnaryOperatorPrecedence(unaryOperatorToken.kind);
-//    if (unaryPrecedence == 0 || unaryPrecedence < parentPrecedence)
-//    {
-//        left = parsePrimaryExpression();
-//    }
-//    else
-//    {
-//        advanceCurrentIndex();
-//        auto unaryOperator = convertUnaryOperatorTokenKindToEnum(unaryOperatorToken.kind);
-//        auto expression = parseBinaryExpression(unaryPrecedence);
-//        left = new UnaryExpression(unaryOperatorToken, unaryOperator, expression);
-//    }
-//
-//    while (true)
-//    {
-//        auto binaryOperatorToken = currentToken();
-//        if (binaryOperatorToken.kind == TokenKind::EndOfFile)
-//            break;
-//
-//        auto binaryPrecedence = BinaryOperatorPrecedence(binaryOperatorToken.kind);
-//        if (binaryPrecedence == 0 || binaryPrecedence <= parentPrecedence)
-//            break;
-//
-//        // Special case: empty lines prevent unintended method chaining
-//        if (binaryOperatorToken.kind == TokenKind::Dot && hasEmptyLineSinceLastToken())
-//            break;
-//
-//        advanceCurrentIndex();
-//        auto binaryOperator = convertBinaryOperatorTokenKindToEnum(binaryOperatorToken.kind);
-//        auto right = parseBinaryExpression(binaryPrecedence);
-//        left = new BinaryExpression(left, binaryOperatorToken, binaryOperator, right);
-//    }
-//
-//    return left;
-//}
-//
-//Expression* Parser::parsePrimaryExpression()
-//{
-//    auto current = currentToken();
-//
-//    switch (current.kind)
-//    {
-//        case TokenKind::Underscore:
-//        {
-//            advanceCurrentIndex();
-//            return new DiscardLiteral(current);
-//        }
-//        case TokenKind::Identifier:
-//        {
-//            auto maybeBool = tryParseBoolLiteral();
-//            if (maybeBool.has_value())
-//                return maybeBool.value();
-//
-//            return parseFunctionCallOrNameExpression();
-//        }
-//        case TokenKind::Number:
-//        {
-//            return parseNumberLiteral();
-//        }
-//        case TokenKind::OpenParenthesis:
-//        {
-//            return parseGroupingExpression();
-//        }
-//        case TokenKind::Dot:
-//        {
-//            advanceCurrentIndex();
-//            auto expression = parseFunctionCallOrNameExpression();
-//            return new MemberAccessExpression(current, expression);
-//        }
-//        case TokenKind::DoubleColon:
-//        {
-//            advanceCurrentIndex();
-//            auto expression = parseFunctionCallOrNameExpression();
-//            return new ScopeAccessExpression(current, expression);
-//        }
-//        default:
-//        {
-//            const auto& location = m_tokens.getSourceLocation(current);
-//            m_diagnostics.AddError(DiagnosticKind::Unknown, location);
-//
-//            advanceCurrentIndex();
-//            return new Error(current);
-//        }
-//    }
-//}
-//
 //Expression* Parser::parseFunctionCallOrNameExpression()
 //{
 //    auto next = nextToken();
@@ -902,17 +753,6 @@ namespace Caracal
 //    return new EnumFieldDefinitionStatement(memberName);
 //}
 
-//BlockNode* Parser::parseTypeBody()
-//{
-//    return parseBlockNode(StatementScope::Type);
-//}
-//
-//BlockNode* Parser::parseMethodBody()
-//{
-//    return parseBlockNode(StatementScope::Method);
-//}
-//
-
 //
 //ParameterNode* Parser::parseParameterNode()
 //{
@@ -924,24 +764,6 @@ namespace Caracal
 //}
 //
 
-//
-//std::optional<BoolLiteral*> Parser::tryParseBoolLiteral()
-//{
-//    auto current = currentToken();
-//    auto lexeme = m_tokens.getLexeme(current);
-//    if (IsTrueKeyword(lexeme))
-//    {
-//        advanceCurrentIndex();
-//        return new BoolLiteral(true);
-//    }
-//    else if (IsFalseKeyword(lexeme))
-//    {
-//        advanceCurrentIndex();
-//        return new BoolLiteral(false);
-//    }
-//    return {};
-//}
-//
 //std::optional<Token> Parser::tryMatchKind(TokenKind kind)
 //{
 //    auto current = currentToken();
@@ -978,17 +800,7 @@ namespace Caracal
 //    //return currentTokenLocation.startLine - lastTokenLocation.endLine;
 //    return 0;
 //}
-//
-//bool Parser::tokenIsOnNextLine()
-//{
-//    return lineDistanceSinceLastToken() == 1;
-//}
-//
-//bool Parser::hasEmptyLineSinceLastToken()
-//{
-//    return lineDistanceSinceLastToken() >= 2;
-//}
-//
+
 //
 //UnaryOperatornKind Parser::convertUnaryOperatorTokenKindToEnum(TokenKind kind) const
 //{

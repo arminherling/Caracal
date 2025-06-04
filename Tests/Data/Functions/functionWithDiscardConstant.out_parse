@@ -6,8 +6,10 @@
     }
     BlockNode(1): {
         ConstantDeclaration: {
-            Discard: _
-            Expression: {
+            Left: {
+                Discard: _
+            }
+            Right: {
                 BoolLiteral: true
             }
         }
