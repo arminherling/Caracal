@@ -14,6 +14,7 @@
 //#include <Syntax/TypeDefinitionStatement.h>
 //#include <Syntax/FieldDefinitionStatement.h>
 //#include <Syntax/MethodDefinitionStatement.h>
+#include <Syntax/UnaryExpression.h>
 #include <Syntax/BinaryExpression.h>
 #include <Syntax/NameExpression.h>
 //#include <Syntax/IfStatement.h>
@@ -246,20 +247,19 @@ namespace Caracal
     ExpressionUPtr Parser::parseBinaryExpression(i32 parentPrecedence)
     {
         ExpressionUPtr left{};
-        //auto unaryOperatorToken = currentToken();
+        auto unaryOperatorToken = currentToken();
 
-        //auto unaryPrecedence = UnaryOperatorPrecedence(unaryOperatorToken.kind);
-        //if (unaryPrecedence == 0 || unaryPrecedence < parentPrecedence)
-        //{
+        auto unaryPrecedence = unaryOperatorPrecedence(unaryOperatorToken.kind);
+        if (unaryPrecedence == 0 || unaryPrecedence < parentPrecedence)
+        {
             left = parsePrimaryExpression();
-        //}
-        //else
-        //{
-        //    advanceCurrentIndex();
-        //    auto unaryOperator = convertUnaryOperatorTokenKindToEnum(unaryOperatorToken.kind);
-        //    auto expression = parseBinaryExpression(unaryPrecedence);
-        //    left = new UnaryExpression(unaryOperatorToken, unaryOperator, expression);
-        //}
+        }
+        else
+        {
+            advanceCurrentIndex();
+            auto expression = parseBinaryExpression(unaryPrecedence);
+            left = std::make_unique<UnaryExpression>(unaryOperatorToken, std::move(expression));
+        }
 
         while (true)
         {
@@ -800,16 +800,3 @@ namespace Caracal
 //    //return currentTokenLocation.startLine - lastTokenLocation.endLine;
 //    return 0;
 //}
-
-//
-//UnaryOperatornKind Parser::convertUnaryOperatorTokenKindToEnum(TokenKind kind) const
-//{
-//    if (kind == TokenKind::RefKeyword)
-//        return UnaryOperatornKind::ReferenceOf;
-//
-//    if (kind == TokenKind::Minus)
-//        return UnaryOperatornKind::Negation;
-//
-//    return UnaryOperatornKind::Invalid;
-//}
-//

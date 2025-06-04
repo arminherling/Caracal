@@ -9,20 +9,26 @@ namespace Caracal
         static const std::unordered_map<NodeKind, QString> kindToString{
             { NodeKind::Unknown,                        QStringLiteral("Unknown") },
             { NodeKind::Error,                          QStringLiteral("Error") },
+
             { NodeKind::ConstantDeclaration,            QStringLiteral("ConstantDeclaration") },
             { NodeKind::VariableDeclaration,            QStringLiteral("VariableDeclaration") },
+
             { NodeKind::CppBlockStatement,              QStringLiteral("CppBlockStatement") },
             { NodeKind::AssignmentStatement,            QStringLiteral("AssignmentStatement") },
             { NodeKind::FunctionDefinitionStatement,    QStringLiteral("FunctionDefinitionStatement") },
             { NodeKind::ReturnStatement,                QStringLiteral("ReturnStatement") },
+
+            { NodeKind::UnaryExpression,                QStringLiteral("UnaryExpression") },
             { NodeKind::BinaryExpression,               QStringLiteral("BinaryExpression") },
             { NodeKind::NameExpression,                 QStringLiteral("NameExpression") },
+
             { NodeKind::DiscardLiteral,                 QStringLiteral("DiscardLiteral") },
             { NodeKind::BoolLiteral,                    QStringLiteral("BoolLiteral") },
             { NodeKind::NumberLiteral,                  QStringLiteral("NumberLiteral") },
             { NodeKind::StringLiteral,                  QStringLiteral("StringLiteral") },
-            { NodeKind::ParameterNode,                  QStringLiteral("ParameterNode") },
+
             { NodeKind::ParametersNode,                 QStringLiteral("ParametersNode") },
+            { NodeKind::ParameterNode,                  QStringLiteral("ParameterNode") },
             { NodeKind::ReturnTypesNode,                QStringLiteral("ReturnTypesNode") },
             { NodeKind::ReturnTypeNode,                 QStringLiteral("ReturnTypeNode") },
             { NodeKind::BlockNode,                      QStringLiteral("BlockNode") },
@@ -35,7 +41,6 @@ namespace Caracal
             //{ NodeKind::MethodDefinitionStatement,      QStringLiteral("MethodDefinitionStatement") },
             //{ NodeKind::IfStatement,                    QStringLiteral("IfStatement") },
             //{ NodeKind::WhileStatement,                 QStringLiteral("WhileStatement") },
-            //{ NodeKind::UnaryExpression,                QStringLiteral("UnaryExpression") },
             //{ NodeKind::FunctionCallExpression,         QStringLiteral("FunctionCallExpression") },
             //{ NodeKind::GroupingExpression,             QStringLiteral("GroupingExpression") },
             //{ NodeKind::ScopeAccessExpression,          QStringLiteral("ScopeAccessExpression") },

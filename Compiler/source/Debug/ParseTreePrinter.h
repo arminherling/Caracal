@@ -32,7 +32,7 @@
 #include <Syntax/AssignmentStatement.h>
 //#include <Syntax/TypeDefinitionStatement.h>
 //#include <Syntax/TypeName.h>
-//#include <Syntax/UnaryExpression.h>
+#include <Syntax/UnaryExpression.h>
 //#include <Syntax/WhileStatement.h>
 //
 namespace Caracal 
@@ -66,7 +66,7 @@ namespace Caracal
         void prettyPrintReturnTypesNode(ReturnTypesNode* returnTypes);
         void prettyPrintReturnTypeNode(ReturnTypeNode* returnType);
         void prettyPrintBlockNode(BlockNode* block);
-    //
+        void prettyPrintUnaryExpression(UnaryExpression* unaryExpression);
         void prettyPrintBinaryExpression(BinaryExpression* binaryExpression);
         void prettyPrintNameExpression(NameExpression* name);
     //    void PrettyPrintFunctionCallExpression(FunctionCallExpression* functionCall);
@@ -76,7 +76,6 @@ namespace Caracal
         void prettyPrintNumberLiteral(NumberLiteral* number);
         void prettyPrintStringLiteral(StringLiteral* string);
     //    void PrettyPrintGroupingExpression(GroupingExpression* grouping);
-    //    void PrettyPrintUnaryExpression(UnaryExpression* unaryExpression);
     //    void PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess);
     //    void PrettyPrintError(Error* error);
 

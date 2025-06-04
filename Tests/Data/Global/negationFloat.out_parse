@@ -1,0 +1,15 @@
+﻿ConstantDeclaration: {
+    Left: {
+        NameExpression: {
+            Identifier: value
+        }
+    }
+    Right: {
+        UnaryExpression: {
+            Operation: ValueNegation
+            Expression: {
+                NumberLiteral: 1.2
+            }
+        }
+    }
+}

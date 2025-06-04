@@ -1,32 +1,35 @@
-//#pragma once
-//
-//#include <Compiler/API.h>
-//#include <Syntax/Expression.h>
-//#include <Syntax/Token.h>
-//
-//enum class UnaryOperatornKind
-//{
-//    Invalid,
-//    Negation,
-//    ReferenceOf
-//};
-//
-//class COMPILER_API UnaryExpression : public Expression
-//{
-//public:
-//    UnaryExpression(
-//        const Token& unaryOperatorToken,
-//        UnaryOperatornKind unaryOperator,
-//        Expression* expression);
-//
-//    [[nodiscard]] const Token& unaryOperatorToken() const noexcept { return m_unaryOperatorToken; }
-//    [[nodiscard]] UnaryOperatornKind unaryOperator() const noexcept { return m_unaryOperator; }
-//    [[nodiscard]] Expression* expression() const noexcept { return m_expression; }
-//
-//private:
-//    Token m_unaryOperatorToken;
-//    UnaryOperatornKind m_unaryOperator;
-//    Expression* m_expression;
-//};
-//
-//COMPILER_API [[nodiscard]] QString StringifyUnaryOperation(UnaryOperatornKind kind);
+#pragma once
+
+#include <Compiler/API.h>
+#include <Syntax/Expression.h>
+#include <Syntax/Token.h>
+
+namespace Caracal
+{
+    enum class UnaryOperatorKind
+    {
+        Invalid,
+        LogicalNegation,
+        ValueNegation,
+        //ReferenceOf
+    };
+
+    class COMPILER_API UnaryExpression : public Expression
+    {
+    public:
+        UnaryExpression(
+            const Token& unaryOperatorToken,
+            ExpressionUPtr&& expression);
+
+        [[nodiscard]] const Token& unaryOperatorToken() const noexcept { return m_unaryOperatorToken; }
+        [[nodiscard]] const ExpressionUPtr& expression() const noexcept { return m_expression; }
+        [[nodiscard]] UnaryOperatorKind unaryOperator() const noexcept { return m_unaryOperator; }
+
+    private:
+        Token m_unaryOperatorToken;
+        ExpressionUPtr m_expression;
+        UnaryOperatorKind m_unaryOperator;
+    };
+
+    COMPILER_API [[nodiscard]] QString stringify(UnaryOperatorKind kind);
+}

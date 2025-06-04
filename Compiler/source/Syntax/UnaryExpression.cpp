@@ -1,26 +1,45 @@
-//#include "UnaryExpression.h"
-//
-//UnaryExpression::UnaryExpression(
-//    const Token& unaryOperatorToken,
-//    UnaryOperatornKind unaryOperator,
-//    Expression* expression)
-//    : Expression(NodeKind::UnaryExpression)
-//    , m_unaryOperatorToken { unaryOperatorToken }
-//    , m_unaryOperator{ unaryOperator }
-//    , m_expression{ expression }
-//{
-//}
-//
-//QString StringifyUnaryOperation(UnaryOperatornKind kind)
-//{
-//    switch (kind)
-//    {
-//        case UnaryOperatornKind::Negation:
-//            return QString("Negation");
-//        case UnaryOperatornKind::ReferenceOf:
-//            return QString("ReferenceOf");
-//        default:
-//            TODO("String for UnaryOperatorn value was not defined yet");
-//    }
-//    return QString();
-//}
+#include "UnaryExpression.h"
+
+namespace Caracal
+{
+    static UnaryOperatorKind ConvertToUnaryOperator(TokenKind kind)
+    {
+        switch (kind)
+        {
+            case TokenKind::Bang:
+                return UnaryOperatorKind::LogicalNegation;
+            case TokenKind::Minus:
+                return UnaryOperatorKind::ValueNegation;
+                //case TokenKind::RefKeyword:
+                //    return UnaryOperatornKind::ReferenceOf;
+            default:
+                return UnaryOperatorKind::Invalid;
+        }
+    }
+
+    UnaryExpression::UnaryExpression(
+        const Token& unaryOperatorToken,
+        ExpressionUPtr&& expression)
+        : Expression(NodeKind::UnaryExpression, expression->type())
+        , m_unaryOperatorToken{ unaryOperatorToken }
+        , m_expression{ std::move(expression) }
+        , m_unaryOperator{ ConvertToUnaryOperator (unaryOperatorToken.kind)}
+    {
+    }
+
+    QString stringify(UnaryOperatorKind kind)
+    {
+        switch (kind)
+        {
+            case UnaryOperatorKind::LogicalNegation:
+                return QStringLiteral("LogicalNegation");
+            case UnaryOperatorKind::ValueNegation:
+                return QStringLiteral("ValueNegation");
+            //case UnaryOperatornKind::ReferenceOf:
+            //    return QString("ReferenceOf");
+            default:
+                TODO("Invalid unary operator kind");
+        }
+        return QString();
+    }
+}

@@ -16,6 +16,7 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
         { TokenKind::Comma,             QStringLiteral("Comma") },
         { TokenKind::Equal,             QStringLiteral("Equal") },
         { TokenKind::Underscore,        QStringLiteral("Underscore") },
+        { TokenKind::Bang,              QStringLiteral("Bang") },
         { TokenKind::OpenParenthesis,   QStringLiteral("OpenParenthesis") },
         { TokenKind::CloseParenthesis,  QStringLiteral("CloseParenthesis") },
         { TokenKind::OpenBracket,       QStringLiteral("OpenBracket") },
@@ -50,6 +51,7 @@ i32 unaryOperatorPrecedence(TokenKind kind)
     {
         case TokenKind::RefKeyword:
             return 5;
+        case TokenKind::Bang:
         case TokenKind::Minus:
             return 4;
     }

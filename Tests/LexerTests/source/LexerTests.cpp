@@ -40,6 +40,7 @@ namespace
             std::make_tuple(QString("Equal"), QString("="), TokenKind::Equal),
             std::make_tuple(QString("Semicolon"), QString(";"), TokenKind::Semicolon),
             std::make_tuple(QString("Underscore"), QString("_"), TokenKind::Underscore),
+            std::make_tuple(QString("Bang"), QString("!"), TokenKind::Bang),
 
             std::make_tuple(QString("OpenParenthesis"), QString("("), TokenKind::OpenParenthesis),
             std::make_tuple(QString("CloseParenthesis"), QString(")"), TokenKind::CloseParenthesis),

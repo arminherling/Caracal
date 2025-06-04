@@ -20,6 +20,8 @@ enum class COMPILER_API TokenKind
     Equal,
     Semicolon,
     Underscore,
+    Bang,
+
     OpenParenthesis,
     CloseParenthesis,
     OpenBracket,

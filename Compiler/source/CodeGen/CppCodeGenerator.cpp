@@ -73,6 +73,20 @@ namespace Caracal
         }
     }
 
+    [[nodiscard]] static QString StringifyUnaryOperator(UnaryOperatorKind kind)
+    {
+        switch (kind)
+        {
+            case UnaryOperatorKind::LogicalNegation:
+                return QStringLiteral("!");
+            case UnaryOperatorKind::ValueNegation:
+                return QStringLiteral("-");
+            default:
+                TODO("Implement StringifyUnaryOperator for all operators");
+                return QString();
+        }
+    }
+
     CppCodeGenerator::CppCodeGenerator(ParseTree& parseTree, i32 indentation)
         : BasePrinter(indentation)
         , m_parseTree{ parseTree }
@@ -156,6 +170,11 @@ namespace Caracal
             case NodeKind::ReturnStatement:
             {
                 generateReturnStatement((ReturnStatement*)node);
+                break;
+            }
+            case NodeKind::UnaryExpression:
+            {
+                generateUnaryExpression((UnaryExpression*)node);
                 break;
             }
             case NodeKind::BinaryExpression:
@@ -331,6 +350,13 @@ namespace Caracal
             generateNode(node->expression().value().get());
         }
         stream() << ";" << newLine();
+    }
+
+    void CppCodeGenerator::generateUnaryExpression(UnaryExpression* node)
+    {
+        const auto unaryOperator = StringifyUnaryOperator(node->unaryOperator());
+        stream() << unaryOperator;
+        generateNode(node->expression().get());
     }
 
     void CppCodeGenerator::generateBinaryExpression(BinaryExpression* node)

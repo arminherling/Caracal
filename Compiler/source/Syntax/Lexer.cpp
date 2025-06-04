@@ -257,6 +257,11 @@ namespace Caracal
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Equal);
                     break;
                 }
+                case u'!':
+                {
+                    AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Bang);
+                    break;
+                }
                 case u'(':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::OpenParenthesis);

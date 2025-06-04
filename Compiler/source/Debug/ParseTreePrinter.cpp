@@ -53,6 +53,11 @@ namespace Caracal
                 prettyPrintReturnStatement((ReturnStatement*)node);
                 break;
             }
+            case NodeKind::UnaryExpression:
+            {
+                prettyPrintUnaryExpression((UnaryExpression*)node);
+                break;
+            }
             case NodeKind::BinaryExpression:
             {
                 prettyPrintBinaryExpression((BinaryExpression*)node);
@@ -201,6 +206,20 @@ namespace Caracal
         if (statement->expression().has_value())
             prettyPrintNode(statement->expression().value().get());
 
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintUnaryExpression(UnaryExpression* unaryExpression)
+    {
+        stream() << indentation() << stringify(unaryExpression->kind()) << QString(": {") << newLine();
+        pushIndentation();
+        stream() << indentation() << QString("Operation: ") << stringify(unaryExpression->unaryOperator()) << newLine();
+        stream() << indentation() << QString("Expression: {") << newLine();
+        pushIndentation();
+        prettyPrintNode(unaryExpression->expression().get());
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }

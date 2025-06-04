@@ -17,6 +17,7 @@
 #include <Syntax/BinaryExpression.h>
 #include <Syntax/DiscardLiteral.h>
 #include <Syntax/NameExpression.h>
+#include <Syntax/UnaryExpression.h>
 
 namespace Caracal
 {
@@ -43,6 +44,7 @@ namespace Caracal
         void generateAssignmentStatement(AssignmentStatement* node);
         void generateFunctionDefinition(FunctionDefinitionStatement* node);
         void generateReturnStatement(ReturnStatement* node);
+        void generateUnaryExpression(UnaryExpression* node);
         void generateBinaryExpression(BinaryExpression* node);
         void generateNameExpression(NameExpression* node);
         void generateBoolLiteral(BoolLiteral* node);

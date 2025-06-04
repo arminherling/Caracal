@@ -18,6 +18,7 @@ namespace Caracal
         FunctionDefinitionStatement,
         ReturnStatement,
 
+        UnaryExpression,
         BinaryExpression,
         NameExpression,
 
