@@ -89,10 +89,18 @@ namespace Caracal
     void ParseTreePrinter::prettyPrintConstantDeclaration(ConstantDeclaration* statement)
     {
         const auto& identifierToken = statement->identifier();
-        const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
         pushIndentation();
-        stream() << indentation() << QString("Identifier: %1").arg(identifierLexeme) << newLine();
+
+        if (identifierToken.kind == TokenKind::Underscore)
+        {
+            stream() << indentation() << QString("Discard: _") << newLine();
+        }
+        else
+        {
+            const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
+            stream() << indentation() << QString("Identifier: %1").arg(identifierLexeme) << newLine();
+        }
         stream() << indentation() << QString("Expression: {") << newLine();
         pushIndentation();
         prettyPrintNode(statement->expression().get());
@@ -105,11 +113,18 @@ namespace Caracal
     void ParseTreePrinter::prettyPrintVariableDeclaration(VariableDeclaration* statement)
     {
         const auto& identifierToken = statement->identifier();
-        const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
 
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
         pushIndentation();
-        stream() << indentation() << QString("Identifier: %1").arg(identifierLexeme) << newLine();
+        if (identifierToken.kind == TokenKind::Underscore)
+        {
+            stream() << indentation() << QString("Discard: _") << newLine();
+        }
+        else
+        {
+            const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
+            stream() << indentation() << QString("Identifier: %1").arg(identifierLexeme) << newLine();
+        }
         stream() << indentation() << QString("Expression: {") << newLine();
         pushIndentation();
         prettyPrintNode(statement->expression().get());

@@ -1,0 +1,5 @@
+﻿int main()
+{
+    static_cast<void>(true);
+}
+

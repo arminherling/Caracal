@@ -124,14 +124,15 @@ namespace Caracal
                     TODO("Return statement in other scopes");
                     break;
                 }
+                case TokenKind::Underscore:
                 case TokenKind::Identifier:
                 {
-                    const auto identifier = advanceOnMatch(TokenKind::Identifier);
+                    const auto discardOrIdentifier = advanceOnMatchEither(TokenKind::Underscore, TokenKind::Identifier);
                     if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Colon)
                     {
                         if (scope == StatementScope::Global || scope == StatementScope::Function)
                         {
-                            statements.emplace_back(parseConstantDeclaration(identifier));
+                            statements.emplace_back(parseConstantDeclaration(discardOrIdentifier));
                             break;
                         }
                         TODO("Emit an error");
@@ -141,16 +142,16 @@ namespace Caracal
                     {
                         if (scope == StatementScope::Function)
                         {
-                            statements.emplace_back(parseVariableDeclaration(identifier));
+                            statements.emplace_back(parseVariableDeclaration(discardOrIdentifier));
                             break;
                         }
                         TODO("Variable declaration in other scopes");
                     }
-                    if (currentToken().kind == TokenKind::Equal)
+                    if (discardOrIdentifier.kind == TokenKind::Identifier && currentToken().kind == TokenKind::Equal)
                     {
                         if (scope == StatementScope::Function)
                         {
-                             statements.emplace_back(parseAssignmentStatement(identifier));
+                             statements.emplace_back(parseAssignmentStatement(discardOrIdentifier));
                              break;
                         }
                         TODO("Assignment statement in other scopes");
@@ -405,6 +406,19 @@ namespace Caracal
             const auto& location = m_tokens.getSourceLocation(current);
             m_diagnostics.AddError(DiagnosticKind::_0003_ExpectedXButGotY, location);
             return Token::ToError(current);
+        }
+    }
+
+    Token Parser::advanceOnMatchEither(TokenKind kind1, TokenKind kind2)
+    {
+        auto current = currentToken();
+        if (current.kind == kind1)
+        {
+            return advanceOnMatch(kind1);
+        }
+        else
+        {
+            return advanceOnMatch(kind2);
         }
     }
 

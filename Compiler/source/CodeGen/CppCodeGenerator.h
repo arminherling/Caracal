@@ -26,6 +26,12 @@ namespace Caracal
         [[nodiscard]] QString generate();
 
     private:
+        enum class Scope
+        {
+            Global,
+            Function
+        };
+
         void generateNode(Node* node);
         void generateConstantDeclaration(ConstantDeclaration* node);
         void generateVariableDeclaration(VariableDeclaration* node);
@@ -40,6 +46,7 @@ namespace Caracal
 
         ParseTree& m_parseTree;
         QStringList m_cppIncludes;
+        Scope m_currentScope;
     };
 
     COMPILER_API QString generateCpp(ParseTree& parseTree) noexcept;

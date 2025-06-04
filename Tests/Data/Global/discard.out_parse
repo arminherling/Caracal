@@ -1,0 +1,14 @@
+﻿ConstantDeclaration: {
+    Discard: _
+    Expression: {
+        BinaryExpression: {
+            Left: {
+                NumberLiteral: 100
+            }
+            Operation: Addition
+            Right: {
+                NumberLiteral: 100
+            }
+        }
+    }
+}

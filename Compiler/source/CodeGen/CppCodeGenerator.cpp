@@ -77,6 +77,7 @@ namespace Caracal
         : BasePrinter(indentation)
         , m_parseTree{ parseTree }
         , m_cppIncludes{ }
+        , m_currentScope(Scope::Global)
     {
     }
 
@@ -174,30 +175,61 @@ namespace Caracal
 
     void CppCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node)
     {
-        const auto& identifier = m_parseTree.tokens().getLexeme(node->identifier());
-        const auto type = node->expression()->type();
-        const auto include = GetCppIncludeForType(type);
-        if (include.has_value())
+        const auto& identifierToken = node->identifier();
+        const auto isDiscard = identifierToken.kind == TokenKind::Underscore;
+        if (isDiscard)
         {
-            m_cppIncludes.append(include.value() % newLine());
+            if (m_currentScope == Scope::Function)
+            {
+                stream() << indentation() << "static_cast<void>(";
+                generateNode(node->expression().get());
+                stream() << ");" << newLine();
+            }
+            else
+            {
+                stream() << indentation() << "constexpr auto _ = ";
+                generateNode(node->expression().get());
+                stream() << ";" << newLine();
+            }
         }
-        stream() << indentation() << "constexpr auto " << identifier << " = ";
-        generateNode(node->expression().get());
-        stream() << ";" << newLine();
+        else
+        {
+            const auto& identifier = m_parseTree.tokens().getLexeme(node->identifier());
+            const auto type = node->expression()->type();
+            const auto include = GetCppIncludeForType(type);
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+            stream() << indentation() << "constexpr auto " << identifier << " = ";
+            generateNode(node->expression().get());
+            stream() << ";" << newLine();
+        }
     }
 
     void CppCodeGenerator::generateVariableDeclaration(VariableDeclaration* node)
     {
-        const auto& identifier = m_parseTree.tokens().getLexeme(node->identifier());
-        const auto type = node->expression()->type();
-        const auto include = GetCppIncludeForType(type);
-        if (include.has_value())
+        const auto& identifierToken = node->identifier();
+        const auto isDiscard = identifierToken.kind == TokenKind::Underscore;
+        if (isDiscard)
         {
-            m_cppIncludes.append(include.value() % newLine());
+            stream() << indentation() << "static_cast<void>(";
+            generateNode(node->expression().get());
+            stream() << ");" << newLine();
         }
-        stream() << indentation() << "auto " << identifier << " = ";
+        else
+        {
+            const auto& identifier = m_parseTree.tokens().getLexeme(node->identifier());
+            const auto type = node->expression()->type();
+            const auto include = GetCppIncludeForType(type);
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+            stream() << indentation() << "auto " << identifier << " = ";
         generateNode(node->expression().get());
         stream() << ";" << newLine();
+        }
     }
 
     void CppCodeGenerator::generateAssignmentStatement(AssignmentStatement* node)
@@ -212,6 +244,9 @@ namespace Caracal
 
     void CppCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node)
     {
+        const auto oldScope = m_currentScope;
+        m_currentScope = Scope::Function;
+
         const auto& returnTypes = node->returnTypes()->returnTypes();
         const auto hasReturnTypes = returnTypes.empty() == false;
         const auto functionName = m_parseTree.tokens().getLexeme(node->name());
@@ -267,6 +302,8 @@ namespace Caracal
 
         popIndentation();
         stream() << indentation() << "}" << newLine() << newLine();
+
+        m_currentScope = oldScope; // Reset the scope after generating the function definition
     }
 
     void CppCodeGenerator::generateReturnStatement(ReturnStatement* node)

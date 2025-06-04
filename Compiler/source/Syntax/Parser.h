@@ -74,6 +74,7 @@ namespace Caracal
         //EnumFieldDefinitionStatement* parseEnumFieldDefinitionStatement();
 
         Token advanceOnMatch(TokenKind kind);
+        Token advanceOnMatchEither(TokenKind kind1, TokenKind kind2);
         //std::optional<BoolLiteral*> tryParseBoolLiteral();
         //std::optional<Token> tryMatchKind(TokenKind kind);
         //void skipUntil(TokenKind kind);
