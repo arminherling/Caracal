@@ -1,0 +1,13 @@
+﻿ConstantDeclaration: {
+    Left: {
+        Discard: _
+    }
+    Right: {
+        UnaryExpression: {
+            Operation: LogicalNegation
+            Expression: {
+                BoolLiteral: true
+            }
+        }
+    }
+}

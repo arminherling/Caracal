@@ -7,17 +7,17 @@
             Left: {
                 BinaryExpression: {
                     Left: {
-                        NumberLiteral: 2
+                        NumberLiteral: 1
                     }
-                    Operation: Multiplication
+                    Operation: Division
                     Right: {
                         NumberLiteral: 2
                     }
                 }
             }
-            Operation: Addition
+            Operation: Division
             Right: {
-                NumberLiteral: 5
+                NumberLiteral: 3
             }
         }
     }

@@ -1,0 +1,16 @@
+﻿ConstantDeclaration: {
+    Left: {
+        Discard: _
+    }
+    Right: {
+        BinaryExpression: {
+            Left: {
+                NumberLiteral: 1
+            }
+            Operation: Multiplication
+            Right: {
+                NumberLiteral: 2
+            }
+        }
+    }
+}

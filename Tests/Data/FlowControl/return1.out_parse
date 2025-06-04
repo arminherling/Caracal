@@ -1,9 +1,0 @@
-FunctionDefinitionStatement: {
-    NameExpression: func
-    ParametersNode(0): {
-    }
-    BlockNode(1): {
-        ReturnStatement: {
-        }
-    }
-}

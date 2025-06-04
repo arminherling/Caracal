@@ -1,0 +1,26 @@
+﻿ConstantDeclaration: {
+    Left: {
+        Discard: _
+    }
+    Right: {
+        BinaryExpression: {
+            Left: {
+                UnaryExpression: {
+                    Operation: ValueNegation
+                    Expression: {
+                        NumberLiteral: 1
+                    }
+                }
+            }
+            Operation: Subtraction
+            Right: {
+                UnaryExpression: {
+                    Operation: ValueNegation
+                    Expression: {
+                        NumberLiteral: 1
+                    }
+                }
+            }
+        }
+    }
+}
