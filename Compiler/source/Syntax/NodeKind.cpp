@@ -12,31 +12,22 @@ namespace Caracal
             case NodeKind::Error:
                 return QString("Error");
 
-            case NodeKind::CppBlockStatement:
-                return QString("CppBlockStatement");
             case NodeKind::ConstantDeclaration:
                 return QString("ConstantDeclaration");
             case NodeKind::VariableDeclaration:
                 return QString("VariableDeclaration");
+
+            case NodeKind::CppBlockStatement:
+                return QString("CppBlockStatement");
             case NodeKind::AssignmentStatement:
                 return QString("AssignmentStatement");
             case NodeKind::FunctionDefinitionStatement:
                 return QString("FunctionDefinitionStatement");
-            case NodeKind::BlockNode:
-                return QString("BlockNode");
-
-            case NodeKind::ParameterNode:
-                return QString("ParameterNode");
-            case NodeKind::ParametersNode:
-                return QString("ParametersNode");
-
-            case NodeKind::ReturnTypesNode:
-                return QString("ReturnTypesNode");
-            case NodeKind::ReturnTypeNode:
-                return QString("ReturnTypeNode");
-
             case NodeKind::ReturnStatement:
                 return QString("ReturnStatement");
+
+            case NodeKind::BinaryExpression:
+                return QString("BinaryExpression");
 
             case NodeKind::BoolLiteral:
                 return QString("BoolLiteral");
@@ -44,6 +35,17 @@ namespace Caracal
                 return QString("NumberLiteral");
             case NodeKind::StringLiteral:
                 return QString("StringLiteral");
+
+            case NodeKind::ParameterNode:
+                return QString("ParameterNode");
+            case NodeKind::ParametersNode:
+                return QString("ParametersNode");
+            case NodeKind::ReturnTypesNode:
+                return QString("ReturnTypesNode");
+            case NodeKind::ReturnTypeNode:
+                return QString("ReturnTypeNode");
+            case NodeKind::BlockNode:
+                return QString("BlockNode");
 
                 //case NodeKind::AssignmentStatement:
                 //    return QString("AssignmentStatement");
@@ -64,11 +66,9 @@ namespace Caracal
                 //case NodeKind::WhileStatement:
                 //    return QString("WhileStatement");
 
-
                 //case NodeKind::UnaryExpression:
                 //    return QString("UnaryExpression");
-                //case NodeKind::BinaryExpression:
-                //    return QString("BinaryExpression");
+
                 //case NodeKind::FunctionCallExpression:
                 //    return QString("FunctionCallExpression");
                 //case NodeKind::NameExpression:

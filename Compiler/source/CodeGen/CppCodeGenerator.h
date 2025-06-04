@@ -14,6 +14,7 @@
 #include <Syntax/ConstantDeclaration.h>
 #include <Syntax/VariableDeclaration.h>
 #include <Syntax/AssignmentStatement.h>
+#include <Syntax/BinaryExpression.h>
 
 namespace Caracal
 {
@@ -26,12 +27,13 @@ namespace Caracal
 
     private:
         void generateNode(Node* node);
-        void generateCppBlock(CppBlockStatement* node);
         void generateConstantDeclaration(ConstantDeclaration* node);
         void generateVariableDeclaration(VariableDeclaration* node);
+        void generateCppBlock(CppBlockStatement* node);
         void generateAssignmentStatement(AssignmentStatement* node);
         void generateFunctionDefinition(FunctionDefinitionStatement* node);
         void generateReturnStatement(ReturnStatement* node);
+        void generateBinaryExpression(BinaryExpression* node);
         void generateBoolLiteral(BoolLiteral* node);
         void generateNumberLiteral(NumberLiteral* node);
         void generateStringLiteral(StringLiteral* node);

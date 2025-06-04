@@ -14,6 +14,7 @@
 //#include <Syntax/TypeDefinitionStatement.h>
 //#include <Syntax/FieldDefinitionStatement.h>
 //#include <Syntax/MethodDefinitionStatement.h>
+#include <Syntax/BinaryExpression.h>
 //#include <Syntax/IfStatement.h>
 //#include <Syntax/WhileStatement.h>
 #include <Syntax/ReturnStatement.h>
@@ -224,7 +225,7 @@ namespace Caracal
     {
         auto firstColon = advanceOnMatch(TokenKind::Colon);
         auto secondColon = advanceOnMatch(TokenKind::Colon);
-        auto expression = parsePrimaryExpression();
+        auto expression = parseExpression();
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
         return std::make_unique<ConstantDeclaration>(identifier, firstColon, secondColon, std::move(expression), semicolon);
@@ -278,7 +279,43 @@ namespace Caracal
 
     ExpressionUPtr Parser::parseExpression()
     {
-        return parsePrimaryExpression();
+        return parseBinaryExpression(0);
+    }
+
+    ExpressionUPtr Parser::parseBinaryExpression(i32 parentPrecedence)
+    {
+        ExpressionUPtr left{};
+        //auto unaryOperatorToken = currentToken();
+
+        //auto unaryPrecedence = UnaryOperatorPrecedence(unaryOperatorToken.kind);
+        //if (unaryPrecedence == 0 || unaryPrecedence < parentPrecedence)
+        //{
+            left = parsePrimaryExpression();
+        //}
+        //else
+        //{
+        //    advanceCurrentIndex();
+        //    auto unaryOperator = convertUnaryOperatorTokenKindToEnum(unaryOperatorToken.kind);
+        //    auto expression = parseBinaryExpression(unaryPrecedence);
+        //    left = new UnaryExpression(unaryOperatorToken, unaryOperator, expression);
+        //}
+
+        while (true)
+        {
+            auto binaryOperatorToken = currentToken();
+            if (binaryOperatorToken.kind == TokenKind::EndOfFile)
+                break;
+
+            auto binaryPrecedence = binaryOperatorPrecedence(binaryOperatorToken.kind);
+            if (binaryPrecedence == 0 || binaryPrecedence <= parentPrecedence)
+                break;
+
+            advanceCurrentIndex();
+            auto right = parseBinaryExpression(binaryPrecedence);
+            left = std::make_unique<BinaryExpression>(std::move(left), binaryOperatorToken, std::move(right));
+        }
+
+        return left;
     }
 
     ExpressionUPtr Parser::parsePrimaryExpression()
@@ -938,26 +975,6 @@ namespace Caracal
 //    return lineDistanceSinceLastToken() >= 2;
 //}
 //
-//BinaryOperatornKind Parser::convertBinaryOperatorTokenKindToEnum(TokenKind kind) const
-//{
-//    switch (kind)
-//    {
-//        case TokenKind::DoubleColon:
-//            return BinaryOperatornKind::ScopeAccess;
-//        case TokenKind::Dot:
-//            return BinaryOperatornKind::MemberAccess;
-//        case TokenKind::Plus:
-//            return BinaryOperatornKind::Addition;
-//        case TokenKind::Minus:
-//            return BinaryOperatornKind::Subtraction;
-//        case TokenKind::Star:
-//            return BinaryOperatornKind::Multiplication;
-//        case TokenKind::Slash:
-//            return BinaryOperatornKind::Division;
-//        default:
-//            return BinaryOperatornKind::Invalid;
-//    }
-//}
 //
 //UnaryOperatornKind Parser::convertUnaryOperatorTokenKindToEnum(TokenKind kind) const
 //{

@@ -55,6 +55,24 @@ namespace Caracal
         return std::nullopt;
     }
 
+    [[nodiscard]] static QString StringifyBinaryOperator(BinaryOperatorKind kind)
+    {
+        switch (kind)
+        {
+            case BinaryOperatorKind::Addition:
+                return QStringLiteral("+");
+            case BinaryOperatorKind::Subtraction:
+                return QStringLiteral("-");
+            case BinaryOperatorKind::Multiplication:
+                return QStringLiteral("*");
+            case BinaryOperatorKind::Division:
+                return QStringLiteral("/");
+            default:
+                TODO("Implement StringifyBinaryOperator for all operators");
+                return QString();
+        }
+    }
+
     CppCodeGenerator::CppCodeGenerator(ParseTree& parseTree, i32 indentation)
         : BasePrinter(indentation)
         , m_parseTree{ parseTree }
@@ -82,11 +100,6 @@ namespace Caracal
     {
         switch (node->kind())
         {
-            case NodeKind::CppBlockStatement:
-            {
-                generateCppBlock((CppBlockStatement*)node);
-                break;
-            }
             case NodeKind::ConstantDeclaration:
             {
                 generateConstantDeclaration((ConstantDeclaration*)node);
@@ -95,6 +108,11 @@ namespace Caracal
             case NodeKind::VariableDeclaration:
             {
                 generateVariableDeclaration((VariableDeclaration*)node);
+                break;
+            }
+            case NodeKind::CppBlockStatement:
+            {
+                generateCppBlock((CppBlockStatement*)node);
                 break;
             }
             case NodeKind::AssignmentStatement:
@@ -110,6 +128,11 @@ namespace Caracal
             case NodeKind::ReturnStatement:
             {
                 generateReturnStatement((ReturnStatement*)node);
+                break;
+            }
+            case NodeKind::BinaryExpression:
+            {
+                generateBinaryExpression((BinaryExpression*)node);
                 break;
             }
             case NodeKind::BoolLiteral:
@@ -255,6 +278,15 @@ namespace Caracal
             generateNode(node->expression().value().get());
         }
         stream() << ";" << newLine();
+    }
+
+    void CppCodeGenerator::generateBinaryExpression(BinaryExpression* node)
+    {
+        const auto binaryOperator = StringifyBinaryOperator(node->binaryOperator());
+        
+        generateNode(node->leftExpression().get());
+        stream() << " " << binaryOperator << " ";
+        generateNode(node->rightExpression().get());
     }
 
     void CppCodeGenerator::generateBoolLiteral(BoolLiteral* node)

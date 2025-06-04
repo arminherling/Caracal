@@ -6,9 +6,8 @@
 #include <Syntax/CppBlockStatement.h>
 //#include <Syntax/ArgumentsNode.h>
 //#include <Syntax/AssignmentStatement.h>
-//#include <Syntax/BinaryExpression.h>
+#include <Syntax/BinaryExpression.h>
 #include <Syntax/BlockNode.h>
-//#include <Syntax/BoolLiteral.h>
 //#include <Syntax/DiscardLiteral.h>
 //#include <Syntax/EnumDefinitionStatement.h>
 //#include <Syntax/EnumFieldDefinitionStatement.h>
@@ -24,8 +23,6 @@
 //#include <Syntax/MemberAccessExpression.h>
 //#include <Syntax/MethodDefinitionStatement.h>
 //#include <Syntax/NameExpression.h>
-//#include <Syntax/NumberLiteral.h>
-//#include <Syntax/ParameterNode.h>
 #include <Syntax/ParametersNode.h>
 #include <Syntax/ParseTree.h>
 #include <Syntax/ReturnStatement.h>
@@ -79,7 +76,7 @@ namespace Caracal
         void prettyPrintStringLiteral(StringLiteral* string);
     //    void PrettyPrintGroupingExpression(GroupingExpression* grouping);
     //    void PrettyPrintUnaryExpression(UnaryExpression* unaryExpression);
-    //    void PrettyPrintBinaryExpression(BinaryExpression* binaryExpression);
+        void prettyPrintBinaryExpression(BinaryExpression* binaryExpression);
     //    void PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess);
     //    void PrettyPrintError(Error* error);
 

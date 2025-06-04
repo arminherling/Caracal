@@ -10,25 +10,26 @@ namespace Caracal
         Unknown,
         Error,
 
-        CppBlockStatement,
         ConstantDeclaration,
         VariableDeclaration,
+
+        CppBlockStatement,
         AssignmentStatement,
         FunctionDefinitionStatement,
-        BlockNode,
-
-        ParametersNode,
-        ParameterNode,
-
-        ReturnTypesNode,
-        ReturnTypeNode,
-
         ReturnStatement,
+
+        BinaryExpression,
 
         BoolLiteral,
         NumberLiteral,
         StringLiteral,
-        
+
+        ParametersNode,
+        ParameterNode,
+        ReturnTypesNode,
+        ReturnTypeNode,
+        BlockNode,
+
         //AssignmentStatement,
         //ExpressionStatement,
         //EnumDefinitionStatement,
@@ -40,7 +41,6 @@ namespace Caracal
         //WhileStatement,
 
         //UnaryExpression,
-        //BinaryExpression,
         //FunctionCallExpression,
         //NameExpression,
         //GroupingExpression,

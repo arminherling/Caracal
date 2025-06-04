@@ -70,7 +70,7 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
     return QString();
 }
 
-i32 UnaryOperatorPrecedence(TokenKind kind)
+i32 unaryOperatorPrecedence(TokenKind kind)
 {
     switch (kind)
     {
@@ -83,7 +83,7 @@ i32 UnaryOperatorPrecedence(TokenKind kind)
     return 0;
 }
 
-i32 BinaryOperatorPrecedence(TokenKind kind)
+i32 binaryOperatorPrecedence(TokenKind kind)
 {
     switch (kind)
     {
