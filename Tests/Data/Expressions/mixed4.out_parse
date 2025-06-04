@@ -1,6 +1,6 @@
-AssignmentStatement: {
+﻿ConstantDeclaration: {
     Left: {
-        DiscardLiteral: _
+        Discard: _
     }
     Right: {
         BinaryExpression: {

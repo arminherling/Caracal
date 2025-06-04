@@ -1,12 +1,15 @@
-//#include "GroupingExpression.h"
-//
-//GroupingExpression::GroupingExpression(
-//    const Token& openParenthesis,
-//    Expression* expression,
-//    const Token& closeParenthesis)
-//    : Expression(NodeKind::GroupingExpression)
-//    , m_openParenthesis{ openParenthesis }
-//    , m_expression{ expression }
-//    , m_closeParenthesis{ closeParenthesis }
-//{
-//}
+#include "GroupingExpression.h"
+
+namespace Caracal 
+{
+    GroupingExpression::GroupingExpression(
+        const Token& openParenthesis,
+        ExpressionUPtr&& expression,
+        const Token& closeParenthesis)
+        : Expression(NodeKind::GroupingExpression, expression->type())
+        , m_openParenthesis{ openParenthesis }
+        , m_expression{ std::move(expression)}
+        , m_closeParenthesis{ closeParenthesis }
+    {
+    }
+}

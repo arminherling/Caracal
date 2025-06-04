@@ -17,7 +17,7 @@
 #include <Syntax/ConstantDeclaration.h>
 #include <Syntax/VariableDeclaration.h>
 #include <Syntax/FunctionDefinitionStatement.h>
-//#include <Syntax/GroupingExpression.h>
+#include <Syntax/GroupingExpression.h>
 //#include <Syntax/IfStatement.h>
 //#include <Syntax/MemberAccessExpression.h>
 //#include <Syntax/MethodDefinitionStatement.h>
@@ -66,6 +66,7 @@ namespace Caracal
         void prettyPrintReturnTypesNode(ReturnTypesNode* returnTypes);
         void prettyPrintReturnTypeNode(ReturnTypeNode* returnType);
         void prettyPrintBlockNode(BlockNode* block);
+        void prettyPrintGroupingExpression(GroupingExpression* grouping);
         void prettyPrintUnaryExpression(UnaryExpression* unaryExpression);
         void prettyPrintBinaryExpression(BinaryExpression* binaryExpression);
         void prettyPrintNameExpression(NameExpression* name);
@@ -75,7 +76,6 @@ namespace Caracal
         void prettyPrintBoolLiteral(BoolLiteral* node);
         void prettyPrintNumberLiteral(NumberLiteral* number);
         void prettyPrintStringLiteral(StringLiteral* string);
-    //    void PrettyPrintGroupingExpression(GroupingExpression* grouping);
     //    void PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess);
     //    void PrettyPrintError(Error* error);
 

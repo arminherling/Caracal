@@ -4,20 +4,14 @@
 #include <Compiler/API.h>
 #include <Compiler/DiagnosticsBag.h>
 //#include <Syntax/ArgumentsNode.h>
-//#include <Syntax/BinaryExpression.h>
 #include <Syntax/BlockNode.h>
-//#include <Syntax/BoolLiteral.h>
 //#include <Syntax/EnumFieldDefinitionStatement.h>
 #include <Syntax/Expression.h>
-//#include <Syntax/GroupingExpression.h>
-//#include <Syntax/NumberLiteral.h>
 //#include <Syntax/ParameterNode.h>
 #include <Syntax/ParametersNode.h>
 #include <Syntax/ReturnTypesNode.h>
 #include <Syntax/ParseTree.h>
-//#include <Syntax/Statement.h>
 #include <Syntax/TokenBuffer.h>
-//#include <Syntax/UnaryExpression.h>
 
 namespace Caracal
 {
@@ -57,6 +51,7 @@ namespace Caracal
         ExpressionUPtr parseExpression();
         ExpressionUPtr parseBinaryExpression(i32 parentPrecedence);
         ExpressionUPtr parsePrimaryExpression();
+        ExpressionUPtr parseGroupingExpression();
         //Expression* parseFunctionCallOrNameExpression();
         //Expression* parseFunctionCallExpression();
         ParametersNodeUPtr parseParametersNode();
@@ -70,7 +65,6 @@ namespace Caracal
         //TypeName parseTypeNode();
         //NameExpression* parseNameExpression();
         //NumberLiteral* parseNumberLiteral();
-        //GroupingExpression* parseGroupingExpression();
         //EnumFieldDefinitionStatement* parseEnumFieldDefinitionStatement();
 
         Token advanceOnMatch(TokenKind kind);

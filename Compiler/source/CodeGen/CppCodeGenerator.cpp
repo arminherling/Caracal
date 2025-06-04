@@ -172,6 +172,11 @@ namespace Caracal
                 generateReturnStatement((ReturnStatement*)node);
                 break;
             }
+            case NodeKind::GroupingExpression:
+            {
+                generateGroupingExpression((GroupingExpression*)node);
+                break;
+            }
             case NodeKind::UnaryExpression:
             {
                 generateUnaryExpression((UnaryExpression*)node);
@@ -350,6 +355,13 @@ namespace Caracal
             generateNode(node->expression().value().get());
         }
         stream() << ";" << newLine();
+    }
+
+    void CppCodeGenerator::generateGroupingExpression(GroupingExpression* node)
+    {
+        stream() << indentation() << "(";
+        generateNode(node->expression().get());
+        stream() << ")";
     }
 
     void CppCodeGenerator::generateUnaryExpression(UnaryExpression* node)

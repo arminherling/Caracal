@@ -8,6 +8,7 @@
 #include <Syntax/AssignmentStatement.h>
 #include <Syntax/ConstantDeclaration.h>
 #include <Syntax/VariableDeclaration.h>
+#include <Syntax/GroupingExpression.h>
 //#include <Syntax/ExpressionStatement.h>
 #include <Syntax/FunctionDefinitionStatement.h>
 //#include <Syntax/EnumDefinitionStatement.h>
@@ -315,6 +316,10 @@ namespace Caracal
                 advanceCurrentIndex();
                 return std::make_unique<StringLiteral>(current);
             }
+            case TokenKind::OpenParenthesis:
+            {
+                return parseGroupingExpression();
+            }
             default:
             {
                 advanceCurrentIndex();
@@ -323,6 +328,15 @@ namespace Caracal
                 return std::make_unique<ErrorExpression>(current);
             }
         }
+    }
+    
+    ExpressionUPtr Parser::parseGroupingExpression()
+    {
+        auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
+        auto expression = parseExpression();
+        auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
+    
+        return std::make_unique<GroupingExpression>(openParenthesis, std::move(expression), closeParenthesis);
     }
 
     ParametersNodeUPtr Parser::parseParametersNode()
@@ -728,15 +742,7 @@ namespace Caracal
 //
 //    return new NumberLiteral(number);
 //}
-//
-//GroupingExpression* Parser::parseGroupingExpression()
-//{
-//    auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
-//    auto expression = parseExpression();
-//    auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
-//
-//    return new GroupingExpression(openParenthesis, expression, closeParenthesis);
-//}
+
 //
 //EnumFieldDefinitionStatement* Parser::parseEnumFieldDefinitionStatement()
 //{

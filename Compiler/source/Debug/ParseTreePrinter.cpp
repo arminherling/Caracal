@@ -53,6 +53,11 @@ namespace Caracal
                 prettyPrintReturnStatement((ReturnStatement*)node);
                 break;
             }
+            case NodeKind::GroupingExpression:
+            {
+                prettyPrintGroupingExpression((GroupingExpression*)node);
+                break;
+            }
             case NodeKind::UnaryExpression:
             {
                 prettyPrintUnaryExpression((UnaryExpression*)node);
@@ -332,8 +337,17 @@ namespace Caracal
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }
+
+    void ParseTreePrinter::prettyPrintGroupingExpression(GroupingExpression* grouping)
+    {
+        stream() << indentation() << stringify(grouping->kind()) << QString(": {") << newLine();
+        pushIndentation();
+        prettyPrintNode(grouping->expression().get());
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
 }
-//
+
 //void ParseTreePrinter::PrettyPrintExpressionStatement(ExpressionStatement* statement)
 //{
 //    stream() << Indentation() << stringify(statement->kind()) << QString(": {") << NewLine();
@@ -343,7 +357,6 @@ namespace Caracal
 //    PopIndentation();
 //    stream() << Indentation() << QString("}") << NewLine();
 //}
-
 //
 //void ParseTreePrinter::PrettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement)
 //{
@@ -503,11 +516,6 @@ namespace Caracal
 //    stream() << Indentation() << QString("}") << NewLine();
 //}
 
-//void ParseTreePrinter::PrettyPrintDiscardLiteral(DiscardLiteral* discard)
-//{
-//    stream() << Indentation() << stringify(discard->kind()) << ": _" << NewLine();
-//}
-//
 //void ParseTreePrinter::PrettyPrintFunctionCallExpression(FunctionCallExpression* functionCall)
 //{
 //    auto nameToken = functionCall->name();
@@ -531,59 +539,6 @@ namespace Caracal
 //    stream() << Indentation() << stringify(NodeKind::TypeName) << QString(": ") << lexeme << NewLine();
 //}
 //
-//void ParseTreePrinter::PrettyPrintBoolLiteral(BoolLiteral* node)
-//{
-//    auto value = node->value() ? QString("true") : QString("false");
-//    stream() << Indentation() << stringify(NodeKind::BoolLiteral) << QString(": ") << value << NewLine();
-//}
-//
-//void ParseTreePrinter::PrettyPrintNameExpression(NameExpression* name)
-//{
-//    auto token = name->identifier();
-//    auto lexeme = m_parseTree.tokens().getLexeme(token);
-//    stream() << Indentation() << stringify(name->kind()) << QString(": %1").arg(lexeme) << NewLine();
-//}
-//
-//void ParseTreePrinter::PrettyPrintNumberLiteral(NumberLiteral* number)
-//{
-//    auto token = number->token();
-//    auto lexeme = m_parseTree.tokens().getLexeme(token);
-//    stream() << Indentation() << stringify(number->kind()) << QString(": %1").arg(lexeme) << NewLine();
-//
-//    auto optionalType = number->type();
-//    if (!optionalType.has_value())
-//        return;
-//
-//    PrettyPrintTypeName(optionalType.value());
-//}
-//
-//void ParseTreePrinter::PrettyPrintGroupingExpression(GroupingExpression* grouping)
-//{
-//    stream() << Indentation() << stringify(grouping->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
-//
-//    PrettyPrintNode(grouping->expression());
-//
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//}
-//
-//void ParseTreePrinter::PrettyPrintUnaryExpression(UnaryExpression* unaryExpression)
-//{
-//    stream() << Indentation() << stringify(unaryExpression->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
-//
-//    stream() << Indentation() << QString("Operation: ") << StringifyUnaryOperation(unaryExpression->unaryOperator()) << NewLine();
-//
-//    stream() << Indentation() << QString("Expression: {") << NewLine();
-//    PushIndentation();
-//    PrettyPrintNode(unaryExpression->expression());
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//}
 //void ParseTreePrinter::PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess)
 //{
 //    stream() << Indentation() << stringify(memberAccess->kind()) << QString(": {") << NewLine();

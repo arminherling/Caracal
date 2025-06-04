@@ -18,6 +18,7 @@ namespace Caracal
         FunctionDefinitionStatement,
         ReturnStatement,
 
+        GroupingExpression,
         UnaryExpression,
         BinaryExpression,
         NameExpression,
@@ -33,7 +34,6 @@ namespace Caracal
         ReturnTypeNode,
         BlockNode,
 
-        //AssignmentStatement,
         //ExpressionStatement,
         //EnumDefinitionStatement,
         //EnumFieldDefinitionStatement,
@@ -43,15 +43,9 @@ namespace Caracal
         //IfStatement,
         //WhileStatement,
 
-        //UnaryExpression,
         //FunctionCallExpression,
-        //GroupingExpression,
         //ScopeAccessExpression,
         //MemberAccessExpression,
-
-        //DiscardLiteral,
-        //BoolLiteral,
-        //NumberLiteral,
 
         //TypeName,
         //ArgumentsNode,

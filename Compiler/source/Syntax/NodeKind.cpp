@@ -18,6 +18,7 @@ namespace Caracal
             { NodeKind::FunctionDefinitionStatement,    QStringLiteral("FunctionDefinitionStatement") },
             { NodeKind::ReturnStatement,                QStringLiteral("ReturnStatement") },
 
+            { NodeKind::GroupingExpression,             QStringLiteral("GroupingExpression") },
             { NodeKind::UnaryExpression,                QStringLiteral("UnaryExpression") },
             { NodeKind::BinaryExpression,               QStringLiteral("BinaryExpression") },
             { NodeKind::NameExpression,                 QStringLiteral("NameExpression") },
@@ -42,7 +43,6 @@ namespace Caracal
             //{ NodeKind::IfStatement,                    QStringLiteral("IfStatement") },
             //{ NodeKind::WhileStatement,                 QStringLiteral("WhileStatement") },
             //{ NodeKind::FunctionCallExpression,         QStringLiteral("FunctionCallExpression") },
-            //{ NodeKind::GroupingExpression,             QStringLiteral("GroupingExpression") },
             //{ NodeKind::ScopeAccessExpression,          QStringLiteral("ScopeAccessExpression") },
             //{ NodeKind::MemberAccessExpression,         QStringLiteral("MemberAccessExpression") },
             //{ NodeKind::TypeName,                       QStringLiteral("TypeName") },
