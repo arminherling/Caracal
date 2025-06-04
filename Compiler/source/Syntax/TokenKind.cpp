@@ -1,72 +1,46 @@
 #include <Syntax/TokenKind.h>
+#include <unordered_map>
 
 QString Stringify(TokenKind kind, bool /*quoteStrings*/)
 {
-    switch (kind)
-    {
-        case TokenKind::Unknown:
-            return QString("Unknown");
-        case TokenKind::Error:
-            return QString("Error");
-        case TokenKind::Plus:
-            return QString("Plus");
-        case TokenKind::Minus:
-            return QString("Minus");
-        case TokenKind::Star:
-            return QString("Star");
-        case TokenKind::Slash:
-            return QString("Slash");
-        case TokenKind::Dot:
-            return QString("Dot");
-        case TokenKind::Colon:
-            return QString("Colon");
-        case TokenKind::Semicolon:
-            return QString("Semicolon");
-        case TokenKind::Comma:
-            return QString("Comma");
-        case TokenKind::Equal:
-            return QString("Equal");
-        case TokenKind::Underscore:
-            return QString("Underscore");
-        case TokenKind::OpenParenthesis:
-            return QString("OpenParenthesis");
-        case TokenKind::CloseParenthesis:
-            return QString("CloseParenthesis");
-        case TokenKind::OpenBracket:
-            return QString("OpenBracket");
-        case TokenKind::CloseBracket:
-            return QString("CloseBracket");
-        case TokenKind::Identifier:
-            return QString("Identifier");
-        case TokenKind::Number:
-            return QString("Number");
-        case TokenKind::String:
-            return QString("String");
-        case TokenKind::DefKeyword: 
-            return QString("DefKeyword");
-        case TokenKind::EnumKeyword: 
-            return QString("EnumKeyword");
-        case TokenKind::TypeKeyword: 
-            return QString("TypeKeyword");
-        case TokenKind::IfKeyword: 
-            return QString("IfKeyword");
-        case TokenKind::WhileKeyword: 
-            return QString("WhileKeyword");
-        case TokenKind::ReturnKeyword: 
-            return QString("ReturnKeyword");
-        case TokenKind::TrueKeyword: 
-            return QString("TrueKeyword");
-        case TokenKind::FalseKeyword: 
-            return QString("FalseKeyword");
-        case TokenKind::RefKeyword: 
-            return QString("RefKeyword");
-        case TokenKind::CppKeyword: 
-            return QString("CppKeyword");
-        case TokenKind::EndOfFile:
-            return QString("EndOfFile");
-        default:
-            TODO("String for TokenKind value was not defined yet");
-    }
+    static const std::unordered_map<TokenKind, QString> kindToString{
+        { TokenKind::Unknown,           QStringLiteral("Unknown") },
+        { TokenKind::Error,             QStringLiteral("Error") },
+        { TokenKind::Plus,              QStringLiteral("Plus") },
+        { TokenKind::Minus,             QStringLiteral("Minus") },
+        { TokenKind::Star,              QStringLiteral("Star") },
+        { TokenKind::Slash,             QStringLiteral("Slash") },
+        { TokenKind::Dot,               QStringLiteral("Dot") },
+        { TokenKind::Colon,             QStringLiteral("Colon") },
+        { TokenKind::Semicolon,         QStringLiteral("Semicolon") },
+        { TokenKind::Comma,             QStringLiteral("Comma") },
+        { TokenKind::Equal,             QStringLiteral("Equal") },
+        { TokenKind::Underscore,        QStringLiteral("Underscore") },
+        { TokenKind::OpenParenthesis,   QStringLiteral("OpenParenthesis") },
+        { TokenKind::CloseParenthesis,  QStringLiteral("CloseParenthesis") },
+        { TokenKind::OpenBracket,       QStringLiteral("OpenBracket") },
+        { TokenKind::CloseBracket,      QStringLiteral("CloseBracket") },
+        { TokenKind::Identifier,        QStringLiteral("Identifier") },
+        { TokenKind::Number,            QStringLiteral("Number") },
+        { TokenKind::String,            QStringLiteral("String") },
+        { TokenKind::DefKeyword,        QStringLiteral("DefKeyword") },
+        { TokenKind::EnumKeyword,       QStringLiteral("EnumKeyword") },
+        { TokenKind::TypeKeyword,       QStringLiteral("TypeKeyword") },
+        { TokenKind::IfKeyword,         QStringLiteral("IfKeyword") },
+        { TokenKind::WhileKeyword,      QStringLiteral("WhileKeyword") },
+        { TokenKind::ReturnKeyword,     QStringLiteral("ReturnKeyword") },
+        { TokenKind::TrueKeyword,       QStringLiteral("TrueKeyword") },
+        { TokenKind::FalseKeyword,      QStringLiteral("FalseKeyword") },
+        { TokenKind::RefKeyword,        QStringLiteral("RefKeyword") },
+        { TokenKind::CppKeyword,        QStringLiteral("CppKeyword") },
+        { TokenKind::EndOfFile,         QStringLiteral("EndOfFile") },
+    };
+
+    const auto it = kindToString.find(kind);
+    if (it != kindToString.end())
+        return it->second;
+
+    TODO("String for TokenKind value was not defined yet");
     return QString();
 }
 

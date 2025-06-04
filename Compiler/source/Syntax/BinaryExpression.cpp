@@ -33,19 +33,18 @@ namespace Caracal
 
     QString stringify(BinaryOperatorKind operation)
     {
-        switch (operation)
-        {
-            case BinaryOperatorKind::Addition:
-                return QString("Addition");
-            case BinaryOperatorKind::Subtraction:
-                return QString("Subtraction");
-            case BinaryOperatorKind::Multiplication:
-                return QString("Multiplication");
-            case BinaryOperatorKind::Division:
-                return QString("Division");
-            default:
-                TODO("Invalid binary operator kind");
-        }
+        static const std::unordered_map<BinaryOperatorKind, QString> opToString{
+            { BinaryOperatorKind::Addition,        QStringLiteral("Addition") },
+            { BinaryOperatorKind::Subtraction,     QStringLiteral("Subtraction") },
+            { BinaryOperatorKind::Multiplication,  QStringLiteral("Multiplication") },
+            { BinaryOperatorKind::Division,        QStringLiteral("Division") }
+        };
+
+        const auto it = opToString.find(operation);
+        if (it != opToString.end())
+            return it->second;
+
+        TODO("Invalid binary operator kind");
         return QString();
     }
 }
