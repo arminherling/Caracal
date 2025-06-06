@@ -176,12 +176,12 @@ namespace Caracal
     StatementUPtr Parser::parseFunctionDefinitionStatement()
     {
         auto keyword = advanceOnMatch(TokenKind::DefKeyword);
-        auto name = advanceOnMatch(TokenKind::Identifier);
+        auto nameExpression = parseNameExpression();
         auto parameters = parseParametersNode();
         auto returnTypes = parseReturnTypesNode();
         auto body = parseFunctionBody();
 
-        return std::make_unique<FunctionDefinitionStatement>(keyword, name, std::move(parameters), std::move(returnTypes), std::move(body));
+        return std::make_unique<FunctionDefinitionStatement>(keyword, std::move(nameExpression), std::move(parameters), std::move(returnTypes), std::move(body));
     }
 
     StatementUPtr Parser::parseConstantDeclaration(ExpressionUPtr&& leftExpression)

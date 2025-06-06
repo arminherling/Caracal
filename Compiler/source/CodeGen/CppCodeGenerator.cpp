@@ -315,7 +315,7 @@ namespace Caracal
 
         const auto& returnTypes = node->returnTypesNode()->returnTypes();
         const auto hasReturnTypes = returnTypes.empty() == false;
-        const auto functionName = m_parseTree.tokens().getLexeme(node->nameToken());
+        const auto functionName = m_parseTree.tokens().getLexeme(node->nameExpression()->nameToken());
         const auto isMainFunction = functionName == QStringLiteral("main");
         if (!hasReturnTypes)
         {

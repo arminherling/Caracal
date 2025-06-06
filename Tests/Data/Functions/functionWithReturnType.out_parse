@@ -1,5 +1,7 @@
 ﻿FunctionDefinitionStatement: {
-    Name: random
+    NameExpression: {
+        Identifier: random
+    }
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {

@@ -1,5 +1,7 @@
 ﻿FunctionDefinitionStatement: {
-    Name: func
+    NameExpression: {
+        Identifier: func
+    }
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {

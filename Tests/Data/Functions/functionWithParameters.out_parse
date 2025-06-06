@@ -1,5 +1,7 @@
 ﻿FunctionDefinitionStatement: {
-    Name: sum
+    NameExpression: {
+        Identifier: sum
+    }
     ParametersNode(2): {
         ParameterNode: {
             Name: a

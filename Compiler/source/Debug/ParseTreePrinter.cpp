@@ -190,12 +190,9 @@ namespace Caracal
 
     void ParseTreePrinter::prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
     {
-        const auto& nameToken = statement->nameToken();
-        const auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
-
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
         pushIndentation();
-        stream() << indentation() << QString("Name: %1").arg(nameLexeme) << newLine();
+        prettyPrintNameExpression(statement->nameExpression().get());
         prettyPrintParametersNode(statement->parametersNode().get());
         prettyPrintReturnTypesNode(statement->returnTypesNode().get());
         prettyPrintBlockNode(statement->bodyNode().get());

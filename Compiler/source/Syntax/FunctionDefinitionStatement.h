@@ -14,20 +14,20 @@ namespace Caracal
     public:
         FunctionDefinitionStatement(
             const Token& keywordToken,
-            const Token& nameToken,
+            NameExpressionUPtr&& nameExpression,
             ParametersNodeUPtr&& parametersNode,
             ReturnTypesNodeUPtr&& returnTypesNode,
             BlockNodeUPtr&& bodyNode);
 
         [[nodiscard]] const Token& keywordToken() const noexcept { return m_keywordToken; }
-        [[nodiscard]] const Token& nameToken() const noexcept { return m_nameToken; }
+        [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }
         [[nodiscard]] const ParametersNodeUPtr& parametersNode()  const noexcept { return m_parametersNode; }
         [[nodiscard]] const ReturnTypesNodeUPtr& returnTypesNode() const noexcept { return m_returnTypesNode; }
         [[nodiscard]] const BlockNodeUPtr& bodyNode() const noexcept { return m_bodyNode; }
 
     private:
         Token m_keywordToken;
-        Token m_nameToken;
+        NameExpressionUPtr m_nameExpression;
         ParametersNodeUPtr m_parametersNode;
         ReturnTypesNodeUPtr m_returnTypesNode;
         BlockNodeUPtr m_bodyNode;

@@ -4,7 +4,9 @@
     }
 }
 FunctionDefinitionStatement: {
-    Name: main
+    NameExpression: {
+        Identifier: main
+    }
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {
