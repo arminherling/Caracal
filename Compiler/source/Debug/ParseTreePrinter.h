@@ -61,7 +61,7 @@ namespace Caracal
     //    void PrettyPrintWhileStatement(WhileStatement* statement);
         void prettyPrintReturnStatement(ReturnStatement* statement);
     //    void PrettyPrintArgumentsNode(ArgumentsNode* arguments);
-    //    void PrettyPrintParameterNode(ParameterNode* parameter);
+        void prettyPrintParameterNode(ParameterNode* parameter);
         void prettyPrintParametersNode(ParametersNode* parameters);
         void prettyPrintReturnTypesNode(ReturnTypesNode* returnTypes);
         void prettyPrintTypeNameNode(TypeNameNode* returnType);

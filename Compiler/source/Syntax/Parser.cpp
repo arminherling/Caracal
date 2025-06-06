@@ -227,6 +227,15 @@ namespace Caracal
         return std::make_unique<BlockNode>(openBracket, std::move(statements), closeBracket);
     }
 
+    ParameterNodeUPtr Parser::parseParameterNode()
+    {
+        auto name = parseNameExpression();
+        auto colon = advanceOnMatch(TokenKind::Colon);
+        auto typeName = parseTypeNameNode();
+
+        return std::make_unique<ParameterNode>(std::move(name), colon, std::move(typeName));
+    }
+
     StatementUPtr Parser::parseReturnStatement()
     {
         auto returnKeyword = advanceOnMatch(TokenKind::ReturnKeyword);
@@ -359,21 +368,22 @@ namespace Caracal
         auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
 
         std::vector<ParameterNodeUPtr> parameters;
-        //    auto current = currentToken();
-        //    while (current.kind != TokenKind::CloseParenthesis)
-        //    {
-        //        parameters.append(parseParameterNode());
-        //        // TODO we need a function like skipUntil but for multiple tokens until we find a comma, identifier closing parent or EOF
-        //        if (currentToken().kind == TokenKind::Comma)
-        //        {
-        //            advanceCurrentIndex();
-        //
-        //            // if(CurrentToken().kind == TokenKind::CloseParenthesis)
-        //            // Too many commas or too few parameters
-        //        }
-        //        current = currentToken();
-        //    }
-        //
+        auto current = currentToken();
+        while (current.kind != TokenKind::CloseParenthesis)
+        {
+            auto parameter = parseParameterNode();
+            parameters.push_back(std::move(parameter));
+            // TODO we need a function like skipUntil but for multiple tokens until we find a comma, identifier closing parent or EOF
+            if (currentToken().kind == TokenKind::Comma)
+            {
+                advanceCurrentIndex();
+        
+                // if(CurrentToken().kind == TokenKind::CloseParenthesis)
+                // Too many commas or too few parameters
+            }
+            current = currentToken();
+        }
+        
         auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
 
         return std::make_unique<ParametersNode>(openParenthesis, std::move(parameters), closeParenthesis);
@@ -760,17 +770,6 @@ namespace Caracal
 //
 //    return new EnumFieldDefinitionStatement(memberName);
 //}
-
-//
-//ParameterNode* Parser::parseParameterNode()
-//{
-//    auto name = parseNameExpression();
-//    auto colon = advanceOnMatch(TokenKind::Colon);
-//    auto type = parseTypeNode();
-//
-//    return new ParameterNode(name, colon, type);
-//}
-//
 
 //
 //void Parser::skipUntil(TokenKind kind)

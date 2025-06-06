@@ -196,9 +196,9 @@ namespace Caracal
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
         pushIndentation();
         stream() << indentation() << QString("Name: %1").arg(nameLexeme) << newLine();
-        prettyPrintParametersNode(statement->parameters().get());
-        prettyPrintReturnTypesNode(statement->returnTypes().get());
-        prettyPrintBlockNode(statement->body().get());
+        prettyPrintParametersNode(statement->parametersNode().get());
+        prettyPrintReturnTypesNode(statement->returnTypesNode().get());
+        prettyPrintBlockNode(statement->bodyNode().get());
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }
@@ -286,6 +286,20 @@ namespace Caracal
         stream() << indentation() << stringify(string->kind()) << QString(": %1").arg(lexeme) << newLine();
     }
 
+    void ParseTreePrinter::prettyPrintParameterNode(ParameterNode* parameter)
+    {
+        stream() << indentation() << stringify(parameter->kind()) << QString(": {") << newLine();
+        pushIndentation();
+
+        const auto& nameToken = parameter->nameExpression()->nameToken();
+        const auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
+        stream() << indentation() << QString("Name: %1").arg(nameLexeme) << newLine();
+        prettyPrintTypeNameNode(parameter->typeName().get());
+
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+
     void ParseTreePrinter::prettyPrintParametersNode(ParametersNode* node)
     {
         const auto& parameters = node->parameters();
@@ -293,7 +307,7 @@ namespace Caracal
         pushIndentation();
 
         for (const auto& parameter : parameters)
-            prettyPrintNode(parameter.get());
+            prettyPrintParameterNode(parameter.get());
 
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
@@ -306,7 +320,7 @@ namespace Caracal
         pushIndentation();
 
         for (const auto& returnType : returnTypes)
-            prettyPrintNode(returnType.get());
+            prettyPrintTypeNameNode(returnType.get());
 
         popIndentation();
         stream() << indentation() << QString("}") << newLine();

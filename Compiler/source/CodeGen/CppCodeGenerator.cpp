@@ -313,7 +313,7 @@ namespace Caracal
         const auto oldScope = m_currentScope;
         m_currentScope = Scope::Function;
 
-        const auto& returnTypes = node->returnTypes()->returnTypes();
+        const auto& returnTypes = node->returnTypesNode()->returnTypes();
         const auto hasReturnTypes = returnTypes.empty() == false;
         const auto functionName = m_parseTree.tokens().getLexeme(node->nameToken());
         const auto isMainFunction = functionName == QStringLiteral("main");
@@ -335,29 +335,40 @@ namespace Caracal
                 TODO("Implement multiple return types in CppCodeGenerator");
             }
 
-            const auto type = returnTypes[0]->type();
-            const auto include = GetCppIncludeForType(type);
+            const auto returnType = returnTypes[0]->type();
+            const auto include = GetCppIncludeForType(returnType);
             if (include.has_value())
             {
                 m_cppIncludes.append(include.value() % newLine());
             }
 
-            const auto typeName = GetCppNameForType(type);
-            stream() << indentation() << typeName;
+            const auto returnTypeName = GetCppNameForType(returnType);
+            stream() << indentation() << returnTypeName;
         }
-        stream() << indentation() << " " << functionName;
+        stream() << " " << functionName << "(";
 
-        const auto hasParameters = node->parameters()->parameters().empty() == false;
-        if (!hasParameters)
+        const auto& parameters = node->parametersNode()->parameters();
+        for (const auto& parameter : parameters)
         {
-            stream() << indentation() << "()" << newLine();
-        }
-        else
-        {
-            TODO("Implement parameters in CppCodeGenerator");
-        }
+            const auto typeName = GetCppNameForType(parameter->typeName()->type());
+            if (parameter->typeName()->isReference())
+            {
+                stream() << typeName << "& ";
+            }
+            else
+            {
+                stream() << typeName << " ";
+            }
 
-        const auto& body = node->body();
+            generateNameExpression(parameter->nameExpression().get());
+            if (&parameter != &parameters.back())
+            {
+                stream() << ", ";
+            }
+        }
+        stream() << ")" << newLine();
+
+        const auto& body = node->bodyNode();
         stream() << indentation() << "{" << newLine();
         pushIndentation();
 

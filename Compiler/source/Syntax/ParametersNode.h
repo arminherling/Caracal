@@ -15,11 +15,11 @@ namespace Caracal
             std::vector<ParameterNodeUPtr>&& parameters,
             const Token& closeParenthesisToken);
 
-        //ParametersNode(const ParametersNode&) = delete;
-        //ParametersNode& operator=(const ParametersNode&) = delete;
+        ParametersNode(const ParametersNode&) = delete;
+        ParametersNode& operator=(const ParametersNode&) = delete;
 
-        //ParametersNode(ParametersNode&&) = default;
-        //ParametersNode& operator=(ParametersNode&&) = default;
+        ParametersNode(ParametersNode&&) = default;
+        ParametersNode& operator=(ParametersNode&&) = default;
 
         [[nodiscard]] const Token& openParenthesisToken() const noexcept { return m_openParenthesisToken; }
         [[nodiscard]] const std::vector<ParameterNodeUPtr>& parameters() const noexcept { return m_parameters; }

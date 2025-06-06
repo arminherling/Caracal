@@ -5,15 +5,15 @@ namespace Caracal
     FunctionDefinitionStatement::FunctionDefinitionStatement(
         const Token& keywordToken,
         const Token& nameToken,
-        ParametersNodeUPtr&& parameters, 
-        ReturnTypesNodeUPtr&& returnTypes,
-        BlockNodeUPtr&& body)
+        ParametersNodeUPtr&& parametersNode,
+        ReturnTypesNodeUPtr&& returnTypesNode,
+        BlockNodeUPtr&& bodyNode)
         : Statement(NodeKind::FunctionDefinitionStatement, Type::Undefined())
         , m_keywordToken{ keywordToken }
         , m_nameToken{ nameToken }
-        , m_parameters{ std::move(parameters) }
-        , m_returnTypes{ std::move(returnTypes) }
-        , m_body{ std::move(body) }
+        , m_parametersNode{ std::move(parametersNode) }
+        , m_returnTypesNode{ std::move(returnTypesNode) }
+        , m_bodyNode{ std::move(bodyNode) }
     {
     }
 }

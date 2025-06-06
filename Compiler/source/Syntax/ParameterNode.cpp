@@ -2,8 +2,14 @@
 
 namespace Caracal
 {
-    ParameterNode::ParameterNode()
-        : Node(NodeKind::ParameterNode, Type::Undefined())
+    ParameterNode::ParameterNode(
+        NameExpressionUPtr&& nameExpression, 
+        const Token& colonToken, 
+        TypeNameNodeUPtr&& typeName)
+        : Node(NodeKind::ParameterNode, typeName->type())
+        , m_nameExpression{ std::move(nameExpression) }
+        , m_colonToken{ colonToken }
+        , m_typeName{ std::move(typeName) }
     {
     }
 }

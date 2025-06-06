@@ -65,7 +65,7 @@ namespace Caracal
         //BlockNode* parseTypeBody();
         //BlockNode* parseMethodBody();
         BlockNodeUPtr parseBlockNode(StatementScope scope);
-        //ParameterNodeUPtr parseParameterNode();
+        ParameterNodeUPtr parseParameterNode();
         //NumberLiteral* parseNumberLiteral();
         //EnumFieldDefinitionStatement* parseEnumFieldDefinitionStatement();
 
