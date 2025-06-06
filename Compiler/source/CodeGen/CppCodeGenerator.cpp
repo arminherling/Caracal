@@ -239,7 +239,7 @@ namespace Caracal
         {
             m_cppIncludes.append(include.value() % newLine());
         }
-        stream() << indentation() << "constexpr auto" ;
+        stream() << indentation() << "const auto" ;
         
         // check if right expression is a ref
         if (node->rightExpression()->kind() == NodeKind::UnaryExpression)
@@ -287,7 +287,7 @@ namespace Caracal
 
     void CppCodeGenerator::generateGlobalDiscardedExpression(Expression* expression)
     {
-        stream() << indentation() << "constexpr auto _" << m_discardCount++ << " = ";
+        stream() << indentation() << "const auto _" << m_discardCount++ << " = ";
         generateNode(expression);
         stream() << ";" << newLine();
     }

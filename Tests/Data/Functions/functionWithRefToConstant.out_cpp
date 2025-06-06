@@ -1,6 +1,6 @@
 ﻿int main()
 {
-    constexpr auto a = true;
-    constexpr auto& b = a;
+    const auto a = true;
+    const auto& b = a;
 }
 
