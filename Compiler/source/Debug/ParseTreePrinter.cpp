@@ -190,7 +190,7 @@ namespace Caracal
 
     void ParseTreePrinter::prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
     {
-        const auto& nameToken = statement->name();
+        const auto& nameToken = statement->nameToken();
         const auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
 
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
@@ -270,19 +270,19 @@ namespace Caracal
 
     void ParseTreePrinter::prettyPrintBoolLiteral(BoolLiteral* node)
     {
-        const auto lexeme = m_parseTree.tokens().getLexeme(node->token());
+        const auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
         stream() << indentation() << stringify(node->kind()) << QString(": %1").arg(lexeme) << newLine();
     }
 
     void ParseTreePrinter::prettyPrintNumberLiteral(NumberLiteral* number)
     {
-        const auto lexeme = m_parseTree.tokens().getLexeme(number->token());
+        const auto lexeme = m_parseTree.tokens().getLexeme(number->literalToken());
         stream() << indentation() << stringify(number->kind()) << QString(": %1").arg(lexeme) << newLine();
     }
 
     void ParseTreePrinter::prettyPrintStringLiteral(StringLiteral* string)
     {
-        const auto lexeme = m_parseTree.tokens().getLexeme(string->token());
+        const auto lexeme = m_parseTree.tokens().getLexeme(string->literalToken());
         stream() << indentation() << stringify(string->kind()) << QString(": %1").arg(lexeme) << newLine();
     }
 

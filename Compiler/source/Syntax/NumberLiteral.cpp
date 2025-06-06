@@ -2,9 +2,9 @@
 
 namespace Caracal
 {
-    NumberLiteral::NumberLiteral(const Token& token)
+    NumberLiteral::NumberLiteral(const Token& literalToken)
         : Expression(NodeKind::NumberLiteral, Type::Undefined())
-        , m_token{ token }
+        , m_literalToken{ literalToken }
     {
     }
 }

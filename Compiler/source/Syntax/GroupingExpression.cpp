@@ -3,13 +3,13 @@
 namespace Caracal 
 {
     GroupingExpression::GroupingExpression(
-        const Token& openParenthesis,
+        const Token& openParenthesisToken,
         ExpressionUPtr&& expression,
-        const Token& closeParenthesis)
+        const Token& closeParenthesisToken)
         : Expression(NodeKind::GroupingExpression, expression->type())
-        , m_openParenthesis{ openParenthesis }
+        , m_openParenthesisToken{ openParenthesisToken }
         , m_expression{ std::move(expression)}
-        , m_closeParenthesis{ closeParenthesis }
+        , m_closeParenthesisToken{ closeParenthesisToken }
     {
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Caracal
 {
-    StringLiteral::StringLiteral(const Token& token)
+    StringLiteral::StringLiteral(const Token& literalToken)
         : Expression(NodeKind::StringLiteral, Type::String())
-        , m_token{ token }
+        , m_literalToken{ literalToken }
     {
     }
 }

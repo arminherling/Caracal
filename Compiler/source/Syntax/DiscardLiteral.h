@@ -9,11 +9,11 @@ namespace Caracal
     class COMPILER_API DiscardLiteral : public Expression
     {
     public:
-        DiscardLiteral(const Token& token);
+        DiscardLiteral(const Token& underscoreToken);
 
-        [[nodiscard]] const Token& token() const noexcept { return m_token; }
+        [[nodiscard]] const Token& underscoreToken() const noexcept { return m_underscoreToken; }
 
     private:
-        Token m_token;
+        Token m_underscoreToken;
     };
 }

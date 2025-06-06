@@ -9,11 +9,11 @@ namespace Caracal
     class COMPILER_API ErrorExpression : public Expression
     {
     public:
-        explicit ErrorExpression(const Token& token);
+        explicit ErrorExpression(const Token& errorToken);
 
-        [[nodiscard]] const Token& token() const noexcept { return m_token; }
+        [[nodiscard]] const Token& errorToken() const noexcept { return m_errorToken; }
 
     private:
-        Token m_token;
+        Token m_errorToken;
     };
 }

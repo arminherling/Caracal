@@ -10,17 +10,17 @@ namespace Caracal
     {
     public:
         GroupingExpression(
-            const Token& openParenthesis,
+            const Token& openParenthesisToken,
             ExpressionUPtr&& expression,
-            const Token& closeParenthesis);
+            const Token& closeParenthesisToken);
 
-        [[nodiscard]] const Token& openParenthesis() const noexcept { return m_openParenthesis; }
+        [[nodiscard]] const Token& openParenthesisToken() const noexcept { return m_openParenthesisToken; }
         [[nodiscard]] const ExpressionUPtr& expression() const noexcept { return m_expression; }
-        [[nodiscard]] const Token& closeParenthesis() const noexcept { return m_closeParenthesis; }
+        [[nodiscard]] const Token& closeParenthesisToken() const noexcept { return m_closeParenthesisToken; }
 
     private:
-        Token m_openParenthesis;
+        Token m_openParenthesisToken;
         ExpressionUPtr m_expression;
-        Token m_closeParenthesis;
+        Token m_closeParenthesisToken;
     };
 }

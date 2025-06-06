@@ -315,7 +315,7 @@ namespace Caracal
 
         const auto& returnTypes = node->returnTypes()->returnTypes();
         const auto hasReturnTypes = returnTypes.empty() == false;
-        const auto functionName = m_parseTree.tokens().getLexeme(node->name());
+        const auto functionName = m_parseTree.tokens().getLexeme(node->nameToken());
         const auto isMainFunction = functionName == QStringLiteral("main");
         if (!hasReturnTypes)
         {
@@ -422,13 +422,13 @@ namespace Caracal
 
     void CppCodeGenerator::generateNumberLiteral(NumberLiteral* node)
     {
-        auto lexeme = m_parseTree.tokens().getLexeme(node->token());
+        auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
         stream() << lexeme;
     }
 
     void CppCodeGenerator::generateStringLiteral(StringLiteral* node)
     {
-        auto lexeme = m_parseTree.tokens().getLexeme(node->token());
+        auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
         stream() <<  QString("std::string{%1}").arg(lexeme);
     }
 

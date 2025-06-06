@@ -4,16 +4,16 @@ namespace Caracal
 {
     VariableDeclaration::VariableDeclaration(
         ExpressionUPtr&& leftExpression,
-        const Token& colon,
-        const Token& equal,
+        const Token& colonToken,
+        const Token& equalToken,
         ExpressionUPtr&& rightExpression,
-        const Token& semicolon)
+        const Token& semicolonToken)
         : Statement(NodeKind::VariableDeclaration, rightExpression->type())
         , m_leftExpression{ std::move(leftExpression) }
-        , m_colon{ colon }
-        , m_equal{ equal }
+        , m_colonToken{ colonToken }
+        , m_equalToken{ equalToken }
         , m_rightExpression{ std::move(rightExpression) }
-        , m_semicolon{ semicolon }
+        , m_semicolonToken{ semicolonToken }
     {
     }
 }

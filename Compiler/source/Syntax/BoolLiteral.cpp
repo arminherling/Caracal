@@ -2,9 +2,9 @@
 
 namespace Caracal
 {
-    BoolLiteral::BoolLiteral(const Token& token, bool value)
+    BoolLiteral::BoolLiteral(const Token& literalToken, bool value)
         : Expression(NodeKind::BoolLiteral, Type::Bool())
-        , m_token{ token }
+        , m_literalToken{ literalToken }
         , m_value{ value }
     {
     }

@@ -11,9 +11,9 @@ namespace Caracal
     {
     public:
         ReturnStatement(
-            const Token& returnKeyword,
+            const Token& keywordToken,
             std::optional<ExpressionUPtr>&& expression,
-            const Token& semicolon);
+            const Token& semicolonToken);
 
         ReturnStatement(const ReturnStatement&) = delete;
         ReturnStatement& operator=(const ReturnStatement&) = delete;
@@ -21,13 +21,13 @@ namespace Caracal
         ReturnStatement(ReturnStatement&&) = default;
         ReturnStatement& operator=(ReturnStatement&&) = default;
 
-        [[nodiscard]] const Token& returnKeyword() const noexcept { return m_returnKeyword; }
+        [[nodiscard]] const Token& keywordToken() const noexcept { return m_keywordToken; }
         [[nodiscard]] const std::optional<ExpressionUPtr>& expression() const noexcept { return m_expression; }
-        [[nodiscard]] const Token& semicolon() const noexcept { return m_semicolon; }
+        [[nodiscard]] const Token& semicolonToken() const noexcept { return m_semicolonToken; }
 
     private:
-        Token m_returnKeyword;
+        Token m_keywordToken;
         std::optional<ExpressionUPtr> m_expression;
-        Token m_semicolon;
+        Token m_semicolonToken;
     };
 }

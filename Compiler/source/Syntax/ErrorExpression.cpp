@@ -2,9 +2,9 @@
 
 namespace Caracal
 {
-    ErrorExpression::ErrorExpression(const Token& token)
+    ErrorExpression::ErrorExpression(const Token& errorToken)
         : Expression(NodeKind::Error, Type::Undefined())
-        , m_token{ token }
+        , m_errorToken{ errorToken }
     {
     }
 }

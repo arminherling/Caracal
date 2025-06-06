@@ -2,11 +2,14 @@
 
 namespace Caracal
 {
-    ParametersNode::ParametersNode(const Token& openParenthesis, std::vector<ParameterNodeUPtr>&& parameters, const Token& closeParenthesis)
+    ParametersNode::ParametersNode(
+        const Token& openParenthesisToken, 
+        std::vector<ParameterNodeUPtr>&& parameters, 
+        const Token& closeParenthesisToken)
         : Node(NodeKind::ParametersNode, Type::Undefined())
-        , m_openParenthesis{ openParenthesis }
+        , m_openParenthesisToken{ openParenthesisToken }
         , m_parameters{ std::move(parameters) }
-        , m_closeParenthesis{ closeParenthesis }
+        , m_closeParenthesisToken{ closeParenthesisToken }
     {
     }
 }

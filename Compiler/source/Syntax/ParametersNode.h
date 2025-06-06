@@ -11,24 +11,24 @@ namespace Caracal
     {
     public:
         ParametersNode(
-            const Token& openParenthesis,
+            const Token& openParenthesisToken,
             std::vector<ParameterNodeUPtr>&& parameters,
-            const Token& closeParenthesis);
+            const Token& closeParenthesisToken);
 
-        ParametersNode(const ParametersNode&) = delete;
-        ParametersNode& operator=(const ParametersNode&) = delete;
+        //ParametersNode(const ParametersNode&) = delete;
+        //ParametersNode& operator=(const ParametersNode&) = delete;
 
-        ParametersNode(ParametersNode&&) = default;
-        ParametersNode& operator=(ParametersNode&&) = default;
+        //ParametersNode(ParametersNode&&) = default;
+        //ParametersNode& operator=(ParametersNode&&) = default;
 
-        [[nodiscard]] const Token& openParenthesis() const noexcept { return m_openParenthesis; }
+        [[nodiscard]] const Token& openParenthesisToken() const noexcept { return m_openParenthesisToken; }
         [[nodiscard]] const std::vector<ParameterNodeUPtr>& parameters() const noexcept { return m_parameters; }
-        [[nodiscard]] const Token& closeParenthesis() const noexcept { return m_closeParenthesis; }
+        [[nodiscard]] const Token& closeParenthesisToken() const noexcept { return m_closeParenthesisToken; }
 
     private:
-        Token m_openParenthesis;
+        Token m_openParenthesisToken;
         std::vector<ParameterNodeUPtr> m_parameters;
-        Token m_closeParenthesis;
+        Token m_closeParenthesisToken;
     };
 
     using ParametersNodeUPtr = std::unique_ptr<ParametersNode>;

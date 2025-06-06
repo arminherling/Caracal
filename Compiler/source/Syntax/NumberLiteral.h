@@ -9,11 +9,11 @@ namespace Caracal
     class COMPILER_API NumberLiteral : public Expression
     {
     public:
-        explicit NumberLiteral(const Token& token);
+        explicit NumberLiteral(const Token& literalToken);
 
-        [[nodiscard]] const Token& token() const noexcept { return m_token; }
+        [[nodiscard]] const Token& literalToken() const noexcept { return m_literalToken; }
 
     private:
-        Token m_token;
+        Token m_literalToken;
     };
 }

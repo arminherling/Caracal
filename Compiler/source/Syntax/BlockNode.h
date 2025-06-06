@@ -11,9 +11,9 @@ namespace Caracal
     {
     public:
         BlockNode(
-            const Token& openBracket,
+            const Token& openBracketToken,
             std::vector<StatementUPtr>&& statements,
-            const Token& closeBracket);
+            const Token& closeBracketToken);
 
         BlockNode(const BlockNode&) = delete;
         BlockNode& operator=(const BlockNode&) = delete;
@@ -21,14 +21,14 @@ namespace Caracal
         BlockNode(BlockNode&&) = default;
         BlockNode& operator=(BlockNode&&) = default;
 
-        [[nodiscard]] const Token& openBracket() const noexcept { return m_openBracket; }
+        [[nodiscard]] const Token& openBracketToken() const noexcept { return m_openBracketToken; }
         [[nodiscard]] const std::vector<StatementUPtr>& statements() const noexcept { return m_statements; }
-        [[nodiscard]] const Token& closeBracket() const noexcept { return m_closeBracket; }
+        [[nodiscard]] const Token& closeBracketToken() const noexcept { return m_closeBracketToken; }
 
     private:
-        Token m_openBracket;
+        Token m_openBracketToken;
         std::vector<StatementUPtr> m_statements;
-        Token m_closeBracket;
+        Token m_closeBracketToken;
     };
 
     using BlockNodeUPtr = std::unique_ptr<BlockNode>;

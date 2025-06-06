@@ -12,22 +12,22 @@ namespace Caracal
     public:
         ConstantDeclaration(
             ExpressionUPtr&& leftExpression,
-            const Token& firstColon,
-            const Token& secondColon,
+            const Token& firstColonToken,
+            const Token& secondColonToken,
             ExpressionUPtr&& rightExpression,
-            const Token& semicolon);
+            const Token& semicolonToken);
 
         [[nodiscard]] const ExpressionUPtr& leftExpression() const noexcept { return m_leftExpression; }
-        [[nodiscard]] const Token& firstColon() const noexcept { return m_firstColon; }
-        [[nodiscard]] const Token& secondColon() const noexcept { return m_secondColon; }
+        [[nodiscard]] const Token& firstColonToken() const noexcept { return m_firstColonToken; }
+        [[nodiscard]] const Token& secondColonToken() const noexcept { return m_secondColonToken; }
         [[nodiscard]] const ExpressionUPtr& rightExpression() const noexcept { return m_rightExpression; }
-        [[nodiscard]] const Token& semicolon() const noexcept { return m_semicolon; }
+        [[nodiscard]] const Token& semicolonToken() const noexcept { return m_semicolonToken; }
 
     private:
         ExpressionUPtr m_leftExpression;
-        Token m_firstColon;
-        Token m_secondColon;
+        Token m_firstColonToken;
+        Token m_secondColonToken;
         ExpressionUPtr m_rightExpression;
-        Token m_semicolon;
+        Token m_semicolonToken;
     };
 }
