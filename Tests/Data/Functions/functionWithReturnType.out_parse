@@ -1,6 +1,6 @@
 ﻿FunctionDefinitionStatement: {
     NameExpression: {
-        Identifier: random
+        Name: random
     }
     ParametersNode(0): {
     }

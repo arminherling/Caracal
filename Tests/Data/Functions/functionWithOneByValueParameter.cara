@@ -1,4 +1,4 @@
 def square(x: i32) 
 { 
-    return x * x 
+    return x * x;
 }

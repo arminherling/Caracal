@@ -30,8 +30,8 @@ namespace
 
         std::cout << "      generateCpp(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
-        AalTest::EqualsFile(output, QFileInfo(outputFilePath));
         AalTest::IsTrue(diagnostics.Diagnostics().empty());
+        AalTest::EqualsFile(output, QFileInfo(outputFilePath));
     }
 
     QList<std::tuple<QString, QString, QString, QString>> FileTests_Data()

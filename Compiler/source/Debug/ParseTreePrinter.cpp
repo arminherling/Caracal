@@ -255,7 +255,7 @@ namespace Caracal
         pushIndentation();
         const auto& identifierToken = name->nameToken();
         const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
-        stream() << indentation() << QString("Identifier: %1").arg(identifierLexeme) << newLine();
+        stream() << indentation() << QString("Name: %1").arg(identifierLexeme) << newLine();
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }
@@ -330,8 +330,12 @@ namespace Caracal
 
         const auto type = node->type();
         const auto typeName = TypeDatabase::TryFindName(type);
-        stream() << indentation() << QString("Type: %1").arg(typeName) << newLine();
 
+        stream() << indentation() << QString("Type: %1").arg(typeName) << newLine();
+        if (node->isReference())
+        {
+            stream() << indentation() << QString("Ref: true") << newLine();
+        }
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }
@@ -539,16 +543,7 @@ namespace Caracal
 //    PopIndentation();
 //    stream() << Indentation() << QString("}") << NewLine();
 //}
-//
-//void ParseTreePrinter::PrettyPrintTypeName(const TypeName& type)
-//{
-//    auto token = type.name()->identifier();
-//    auto lexeme = m_parseTree.tokens().getLexeme(token);
-//    if (type.isReference())
-//        stream() << Indentation() << QString("Ref: true") << NewLine();
-//
-//    stream() << Indentation() << stringify(NodeKind::TypeName) << QString(": ") << lexeme << NewLine();
-//}
+
 //
 //void ParseTreePrinter::PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess)
 //{

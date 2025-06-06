@@ -1,6 +1,6 @@
 ﻿FunctionDefinitionStatement: {
     NameExpression: {
-        Identifier: main
+        Name: main
     }
     ParametersNode(0): {
     }
@@ -10,7 +10,7 @@
         ConstantDeclaration: {
             Left: {
                 NameExpression: {
-                    Identifier: a
+                    Name: a
                 }
             }
             Right: {
@@ -20,7 +20,7 @@
         ConstantDeclaration: {
             Left: {
                 NameExpression: {
-                    Identifier: b
+                    Name: b
                 }
             }
             Right: {
@@ -28,7 +28,7 @@
                     Operation: ReferenceOf
                     Expression: {
                         NameExpression: {
-                            Identifier: a
+                            Name: a
                         }
                     }
                 }

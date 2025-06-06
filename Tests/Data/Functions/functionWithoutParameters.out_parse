@@ -1,20 +1,25 @@
 ﻿FunctionDefinitionStatement: {
     NameExpression: {
-        Name: main
+        Name: func
     }
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {
     }
-    BlockNode(1): {
+    BlockNode(2): {
         ConstantDeclaration: {
             Left: {
                 NameExpression: {
-                    Name: isMain
+                    Name: a
                 }
             }
             Right: {
-                BoolLiteral: true
+                NumberLiteral: 0
+            }
+        }
+        ReturnStatement: {
+            NameExpression: {
+                Name: a
             }
         }
     }

@@ -5,7 +5,7 @@
 }
 FunctionDefinitionStatement: {
     NameExpression: {
-        Identifier: main
+        Name: main
     }
     ParametersNode(0): {
     }

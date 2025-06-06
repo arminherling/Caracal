@@ -1,6 +1,6 @@
 ﻿FunctionDefinitionStatement: {
     NameExpression: {
-        Identifier: main
+        Name: main
     }
     ParametersNode(0): {
     }
@@ -10,7 +10,7 @@
         VariableDeclaration: {
             Left: {
                 NameExpression: {
-                    Identifier: foo
+                    Name: foo
                 }
             }
             Right: {
@@ -20,7 +20,7 @@
         AssignmentStatement: {
             Left: {
                 NameExpression: {
-                    Identifier: foo
+                    Name: foo
                 }
             }
             Right: {

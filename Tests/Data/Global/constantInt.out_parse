@@ -1,7 +1,7 @@
 ﻿ConstantDeclaration: {
     Left: {
         NameExpression: {
-            Identifier: a
+            Name: a
         }
     }
     Right: {

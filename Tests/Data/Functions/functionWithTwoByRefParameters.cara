@@ -1,6 +1,6 @@
 def swap(a: ref i32, b: ref i32) 
 {
-   temp = a
-   a = b
-   b = temp
+   temp :: a;
+   a = b;
+   b = temp;
 }

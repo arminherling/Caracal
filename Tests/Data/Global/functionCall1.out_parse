@@ -1,7 +1,0 @@
-ExpressionStatement: {
-    FunctionCallExpression: {
-        NameExpression: func
-        ArgumentsNode(0): {
-        }
-    }
-}

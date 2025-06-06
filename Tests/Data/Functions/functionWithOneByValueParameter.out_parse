@@ -1,38 +1,29 @@
 ﻿FunctionDefinitionStatement: {
     NameExpression: {
-        Name: sum
+        Name: square
     }
-    ParametersNode(2): {
+    ParametersNode(1): {
         ParameterNode: {
-            Name: a
-            TypeNameNode: {
-                Type: i32
-            }
-        }
-        ParameterNode: {
-            Name: b
+            Name: x
             TypeNameNode: {
                 Type: i32
             }
         }
     }
-    ReturnTypesNode(1): {
-        TypeNameNode: {
-            Type: i32
-        }
+    ReturnTypesNode(0): {
     }
     BlockNode(1): {
         ReturnStatement: {
             BinaryExpression: {
                 Left: {
                     NameExpression: {
-                        Name: a
+                        Name: x
                     }
                 }
-                Operation: Addition
+                Operation: Multiplication
                 Right: {
                     NameExpression: {
-                        Name: b
+                        Name: x
                     }
                 }
             }

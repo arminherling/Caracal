@@ -32,8 +32,8 @@ namespace
         Caracal::ParseTreePrinter printer{ parseTree };
         auto output = printer.prettyPrint();
 
-        AalTest::EqualsFile(output, QFileInfo(outputFilePath));
         AalTest::IsTrue(diagnostics.Diagnostics().empty());
+        AalTest::EqualsFile(output, QFileInfo(outputFilePath));
     }
 
     QList<std::tuple<QString, QString, QString, QString>> FileTests_Data()
