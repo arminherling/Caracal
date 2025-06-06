@@ -1,0 +1,36 @@
+﻿FunctionDefinitionStatement: {
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(2): {
+        ConstantDeclaration: {
+            Left: {
+                NameExpression: {
+                    Identifier: a
+                }
+            }
+            Right: {
+                BoolLiteral: true
+            }
+        }
+        ConstantDeclaration: {
+            Left: {
+                NameExpression: {
+                    Identifier: b
+                }
+            }
+            Right: {
+                UnaryExpression: {
+                    Operation: ReferenceOf
+                    Expression: {
+                        NameExpression: {
+                            Identifier: a
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

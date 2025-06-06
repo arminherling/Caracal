@@ -28,6 +28,7 @@ namespace Caracal
             { NodeKind::NumberLiteral,                  QStringLiteral("NumberLiteral") },
             { NodeKind::StringLiteral,                  QStringLiteral("StringLiteral") },
 
+            { NodeKind::TypeNameNode,                   QStringLiteral("TypeNameNode") },
             { NodeKind::ParametersNode,                 QStringLiteral("ParametersNode") },
             { NodeKind::ParameterNode,                  QStringLiteral("ParameterNode") },
             { NodeKind::ReturnTypesNode,                QStringLiteral("ReturnTypesNode") },
@@ -45,7 +46,6 @@ namespace Caracal
             //{ NodeKind::FunctionCallExpression,         QStringLiteral("FunctionCallExpression") },
             //{ NodeKind::ScopeAccessExpression,          QStringLiteral("ScopeAccessExpression") },
             //{ NodeKind::MemberAccessExpression,         QStringLiteral("MemberAccessExpression") },
-            //{ NodeKind::TypeName,                       QStringLiteral("TypeName") },
             //{ NodeKind::ArgumentsNode,                  QStringLiteral("ArgumentsNode") },
             //{ NodeKind::TypedAssignmentStatement,       QStringLiteral("TypedAssignmentStatement") },
             //{ NodeKind::TypedExpressionStatement,       QStringLiteral("TypedExpressionStatement") },

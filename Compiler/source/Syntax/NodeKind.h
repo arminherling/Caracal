@@ -28,6 +28,7 @@ namespace Caracal
         NumberLiteral,
         StringLiteral,
 
+        TypeNameNode,
         ParametersNode,
         ParameterNode,
         ReturnTypesNode,
@@ -47,7 +48,6 @@ namespace Caracal
         //ScopeAccessExpression,
         //MemberAccessExpression,
 
-        //TypeName,
         //ArgumentsNode,
 
         //TypedAssignmentStatement,

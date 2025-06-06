@@ -3,7 +3,7 @@
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
-        ReturnTypeNode: {
+        TypeNameNode: {
             Type: f32
         }
     }

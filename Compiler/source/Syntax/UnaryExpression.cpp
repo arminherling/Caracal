@@ -10,8 +10,8 @@ namespace Caracal
                 return UnaryOperatorKind::LogicalNegation;
             case TokenKind::Minus:
                 return UnaryOperatorKind::ValueNegation;
-                //case TokenKind::RefKeyword:
-                //    return UnaryOperatornKind::ReferenceOf;
+                case TokenKind::RefKeyword:
+                    return UnaryOperatorKind::ReferenceOf;
             default:
                 return UnaryOperatorKind::Invalid;
         }
@@ -35,8 +35,8 @@ namespace Caracal
                 return QStringLiteral("LogicalNegation");
             case UnaryOperatorKind::ValueNegation:
                 return QStringLiteral("ValueNegation");
-            //case UnaryOperatornKind::ReferenceOf:
-            //    return QString("ReferenceOf");
+            case UnaryOperatorKind::ReferenceOf:
+                return QString("ReferenceOf");
             default:
                 TODO("Invalid unary operator kind");
         }

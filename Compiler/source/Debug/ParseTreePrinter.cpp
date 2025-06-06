@@ -93,9 +93,9 @@ namespace Caracal
                 prettyPrintStringLiteral((StringLiteral*)node);
                 break;
             }
-            case NodeKind::ReturnTypeNode:
+            case NodeKind::TypeNameNode:
             {
-                prettyPrintReturnTypeNode((ReturnTypeNode*)node);
+                prettyPrintTypeNameNode((TypeNameNode*)node);
                 break;
             }
             default:
@@ -256,7 +256,7 @@ namespace Caracal
     {
         stream() << indentation() << stringify(name->kind()) << QString(": {") << newLine();
         pushIndentation();
-        const auto& identifierToken = name->token();
+        const auto& identifierToken = name->nameToken();
         const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
         stream() << indentation() << QString("Identifier: %1").arg(identifierLexeme) << newLine();
         popIndentation();
@@ -312,7 +312,7 @@ namespace Caracal
         stream() << indentation() << QString("}") << newLine();
     }
 
-    void ParseTreePrinter::prettyPrintReturnTypeNode(ReturnTypeNode* node)
+    void ParseTreePrinter::prettyPrintTypeNameNode(TypeNameNode* node)
     {
         stream() << indentation() << stringify(node->kind()) << QString(": {") << newLine();
         pushIndentation();

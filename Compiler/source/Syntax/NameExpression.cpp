@@ -2,9 +2,9 @@
 
 namespace Caracal 
 {
-    NameExpression::NameExpression(const Token& token)
+    NameExpression::NameExpression(const Token& nameToken)
         : Expression(NodeKind::NameExpression, Type::Undefined())
-        , m_token{ token }
+        , m_nameToken{ nameToken }
     {
     }
 }

@@ -292,9 +292,8 @@ namespace Caracal
             }
             case TokenKind::Identifier:
             {
-                advanceCurrentIndex();
                 // TODO replace with parseFunctionCallOrNameExpression once we can parse function calls
-                return std::make_unique<NameExpression>(current);
+                return parseNameExpression();
             }
             case TokenKind::TrueKeyword:
             {
@@ -339,6 +338,22 @@ namespace Caracal
         return std::make_unique<GroupingExpression>(openParenthesis, std::move(expression), closeParenthesis);
     }
 
+    NameExpressionUPtr Parser::parseNameExpression()
+    {
+        auto name = advanceOnMatch(TokenKind::Identifier);
+        return std::make_unique<NameExpression>(name);
+    }
+
+    TypeNameNodeUPtr Parser::parseTypeNameNode()
+    {
+        auto refToken = tryMatchKind(TokenKind::RefKeyword);
+        auto nameExpression = parseNameExpression();
+        auto& nameToken = nameExpression->nameToken();
+        auto type = TypeDatabase::TryFindBuiltin(m_tokens.getLexeme(nameToken));
+
+        return std::make_unique<TypeNameNode>(refToken, std::move(nameExpression), type);
+    }
+
     ParametersNodeUPtr Parser::parseParametersNode()
     {
         auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
@@ -366,13 +381,14 @@ namespace Caracal
 
     ReturnTypesNodeUPtr Parser::parseReturnTypesNode()
     {
-        std::vector<ReturnTypeNodeUPtr> returnTypes;
+        std::vector<TypeNameNodeUPtr> returnTypes;
         auto current = currentToken();
-        if (current.kind == TokenKind::Identifier)
+        if (current.kind != TokenKind::OpenBracket)
         {
-            advanceCurrentIndex();
-            auto type = TypeDatabase::TryFindBuiltin(m_tokens.getLexeme(current));
-            returnTypes.push_back(std::make_unique<ReturnTypeNode>(current, type));
+            auto typeName = parseTypeNameNode();
+            returnTypes.push_back(std::move(typeName));
+
+            // TODO multiple return types
         }
 
         return std::make_unique<ReturnTypesNode>(std::move(returnTypes));
@@ -394,17 +410,16 @@ namespace Caracal
         }
     }
 
-    Token Parser::advanceOnMatchEither(TokenKind kind1, TokenKind kind2)
+    std::optional<Token> Parser::tryMatchKind(TokenKind kind)
     {
         auto current = currentToken();
-        if (current.kind == kind1)
+        if (current.kind == kind)
         {
-            return advanceOnMatch(kind1);
+            advanceCurrentIndex();
+            return std::make_optional<Token>(current);
         }
-        else
-        {
-            return advanceOnMatch(kind2);
-        }
+    
+        return std::optional<Token>();
     }
 
     Token Parser::peek(i32 offset)
@@ -714,19 +729,6 @@ namespace Caracal
 //    return new ArgumentsNode(openParenthesis, arguments, closeParenthesis);
 //}
 //
-//TypeName Parser::parseTypeNode()
-//{
-//    auto ref = tryMatchKind(TokenKind::RefKeyword);
-//    auto name = parseNameExpression();
-//    return TypeName(ref, name);
-//}
-//
-//NameExpression* Parser::parseNameExpression()
-//{
-//    auto name = advanceOnMatch(TokenKind::Identifier);
-//    return new NameExpression(name);
-//}
-//
 //NumberLiteral* Parser::parseNumberLiteral()
 //{
 //    auto number = advanceOnMatch(TokenKind::Number);
@@ -770,17 +772,6 @@ namespace Caracal
 //}
 //
 
-//std::optional<Token> Parser::tryMatchKind(TokenKind kind)
-//{
-//    auto current = currentToken();
-//    if (current.kind == kind)
-//    {
-//        advanceCurrentIndex();
-//        return current;
-//    }
-//
-//    return std::optional<Token>();
-//}
 //
 //void Parser::skipUntil(TokenKind kind)
 //{

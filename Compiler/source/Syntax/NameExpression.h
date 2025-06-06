@@ -9,11 +9,13 @@ namespace Caracal
     class COMPILER_API NameExpression : public Expression
     {
     public:
-        NameExpression(const Token& token);
+        NameExpression(const Token& nameToken);
 
-        [[nodiscard]] const Token& token() const noexcept { return m_token; }
+        [[nodiscard]] const Token& nameToken() const noexcept { return m_nameToken; }
 
     private:
-        Token m_token;
+        Token m_nameToken;
     };
+
+    using NameExpressionUPtr = std::unique_ptr<NameExpression>;
 }

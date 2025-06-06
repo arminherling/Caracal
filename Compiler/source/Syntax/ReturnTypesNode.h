@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Compiler/API.h>
-#include <Syntax/ReturnTypeNode.h>
+#include <Syntax/TypeNameNode.h>
 #include <vector>
 
 namespace Caracal
@@ -9,7 +9,7 @@ namespace Caracal
     class COMPILER_API ReturnTypesNode : public Node
     {
     public:
-        explicit ReturnTypesNode(std::vector<ReturnTypeNodeUPtr>&& returnTypes);
+        explicit ReturnTypesNode(std::vector<TypeNameNodeUPtr>&& returnTypes);
 
         ReturnTypesNode(const ReturnTypesNode&) = delete;
         ReturnTypesNode& operator=(const ReturnTypesNode&) = delete;
@@ -17,10 +17,10 @@ namespace Caracal
         ReturnTypesNode(ReturnTypesNode&&) = default;
         ReturnTypesNode& operator=(ReturnTypesNode&&) = default;
 
-        [[nodiscard]] const std::vector<ReturnTypeNodeUPtr>& returnTypes() const noexcept { return m_returnTypes; }
+        [[nodiscard]] const std::vector<TypeNameNodeUPtr>& returnTypes() const noexcept { return m_returnTypes; }
 
     private:
-        std::vector<ReturnTypeNodeUPtr> m_returnTypes;
+        std::vector<TypeNameNodeUPtr> m_returnTypes;
     };
 
     using ReturnTypesNodeUPtr = std::unique_ptr<ReturnTypesNode>;

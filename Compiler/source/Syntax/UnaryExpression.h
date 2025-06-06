@@ -11,7 +11,7 @@ namespace Caracal
         Invalid,
         LogicalNegation,
         ValueNegation,
-        //ReferenceOf
+        ReferenceOf
     };
 
     class COMPILER_API UnaryExpression : public Expression

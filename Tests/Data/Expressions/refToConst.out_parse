@@ -1,0 +1,27 @@
+﻿ConstantDeclaration: {
+    Left: {
+        NameExpression: {
+            Identifier: x
+        }
+    }
+    Right: {
+        NumberLiteral: 1
+    }
+}
+ConstantDeclaration: {
+    Left: {
+        NameExpression: {
+            Identifier: y
+        }
+    }
+    Right: {
+        UnaryExpression: {
+            Operation: ReferenceOf
+            Expression: {
+                NameExpression: {
+                    Identifier: x
+                }
+            }
+        }
+    }
+}

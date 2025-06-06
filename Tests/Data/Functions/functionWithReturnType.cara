@@ -1,0 +1,4 @@
+def random() f32
+{
+    return 1.23;
+}

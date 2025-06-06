@@ -81,6 +81,8 @@ namespace Caracal
                 return QStringLiteral("!");
             case UnaryOperatorKind::ValueNegation:
                 return QStringLiteral("-");
+            case UnaryOperatorKind::ReferenceOf:
+                return QStringLiteral("&");
             default:
                 TODO("Implement StringifyUnaryOperator for all operators");
                 return QString();
@@ -237,7 +239,19 @@ namespace Caracal
         {
             m_cppIncludes.append(include.value() % newLine());
         }
-        stream() << indentation() << "constexpr auto " ;
+        stream() << indentation() << "constexpr auto" ;
+        
+        // check if right expression is a ref
+        if (node->rightExpression()->kind() == NodeKind::UnaryExpression)
+        {
+            const auto unaryExpression = (UnaryExpression*)node->rightExpression().get();
+            if (unaryExpression->unaryOperator() == UnaryOperatorKind::ReferenceOf)
+            {
+                stream() << StringifyUnaryOperator(UnaryOperatorKind::ReferenceOf);
+            }
+        }
+        stream() << " ";
+
         generateNode(node->leftExpression().get());
         stream() << " = ";
         generateNode(node->rightExpression().get());
@@ -252,7 +266,19 @@ namespace Caracal
         {
             m_cppIncludes.append(include.value() % newLine());
         }
-        stream() << indentation() << "auto ";
+        stream() << indentation() << "auto";
+
+        // check if right expression is a ref
+        if (node->rightExpression()->kind() == NodeKind::UnaryExpression)
+        {
+            const auto unaryExpression = (UnaryExpression*)node->rightExpression().get();
+            if (unaryExpression->unaryOperator() == UnaryOperatorKind::ReferenceOf)
+            {
+                stream() << StringifyUnaryOperator(UnaryOperatorKind::ReferenceOf);
+            }
+        }
+        stream() << " ";
+
         generateNode(node->leftExpression().get());
         stream() << " = ";
         generateNode(node->rightExpression().get());
@@ -366,8 +392,11 @@ namespace Caracal
 
     void CppCodeGenerator::generateUnaryExpression(UnaryExpression* node)
     {
-        const auto unaryOperator = StringifyUnaryOperator(node->unaryOperator());
-        stream() << unaryOperator;
+        if (node->unaryOperator() != UnaryOperatorKind::ReferenceOf)
+        {
+            const auto unaryOperator = StringifyUnaryOperator(node->unaryOperator());
+            stream() << unaryOperator;
+        }
         generateNode(node->expression().get());
     }
 
@@ -382,7 +411,7 @@ namespace Caracal
 
     void CppCodeGenerator::generateNameExpression(NameExpression* node)
     {
-        stream() << m_parseTree.tokens().getLexeme(node->token());
+        stream() << m_parseTree.tokens().getLexeme(node->nameToken());
     }
 
     void CppCodeGenerator::generateBoolLiteral(BoolLiteral* node)

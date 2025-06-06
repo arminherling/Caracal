@@ -1,15 +1,15 @@
 ﻿FunctionDefinitionStatement: {
-    Name: func
+    Name: random
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: bool
+            Type: f32
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            BoolLiteral: true
+            NumberLiteral: 1.23
         }
     }
 }

@@ -1,0 +1,5 @@
+def main() 
+{
+    a :: true;
+    b :: ref a;
+}

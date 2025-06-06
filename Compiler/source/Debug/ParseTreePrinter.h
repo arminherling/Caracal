@@ -64,14 +64,13 @@ namespace Caracal
     //    void PrettyPrintParameterNode(ParameterNode* parameter);
         void prettyPrintParametersNode(ParametersNode* parameters);
         void prettyPrintReturnTypesNode(ReturnTypesNode* returnTypes);
-        void prettyPrintReturnTypeNode(ReturnTypeNode* returnType);
+        void prettyPrintTypeNameNode(TypeNameNode* returnType);
         void prettyPrintBlockNode(BlockNode* block);
         void prettyPrintGroupingExpression(GroupingExpression* grouping);
         void prettyPrintUnaryExpression(UnaryExpression* unaryExpression);
         void prettyPrintBinaryExpression(BinaryExpression* binaryExpression);
         void prettyPrintNameExpression(NameExpression* name);
     //    void PrettyPrintFunctionCallExpression(FunctionCallExpression* functionCall);
-    //    void PrettyPrintTypeName(const TypeName& type);
         void prettyPrintDiscardLiteral(DiscardLiteral* discard);
         void prettyPrintBoolLiteral(BoolLiteral* node);
         void prettyPrintNumberLiteral(NumberLiteral* number);

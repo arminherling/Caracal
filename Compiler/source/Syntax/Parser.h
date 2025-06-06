@@ -7,11 +7,13 @@
 #include <Syntax/BlockNode.h>
 //#include <Syntax/EnumFieldDefinitionStatement.h>
 #include <Syntax/Expression.h>
+#include <Syntax/NameExpression.h>
 //#include <Syntax/ParameterNode.h>
 #include <Syntax/ParametersNode.h>
 #include <Syntax/ReturnTypesNode.h>
 #include <Syntax/ParseTree.h>
 #include <Syntax/TokenBuffer.h>
+#include <Syntax/TypeNameNode.h>
 
 namespace Caracal
 {
@@ -52,8 +54,10 @@ namespace Caracal
         ExpressionUPtr parseBinaryExpression(i32 parentPrecedence);
         ExpressionUPtr parsePrimaryExpression();
         ExpressionUPtr parseGroupingExpression();
+        NameExpressionUPtr parseNameExpression();
         //Expression* parseFunctionCallOrNameExpression();
         //Expression* parseFunctionCallExpression();
+        TypeNameNodeUPtr parseTypeNameNode();
         ParametersNodeUPtr parseParametersNode();
         ReturnTypesNodeUPtr parseReturnTypesNode();
         //ArgumentsNode* parseArgumentsNode();
@@ -62,15 +66,12 @@ namespace Caracal
         //BlockNode* parseMethodBody();
         BlockNodeUPtr parseBlockNode(StatementScope scope);
         //ParameterNodeUPtr parseParameterNode();
-        //TypeName parseTypeNode();
-        //NameExpression* parseNameExpression();
         //NumberLiteral* parseNumberLiteral();
         //EnumFieldDefinitionStatement* parseEnumFieldDefinitionStatement();
 
         Token advanceOnMatch(TokenKind kind);
-        Token advanceOnMatchEither(TokenKind kind1, TokenKind kind2);
         //std::optional<BoolLiteral*> tryParseBoolLiteral();
-        //std::optional<Token> tryMatchKind(TokenKind kind);
+        std::optional<Token> tryMatchKind(TokenKind kind);
         //void skipUntil(TokenKind kind);
 
         Token peek(i32 offset);
