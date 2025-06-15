@@ -4,5 +4,5 @@ def inner()
 
 def outer()
 {
-    inner()
+    _ :: inner();
 }
