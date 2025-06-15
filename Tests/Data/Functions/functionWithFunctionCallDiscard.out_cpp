@@ -1,0 +1,8 @@
+﻿#include <iostream>
+#include <string>
+
+int main()
+{
+    static_cast<void>(&(std::cout << std::string{"hello, world!"} << "\n"));
+}
+

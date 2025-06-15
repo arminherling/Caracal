@@ -1,0 +1,26 @@
+﻿FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: main
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        ConstantDeclaration: {
+            Left: {
+                Discard: _
+            }
+            Right: {
+                FunctionCallExpression: {
+                    NameExpression: {
+                        Name: print
+                    }
+                    ArgumentsNode(1): {
+                        StringLiteral: "hello, world!"
+                    }
+                }
+            }
+        }
+    }
+}

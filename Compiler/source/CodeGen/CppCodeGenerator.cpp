@@ -479,7 +479,7 @@ namespace Caracal
     {
         m_cppIncludes.append(QStringLiteral("#include <iostream>") % newLine());
 
-        stream() << indentation() << "&(std::cout << ";
+        stream() << "&(std::cout << ";
         const auto& arguments = node->arguments();
 
         for (const auto& argument : arguments)
