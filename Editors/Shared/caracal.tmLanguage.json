@@ -8,16 +8,29 @@
 		{
 			"include": "#keywords"
 		},
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#comments"
+    },
 		{
-			"include": "#strings"
-		}
+			"include": "#boolean"
+		},
+		{
+			"include": "#numbers"
+    }
 	],
 	"repository": {
 		"keywords": {
 			"patterns": [
 				{
-					"name": "keyword.control.caracal",
+					"name": "keyword.control.cpp.caracal",
 					"match": "\\bcpp\\b"
+				},
+				{
+					"name": "keyword.control.ref.caracal",
+					"match": "\\bref\\b"
 				},
 				{
 					"name": "keyword.control.def.caracal",
@@ -30,6 +43,34 @@
 				{
 					"name": "keyword.control.enum.caracal",
 					"match": "\\benum\\b"
+				},
+				{
+					"name": "keyword.control.if.caracal",
+					"match": "\\bif\\b"
+				},
+				{
+					"name": "keyword.control.else.caracal",
+					"match": "\\belse\\b"
+				},
+				{
+					"name": "keyword.control.while.caracal",
+					"match": "\\bwhile\\b"
+				},
+				{
+					"name": "keyword.control.for.caracal",
+					"match": "\\bfor\\b"
+				},
+				{
+					"name": "keyword.control.return.caracal",
+					"match": "\\breturn\\b"
+				},
+				{
+					"name": "keyword.control.break.caracal",
+					"match": "\\bbreak\\b"
+				},
+				{
+					"name": "keyword.control.continue.caracal",
+					"match": "\\bcontinue\\b"
 				}
 			]
 		},
@@ -43,6 +84,18 @@
 					"match": "\\\\[abfnrtv'\"\\\\]"
 				}
 			]
+		},
+		"boolean": {
+			"name": "constant.language.boolean.caracal",
+			"match": "\\b(true|false)\\b"
+		},
+		"comments": {
+			"name": "comment.line.double-slash.caracal",
+			"match": "//.*$"
+		},
+		"numbers": {
+			"name": "constant.numeric.caracal",
+			"match": "\\b\\d+(\\.\\d+)?\\b"
 		}
 	},
 	"scopeName": "source.caracal"
