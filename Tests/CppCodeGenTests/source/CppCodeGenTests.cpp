@@ -17,7 +17,7 @@ namespace
         if (!QFile::exists(outputFilePath))
             AalTest::Skip();// ("Out file missing");
 
-        auto input = Caracal::File::readAllText(inputFilePath);
+        auto input = Caracal::File::ReadAllText(inputFilePath);
         auto source = std::make_shared<Caracal::SourceText>(input);
         Caracal::DiagnosticsBag diagnostics;
 

@@ -3,7 +3,7 @@
 #include <Defines.h>
 #include <Compiler/API.h>
 #include <Compiler/DiagnosticsBag.h>
-//#include <Syntax/ArgumentsNode.h>
+#include <Syntax/ArgumentsNode.h>
 #include <Syntax/BlockNode.h>
 //#include <Syntax/EnumFieldDefinitionStatement.h>
 #include <Syntax/Expression.h>
@@ -55,12 +55,12 @@ namespace Caracal
         ExpressionUPtr parsePrimaryExpression();
         ExpressionUPtr parseGroupingExpression();
         NameExpressionUPtr parseNameExpression();
-        //Expression* parseFunctionCallOrNameExpression();
-        //Expression* parseFunctionCallExpression();
+        ExpressionUPtr parseFunctionCallOrNameExpression();
+        ExpressionUPtr parseFunctionCallExpression();
         TypeNameNodeUPtr parseTypeNameNode();
         ParametersNodeUPtr parseParametersNode();
         ReturnTypesNodeUPtr parseReturnTypesNode();
-        //ArgumentsNode* parseArgumentsNode();
+        ArgumentsNodeUPtr parseArgumentsNode();
         BlockNodeUPtr parseFunctionBody();
         //BlockNode* parseTypeBody();
         //BlockNode* parseMethodBody();

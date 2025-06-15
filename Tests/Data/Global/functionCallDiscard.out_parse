@@ -1,11 +1,14 @@
-AssignmentStatement: {
+﻿ConstantDeclaration: {
     Left: {
-        NameExpression: a
+        Discard: _
     }
     Right: {
         FunctionCallExpression: {
-            NameExpression: func
-            ArgumentsNode(0): {
+            NameExpression: {
+                Name: print
+            }
+            ArgumentsNode(1): {
+                StringLiteral: "hello, world!"
             }
         }
     }

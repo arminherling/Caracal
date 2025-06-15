@@ -13,7 +13,6 @@
 //#include <Syntax/Error.h>
 //#include <Syntax/ExpressionStatement.h>
 //#include <Syntax/FieldDefinitionStatement.h>
-//#include <Syntax/FunctionCallExpression.h>
 #include <Syntax/ConstantDeclaration.h>
 #include <Syntax/VariableDeclaration.h>
 #include <Syntax/FunctionDefinitionStatement.h>
@@ -33,6 +32,7 @@
 //#include <Syntax/TypeDefinitionStatement.h>
 //#include <Syntax/TypeName.h>
 #include <Syntax/UnaryExpression.h>
+#include <Syntax/FunctionCallExpression.h>
 //#include <Syntax/WhileStatement.h>
 //
 namespace Caracal 
@@ -60,7 +60,7 @@ namespace Caracal
     //    void PrettyPrintIfStatement(IfStatement* statement);
     //    void PrettyPrintWhileStatement(WhileStatement* statement);
         void prettyPrintReturnStatement(ReturnStatement* statement);
-    //    void PrettyPrintArgumentsNode(ArgumentsNode* arguments);
+        void prettyPrintArgumentsNode(ArgumentsNode* arguments);
         void prettyPrintParameterNode(ParameterNode* parameter);
         void prettyPrintParametersNode(ParametersNode* parameters);
         void prettyPrintReturnTypesNode(ReturnTypesNode* returnTypes);
@@ -70,7 +70,7 @@ namespace Caracal
         void prettyPrintUnaryExpression(UnaryExpression* unaryExpression);
         void prettyPrintBinaryExpression(BinaryExpression* binaryExpression);
         void prettyPrintNameExpression(NameExpression* name);
-    //    void PrettyPrintFunctionCallExpression(FunctionCallExpression* functionCall);
+        void prettyPrintFunctionCallExpression(FunctionCallExpression* functionCall);
         void prettyPrintDiscardLiteral(DiscardLiteral* discard);
         void prettyPrintBoolLiteral(BoolLiteral* node);
         void prettyPrintNumberLiteral(NumberLiteral* number);

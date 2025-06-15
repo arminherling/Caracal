@@ -3,15 +3,15 @@
 
 namespace Caracal 
 {
-    QByteArray File::readAll(const QString& filePath)
+    QByteArray File::ReadAll(const QString& filePath)
     {
         auto file = QFile(filePath);
         file.open(QIODevice::ReadOnly);
         return file.readAll();
     }
 
-    QString File::readAllText(const QString& filePath)
+    QString File::ReadAllText(const QString& filePath)
     {
-        return QString::fromUtf8(File::readAll(filePath));
+        return QString::fromUtf8(File::ReadAll(filePath));
     }
 }

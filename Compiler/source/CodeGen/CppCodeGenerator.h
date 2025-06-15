@@ -19,6 +19,7 @@
 #include <Syntax/NameExpression.h>
 #include <Syntax/UnaryExpression.h>
 #include <Syntax/GroupingExpression.h>
+#include <Syntax/FunctionCallExpression.h>
 
 namespace Caracal
 {
@@ -49,9 +50,12 @@ namespace Caracal
         void generateUnaryExpression(UnaryExpression* node);
         void generateBinaryExpression(BinaryExpression* node);
         void generateNameExpression(NameExpression* node);
+        void generateFunctionCallExpression(FunctionCallExpression* node);
         void generateBoolLiteral(BoolLiteral* node);
         void generateNumberLiteral(NumberLiteral* node);
         void generateStringLiteral(StringLiteral* node);
+
+        void generateBuiltinPrintFunction(ArgumentsNode* node) noexcept;
 
         ParseTree& m_parseTree;
         QStringList m_cppIncludes;

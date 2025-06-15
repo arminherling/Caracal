@@ -24,7 +24,7 @@
 #include <Syntax/DiscardLiteral.h>
 //#include <Syntax/MemberAccessExpression.h>
 //#include <Syntax/ScopeAccessExpression.h>
-//#include <Syntax/FunctionCallExpression.h>
+#include <Syntax/FunctionCallExpression.h>
 
 namespace Caracal
 {
@@ -301,8 +301,7 @@ namespace Caracal
             }
             case TokenKind::Identifier:
             {
-                // TODO replace with parseFunctionCallOrNameExpression once we can parse function calls
-                return parseNameExpression();
+                return parseFunctionCallOrNameExpression();
             }
             case TokenKind::TrueKeyword:
             {
@@ -351,6 +350,50 @@ namespace Caracal
     {
         auto name = advanceOnMatch(TokenKind::Identifier);
         return std::make_unique<NameExpression>(name);
+    }
+
+    ExpressionUPtr Parser::parseFunctionCallOrNameExpression()
+    {
+        auto next = nextToken();
+        if (next.kind == TokenKind::OpenParenthesis)
+        {
+            return parseFunctionCallExpression();
+        }
+        else
+        {
+            return parseNameExpression();
+        }
+    }
+
+    ExpressionUPtr Parser::parseFunctionCallExpression()
+    {
+        auto nameExpression = parseNameExpression();
+        auto arguments = parseArgumentsNode();
+        return std::make_unique<FunctionCallExpression>(std::move(nameExpression), std::move(arguments));
+    }
+
+    ArgumentsNodeUPtr Parser::parseArgumentsNode()
+    {
+        auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
+        auto current = currentToken();
+
+        std::vector<ExpressionUPtr> arguments;
+        while (current.kind != TokenKind::CloseParenthesis)
+        {
+            auto expression = parseExpression();
+            arguments.push_back(std::move(expression));
+            if (currentToken().kind == TokenKind::Comma)
+            {
+                advanceCurrentIndex();
+
+                // if(CurrentToken().kind == TokenKind::CloseParenthesis)
+                // TODO print error for too many commas or too few arguments
+            }
+            current = currentToken();
+        }
+
+        auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
+        return std::make_unique<ArgumentsNode>(openParenthesis, std::move(arguments), closeParenthesis);
     }
 
     TypeNameNodeUPtr Parser::parseTypeNameNode()
@@ -695,49 +738,7 @@ namespace Caracal
 //
 //    return new WhileStatement(keyword, condition, block);
 //}
-//
-//Expression* Parser::parseFunctionCallOrNameExpression()
-//{
-//    auto next = nextToken();
-//    if (next.kind == TokenKind::OpenParenthesis)
-//    {
-//        return parseFunctionCallExpression();
-//    }
-//    else
-//    {
-//        return parseNameExpression();
-//    }
-//}
-//
-//Expression* Parser::parseFunctionCallExpression()
-//{
-//    auto name = advanceOnMatch(TokenKind::Identifier);
-//    auto arguments = parseArgumentsNode();
-//    return new FunctionCallExpression(name, arguments);
-//}
-//
-//ArgumentsNode* Parser::parseArgumentsNode()
-//{
-//    auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
-//    auto current = currentToken();
-//
-//    QList<Expression*> arguments;
-//    while (current.kind != TokenKind::CloseParenthesis)
-//    {
-//        arguments.append(parseExpression());
-//        if (currentToken().kind == TokenKind::Comma)
-//        {
-//            advanceCurrentIndex();
-//
-//            // if(CurrentToken().kind == TokenKind::CloseParenthesis)
-//            // TODO print error for too many commas or too few arguments
-//        }
-//        current = currentToken();
-//    }
-//
-//    auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
-//    return new ArgumentsNode(openParenthesis, arguments, closeParenthesis);
-//}
+
 //
 //NumberLiteral* Parser::parseNumberLiteral()
 //{

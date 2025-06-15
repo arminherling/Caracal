@@ -1,1 +1,4 @@
-﻿const auto PI = 3.14159265358979323846264338327950288;
+﻿#include <iostream>
+#include <string>
+
+const auto _0 = &(std::cout << std::string{"hello, world!"} << "\n");

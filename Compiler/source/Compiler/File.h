@@ -10,7 +10,7 @@ namespace Caracal
     class COMPILER_API File
     {
     public:
-        static QByteArray readAll(const QString& filePath);
-        static QString readAllText(const QString& filePath);
+        static QByteArray ReadAll(const QString& filePath);
+        static QString ReadAllText(const QString& filePath);
     };
 }

@@ -194,6 +194,20 @@ namespace Caracal
                 generateNameExpression((NameExpression*)node);
                 break;
             }
+            case NodeKind::FunctionCallExpression:
+            {
+                auto functionCallExpression = (FunctionCallExpression*)node;
+                // if name is print use builtin
+                auto& nameToken = functionCallExpression->nameExpression()->nameToken();
+                if (m_parseTree.tokens().getLexeme(nameToken) == QStringLiteral("print"))
+                {
+                    generateBuiltinPrintFunction(functionCallExpression->argumentsNode().get());
+                    break;
+                }
+
+                generateFunctionCallExpression(functionCallExpression);
+                break;
+            }
             case NodeKind::BoolLiteral:
             {
                 generateBoolLiteral((BoolLiteral*)node);
@@ -361,6 +375,7 @@ namespace Caracal
             }
 
             generateNameExpression(parameter->nameExpression().get());
+
             if (&parameter != &parameters.back())
             {
                 stream() << ", ";
@@ -425,6 +440,23 @@ namespace Caracal
         stream() << m_parseTree.tokens().getLexeme(node->nameToken());
     }
 
+    void CppCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node)
+    {
+        generateNode(node->nameExpression().get());
+        stream() << "(";
+        const auto& arguments = node->argumentsNode()->arguments();
+        for (const auto& argument : arguments)
+        {
+            generateNode(argument.get());
+            
+            if (&argument != &arguments.back())
+            {
+                stream() << ", ";
+            }
+        }
+        stream() << ")";
+    }
+
     void CppCodeGenerator::generateBoolLiteral(BoolLiteral* node)
     {
         auto value = node->value() ? QStringLiteral("true") : QStringLiteral("false");
@@ -441,6 +473,32 @@ namespace Caracal
     {
         auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
         stream() <<  QString("std::string{%1}").arg(lexeme);
+    }
+
+    void CppCodeGenerator::generateBuiltinPrintFunction(ArgumentsNode* node) noexcept
+    {
+        m_cppIncludes.append(QStringLiteral("#include <iostream>") % newLine());
+
+        stream() << indentation() << "&(std::cout << ";
+        const auto& arguments = node->arguments();
+
+        for (const auto& argument : arguments)
+        {
+            const auto type = argument->type();
+            const auto include = GetCppIncludeForType(type);
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+
+            generateNode(argument.get());
+
+            if (&argument != &arguments.back())
+            {
+                stream() << " << ";
+            }
+        }
+        stream() << " << \"\\n\")";
     }
 
     QString generateCpp(ParseTree& parseTree) noexcept
