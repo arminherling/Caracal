@@ -1,0 +1,10 @@
+﻿void inner(int& x)
+{
+}
+
+void outer()
+{
+    x = 20;
+    static_cast<void>(inner(x));
+}
+

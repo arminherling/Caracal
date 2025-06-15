@@ -1,0 +1,43 @@
+﻿FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: inner
+    }
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: x
+            TypeNameNode: {
+                Type: bool
+            }
+        }
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(0): {
+    }
+}
+FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: outer
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        ConstantDeclaration: {
+            Left: {
+                Discard: _
+            }
+            Right: {
+                FunctionCallExpression: {
+                    NameExpression: {
+                        Name: inner
+                    }
+                    ArgumentsNode(1): {
+                        BoolLiteral: false
+                    }
+                }
+            }
+        }
+    }
+}

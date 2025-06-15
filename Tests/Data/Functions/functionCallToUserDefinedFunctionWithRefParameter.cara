@@ -4,6 +4,6 @@ def inner(x: ref i32)
 
 def outer()
 {
-    x = 20
-    inner(ref x)
+    x = 20;
+    _ :: inner(ref x);
 }

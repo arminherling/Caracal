@@ -1,0 +1,9 @@
+﻿void inner(int x)
+{
+}
+
+void outer()
+{
+    static_cast<void>(inner(10));
+}
+

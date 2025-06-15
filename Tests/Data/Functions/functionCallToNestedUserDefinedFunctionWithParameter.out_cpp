@@ -1,0 +1,14 @@
+﻿int one()
+{
+    return 1;
+}
+
+void inner(int x)
+{
+}
+
+void outer()
+{
+    static_cast<void>(inner(one()));
+}
+

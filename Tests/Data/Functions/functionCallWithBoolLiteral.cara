@@ -4,5 +4,5 @@ def inner(x: bool)
 
 def outer()
 {
-    inner(false)
+    _ :: inner(false);
 }

@@ -1,0 +1,13 @@
+def one() i32
+{ 
+    return 1;
+}
+
+def inner(x: i32) 
+{ 
+}
+
+def outer()
+{
+    _ :: inner(one());
+}

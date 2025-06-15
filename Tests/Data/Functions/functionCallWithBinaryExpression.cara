@@ -4,5 +4,5 @@ def inner(x: i32)
 
 def outer()
 {
-    inner(10)
+    _ :: inner(5 + 5);
 }

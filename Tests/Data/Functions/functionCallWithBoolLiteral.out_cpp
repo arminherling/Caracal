@@ -1,0 +1,9 @@
+﻿void inner(bool x)
+{
+}
+
+void outer()
+{
+    static_cast<void>(inner(false));
+}
+
