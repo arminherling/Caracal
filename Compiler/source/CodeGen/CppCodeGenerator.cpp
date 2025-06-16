@@ -186,6 +186,12 @@ namespace Caracal
                 generateFunctionDefinition((FunctionDefinitionStatement*)node);
                 break;
             }
+            case NodeKind::EnumDefinitionStatement:
+            {
+                m_currentStatement = NodeKind::EnumDefinitionStatement;
+                generateEnumDefinitionStatement((EnumDefinitionStatement*)node);
+                break;
+            }
             case NodeKind::ReturnStatement:
             {
                 m_currentStatement = NodeKind::ReturnStatement;
@@ -408,6 +414,38 @@ namespace Caracal
 
         sigStream << ")";
         return signature;
+    }
+
+    void CppCodeGenerator::generateEnumDefinitionStatement(EnumDefinitionStatement* node)
+    {
+        stream() << indentation() << "enum class ";
+        generateNameExpression(node->nameExpression().get());
+        if (node->baseType().has_value())
+        {
+            const auto baseType = node->baseType().value().get();
+            const auto cppTypeName = GetCppNameForType(baseType->type());
+
+            stream() << " : " << cppTypeName;
+        }
+        else
+        {
+            stream() << " : unsigned char"; // 1 byte default size if not specified
+        }
+        stream() << newLine() << "{" << newLine();
+        pushIndentation();
+        for (const auto& fieldNode : node->fieldNodes())
+        {
+            stream() << indentation();
+            generateNameExpression(fieldNode->nameExpression().get());
+            if (fieldNode->valueExpression().has_value())
+            {
+                stream() << " = ";
+                generateNode(fieldNode->valueExpression().value().get());
+            }
+            stream() << "," << newLine();
+        }
+        popIndentation();
+        stream() << indentation() << "};" << newLine() << newLine();
     }
 
     void CppCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node)

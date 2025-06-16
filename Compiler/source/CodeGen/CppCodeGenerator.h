@@ -21,6 +21,7 @@
 #include <Syntax/GroupingExpression.h>
 #include <Syntax/FunctionCallExpression.h>
 #include <Syntax/ExpressionStatement.h>
+#include <Syntax/EnumDefinitionStatement.h>
 
 namespace Caracal
 {
@@ -47,6 +48,7 @@ namespace Caracal
         void generateExpressionStatement(ExpressionStatement* node);
         void generateAssignmentStatement(AssignmentStatement* node);
         QString generateFunctionSignature(FunctionDefinitionStatement* node);
+        void generateEnumDefinitionStatement(EnumDefinitionStatement* node);
         void generateFunctionDefinition(FunctionDefinitionStatement* node);
         void generateReturnStatement(ReturnStatement* node);
         void generateGroupingExpression(GroupingExpression* node);

@@ -1,7 +1,4 @@
-TypedEnumDefinitionStatement: {
-    TypeKind: enum
-    TypeName: Empty
-    BaseType: u8
-    Fields(0): {
-    }
-}
+﻿enum class Empty : unsigned char
+{
+};
+

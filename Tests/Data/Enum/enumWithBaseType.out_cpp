@@ -1,17 +1,5 @@
-TypedEnumDefinitionStatement: {
-    TypeKind: enum
-    TypeName: Values
-    BaseType: i32
-    Fields(1): {
-        TypedFieldDefinitionNode: {
-            Type: i32
-            Name: Value
-            Expression: {
-                I32Value: {
-                    Type: i32
-                    Value: 0
-                }
-            }
-        }
-    }
-}
+﻿enum class Values : int
+{
+    Value,
+};
+
