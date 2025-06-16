@@ -397,7 +397,8 @@ namespace Caracal
             {
                 sigStream << typeName << " ";
             }
-            generateNameExpression(parameter->nameExpression().get());
+            const auto& parameterNameToken = parameter->nameExpression()->nameToken();
+            sigStream << m_parseTree.tokens().getLexeme(parameterNameToken);
             
             if (&parameter != &parameters.back())
             {
