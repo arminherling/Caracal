@@ -6,6 +6,7 @@
 #include <Syntax/ArgumentsNode.h>
 #include <Syntax/BlockNode.h>
 //#include <Syntax/EnumFieldDefinitionStatement.h>
+#include <Syntax/EnumFieldNode.h>
 #include <Syntax/Expression.h>
 #include <Syntax/NameExpression.h>
 //#include <Syntax/ParameterNode.h>
@@ -42,8 +43,8 @@ namespace Caracal
         StatementUPtr parseConstantDeclaration(ExpressionUPtr&& leftExpression);
         StatementUPtr parseVariableDeclaration(ExpressionUPtr&& leftExpression);
         StatementUPtr parseAssignmentStatement(ExpressionUPtr&& leftExpression);
-        //Statement* parseEnumDefinitionStatement();
-        //QList<EnumFieldDefinitionStatement*> parseEnumFieldDefinitions();
+        StatementUPtr parseEnumDefinitionStatement();
+        std::vector<EnumFieldNodeUPtr> parseEnumFields();
         //Statement* parseTypeDefinitionStatement();
         //Statement* parseFieldDefinitionStatement();
         //Statement* parseMethodDefinitionStatement();
@@ -67,7 +68,7 @@ namespace Caracal
         BlockNodeUPtr parseBlockNode(StatementScope scope);
         ParameterNodeUPtr parseParameterNode();
         //NumberLiteral* parseNumberLiteral();
-        //EnumFieldDefinitionStatement* parseEnumFieldDefinitionStatement();
+        //EnumFieldDefinitionStatementUPtr parseEnumFieldDefinitionStatement();
 
         Token advanceOnMatch(TokenKind kind);
         //std::optional<BoolLiteral*> tryParseBoolLiteral();

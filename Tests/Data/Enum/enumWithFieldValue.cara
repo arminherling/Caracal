@@ -1,6 +1,6 @@
 enum Values
 {
     First
-    Second = 5
+    Second :: 5
     Third
 }

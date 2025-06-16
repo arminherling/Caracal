@@ -4,4 +4,4 @@ enum Values
     Second
 }
 
-s = Values::Second
+s :: Values.Second;

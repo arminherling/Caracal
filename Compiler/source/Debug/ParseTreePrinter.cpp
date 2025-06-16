@@ -53,6 +53,11 @@ namespace Caracal
                 prettyPrintFunctionDefinitionStatement((FunctionDefinitionStatement*)node);
                 break;
             }
+            case NodeKind::EnumDefinitionStatement:
+            {
+                prettyPrintEnumDefinitionStatement((EnumDefinitionStatement*)node);
+                break;
+            }
             case NodeKind::ReturnStatement:
             {
                 prettyPrintReturnStatement((ReturnStatement*)node);
@@ -221,6 +226,48 @@ namespace Caracal
         stream() << indentation() << QString("}") << newLine();
     }
 
+    void ParseTreePrinter::prettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement)
+    {
+        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
+        pushIndentation();
+        prettyPrintNameExpression(statement->nameExpression().get());
+
+        if (statement->baseType().has_value())
+        {
+            prettyPrintTypeNameNode(statement->baseType().value().get());
+        }
+    
+        const auto& fieldNodes = statement->fieldNodes();
+        stream() << indentation() << QString("FieldNodes(%1): {").arg(fieldNodes.size()) << newLine();
+        pushIndentation();
+    
+        for (const auto& fieldNode : fieldNodes)
+        {
+            prettyPrintEnumFieldNode(fieldNode.get());
+        }
+    
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+    
+    void ParseTreePrinter::prettyPrintEnumFieldNode(EnumFieldNode* statement)
+    {
+        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
+        pushIndentation();
+        prettyPrintNameExpression(statement->nameExpression().get());
+    
+        if (statement->valueExpression().has_value())
+        {
+            prettyPrintNode(statement->valueExpression().value().get());
+        }
+    
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+    
     void ParseTreePrinter::prettyPrintReturnStatement(ReturnStatement* statement)
     {
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
@@ -407,50 +454,6 @@ namespace Caracal
     }
 }
 
-//void ParseTreePrinter::PrettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement)
-//{
-//    auto nameToken = statement->name();
-//    auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
-//
-//    stream() << Indentation() << stringify(statement->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
-//    stream() << Indentation() << stringify(NodeKind::NameExpression) << QString(": %1").arg(nameLexeme) << NewLine();
-//
-//    if (statement->baseType().has_value())
-//        PrettyPrintTypeName(statement->baseType().value());
-//
-//    const auto& fieldDefinitions = statement->fieldDefinitions();
-//    stream() << Indentation() << QString("FieldDefinitions(%1): {").arg(fieldDefinitions.size()) << NewLine();
-//    PushIndentation();
-//
-//    for (const auto& fieldDefinition : fieldDefinitions)
-//        PrettyPrintNode(fieldDefinition);
-//
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//}
-//
-//void ParseTreePrinter::PrettyPrintEnumFieldDefinitionStatement(EnumFieldDefinitionStatement* statement)
-//{
-//    auto nameToken = statement->name()->identifier();
-//    auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
-//
-//    stream() << Indentation() << stringify(statement->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
-//    stream() << Indentation() << stringify(NodeKind::NameExpression) << QString(": %1").arg(nameLexeme) << NewLine();
-//
-//    if (statement->value().has_value())
-//    {
-//        PrettyPrintNode(statement->value().value());
-//    }
-//
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//}
-//
 //void ParseTreePrinter::PrettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement)
 //{
 //    auto nameToken = statement->name();

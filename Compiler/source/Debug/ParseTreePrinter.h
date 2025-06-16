@@ -8,8 +8,8 @@
 //#include <Syntax/AssignmentStatement.h>
 #include <Syntax/BinaryExpression.h>
 #include <Syntax/BlockNode.h>
-//#include <Syntax/EnumDefinitionStatement.h>
-//#include <Syntax/EnumFieldDefinitionStatement.h>
+#include <Syntax/EnumDefinitionStatement.h>
+#include <Syntax/EnumFieldNode.h>
 //#include <Syntax/Error.h>
 #include <Syntax/ExpressionStatement.h>
 //#include <Syntax/FieldDefinitionStatement.h>
@@ -52,8 +52,8 @@ namespace Caracal
         void prettyPrintVariableDeclaration(VariableDeclaration* statement);
         void prettyPrintAssignmentStatement(AssignmentStatement* statement);
         void prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
-    //    void PrettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement);
-    //    void PrettyPrintEnumFieldDefinitionStatement(EnumFieldDefinitionStatement* statement);
+        void prettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement);
+        void prettyPrintEnumFieldNode(EnumFieldNode* statement);
     //    void PrettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement);
     //    void PrettyPrintFieldDefinitionStatement(FieldDefinitionStatement* statement);
     //    void PrettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement);

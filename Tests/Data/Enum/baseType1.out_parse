@@ -1,9 +1,0 @@
-EnumDefinitionStatement: {
-    NameExpression: Values
-    TypeName: i32
-    FieldDefinitions(1): {
-        EnumFieldDefinitionStatement: {
-            NameExpression: Value
-        }
-    }
-}

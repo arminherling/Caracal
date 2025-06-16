@@ -17,6 +17,7 @@ namespace Caracal
         ExpressionStatement,
         AssignmentStatement,
         FunctionDefinitionStatement,
+        EnumDefinitionStatement,
         ReturnStatement,
 
         GroupingExpression,
@@ -31,6 +32,7 @@ namespace Caracal
         StringLiteral,
 
         TypeNameNode,
+        EnumFieldNode,
         ParametersNode,
         ParameterNode,
         ReturnTypesNode,

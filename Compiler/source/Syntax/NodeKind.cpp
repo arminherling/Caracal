@@ -17,6 +17,7 @@ namespace Caracal
             { NodeKind::ExpressionStatement,            QStringLiteral("ExpressionStatement") },
             { NodeKind::AssignmentStatement,            QStringLiteral("AssignmentStatement") },
             { NodeKind::FunctionDefinitionStatement,    QStringLiteral("FunctionDefinitionStatement") },
+            { NodeKind::EnumDefinitionStatement,        QStringLiteral("EnumDefinitionStatement") },
             { NodeKind::ReturnStatement,                QStringLiteral("ReturnStatement") },
 
             { NodeKind::GroupingExpression,             QStringLiteral("GroupingExpression") },
@@ -31,6 +32,7 @@ namespace Caracal
             { NodeKind::StringLiteral,                  QStringLiteral("StringLiteral") },
 
             { NodeKind::TypeNameNode,                   QStringLiteral("TypeNameNode") },
+            { NodeKind::EnumFieldNode,                  QStringLiteral("EnumFieldNode") },
             { NodeKind::ParametersNode,                 QStringLiteral("ParametersNode") },
             { NodeKind::ParameterNode,                  QStringLiteral("ParameterNode") },
             { NodeKind::ReturnTypesNode,                QStringLiteral("ReturnTypesNode") },

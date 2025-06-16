@@ -11,7 +11,7 @@
 #include <Syntax/GroupingExpression.h>
 #include <Syntax/ExpressionStatement.h>
 #include <Syntax/FunctionDefinitionStatement.h>
-//#include <Syntax/EnumDefinitionStatement.h>
+#include <Syntax/EnumDefinitionStatement.h>
 //#include <Syntax/TypeDefinitionStatement.h>
 //#include <Syntax/FieldDefinitionStatement.h>
 //#include <Syntax/MethodDefinitionStatement.h>
@@ -64,6 +64,16 @@ namespace Caracal
                         break;
                     }
                     TODO("Function definition in other scopes");
+                    break;
+                }
+                case TokenKind::EnumKeyword:
+                {
+                    if (scope == StatementScope::Global)
+                    {
+                        statements.emplace_back(parseEnumDefinitionStatement());
+                        break;
+                    }
+                    TODO("Enum definition in other scopes");
                     break;
                 }
                 case TokenKind::CppKeyword:
@@ -229,6 +239,58 @@ namespace Caracal
         return std::make_unique<AssignmentStatement>(std::move(leftExpression), equal, std::move(rightExpression), semicolon);
     }
 
+    StatementUPtr Parser::parseEnumDefinitionStatement()
+    {
+        auto keyword = advanceOnMatch(TokenKind::EnumKeyword);
+        auto nameExpression = parseNameExpression();
+    
+        auto current = currentToken();
+        std::optional<Token> colonToken;
+        std::optional<TypeNameNodeUPtr> baseType;
+        if (current.kind == TokenKind::Colon)
+        {
+            colonToken = advanceOnMatch(TokenKind::Colon);
+            baseType = parseTypeNameNode();
+        }
+    
+        auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
+        auto enumFields = parseEnumFields();
+        auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
+    
+        return std::make_unique<EnumDefinitionStatement>(keyword, std::move(nameExpression), colonToken, std::move(baseType), openBracket, std::move(enumFields), closeBracket);
+    }
+
+    std::vector<EnumFieldNodeUPtr> Parser::parseEnumFields()
+    {
+        std::vector<EnumFieldNodeUPtr> fields;
+        auto current = currentToken();
+        while (current.kind != TokenKind::CloseBracket && current.kind != TokenKind::EndOfFile)
+        {
+            if (current.kind == TokenKind::Identifier)
+            {
+                auto nameExpression = parseNameExpression();
+                if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Colon)
+                {
+                    auto colon1 = advanceOnMatch(TokenKind::Colon);
+                    auto colon2 = advanceOnMatch(TokenKind::Colon);
+                    auto valueExpression = parseExpression();
+                    fields.push_back(std::make_unique<EnumFieldNode>(std::move(nameExpression), colon1, colon2, std::move(valueExpression)));
+                }
+                else
+                {
+                    fields.push_back(std::make_unique<EnumFieldNode>(std::move(nameExpression)));
+                }
+            }
+            else
+            {
+                const auto& location = m_tokens.getSourceLocation(current);
+                m_diagnostics.AddError(DiagnosticKind::_0005_ExpectedEnumField, location);
+            }
+            current = currentToken();
+        }
+        return fields;
+    }
+    
     BlockNodeUPtr Parser::parseFunctionBody()
     {
         return parseBlockNode(StatementScope::Function);
@@ -628,28 +690,6 @@ namespace Caracal
 //    }
 //}
 
-//
-//Statement* Parser::parseEnumDefinitionStatement()
-//{
-//    auto keyword = advanceOnMatch(TokenKind::Identifier);
-//    auto name = advanceOnMatch(TokenKind::Identifier);
-//
-//    auto current = currentToken();
-//    std::optional<TypeName> baseType;
-//    if (current.kind == TokenKind::Colon)
-//    {
-//        advanceCurrentIndex();
-//        baseType = parseTypeNode();
-//        current = currentToken();
-//    }
-//
-//    auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
-//    auto fieldDefinitions = parseEnumFieldDefinitions();
-//    auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
-//
-//    return new EnumDefinitionStatement(keyword, name, baseType, openBracket, fieldDefinitions, closeBracket);
-//}
-//
 //QList<EnumFieldDefinitionStatement*> Parser::parseEnumFieldDefinitions()
 //{
 //    QList<EnumFieldDefinitionStatement*> definitions;

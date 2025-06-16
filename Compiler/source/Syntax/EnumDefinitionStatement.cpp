@@ -1,18 +1,23 @@
-//#include "EnumDefinitionStatement.h"
-//
-//EnumDefinitionStatement::EnumDefinitionStatement(
-//    const Token& keyword,
-//    const Token& name,
-//    const std::optional<TypeName>& baseType,
-//    const Token& openBracket,
-//    const QList<EnumFieldDefinitionStatement*>& fieldDefinitions,
-//    const Token& closeBracket)
-//    : Statement(NodeKind::EnumDefinitionStatement)
-//    , m_keyword{ keyword }
-//    , m_name{ name }
-//    , m_baseType{ baseType }
-//    , m_openBracket{ openBracket }
-//    , m_fieldDefinitions{ fieldDefinitions }
-//    , m_closeBracket{ closeBracket }
-//{
-//}
+#include "EnumDefinitionStatement.h"
+
+namespace Caracal 
+{
+    EnumDefinitionStatement::EnumDefinitionStatement(
+        const Token& enumKeyword, 
+        NameExpressionUPtr&& nameExpression, 
+        const std::optional<Token>& colonToken, 
+        std::optional<TypeNameNodeUPtr>&& baseType, 
+        const Token& openBracket, 
+        std::vector<EnumFieldNodeUPtr>&& fieldNodes, 
+        const Token& closeBracket)
+        : Statement(NodeKind::EnumDefinitionStatement, Type::Undefined())
+        , m_enumKeyword{ enumKeyword }
+        , m_nameExpression{ std::move(nameExpression) }
+        , m_colonToken{ colonToken }
+        , m_baseType{ std::move(baseType) }
+        , m_openBracket{ openBracket }
+        , m_fieldNodes{ std::move(fieldNodes) }
+        , m_closeBracket{ closeBracket }
+    {
+    }
+}

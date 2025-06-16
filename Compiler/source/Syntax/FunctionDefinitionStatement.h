@@ -32,6 +32,4 @@ namespace Caracal
         ReturnTypesNodeUPtr m_returnTypesNode;
         BlockNodeUPtr m_bodyNode;
     };
-    
-    using FunctionDefinitionStatementUPtr = std::unique_ptr<Caracal::FunctionDefinitionStatement>;
 }

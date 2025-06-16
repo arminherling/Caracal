@@ -1,0 +1,15 @@
+﻿EnumDefinitionStatement: {
+    NameExpression: {
+        Name: Values
+    }
+    TypeNameNode: {
+        Type: i32
+    }
+    FieldNodes(1): {
+        EnumFieldNode: {
+            NameExpression: {
+                Name: Value
+            }
+        }
+    }
+}

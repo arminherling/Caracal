@@ -9,5 +9,6 @@ namespace Caracal
         _0002_UnterminatedString,
         _0003_ExpectedXButGotY,
         _0004_ExtraTokensRemaining,
+        _0005_ExpectedEnumField,
     };
 }

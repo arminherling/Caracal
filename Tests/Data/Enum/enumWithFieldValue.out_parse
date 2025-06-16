@@ -1,0 +1,23 @@
+﻿EnumDefinitionStatement: {
+    NameExpression: {
+        Name: Values
+    }
+    FieldNodes(3): {
+        EnumFieldNode: {
+            NameExpression: {
+                Name: First
+            }
+        }
+        EnumFieldNode: {
+            NameExpression: {
+                Name: Second
+            }
+            NumberLiteral: 5
+        }
+        EnumFieldNode: {
+            NameExpression: {
+                Name: Third
+            }
+        }
+    }
+}
