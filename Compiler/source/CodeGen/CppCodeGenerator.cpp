@@ -95,6 +95,7 @@ namespace Caracal
         , m_cppIncludes{ }
         , m_currentScope(Scope::Global)
         , m_discardCount(0)
+        , m_currentStatement(NodeKind::Unknown)
     {
     }
 
@@ -156,21 +157,31 @@ namespace Caracal
             }
             case NodeKind::CppBlockStatement:
             {
+                m_currentStatement = NodeKind::CppBlockStatement;
                 generateCppBlock((CppBlockStatement*)node);
+                break;
+            }
+            case NodeKind::ExpressionStatement:
+            {
+                m_currentStatement = NodeKind::ExpressionStatement;
+                generateExpressionStatement((ExpressionStatement*)node);
                 break;
             }
             case NodeKind::AssignmentStatement:
             {
+                m_currentStatement = NodeKind::AssignmentStatement;
                 generateAssignmentStatement((AssignmentStatement*)node);
                 break;
             }
             case NodeKind::FunctionDefinitionStatement:
             {
+                m_currentStatement = NodeKind::FunctionDefinitionStatement;
                 generateFunctionDefinition((FunctionDefinitionStatement*)node);
                 break;
             }
             case NodeKind::ReturnStatement:
             {
+                m_currentStatement = NodeKind::ReturnStatement;
                 generateReturnStatement((ReturnStatement*)node);
                 break;
             }
@@ -243,6 +254,13 @@ namespace Caracal
             const auto result = ReplaceEscapeSequences(lexeme);
             stream() << indentation() << result << newLine();
         }
+    }
+
+    void CppCodeGenerator::generateExpressionStatement(ExpressionStatement* node)
+    {
+        stream() << indentation();
+        generateNode(node->expression().get());
+        stream() << ";" << newLine();
     }
 
     void CppCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node)
@@ -479,7 +497,15 @@ namespace Caracal
     {
         m_cppIncludes.append(QStringLiteral("#include <iostream>") % newLine());
 
-        stream() << "&(std::cout << ";
+        if (m_currentStatement == NodeKind::ExpressionStatement)
+        {
+            stream() << "std::cout << ";
+        }
+        else
+        {
+            stream() << "&(std::cout << ";
+        }
+
         const auto& arguments = node->arguments();
 
         for (const auto& argument : arguments)
@@ -498,7 +524,15 @@ namespace Caracal
                 stream() << " << ";
             }
         }
-        stream() << " << \"\\n\")";
+
+        if (m_currentStatement == NodeKind::ExpressionStatement)
+        {
+            stream() << " << \"\\n\"";
+        }
+        else
+        {
+            stream() << " << \"\\n\")";
+        }
     }
 
     QString generateCpp(ParseTree& parseTree) noexcept

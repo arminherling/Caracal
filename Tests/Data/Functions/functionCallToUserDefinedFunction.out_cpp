@@ -4,6 +4,6 @@
 
 void outer()
 {
-    static_cast<void>(inner());
+    inner();
 }
 

@@ -9,5 +9,5 @@ def inner(x: i32)
 
 def outer()
 {
-    _ :: inner(one());
+    inner(one());
 }

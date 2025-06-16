@@ -1,17 +1,6 @@
 ﻿FunctionDefinitionStatement: {
     NameExpression: {
-        Name: inner
-    }
-    ParametersNode(0): {
-    }
-    ReturnTypesNode(0): {
-    }
-    BlockNode(0): {
-    }
-}
-FunctionDefinitionStatement: {
-    NameExpression: {
-        Name: outer
+        Name: main
     }
     ParametersNode(0): {
     }
@@ -21,9 +10,10 @@ FunctionDefinitionStatement: {
         ExpressionStatement: {
             FunctionCallExpression: {
                 NameExpression: {
-                    Name: inner
+                    Name: print
                 }
-                ArgumentsNode(0): {
+                ArgumentsNode(1): {
+                    StringLiteral: "hello, world!"
                 }
             }
         }

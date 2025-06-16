@@ -1,0 +1,31 @@
+﻿FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: value
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            NumberLiteral: 42
+        }
+    }
+}
+ConstantDeclaration: {
+    Left: {
+        Discard: _
+    }
+    Right: {
+        FunctionCallExpression: {
+            NameExpression: {
+                Name: value
+            }
+            ArgumentsNode(0): {
+            }
+        }
+    }
+}

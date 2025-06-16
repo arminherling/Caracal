@@ -14,6 +14,7 @@ namespace Caracal
         VariableDeclaration,
 
         CppBlockStatement,
+        ExpressionStatement,
         AssignmentStatement,
         FunctionDefinitionStatement,
         ReturnStatement,

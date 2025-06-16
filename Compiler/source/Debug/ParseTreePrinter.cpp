@@ -38,6 +38,11 @@ namespace Caracal
                 prettyPrintCppBlockStatement((CppBlockStatement*)node);
                 break;
             }
+            case NodeKind::ExpressionStatement:
+            {
+                prettyPrintExpressionStatement((ExpressionStatement*)node);
+                break;
+            }
             case NodeKind::AssignmentStatement:
             {
                 prettyPrintAssignmentStatement((AssignmentStatement*)node);
@@ -172,6 +177,17 @@ namespace Caracal
         stream() << indentation() << QString("}") << newLine();
     }
 
+    void ParseTreePrinter::prettyPrintExpressionStatement(ExpressionStatement* statement)
+    {
+        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
+        pushIndentation();
+    
+        prettyPrintNode(statement->expression().get());
+        
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+    
     void ParseTreePrinter::prettyPrintAssignmentStatement(AssignmentStatement* statement)
     {
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
@@ -391,16 +407,6 @@ namespace Caracal
     }
 }
 
-//void ParseTreePrinter::PrettyPrintExpressionStatement(ExpressionStatement* statement)
-//{
-//    stream() << Indentation() << stringify(statement->kind()) << QString(": {") << NewLine();
-//
-//    PushIndentation();
-//    PrettyPrintNode(statement->expression());
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
-//}
-//
 //void ParseTreePrinter::PrettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement)
 //{
 //    auto nameToken = statement->name();

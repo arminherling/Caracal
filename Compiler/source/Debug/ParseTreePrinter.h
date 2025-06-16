@@ -11,7 +11,7 @@
 //#include <Syntax/EnumDefinitionStatement.h>
 //#include <Syntax/EnumFieldDefinitionStatement.h>
 //#include <Syntax/Error.h>
-//#include <Syntax/ExpressionStatement.h>
+#include <Syntax/ExpressionStatement.h>
 //#include <Syntax/FieldDefinitionStatement.h>
 #include <Syntax/ConstantDeclaration.h>
 #include <Syntax/VariableDeclaration.h>
@@ -47,7 +47,7 @@ namespace Caracal
     private:
         void prettyPrintNode(Node* node);
         void prettyPrintCppBlockStatement(CppBlockStatement* node);
-    //    void PrettyPrintExpressionStatement(ExpressionStatement* statement);
+        void prettyPrintExpressionStatement(ExpressionStatement* statement);
         void prettyPrintConstantDeclaration(ConstantDeclaration* statement);
         void prettyPrintVariableDeclaration(VariableDeclaration* statement);
         void prettyPrintAssignmentStatement(AssignmentStatement* statement);

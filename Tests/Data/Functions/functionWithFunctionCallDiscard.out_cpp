@@ -1,8 +1,10 @@
-﻿#include <iostream>
-#include <string>
+﻿int value()
+{
+    return 42;
+}
 
 int main()
 {
-    static_cast<void>(&(std::cout << std::string{"hello, world!"} << "\n"));
+    static_cast<void>(value());
 }
 

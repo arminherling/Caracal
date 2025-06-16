@@ -1,5 +1,22 @@
 ﻿FunctionDefinitionStatement: {
     NameExpression: {
+        Name: value
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            NumberLiteral: 42
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    NameExpression: {
         Name: main
     }
     ParametersNode(0): {
@@ -14,10 +31,9 @@
             Right: {
                 FunctionCallExpression: {
                     NameExpression: {
-                        Name: print
+                        Name: value
                     }
-                    ArgumentsNode(1): {
-                        StringLiteral: "hello, world!"
+                    ArgumentsNode(0): {
                     }
                 }
             }

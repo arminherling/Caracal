@@ -1,0 +1,17 @@
+TypedAssignmentStatement: {
+    Type: ???
+    Left: {
+        TypedConstant: {
+            Type: ???
+            Name: a
+        }
+    }
+    Right: {
+        TypedFunctionCallExpression: {
+            Type: ???
+            Name: func
+            Arguments(0): {
+            }
+        }
+    }
+}

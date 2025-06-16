@@ -24,24 +24,19 @@ FunctionDefinitionStatement: {
     ReturnTypesNode(0): {
     }
     BlockNode(1): {
-        ConstantDeclaration: {
-            Left: {
-                Discard: _
-            }
-            Right: {
-                FunctionCallExpression: {
-                    NameExpression: {
-                        Name: inner
-                    }
-                    ArgumentsNode(1): {
-                        BinaryExpression: {
-                            Left: {
-                                NumberLiteral: 5
-                            }
-                            Operation: Addition
-                            Right: {
-                                NumberLiteral: 5
-                            }
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                NameExpression: {
+                    Name: inner
+                }
+                ArgumentsNode(1): {
+                    BinaryExpression: {
+                        Left: {
+                            NumberLiteral: 5
+                        }
+                        Operation: Addition
+                        Right: {
+                            NumberLiteral: 5
                         }
                     }
                 }

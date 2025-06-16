@@ -35,22 +35,17 @@ FunctionDefinitionStatement: {
                 NumberLiteral: 20
             }
         }
-        ConstantDeclaration: {
-            Left: {
-                Discard: _
-            }
-            Right: {
-                FunctionCallExpression: {
-                    NameExpression: {
-                        Name: inner
-                    }
-                    ArgumentsNode(1): {
-                        UnaryExpression: {
-                            Operation: ReferenceOf
-                            Expression: {
-                                NameExpression: {
-                                    Name: x
-                                }
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                NameExpression: {
+                    Name: inner
+                }
+                ArgumentsNode(1): {
+                    UnaryExpression: {
+                        Operation: ReferenceOf
+                        Expression: {
+                            NameExpression: {
+                                Name: x
                             }
                         }
                     }

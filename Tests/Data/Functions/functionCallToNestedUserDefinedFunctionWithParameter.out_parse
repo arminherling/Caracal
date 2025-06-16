@@ -41,22 +41,17 @@ FunctionDefinitionStatement: {
     ReturnTypesNode(0): {
     }
     BlockNode(1): {
-        ConstantDeclaration: {
-            Left: {
-                Discard: _
-            }
-            Right: {
-                FunctionCallExpression: {
-                    NameExpression: {
-                        Name: inner
-                    }
-                    ArgumentsNode(1): {
-                        FunctionCallExpression: {
-                            NameExpression: {
-                                Name: one
-                            }
-                            ArgumentsNode(0): {
-                            }
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                NameExpression: {
+                    Name: inner
+                }
+                ArgumentsNode(1): {
+                    FunctionCallExpression: {
+                        NameExpression: {
+                            Name: one
+                        }
+                        ArgumentsNode(0): {
                         }
                     }
                 }

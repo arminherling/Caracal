@@ -20,6 +20,7 @@
 #include <Syntax/UnaryExpression.h>
 #include <Syntax/GroupingExpression.h>
 #include <Syntax/FunctionCallExpression.h>
+#include <Syntax/ExpressionStatement.h>
 
 namespace Caracal
 {
@@ -43,6 +44,7 @@ namespace Caracal
         void generateGlobalDiscardedExpression(Expression* expression);
         void generateLocalDiscardedExpression(Expression* expression);
         void generateCppBlock(CppBlockStatement* node);
+        void generateExpressionStatement(ExpressionStatement* node);
         void generateAssignmentStatement(AssignmentStatement* node);
         void generateFunctionDefinition(FunctionDefinitionStatement* node);
         void generateReturnStatement(ReturnStatement* node);
@@ -61,6 +63,7 @@ namespace Caracal
         QStringList m_cppIncludes;
         Scope m_currentScope;
         i32 m_discardCount;
+        NodeKind m_currentStatement;
     };
 
     COMPILER_API QString generateCpp(ParseTree& parseTree) noexcept;

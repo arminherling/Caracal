@@ -3,7 +3,4 @@ def value() i32
     return 42;
 }
 
-def main() 
-{
-    _ :: value();
-}
+_ :: value();

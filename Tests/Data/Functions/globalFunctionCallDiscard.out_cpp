@@ -1,0 +1,6 @@
+﻿int value()
+{
+    return 42;
+}
+
+const auto _0 = value();

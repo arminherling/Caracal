@@ -9,7 +9,7 @@
 #include <Syntax/ConstantDeclaration.h>
 #include <Syntax/VariableDeclaration.h>
 #include <Syntax/GroupingExpression.h>
-//#include <Syntax/ExpressionStatement.h>
+#include <Syntax/ExpressionStatement.h>
 #include <Syntax/FunctionDefinitionStatement.h>
 //#include <Syntax/EnumDefinitionStatement.h>
 //#include <Syntax/TypeDefinitionStatement.h>
@@ -109,6 +109,15 @@ namespace Caracal
                         }
                         TODO("Variable declaration in other scopes");
                     }
+                    if (expression->kind() == NodeKind::FunctionCallExpression)
+                    {
+                        if (scope == StatementScope::Function)
+                        {
+                            statements.emplace_back(parseExpressionStatement(std::move(expression)));
+                            break;
+                        }
+                        TODO("Function call expression in other scopes");
+                    }
                     if (expression->kind() == NodeKind::NameExpression && currentToken().kind == TokenKind::Equal)
                     {
                         if (scope == StatementScope::Function)
@@ -171,6 +180,13 @@ namespace Caracal
         const auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
 
         return std::make_unique<CppBlockStatement>(cppKeyword, openBracket, lines, closeBracket);
+    }
+    
+    StatementUPtr Parser::parseExpressionStatement(ExpressionUPtr&& expression)
+    {
+        auto semicolon = advanceOnMatch(TokenKind::Semicolon);
+
+        return std::make_unique<ExpressionStatement>(std::move(expression), semicolon);
     }
 
     StatementUPtr Parser::parseFunctionDefinitionStatement()
@@ -612,13 +628,6 @@ namespace Caracal
 //    }
 //}
 
-//
-//Statement* Parser::parseExpressionStatement()
-//{
-//    auto expression = parseExpression();
-//    return new ExpressionStatement(expression);
-//}
-//
 //
 //Statement* Parser::parseEnumDefinitionStatement()
 //{

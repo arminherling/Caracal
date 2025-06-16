@@ -14,6 +14,7 @@ namespace Caracal
             { NodeKind::VariableDeclaration,            QStringLiteral("VariableDeclaration") },
 
             { NodeKind::CppBlockStatement,              QStringLiteral("CppBlockStatement") },
+            { NodeKind::ExpressionStatement,            QStringLiteral("ExpressionStatement") },
             { NodeKind::AssignmentStatement,            QStringLiteral("AssignmentStatement") },
             { NodeKind::FunctionDefinitionStatement,    QStringLiteral("FunctionDefinitionStatement") },
             { NodeKind::ReturnStatement,                QStringLiteral("ReturnStatement") },
