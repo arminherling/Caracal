@@ -1,0 +1,15 @@
+﻿#include <iostream>
+
+int main();
+int value();
+
+int main()
+{
+    std::cout << value() << "\n";
+}
+
+int value()
+{
+    return 231;
+}
+

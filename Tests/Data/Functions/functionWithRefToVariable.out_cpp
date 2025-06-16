@@ -1,4 +1,6 @@
-﻿int main()
+﻿int main();
+
+int main()
 {
     auto a = true;
     auto& b = a;

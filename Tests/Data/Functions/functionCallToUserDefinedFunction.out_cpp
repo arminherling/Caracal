@@ -1,4 +1,7 @@
-﻿void inner()
+﻿void inner();
+void outer();
+
+void inner()
 {
 }
 

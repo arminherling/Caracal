@@ -1,4 +1,8 @@
-﻿int one()
+﻿int one();
+void inner(int x);
+void outer();
+
+int one()
 {
     return 1;
 }

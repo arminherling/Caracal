@@ -1,6 +1,8 @@
 ﻿#include <iostream>
 #include <string>
 
+int main();
+
 int main()
 {
     std::cout << std::string{"hello, world!"} << "\n";

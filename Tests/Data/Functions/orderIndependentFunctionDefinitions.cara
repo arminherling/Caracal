@@ -1,0 +1,9 @@
+def main()
+{
+    print(value());
+}
+
+def value() i32
+{ 
+    return 231;
+}

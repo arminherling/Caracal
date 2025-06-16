@@ -1,4 +1,7 @@
-﻿void inner(int& x)
+﻿void inner(int& x);
+void outer();
+
+void inner(int& x)
 {
 }
 

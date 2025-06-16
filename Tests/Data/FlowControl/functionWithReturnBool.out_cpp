@@ -1,4 +1,6 @@
-﻿bool func()
+﻿bool func();
+
+bool func()
 {
     return true;
 }

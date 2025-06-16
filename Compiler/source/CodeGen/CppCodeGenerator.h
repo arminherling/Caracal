@@ -46,6 +46,7 @@ namespace Caracal
         void generateCppBlock(CppBlockStatement* node);
         void generateExpressionStatement(ExpressionStatement* node);
         void generateAssignmentStatement(AssignmentStatement* node);
+        QString generateFunctionSignature(FunctionDefinitionStatement* node);
         void generateFunctionDefinition(FunctionDefinitionStatement* node);
         void generateReturnStatement(ReturnStatement* node);
         void generateGroupingExpression(GroupingExpression* node);
@@ -61,6 +62,7 @@ namespace Caracal
 
         ParseTree& m_parseTree;
         QStringList m_cppIncludes;
+        QStringList m_forwardDeclarations;
         Scope m_currentScope;
         i32 m_discardCount;
         NodeKind m_currentStatement;

@@ -1,4 +1,6 @@
-﻿int func()
+﻿int func();
+
+int func()
 {
     return 5;
 }

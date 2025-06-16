@@ -1,4 +1,7 @@
-﻿int value()
+﻿int value();
+int main();
+
+int value()
 {
     return 42;
 }

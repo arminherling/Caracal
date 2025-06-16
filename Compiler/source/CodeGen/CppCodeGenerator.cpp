@@ -41,7 +41,7 @@ namespace Caracal
         static const auto cppTypeNames = InitializeTypeToCppName();
         if (const auto result = cppTypeNames.find(type); result != cppTypeNames.end())
             return result->second;
-        
+
         TODO("Type not found in GetCppNameForType");
         return QStringView(u"");
     }
@@ -51,7 +51,7 @@ namespace Caracal
         static const auto cppIncludes = InitializeTypeToCppInclude();
         if (const auto result = cppIncludes.find(type); result != cppIncludes.end())
             return result->second;
-    
+
         return std::nullopt;
     }
 
@@ -93,6 +93,7 @@ namespace Caracal
         : BasePrinter(indentation)
         , m_parseTree{ parseTree }
         , m_cppIncludes{ }
+        , m_forwardDeclarations{ }
         , m_currentScope(Scope::Global)
         , m_discardCount(0)
         , m_currentStatement(NodeKind::Unknown)
@@ -112,7 +113,13 @@ namespace Caracal
         }
         const auto includes = m_cppIncludes.join("");
 
-        return includes % toUtf8();
+        if (!m_forwardDeclarations.isEmpty())
+        {
+            m_forwardDeclarations.append(newLine());
+        }
+        const auto forwardDeclarations = m_forwardDeclarations.join("");
+
+        return includes % forwardDeclarations % toUtf8();
     }
 
     void CppCodeGenerator::generateNode(Node* node)
@@ -271,8 +278,8 @@ namespace Caracal
         {
             m_cppIncludes.append(include.value() % newLine());
         }
-        stream() << indentation() << "const auto" ;
-        
+        stream() << indentation() << "const auto";
+
         // check if right expression is a ref
         if (node->rightExpression()->kind() == NodeKind::UnaryExpression)
         {
@@ -340,31 +347,32 @@ namespace Caracal
         stream() << ";" << newLine();
     }
 
-    void CppCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node)
+    QString CppCodeGenerator::generateFunctionSignature(FunctionDefinitionStatement* node)
     {
-        const auto oldScope = m_currentScope;
-        m_currentScope = Scope::Function;
-
         const auto& returnTypes = node->returnTypesNode()->returnTypes();
-        const auto hasReturnTypes = returnTypes.empty() == false;
+        const auto hasReturnTypes = !returnTypes.empty();
         const auto functionName = m_parseTree.tokens().getLexeme(node->nameExpression()->nameToken());
         const auto isMainFunction = functionName == QStringLiteral("main");
+
+        QString signature;
+        QTextStream sigStream(&signature);
+
         if (!hasReturnTypes)
         {
             if (isMainFunction)
             {
-                stream() << indentation() << "int";
+                sigStream << "int " << functionName << "(";
             }
             else
             {
-                stream() << indentation() << "void";
+                sigStream << "void " << functionName << "(";
             }
         }
         else
         {
             if (returnTypes.size() != 1)
             {
-                TODO("Implement multiple return types in CppCodeGenerator");
+                TODO("Implement multiple return types in CppCodeGenerator::generateFunctionSignature");
             }
 
             const auto returnType = returnTypes[0]->type();
@@ -373,11 +381,9 @@ namespace Caracal
             {
                 m_cppIncludes.append(include.value() % newLine());
             }
-
             const auto returnTypeName = GetCppNameForType(returnType);
-            stream() << indentation() << returnTypeName;
+            sigStream << returnTypeName << " " << functionName << "(";
         }
-        stream() << " " << functionName << "(";
 
         const auto& parameters = node->parametersNode()->parameters();
         for (const auto& parameter : parameters)
@@ -385,21 +391,32 @@ namespace Caracal
             const auto typeName = GetCppNameForType(parameter->typeName()->type());
             if (parameter->typeName()->isReference())
             {
-                stream() << typeName << "& ";
+                sigStream << typeName << "& ";
             }
             else
             {
-                stream() << typeName << " ";
+                sigStream << typeName << " ";
             }
-
             generateNameExpression(parameter->nameExpression().get());
-
+            
             if (&parameter != &parameters.back())
             {
-                stream() << ", ";
+                sigStream << ", ";
             }
         }
-        stream() << ")" << newLine();
+
+        sigStream << ")";
+        return signature;
+    }
+
+    void CppCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node)
+    {
+        const auto oldScope = m_currentScope;
+        m_currentScope = Scope::Function;
+
+        const auto signature = generateFunctionSignature(node);
+        m_forwardDeclarations.append(signature % ";" % newLine());
+        stream() << indentation() << signature << newLine();
 
         const auto& body = node->bodyNode();
         stream() << indentation() << "{" << newLine();
@@ -447,7 +464,7 @@ namespace Caracal
     void CppCodeGenerator::generateBinaryExpression(BinaryExpression* node)
     {
         const auto binaryOperator = StringifyBinaryOperator(node->binaryOperator());
-        
+
         generateNode(node->leftExpression().get());
         stream() << " " << binaryOperator << " ";
         generateNode(node->rightExpression().get());
@@ -466,7 +483,7 @@ namespace Caracal
         for (const auto& argument : arguments)
         {
             generateNode(argument.get());
-            
+
             if (&argument != &arguments.back())
             {
                 stream() << ", ";
@@ -490,7 +507,7 @@ namespace Caracal
     void CppCodeGenerator::generateStringLiteral(StringLiteral* node)
     {
         auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
-        stream() <<  QString("std::string{%1}").arg(lexeme);
+        stream() << QString("std::string{%1}").arg(lexeme);
     }
 
     void CppCodeGenerator::generateBuiltinPrintFunction(ArgumentsNode* node) noexcept
