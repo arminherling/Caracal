@@ -17,7 +17,7 @@
 #include <Syntax/VariableDeclaration.h>
 #include <Syntax/FunctionDefinitionStatement.h>
 #include <Syntax/GroupingExpression.h>
-//#include <Syntax/IfStatement.h>
+#include <Syntax/IfStatement.h>
 //#include <Syntax/MemberAccessExpression.h>
 //#include <Syntax/MethodDefinitionStatement.h>
 #include <Syntax/NameExpression.h>
@@ -57,7 +57,7 @@ namespace Caracal
     //    void PrettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement);
     //    void PrettyPrintFieldDefinitionStatement(FieldDefinitionStatement* statement);
     //    void PrettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement);
-    //    void PrettyPrintIfStatement(IfStatement* statement);
+        void prettyPrintIfStatement(IfStatement* statement);
     //    void PrettyPrintWhileStatement(WhileStatement* statement);
         void prettyPrintReturnStatement(ReturnStatement* statement);
         void prettyPrintArgumentsNode(ArgumentsNode* arguments);

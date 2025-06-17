@@ -1,0 +1,9 @@
+def func()
+{ 
+    if true
+    {
+        return;
+    }
+
+    return;
+}

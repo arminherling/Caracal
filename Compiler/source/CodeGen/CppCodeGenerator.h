@@ -22,6 +22,8 @@
 #include <Syntax/FunctionCallExpression.h>
 #include <Syntax/ExpressionStatement.h>
 #include <Syntax/EnumDefinitionStatement.h>
+#include <Syntax/BlockNode.h>
+#include <Syntax/IfStatement.h>
 
 namespace Caracal
 {
@@ -45,11 +47,13 @@ namespace Caracal
         void generateGlobalDiscardedExpression(Expression* expression);
         void generateLocalDiscardedExpression(Expression* expression);
         void generateCppBlock(CppBlockStatement* node);
+        void generateBlockNode(BlockNode* node) noexcept;
         void generateExpressionStatement(ExpressionStatement* node);
         void generateAssignmentStatement(AssignmentStatement* node);
         QString generateFunctionSignature(FunctionDefinitionStatement* node);
         void generateEnumDefinitionStatement(EnumDefinitionStatement* node);
         void generateFunctionDefinition(FunctionDefinitionStatement* node);
+        void generateIfStatement(IfStatement* node) noexcept;
         void generateReturnStatement(ReturnStatement* node);
         void generateGroupingExpression(GroupingExpression* node);
         void generateUnaryExpression(UnaryExpression* node);
@@ -59,6 +63,7 @@ namespace Caracal
         void generateBoolLiteral(BoolLiteral* node);
         void generateNumberLiteral(NumberLiteral* node);
         void generateStringLiteral(StringLiteral* node);
+
 
         void generateBuiltinPrintFunction(ArgumentsNode* node) noexcept;
 

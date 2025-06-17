@@ -1,0 +1,47 @@
+﻿FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: func
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+        }
+    }
+    BlockNode(1): {
+        IfStatement: {
+            Condition: {
+                BoolLiteral: true
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        NumberLiteral: 1
+                    }
+                }
+            }
+            False: {
+                IfStatement: {
+                    Condition: {
+                        BoolLiteral: false
+                    }
+                    True: {
+                        BlockNode(1): {
+                            ReturnStatement: {
+                                NumberLiteral: 2
+                            }
+                        }
+                    }
+                    False: {
+                        BlockNode(1): {
+                            ReturnStatement: {
+                                NumberLiteral: 3
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -36,6 +36,7 @@ namespace Caracal
 
         //QList<Statement*> parseGlobalStatements();
         std::vector<StatementUPtr> parseStatements(StatementScope scope);
+        StatementUPtr parseStatement(StatementScope scope);
         StatementUPtr parseCppBlock();
         StatementUPtr parseExpressionStatement(ExpressionUPtr&& expression);
         //Statement* parseAssignmentStatement();
@@ -48,7 +49,7 @@ namespace Caracal
         //Statement* parseTypeDefinitionStatement();
         //Statement* parseFieldDefinitionStatement();
         //Statement* parseMethodDefinitionStatement();
-        //Statement* parseIfStatement(StatementScope scope);
+        StatementUPtr parseIfStatement(StatementScope scope);
         //Statement* parseWhileStatement(StatementScope scope);
         StatementUPtr parseReturnStatement();
         ExpressionUPtr parseExpression();

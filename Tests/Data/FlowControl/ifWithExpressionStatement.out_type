@@ -1,0 +1,34 @@
+TypedFunctionDefinitionStatement: {
+    TypeKind: function
+    Type: ()->()
+    Name: func
+    Parameters(0): {
+    }
+    ReturnType: {
+        Type: void
+    }
+    Body(2): {
+        TypedIfStatement: {
+            Condition: {
+                BoolValue: {
+                    Type: bool
+                    Value: true
+                }
+            }
+            Body(1): {
+                TypedReturnStatement: {
+                    Type: void
+                    Expression: {
+                    }
+                }
+            }
+            ElseBlock: {
+            }
+        }
+        TypedReturnStatement: {
+            Type: void
+            Expression: {
+            }
+        }
+    }
+}

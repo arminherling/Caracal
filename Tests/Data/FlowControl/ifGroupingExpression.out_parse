@@ -1,0 +1,26 @@
+﻿FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: func
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(2): {
+        IfStatement: {
+            Condition: {
+                GroupingExpression: {
+                    BoolLiteral: false
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+        }
+    }
+}

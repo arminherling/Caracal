@@ -18,7 +18,7 @@
 #include <Syntax/UnaryExpression.h>
 #include <Syntax/BinaryExpression.h>
 #include <Syntax/NameExpression.h>
-//#include <Syntax/IfStatement.h>
+#include <Syntax/IfStatement.h>
 //#include <Syntax/WhileStatement.h>
 #include <Syntax/ReturnStatement.h>
 #include <Syntax/DiscardLiteral.h>
@@ -50,98 +50,11 @@ namespace Caracal
     std::vector<StatementUPtr> Parser::parseStatements(StatementScope scope)
     {
         std::vector<StatementUPtr> statements{};
-
         auto current = currentToken();
         while (true)
         {
             switch (current.kind)
             {
-                case TokenKind::DefKeyword:
-                {
-                    if (scope == StatementScope::Global)
-                    {
-                        statements.emplace_back(parseFunctionDefinitionStatement());
-                        break;
-                    }
-                    TODO("Function definition in other scopes");
-                    break;
-                }
-                case TokenKind::EnumKeyword:
-                {
-                    if (scope == StatementScope::Global)
-                    {
-                        statements.emplace_back(parseEnumDefinitionStatement());
-                        break;
-                    }
-                    TODO("Enum definition in other scopes");
-                    break;
-                }
-                case TokenKind::CppKeyword:
-                {
-                    if (scope == StatementScope::Global || scope == StatementScope::Function)
-                    {
-                        statements.emplace_back(parseCppBlock());
-                        break;
-                    }
-                    TODO("Cpp block in other scopes");
-                    break;
-                }
-                case TokenKind::ReturnKeyword:
-                {
-                    if (scope == StatementScope::Function)
-                    {
-                        statements.emplace_back(parseReturnStatement());
-                        break;
-                    }
-                    TODO("Return statement in other scopes");
-                    break;
-                }
-                case TokenKind::Underscore:
-                case TokenKind::Identifier:
-                {
-                    auto expression = parsePrimaryExpression();
-                    if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Colon)
-                    {
-                        if (scope == StatementScope::Global || scope == StatementScope::Function)
-                        {
-                            statements.emplace_back(parseConstantDeclaration(std::move(expression)));
-                            break;
-                        }
-                        TODO("Emit an error");
-                        break;
-                    }
-                    if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Equal)
-                    {
-                        if (scope == StatementScope::Function)
-                        {
-                            statements.emplace_back(parseVariableDeclaration(std::move(expression)));
-                            break;
-                        }
-                        TODO("Variable declaration in other scopes");
-                    }
-                    if (expression->kind() == NodeKind::FunctionCallExpression)
-                    {
-                        if (scope == StatementScope::Function)
-                        {
-                            statements.emplace_back(parseExpressionStatement(std::move(expression)));
-                            break;
-                        }
-                        TODO("Function call expression in other scopes");
-                    }
-                    if (expression->kind() == NodeKind::NameExpression && currentToken().kind == TokenKind::Equal)
-                    {
-                        if (scope == StatementScope::Function)
-                        {
-                             statements.emplace_back(parseAssignmentStatement(std::move(expression)));
-                             break;
-                        }
-                        TODO("Assignment statement in other scopes");
-                        break;
-                    }
-
-                    TODO("Identifier in other scopes");
-                    break;
-                }
                 case TokenKind::CloseBracket:
                 {
                     if (scope == StatementScope::Global)
@@ -160,17 +73,129 @@ namespace Caracal
                 }
                 default:
                 {
-                    // TODO synthesise source location for error token
-                    const auto& location = m_tokens.getSourceLocation(current);
-                    m_diagnostics.AddError(DiagnosticKind::Unknown, location);
-
-                    advanceCurrentIndex();
+                    statements.push_back(parseStatement(scope));
                     break;
                 }
             }
-
+            
             current = currentToken();
         }
+    }
+
+    StatementUPtr Parser::parseStatement(StatementScope scope)
+    {
+        const auto current = currentToken();
+        switch (current.kind)
+        {
+            case TokenKind::OpenBracket:
+            {
+                if (scope == StatementScope::Function)
+                {
+                    return parseBlockNode(scope);
+                }
+                TODO("Block node in other scopes");
+                break;
+            }
+            case TokenKind::DefKeyword:
+            {
+                if (scope == StatementScope::Global)
+                {
+                    return parseFunctionDefinitionStatement();
+                }
+                TODO("Function definition in other scopes");
+                break;
+            }
+            case TokenKind::EnumKeyword:
+            {
+                if (scope == StatementScope::Global)
+                {
+                    return parseEnumDefinitionStatement();
+                }
+                TODO("Enum definition in other scopes");
+                break;
+            }
+            case TokenKind::CppKeyword:
+            {
+                if (scope == StatementScope::Global || scope == StatementScope::Function)
+                {
+                    return parseCppBlock();
+                }
+                TODO("Cpp block in other scopes");
+                break;
+            }
+            case TokenKind::IfKeyword:
+            {
+                if (scope == StatementScope::Function)
+                {
+                    return parseIfStatement(scope);
+                }
+
+                TODO("If statement in other scopes");
+                break;
+            }
+            case TokenKind::ReturnKeyword:
+            {
+                if (scope == StatementScope::Function)
+                {
+                    return parseReturnStatement();
+                }
+                TODO("Return statement in other scopes");
+                break;
+            }
+            case TokenKind::Underscore:
+            case TokenKind::Identifier:
+            {
+                auto expression = parsePrimaryExpression();
+                if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Colon)
+                {
+                    if (scope == StatementScope::Global || scope == StatementScope::Function)
+                    {
+                        return parseConstantDeclaration(std::move(expression));
+                    }
+                    TODO("Emit an error");
+                    break;
+                }
+                if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Equal)
+                {
+                    if (scope == StatementScope::Function)
+                    {
+                        return parseVariableDeclaration(std::move(expression));
+                    }
+                    TODO("Variable declaration in other scopes");
+                    break;
+                }
+                if (expression->kind() == NodeKind::FunctionCallExpression)
+                {
+                    if (scope == StatementScope::Function)
+                    {
+                        return parseExpressionStatement(std::move(expression));
+                    }
+                    TODO("Function call expression in other scopes");
+                    break;
+                }
+                if (expression->kind() == NodeKind::NameExpression && currentToken().kind == TokenKind::Equal)
+                {
+                    if (scope == StatementScope::Function)
+                    {
+                        return parseAssignmentStatement(std::move(expression));
+                        break;
+                    }
+                    TODO("Assignment statement in other scopes");
+                    break;
+                }
+
+                TODO("Identifier in other scopes");
+                break;
+            }
+        }
+
+        TODO("Unexpected token in parseStatement");
+        const auto& location = m_tokens.getSourceLocation(current);
+        m_diagnostics.AddError(DiagnosticKind::Unknown, location);
+
+        auto errorExpression = std::make_unique<ErrorExpression>(current);
+        advanceCurrentIndex();
+        return std::make_unique<ExpressionStatement>(std::move(errorExpression), Token::ToError(current));
     }
 
     StatementUPtr Parser::parseCppBlock()
@@ -314,6 +339,22 @@ namespace Caracal
         return std::make_unique<ParameterNode>(std::move(name), colon, std::move(typeName));
     }
 
+    StatementUPtr Parser::parseIfStatement(StatementScope scope)
+    {
+        auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
+        auto condition = parseExpression();
+        auto trueStatement = parseStatement(scope);
+
+        if (currentToken().kind == TokenKind::ElseKeyword)
+        {
+            auto elseKeyword = advanceOnMatch(TokenKind::ElseKeyword);
+            auto falseStatement = parseStatement(scope);
+            return std::make_unique<IfStatement>(ifKeyword, std::move(condition), std::move(trueStatement), elseKeyword, std::move(falseStatement));
+        }
+
+        return std::make_unique<IfStatement>(ifKeyword, std::move(condition), std::move(trueStatement));
+    }
+    
     StatementUPtr Parser::parseReturnStatement()
     {
         auto returnKeyword = advanceOnMatch(TokenKind::ReturnKeyword);
@@ -768,15 +809,6 @@ namespace Caracal
 //    auto body = parseMethodBody();
 //
 //    return new MethodDefinitionStatement(keyword, name, signature, body);
-//}
-//
-//Statement* Parser::parseIfStatement(StatementScope scope)
-//{
-//    auto keyword = advanceOnMatch(TokenKind::Identifier);
-//    auto condition = parseExpression();
-//    auto block = parseBlockNode(scope);
-//
-//    return new IfStatement(keyword, condition, block);
 //}
 //
 //Statement* Parser::parseWhileStatement(StatementScope scope)

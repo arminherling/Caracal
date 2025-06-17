@@ -35,6 +35,7 @@ enum class COMPILER_API TokenKind
     EnumKeyword,
     TypeKeyword,
     IfKeyword,
+    ElseKeyword,
     WhileKeyword,
     ReturnKeyword,
     TrueKeyword,

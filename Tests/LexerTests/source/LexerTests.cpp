@@ -60,6 +60,7 @@ namespace
             std::make_tuple(QString("Enum"), QString("enum"), TokenKind::EnumKeyword),
             std::make_tuple(QString("Type"), QString("type"), TokenKind::TypeKeyword),
             std::make_tuple(QString("If"), QString("if"), TokenKind::IfKeyword),
+            std::make_tuple(QString("Else"), QString("else"), TokenKind::ElseKeyword),
             std::make_tuple(QString("While"), QString("while"), TokenKind::WhileKeyword),
             std::make_tuple(QString("Return"), QString("return"), TokenKind::ReturnKeyword),
             std::make_tuple(QString("True"), QString("true"), TokenKind::TrueKeyword),

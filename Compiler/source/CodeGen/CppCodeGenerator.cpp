@@ -192,6 +192,12 @@ namespace Caracal
                 generateEnumDefinitionStatement((EnumDefinitionStatement*)node);
                 break;
             }
+            case NodeKind::IfStatement:
+            {
+                m_currentStatement = NodeKind::IfStatement;
+                generateIfStatement((IfStatement*)node);
+                break;
+            }
             case NodeKind::ReturnStatement:
             {
                 m_currentStatement = NodeKind::ReturnStatement;
@@ -247,6 +253,12 @@ namespace Caracal
                 generateStringLiteral((StringLiteral*)node);
                 break;
             }
+            case NodeKind::BlockNode:
+            {
+                m_currentStatement = NodeKind::BlockNode;
+                generateBlockNode((BlockNode*)node);
+                break;
+            }
 
             default:
             {
@@ -267,6 +279,19 @@ namespace Caracal
             const auto result = ReplaceEscapeSequences(lexeme);
             stream() << indentation() << result << newLine();
         }
+    }
+
+    void CppCodeGenerator::generateBlockNode(BlockNode* node) noexcept
+    {
+        const auto& statements = node->statements();
+        stream() << indentation() << "{" << newLine();
+        pushIndentation();
+        for (const auto& statement : statements)
+        {
+            generateNode(statement.get());
+        }
+        popIndentation();
+        stream() << indentation() << "}" << newLine();
     }
 
     void CppCodeGenerator::generateExpressionStatement(ExpressionStatement* node)
@@ -456,20 +481,77 @@ namespace Caracal
         const auto signature = generateFunctionSignature(node);
         m_forwardDeclarations.append(signature % ";" % newLine());
         stream() << indentation() << signature << newLine();
-
-        const auto& body = node->bodyNode();
         stream() << indentation() << "{" << newLine();
-        pushIndentation();
 
+        pushIndentation();
+        const auto& body = node->bodyNode();
         for (const auto& statement : body->statements())
         {
             generateNode(statement.get());
         }
-
         popIndentation();
+
         stream() << indentation() << "}" << newLine() << newLine();
 
         m_currentScope = oldScope; // Reset the scope after generating the function definition
+    }
+
+    void CppCodeGenerator::generateIfStatement(IfStatement* node) noexcept
+    {
+        const auto& condition = node->condition();
+        const auto needsParentheses = condition->kind() != NodeKind::GroupingExpression;
+
+        // unwrap the condition if it is a grouping expression
+        if (needsParentheses)
+        {
+            stream() << indentation() << "if (";
+        }
+        else
+        {
+            stream() << indentation() << "if ";
+        }
+        generateNode(node->condition().get());
+        if (needsParentheses)
+        {
+            stream() << ")" << newLine();
+        }
+        else
+        {
+            stream() << newLine();
+        }
+
+        const auto trueBlockNeedsBrackets = node->trueStatement()->kind() != NodeKind::BlockNode;
+        if (trueBlockNeedsBrackets)
+        {
+            stream() << indentation() << "{" << newLine();
+            pushIndentation();
+        }
+        generateNode(node->trueStatement().get());
+        if (trueBlockNeedsBrackets)
+        {
+            popIndentation();
+            stream() << indentation() << "}" << newLine();
+        }
+
+        // Check if there is an else block
+        if (node->hasFalseBlock())
+        {
+            const auto& falseStatement = node->falseStatement().value();
+            const auto falseBlockNeedsBrackets = falseStatement->kind() != NodeKind::BlockNode;
+
+            stream() << indentation() << "else" << newLine();
+            if (falseBlockNeedsBrackets)
+            {
+                stream() << indentation() << "{" << newLine();
+                pushIndentation();
+            }
+            generateNode(falseStatement.get());
+            if (falseBlockNeedsBrackets)
+            {
+                popIndentation();
+                stream() << indentation() << "}" << newLine();
+            }
+        }
     }
 
     void CppCodeGenerator::generateReturnStatement(ReturnStatement* node)
@@ -485,7 +567,7 @@ namespace Caracal
 
     void CppCodeGenerator::generateGroupingExpression(GroupingExpression* node)
     {
-        stream() << indentation() << "(";
+        stream() << "(";
         generateNode(node->expression().get());
         stream() << ")";
     }

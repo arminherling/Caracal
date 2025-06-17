@@ -32,6 +32,7 @@ namespace Caracal
             { QStringView(u"enum") ,TokenKind::EnumKeyword },
             { QStringView(u"type") ,TokenKind::TypeKeyword },
             { QStringView(u"if") ,TokenKind::IfKeyword },
+            { QStringView(u"else") ,TokenKind::ElseKeyword },
             { QStringView(u"while") ,TokenKind::WhileKeyword },
             { QStringView(u"return") ,TokenKind::ReturnKeyword },
             { QStringView(u"true") ,TokenKind::TrueKeyword },

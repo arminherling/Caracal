@@ -1,0 +1,11 @@
+﻿void func();
+
+void func()
+{
+    if (false)
+    {
+        return;
+    }
+    return;
+}
+

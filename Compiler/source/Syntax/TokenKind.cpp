@@ -28,6 +28,7 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
         { TokenKind::EnumKeyword,       QStringLiteral("EnumKeyword") },
         { TokenKind::TypeKeyword,       QStringLiteral("TypeKeyword") },
         { TokenKind::IfKeyword,         QStringLiteral("IfKeyword") },
+        { TokenKind::ElseKeyword,       QStringLiteral("ElseKeyword") },
         { TokenKind::WhileKeyword,      QStringLiteral("WhileKeyword") },
         { TokenKind::ReturnKeyword,     QStringLiteral("ReturnKeyword") },
         { TokenKind::TrueKeyword,       QStringLiteral("TrueKeyword") },
