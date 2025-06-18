@@ -19,7 +19,7 @@
 #include <Syntax/BinaryExpression.h>
 #include <Syntax/NameExpression.h>
 #include <Syntax/IfStatement.h>
-//#include <Syntax/WhileStatement.h>
+#include <Syntax/WhileStatement.h>
 #include <Syntax/ReturnStatement.h>
 #include <Syntax/DiscardLiteral.h>
 //#include <Syntax/MemberAccessExpression.h>
@@ -131,6 +131,15 @@ namespace Caracal
                 }
 
                 TODO("If statement in other scopes");
+                break;
+            }
+            case TokenKind::WhileKeyword:
+            {
+                if (scope == StatementScope::Function)
+                {
+                    return parseWhileStatement(scope);
+                }
+                TODO("While statement in other scopes");
                 break;
             }
             case TokenKind::ReturnKeyword:
@@ -353,6 +362,15 @@ namespace Caracal
         }
 
         return std::make_unique<IfStatement>(ifKeyword, std::move(condition), std::move(trueStatement));
+    }
+
+    StatementUPtr Parser::parseWhileStatement(StatementScope scope)
+    {
+        auto whileKeyword = advanceOnMatch(TokenKind::WhileKeyword);
+        auto condition = parseExpression();
+        auto trueStatement = parseStatement(scope);
+
+        return std::make_unique<WhileStatement>(whileKeyword, std::move(condition), std::move(trueStatement));
     }
     
     StatementUPtr Parser::parseReturnStatement()

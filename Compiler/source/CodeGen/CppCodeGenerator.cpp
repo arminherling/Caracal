@@ -198,6 +198,12 @@ namespace Caracal
                 generateIfStatement((IfStatement*)node);
                 break;
             }
+            case NodeKind::WhileStatement:
+            {
+                m_currentStatement = NodeKind::WhileStatement;
+                generateWhileStatement((WhileStatement*)node);
+                break;
+            }
             case NodeKind::ReturnStatement:
             {
                 m_currentStatement = NodeKind::ReturnStatement;
@@ -551,6 +557,44 @@ namespace Caracal
                 popIndentation();
                 stream() << indentation() << "}" << newLine();
             }
+        }
+    }
+
+    void CppCodeGenerator::generateWhileStatement(WhileStatement* node) noexcept
+    {
+        const auto& condition = node->condition();
+        const auto needsParentheses = condition->kind() != NodeKind::GroupingExpression;
+
+        // unwrap the condition if it is a grouping expression
+        if (needsParentheses)
+        {
+            stream() << indentation() << "while (";
+        }
+        else
+        {
+            stream() << indentation() << "while ";
+        }
+        generateNode(node->condition().get());
+        if (needsParentheses)
+        {
+            stream() << ")" << newLine();
+        }
+        else
+        {
+            stream() << newLine();
+        }
+
+        const auto bodyNeedsBrackets = node->trueStatement()->kind() != NodeKind::BlockNode;
+        if (bodyNeedsBrackets)
+        {
+            stream() << indentation() << "{" << newLine();
+            pushIndentation();
+        }
+        generateNode(node->trueStatement().get());
+        if (bodyNeedsBrackets)
+        {
+            popIndentation();
+            stream() << indentation() << "}" << newLine();
         }
     }
 

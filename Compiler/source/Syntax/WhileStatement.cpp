@@ -1,12 +1,15 @@
-//#include "WhileStatement.h"
-//
-//WhileStatement::WhileStatement(
-//    const Token& ifKeyword,
-//    Expression* condition,
-//    BlockNode* body)
-//    : Statement(NodeKind::WhileStatement)
-//    , m_ifKeyword{ ifKeyword }
-//    , m_condition{ condition }
-//    , m_body{ body }
-//{
-//}
+#include "WhileStatement.h"
+
+namespace Caracal
+{
+    WhileStatement::WhileStatement(
+        const Token& whileKeyword,
+        ExpressionUPtr&& condition,
+        StatementUPtr&& trueStatement)
+        : Statement{ NodeKind::WhileStatement, Type::Undefined() }
+        , m_whileKeyword{ whileKeyword }
+        , m_condition{ std::move(condition) }
+        , m_trueStatement{ std::move(trueStatement) }
+    {
+    }
+}

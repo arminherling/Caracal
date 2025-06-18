@@ -2,8 +2,8 @@ def func()
 { 
     while true
     {
-        return
+        return;
     }
 
-    return
+    return;
 }

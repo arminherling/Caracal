@@ -33,8 +33,8 @@
 //#include <Syntax/TypeName.h>
 #include <Syntax/UnaryExpression.h>
 #include <Syntax/FunctionCallExpression.h>
-//#include <Syntax/WhileStatement.h>
-//
+#include <Syntax/WhileStatement.h>
+
 namespace Caracal 
 {
     class COMPILER_API ParseTreePrinter : public BasePrinter
@@ -58,7 +58,7 @@ namespace Caracal
     //    void PrettyPrintFieldDefinitionStatement(FieldDefinitionStatement* statement);
     //    void PrettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement);
         void prettyPrintIfStatement(IfStatement* statement);
-    //    void PrettyPrintWhileStatement(WhileStatement* statement);
+        void prettyPrintWhileStatement(WhileStatement* statement);
         void prettyPrintReturnStatement(ReturnStatement* statement);
         void prettyPrintArgumentsNode(ArgumentsNode* arguments);
         void prettyPrintParameterNode(ParameterNode* parameter);

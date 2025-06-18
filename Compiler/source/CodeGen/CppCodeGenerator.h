@@ -24,6 +24,7 @@
 #include <Syntax/EnumDefinitionStatement.h>
 #include <Syntax/BlockNode.h>
 #include <Syntax/IfStatement.h>
+#include <Syntax/WhileStatement.h>
 
 namespace Caracal
 {
@@ -54,6 +55,7 @@ namespace Caracal
         void generateEnumDefinitionStatement(EnumDefinitionStatement* node);
         void generateFunctionDefinition(FunctionDefinitionStatement* node);
         void generateIfStatement(IfStatement* node) noexcept;
+        void generateWhileStatement(WhileStatement* node) noexcept;
         void generateReturnStatement(ReturnStatement* node);
         void generateGroupingExpression(GroupingExpression* node);
         void generateUnaryExpression(UnaryExpression* node);

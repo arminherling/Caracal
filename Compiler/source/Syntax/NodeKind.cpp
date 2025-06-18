@@ -19,6 +19,7 @@ namespace Caracal
             { NodeKind::FunctionDefinitionStatement,    QStringLiteral("FunctionDefinitionStatement") },
             { NodeKind::EnumDefinitionStatement,        QStringLiteral("EnumDefinitionStatement") },
             { NodeKind::IfStatement,                    QStringLiteral("IfStatement") },
+            { NodeKind::WhileStatement,                 QStringLiteral("WhileStatement") },
             { NodeKind::ReturnStatement,                QStringLiteral("ReturnStatement") },
 
             { NodeKind::GroupingExpression,             QStringLiteral("GroupingExpression") },

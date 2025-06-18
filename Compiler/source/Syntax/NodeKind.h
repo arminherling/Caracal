@@ -19,6 +19,7 @@ namespace Caracal
         FunctionDefinitionStatement,
         EnumDefinitionStatement,
         IfStatement,
+        WhileStatement,
         ReturnStatement,
 
         GroupingExpression,

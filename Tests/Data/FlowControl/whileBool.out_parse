@@ -1,14 +1,20 @@
-FunctionDefinitionStatement: {
-    NameExpression: func
+﻿FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: func
+    }
     ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
     }
     BlockNode(2): {
         WhileStatement: {
             Condition: {
                 BoolLiteral: true
             }
-            BlockNode(1): {
-                ReturnStatement: {
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                    }
                 }
             }
         }

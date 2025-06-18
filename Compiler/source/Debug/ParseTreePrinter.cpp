@@ -63,6 +63,11 @@ namespace Caracal
                 prettyPrintIfStatement((IfStatement*)node);
                 break;
             }
+            case NodeKind::WhileStatement:
+            {
+                prettyPrintWhileStatement((WhileStatement*)node);
+                break;
+            }
             case NodeKind::ReturnStatement:
             {
                 prettyPrintReturnStatement((ReturnStatement*)node);
@@ -305,7 +310,27 @@ namespace Caracal
         }
 
         popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
 
+    void ParseTreePrinter::prettyPrintWhileStatement(WhileStatement* statement)
+    {
+        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
+        pushIndentation();
+
+        stream() << indentation() << QString("Condition: {") << newLine();
+        pushIndentation();
+        prettyPrintNode(statement->condition().get());
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+
+        stream() << indentation() << QString("True: {") << newLine();
+        pushIndentation();
+        prettyPrintNode(statement->trueStatement().get());
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+
+        popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }
 
