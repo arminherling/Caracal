@@ -1,4 +1,4 @@
-#include <Compiler/File.h>
+﻿#include <Compiler/File.h>
 #include <Debug/ParseTreePrinter.h>
 #include <CodeGen/CppCodeGenerator.h>
 #include <Syntax/Lexer.h>
@@ -100,8 +100,20 @@ int main(int argc, char* argv[])
         });
 
     std::cout << "\nExecuting...\n";
+
+    const auto executionStartTime = std::chrono::high_resolution_clock::now();
+
     programProcess.start(executablePath);
     programProcess.waitForFinished();
+
+    const auto executionEndTime = std::chrono::high_resolution_clock::now();
+    auto executionDuration = executionEndTime - executionStartTime;
+
+    const auto seconds = duration_cast<std::chrono::seconds>(executionDuration);
+    executionDuration -= seconds;
+    const auto milliseconds = duration_cast<std::chrono::milliseconds>(executionDuration);
+
+    std::cout << "\nTime: " << seconds << " " << milliseconds << '\n';
 
     return 0;
 }
