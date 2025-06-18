@@ -1,0 +1,8 @@
+﻿void func();
+
+void func()
+{
+    const auto a = 0;
+    return a;
+}
+
