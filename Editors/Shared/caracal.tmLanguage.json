@@ -69,8 +69,8 @@
 					"match": "\\bbreak\\b"
 				},
 				{
-					"name": "keyword.control.continue.caracal",
-					"match": "\\bcontinue\\b"
+					"name": "keyword.control.skip.caracal",
+					"match": "\\bskip\\b"
 				}
 			]
 		},

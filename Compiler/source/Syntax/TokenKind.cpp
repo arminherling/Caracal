@@ -30,6 +30,8 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
         { TokenKind::IfKeyword,         QStringLiteral("IfKeyword") },
         { TokenKind::ElseKeyword,       QStringLiteral("ElseKeyword") },
         { TokenKind::WhileKeyword,      QStringLiteral("WhileKeyword") },
+        { TokenKind::BreakKeyword,      QStringLiteral("BreakKeyword") },
+        { TokenKind::SkipKeyword,       QStringLiteral("SkipKeyword") },
         { TokenKind::ReturnKeyword,     QStringLiteral("ReturnKeyword") },
         { TokenKind::TrueKeyword,       QStringLiteral("TrueKeyword") },
         { TokenKind::FalseKeyword,      QStringLiteral("FalseKeyword") },

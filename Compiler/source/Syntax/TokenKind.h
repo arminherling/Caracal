@@ -37,6 +37,8 @@ enum class COMPILER_API TokenKind
     IfKeyword,
     ElseKeyword,
     WhileKeyword,
+    BreakKeyword,
+    SkipKeyword,
     ReturnKeyword,
     TrueKeyword,
     FalseKeyword,

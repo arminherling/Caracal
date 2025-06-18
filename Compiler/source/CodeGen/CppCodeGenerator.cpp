@@ -122,7 +122,7 @@ namespace Caracal
         return includes % forwardDeclarations % toUtf8();
     }
 
-    void CppCodeGenerator::generateNode(Node* node)
+    void CppCodeGenerator::generateNode(Node* node) noexcept
     {
         switch (node->kind())
         {
@@ -204,6 +204,18 @@ namespace Caracal
                 generateWhileStatement((WhileStatement*)node);
                 break;
             }
+            case NodeKind::BreakStatement:
+            {
+                m_currentStatement = NodeKind::BreakStatement;
+                generateBreakStatement((BreakStatement*)node);
+                break;
+            }
+            case NodeKind::SkipStatement:
+            {
+                m_currentStatement = NodeKind::SkipStatement;
+                generateSkipStatement((SkipStatement*)node);
+                break;
+            }
             case NodeKind::ReturnStatement:
             {
                 m_currentStatement = NodeKind::ReturnStatement;
@@ -274,7 +286,7 @@ namespace Caracal
         }
     }
 
-    void CppCodeGenerator::generateCppBlock(CppBlockStatement* node)
+    void CppCodeGenerator::generateCppBlock(CppBlockStatement* node) noexcept
     {
         const auto& lines = node->lines();
         for (const auto& line : lines)
@@ -300,14 +312,14 @@ namespace Caracal
         stream() << indentation() << "}" << newLine();
     }
 
-    void CppCodeGenerator::generateExpressionStatement(ExpressionStatement* node)
+    void CppCodeGenerator::generateExpressionStatement(ExpressionStatement* node) noexcept
     {
         stream() << indentation();
         generateNode(node->expression().get());
         stream() << ";" << newLine();
     }
 
-    void CppCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node)
+    void CppCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node) noexcept
     {
         const auto type = node->rightExpression()->type();
         const auto include = GetCppIncludeForType(type);
@@ -334,7 +346,7 @@ namespace Caracal
         stream() << ";" << newLine();
     }
 
-    void CppCodeGenerator::generateVariableDeclaration(VariableDeclaration* node)
+    void CppCodeGenerator::generateVariableDeclaration(VariableDeclaration* node) noexcept
     {
         const auto type = node->rightExpression()->type();
         const auto include = GetCppIncludeForType(type);
@@ -361,21 +373,21 @@ namespace Caracal
         stream() << ";" << newLine();
     }
 
-    void CppCodeGenerator::generateGlobalDiscardedExpression(Expression* expression)
+    void CppCodeGenerator::generateGlobalDiscardedExpression(Expression* expression) noexcept
     {
         stream() << indentation() << "const auto _" << m_discardCount++ << " = ";
         generateNode(expression);
         stream() << ";" << newLine();
     }
 
-    void CppCodeGenerator::generateLocalDiscardedExpression(Expression* expression)
+    void CppCodeGenerator::generateLocalDiscardedExpression(Expression* expression) noexcept
     {
         stream() << indentation() << "static_cast<void>(";
         generateNode(expression);
         stream() << ");" << newLine();
     }
 
-    void CppCodeGenerator::generateAssignmentStatement(AssignmentStatement* node)
+    void CppCodeGenerator::generateAssignmentStatement(AssignmentStatement* node) noexcept
     {
         stream() << indentation();
         generateNode(node->leftExpression().get());
@@ -384,7 +396,7 @@ namespace Caracal
         stream() << ";" << newLine();
     }
 
-    QString CppCodeGenerator::generateFunctionSignature(FunctionDefinitionStatement* node)
+    QString CppCodeGenerator::generateFunctionSignature(FunctionDefinitionStatement* node) noexcept
     {
         const auto& returnTypes = node->returnTypesNode()->returnTypes();
         const auto hasReturnTypes = !returnTypes.empty();
@@ -447,7 +459,7 @@ namespace Caracal
         return signature;
     }
 
-    void CppCodeGenerator::generateEnumDefinitionStatement(EnumDefinitionStatement* node)
+    void CppCodeGenerator::generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept
     {
         stream() << indentation() << "enum class ";
         generateNameExpression(node->nameExpression().get());
@@ -479,7 +491,7 @@ namespace Caracal
         stream() << indentation() << "};" << newLine() << newLine();
     }
 
-    void CppCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node)
+    void CppCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept
     {
         const auto oldScope = m_currentScope;
         m_currentScope = Scope::Function;
@@ -598,7 +610,17 @@ namespace Caracal
         }
     }
 
-    void CppCodeGenerator::generateReturnStatement(ReturnStatement* node)
+    void CppCodeGenerator::generateBreakStatement(BreakStatement* node) noexcept
+    {
+        stream() << indentation() << "break;" << newLine();
+    }
+
+    void CppCodeGenerator::generateSkipStatement(SkipStatement* node) noexcept
+    {
+        stream() << indentation() << "continue;" << newLine();
+    }
+
+    void CppCodeGenerator::generateReturnStatement(ReturnStatement* node) noexcept
     {
         stream() << indentation() << "return";
         if (node->expression().has_value())
@@ -609,14 +631,14 @@ namespace Caracal
         stream() << ";" << newLine();
     }
 
-    void CppCodeGenerator::generateGroupingExpression(GroupingExpression* node)
+    void CppCodeGenerator::generateGroupingExpression(GroupingExpression* node) noexcept
     {
         stream() << "(";
         generateNode(node->expression().get());
         stream() << ")";
     }
 
-    void CppCodeGenerator::generateUnaryExpression(UnaryExpression* node)
+    void CppCodeGenerator::generateUnaryExpression(UnaryExpression* node) noexcept
     {
         if (node->unaryOperator() != UnaryOperatorKind::ReferenceOf)
         {
@@ -626,7 +648,7 @@ namespace Caracal
         generateNode(node->expression().get());
     }
 
-    void CppCodeGenerator::generateBinaryExpression(BinaryExpression* node)
+    void CppCodeGenerator::generateBinaryExpression(BinaryExpression* node) noexcept
     {
         const auto binaryOperator = StringifyBinaryOperator(node->binaryOperator());
 
@@ -635,12 +657,12 @@ namespace Caracal
         generateNode(node->rightExpression().get());
     }
 
-    void CppCodeGenerator::generateNameExpression(NameExpression* node)
+    void CppCodeGenerator::generateNameExpression(NameExpression* node) noexcept
     {
         stream() << m_parseTree.tokens().getLexeme(node->nameToken());
     }
 
-    void CppCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node)
+    void CppCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node) noexcept
     {
         generateNode(node->nameExpression().get());
         stream() << "(";
@@ -657,19 +679,19 @@ namespace Caracal
         stream() << ")";
     }
 
-    void CppCodeGenerator::generateBoolLiteral(BoolLiteral* node)
+    void CppCodeGenerator::generateBoolLiteral(BoolLiteral* node) noexcept
     {
         auto value = node->value() ? QStringLiteral("true") : QStringLiteral("false");
         stream() << value;
     }
 
-    void CppCodeGenerator::generateNumberLiteral(NumberLiteral* node)
+    void CppCodeGenerator::generateNumberLiteral(NumberLiteral* node) noexcept
     {
         auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
         stream() << lexeme;
     }
 
-    void CppCodeGenerator::generateStringLiteral(StringLiteral* node)
+    void CppCodeGenerator::generateStringLiteral(StringLiteral* node) noexcept
     {
         auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
         stream() << QString("std::string{%1}").arg(lexeme);

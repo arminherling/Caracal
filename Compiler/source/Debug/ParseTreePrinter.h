@@ -34,6 +34,8 @@
 #include <Syntax/UnaryExpression.h>
 #include <Syntax/FunctionCallExpression.h>
 #include <Syntax/WhileStatement.h>
+#include <Syntax/BreakStatement.h>
+#include <Syntax/SkipStatement.h>
 
 namespace Caracal 
 {
@@ -59,6 +61,8 @@ namespace Caracal
     //    void PrettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement);
         void prettyPrintIfStatement(IfStatement* statement);
         void prettyPrintWhileStatement(WhileStatement* statement);
+        void prettyPrintBreakStatement(BreakStatement* statement);
+        void prettyPrintSkipStatement(SkipStatement* statement);
         void prettyPrintReturnStatement(ReturnStatement* statement);
         void prettyPrintArgumentsNode(ArgumentsNode* arguments);
         void prettyPrintParameterNode(ParameterNode* parameter);

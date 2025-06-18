@@ -20,6 +20,8 @@
 #include <Syntax/NameExpression.h>
 #include <Syntax/IfStatement.h>
 #include <Syntax/WhileStatement.h>
+#include <Syntax/BreakStatement.h>
+#include <Syntax/SkipStatement.h>
 #include <Syntax/ReturnStatement.h>
 #include <Syntax/DiscardLiteral.h>
 //#include <Syntax/MemberAccessExpression.h>
@@ -140,6 +142,24 @@ namespace Caracal
                     return parseWhileStatement(scope);
                 }
                 TODO("While statement in other scopes");
+                break;
+            }
+            case TokenKind::BreakKeyword:
+            {
+                if (scope == StatementScope::Function)
+                {
+                    return parseBreakStatement();
+                }
+                TODO("Break statement in other scopes");
+                break;
+            }
+            case TokenKind::SkipKeyword:
+            {
+                if (scope == StatementScope::Function)
+                {
+                    return parseSkipStatement();
+                }
+                TODO("Skip statement in other scopes");
                 break;
             }
             case TokenKind::ReturnKeyword:
@@ -371,6 +391,20 @@ namespace Caracal
         auto trueStatement = parseStatement(scope);
 
         return std::make_unique<WhileStatement>(whileKeyword, std::move(condition), std::move(trueStatement));
+    }
+
+    StatementUPtr Parser::parseBreakStatement()
+    {
+        auto keyword = advanceOnMatch(TokenKind::BreakKeyword);
+        auto semicolon = advanceOnMatch(TokenKind::Semicolon);
+        return std::make_unique<BreakStatement>(keyword, semicolon);
+    }
+
+    StatementUPtr Parser::parseSkipStatement()
+    {
+        auto keyword = advanceOnMatch(TokenKind::SkipKeyword);
+        auto semicolon = advanceOnMatch(TokenKind::Semicolon);
+        return std::make_unique<SkipStatement>(keyword, semicolon);
     }
     
     StatementUPtr Parser::parseReturnStatement()

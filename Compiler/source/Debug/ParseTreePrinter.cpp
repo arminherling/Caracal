@@ -68,6 +68,16 @@ namespace Caracal
                 prettyPrintWhileStatement((WhileStatement*)node);
                 break;
             }
+            case NodeKind::BreakStatement:
+            {
+                prettyPrintBreakStatement((BreakStatement*)node);
+                break;
+            }
+            case NodeKind::SkipStatement:
+            {
+                prettyPrintSkipStatement((SkipStatement*)node);
+                break;
+            }
             case NodeKind::ReturnStatement:
             {
                 prettyPrintReturnStatement((ReturnStatement*)node);
@@ -332,6 +342,16 @@ namespace Caracal
 
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintBreakStatement(BreakStatement* statement)
+    {
+        stream() << indentation() << stringify(statement->kind()) << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintSkipStatement(SkipStatement* statement)
+    {
+        stream() << indentation() << stringify(statement->kind()) << newLine();
     }
 
     void ParseTreePrinter::prettyPrintReturnStatement(ReturnStatement* statement)

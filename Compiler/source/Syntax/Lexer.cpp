@@ -8,37 +8,39 @@ namespace Caracal
     [[nodiscard]] static auto InitializeTokenSizes() noexcept
     {
         return std::unordered_map<TokenKind, i32>{
-            { TokenKind::Plus, 1 },
-            { TokenKind::Minus, 1 },
-            { TokenKind::Star, 1 },
-            { TokenKind::Slash, 1 },
-            { TokenKind::Dot, 1 },
-            { TokenKind::Colon, 1 },
-            { TokenKind::Comma, 1 },
-            { TokenKind::Equal, 1 },
-            { TokenKind::Underscore, 1 },
-            { TokenKind::OpenParenthesis, 1 },
-            { TokenKind::CloseParenthesis, 1 },
-            { TokenKind::OpenBracket, 1 },
-            { TokenKind::CloseBracket, 1 },
-            { TokenKind::EndOfFile, 0 },
+            { TokenKind::Plus,              1 },
+            { TokenKind::Minus,             1 },
+            { TokenKind::Star,              1 },
+            { TokenKind::Slash,             1 },
+            { TokenKind::Dot,               1 },
+            { TokenKind::Colon,             1 },
+            { TokenKind::Comma,             1 },
+            { TokenKind::Equal,             1 },
+            { TokenKind::Underscore,        1 },
+            { TokenKind::OpenParenthesis,   1 },
+            { TokenKind::CloseParenthesis,  1 },
+            { TokenKind::OpenBracket,       1 },
+            { TokenKind::CloseBracket,      1 },
+            { TokenKind::EndOfFile,         0 },
         };
     }
 
     [[nodiscard]] static auto InitializeKeywords() noexcept
     {
         return std::unordered_map<QStringView, TokenKind>{
-            { QStringView(u"def"), TokenKind::DefKeyword},
-            { QStringView(u"enum") ,TokenKind::EnumKeyword },
-            { QStringView(u"type") ,TokenKind::TypeKeyword },
-            { QStringView(u"if") ,TokenKind::IfKeyword },
-            { QStringView(u"else") ,TokenKind::ElseKeyword },
-            { QStringView(u"while") ,TokenKind::WhileKeyword },
-            { QStringView(u"return") ,TokenKind::ReturnKeyword },
-            { QStringView(u"true") ,TokenKind::TrueKeyword },
-            { QStringView(u"false") ,TokenKind::FalseKeyword },
-            { QStringView(u"ref") ,TokenKind::RefKeyword },
-            { QStringView(u"cpp") ,TokenKind::CppKeyword },
+            { QStringView(u"def"),      TokenKind::DefKeyword},
+            { QStringView(u"enum"),     TokenKind::EnumKeyword },
+            { QStringView(u"type"),     TokenKind::TypeKeyword },
+            { QStringView(u"if"),       TokenKind::IfKeyword },
+            { QStringView(u"else"),     TokenKind::ElseKeyword },
+            { QStringView(u"while"),    TokenKind::WhileKeyword },
+            { QStringView(u"break"),    TokenKind::BreakKeyword },
+            { QStringView(u"skip"),     TokenKind::SkipKeyword },
+            { QStringView(u"return"),   TokenKind::ReturnKeyword },
+            { QStringView(u"true"),     TokenKind::TrueKeyword },
+            { QStringView(u"false"),    TokenKind::FalseKeyword },
+            { QStringView(u"ref"),      TokenKind::RefKeyword },
+            { QStringView(u"cpp"),      TokenKind::CppKeyword },
         };
     }
 

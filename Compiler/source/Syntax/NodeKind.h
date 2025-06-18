@@ -20,6 +20,8 @@ namespace Caracal
         EnumDefinitionStatement,
         IfStatement,
         WhileStatement,
+        BreakStatement,
+        SkipStatement,
         ReturnStatement,
 
         GroupingExpression,

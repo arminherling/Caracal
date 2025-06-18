@@ -25,6 +25,8 @@
 #include <Syntax/BlockNode.h>
 #include <Syntax/IfStatement.h>
 #include <Syntax/WhileStatement.h>
+#include <Syntax/BreakStatement.h>
+#include <Syntax/SkipStatement.h>
 
 namespace Caracal
 {
@@ -42,30 +44,31 @@ namespace Caracal
             Function
         };
 
-        void generateNode(Node* node);
-        void generateConstantDeclaration(ConstantDeclaration* node);
-        void generateVariableDeclaration(VariableDeclaration* node);
-        void generateGlobalDiscardedExpression(Expression* expression);
-        void generateLocalDiscardedExpression(Expression* expression);
-        void generateCppBlock(CppBlockStatement* node);
+        void generateNode(Node* node)  noexcept;
+        void generateConstantDeclaration(ConstantDeclaration* node) noexcept;
+        void generateVariableDeclaration(VariableDeclaration* node) noexcept;
+        void generateGlobalDiscardedExpression(Expression* expression) noexcept;
+        void generateLocalDiscardedExpression(Expression* expression) noexcept;
+        void generateCppBlock(CppBlockStatement* node) noexcept;
         void generateBlockNode(BlockNode* node) noexcept;
-        void generateExpressionStatement(ExpressionStatement* node);
-        void generateAssignmentStatement(AssignmentStatement* node);
-        QString generateFunctionSignature(FunctionDefinitionStatement* node);
-        void generateEnumDefinitionStatement(EnumDefinitionStatement* node);
-        void generateFunctionDefinition(FunctionDefinitionStatement* node);
+        void generateExpressionStatement(ExpressionStatement* node) noexcept;
+        void generateAssignmentStatement(AssignmentStatement* node) noexcept;
+        QString generateFunctionSignature(FunctionDefinitionStatement* node) noexcept;
+        void generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept;
+        void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
         void generateIfStatement(IfStatement* node) noexcept;
         void generateWhileStatement(WhileStatement* node) noexcept;
-        void generateReturnStatement(ReturnStatement* node);
-        void generateGroupingExpression(GroupingExpression* node);
-        void generateUnaryExpression(UnaryExpression* node);
-        void generateBinaryExpression(BinaryExpression* node);
-        void generateNameExpression(NameExpression* node);
-        void generateFunctionCallExpression(FunctionCallExpression* node);
-        void generateBoolLiteral(BoolLiteral* node);
-        void generateNumberLiteral(NumberLiteral* node);
-        void generateStringLiteral(StringLiteral* node);
-
+        void generateBreakStatement(BreakStatement* node) noexcept;
+        void generateSkipStatement(SkipStatement* node) noexcept;
+        void generateReturnStatement(ReturnStatement* node) noexcept;
+        void generateGroupingExpression(GroupingExpression* node) noexcept;
+        void generateUnaryExpression(UnaryExpression* node) noexcept;
+        void generateBinaryExpression(BinaryExpression* node) noexcept;
+        void generateNameExpression(NameExpression* node) noexcept;
+        void generateFunctionCallExpression(FunctionCallExpression* node) noexcept;
+        void generateBoolLiteral(BoolLiteral* node) noexcept;
+        void generateNumberLiteral(NumberLiteral* node) noexcept;
+        void generateStringLiteral(StringLiteral* node) noexcept;
 
         void generateBuiltinPrintFunction(ArgumentsNode* node) noexcept;
 

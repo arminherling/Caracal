@@ -1,0 +1,11 @@
+﻿void func();
+
+void func()
+{
+    while (true)
+    {
+        continue;
+    }
+    return;
+}
+

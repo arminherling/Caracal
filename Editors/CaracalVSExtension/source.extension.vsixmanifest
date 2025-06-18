@@ -3,7 +3,7 @@
     <Metadata>
         <Identity Id="Caracal.ebb9f041-b845-4739-9fa6-6b96bc0fe0d0" Version="1.0" Language="en-US" Publisher="Anwender" />
         <DisplayName>Caracal</DisplayName>
-        <Description xml:space="preserve">Empty VSIX project.</Description>
+        <Description xml:space="preserve">Caracal language support for VS.</Description>
         <License>LICENSE</License>
         <Icon>Resources\Icon128x128.png</Icon>
         <PreviewImage>Resources\Icon128x128.png</PreviewImage>
