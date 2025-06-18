@@ -14,6 +14,18 @@ namespace Caracal
                 return BinaryOperatorKind::Multiplication;
             case TokenKind::Slash:
                 return BinaryOperatorKind::Division;
+            case TokenKind::EqualEqual:
+                return BinaryOperatorKind::Equal;
+            case TokenKind::BangEqual:
+                return BinaryOperatorKind::NotEqual;
+            case TokenKind::LessThan:
+                return BinaryOperatorKind::LessThan;
+            case TokenKind::LessThanEqual:
+                return BinaryOperatorKind::LessOrEqual;
+            case TokenKind::GreaterThan:
+                return BinaryOperatorKind::GreaterThan;
+            case TokenKind::GreaterThanEqual:
+                return BinaryOperatorKind::GreaterOrEqual;
             default:
                 return BinaryOperatorKind::Invalid;
         }
@@ -37,7 +49,13 @@ namespace Caracal
             { BinaryOperatorKind::Addition,        QStringLiteral("Addition") },
             { BinaryOperatorKind::Subtraction,     QStringLiteral("Subtraction") },
             { BinaryOperatorKind::Multiplication,  QStringLiteral("Multiplication") },
-            { BinaryOperatorKind::Division,        QStringLiteral("Division") }
+            { BinaryOperatorKind::Division,        QStringLiteral("Division") },
+            { BinaryOperatorKind::Equal,           QStringLiteral("Equal") },
+            { BinaryOperatorKind::NotEqual,        QStringLiteral("NotEqual") },
+            { BinaryOperatorKind::LessThan,        QStringLiteral("LessThan") },
+            { BinaryOperatorKind::LessOrEqual,     QStringLiteral("LessOrEqual") },
+            { BinaryOperatorKind::GreaterThan,     QStringLiteral("GreaterThan") },
+            { BinaryOperatorKind::GreaterOrEqual,  QStringLiteral("GreaterOrEqual") },
         };
 
         const auto it = opToString.find(operation);

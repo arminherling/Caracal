@@ -15,8 +15,16 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
         { TokenKind::Semicolon,         QStringLiteral("Semicolon") },
         { TokenKind::Comma,             QStringLiteral("Comma") },
         { TokenKind::Equal,             QStringLiteral("Equal") },
-        { TokenKind::Underscore,        QStringLiteral("Underscore") },
+        { TokenKind::EqualEqual,        QStringLiteral("EqualEqual") },
         { TokenKind::Bang,              QStringLiteral("Bang") },
+        { TokenKind::BangEqual,         QStringLiteral("BangEqual") },
+        { TokenKind::LessThan,          QStringLiteral("LessThan") },
+        { TokenKind::LessThanEqual,     QStringLiteral("LessThanEqual") },
+        { TokenKind::GreaterThan,       QStringLiteral("GreaterThan") },
+        { TokenKind::GreaterThanEqual,  QStringLiteral("GreaterThanEqual") },
+        { TokenKind::LessThan,          QStringLiteral("LessThan") },
+        { TokenKind::GreaterThan,       QStringLiteral("GreaterThan") },
+        { TokenKind::Underscore,        QStringLiteral("Underscore") },
         { TokenKind::OpenParenthesis,   QStringLiteral("OpenParenthesis") },
         { TokenKind::CloseParenthesis,  QStringLiteral("CloseParenthesis") },
         { TokenKind::OpenBracket,       QStringLiteral("OpenBracket") },
@@ -53,13 +61,13 @@ i32 unaryOperatorPrecedence(TokenKind kind)
     switch (kind)
     {
         case TokenKind::RefKeyword:
-            return 5;
+            return 6;
         case TokenKind::Bang:
         case TokenKind::Minus:
-            return 4;
+            return 5;
+        default:
+            return 0;
     }
-
-    return 0;
 }
 
 i32 binaryOperatorPrecedence(TokenKind kind)
@@ -67,14 +75,21 @@ i32 binaryOperatorPrecedence(TokenKind kind)
     switch (kind)
     {
         case TokenKind::Dot:
-            return 3;
+            return 4;
         case TokenKind::Star:
         case TokenKind::Slash:
-            return 2;
+            return 3;
         case TokenKind::Plus:
         case TokenKind::Minus:
+            return 2;
+        case TokenKind::EqualEqual:
+        case TokenKind::BangEqual:
+        case TokenKind::LessThan:
+        case TokenKind::LessThanEqual:
+        case TokenKind::GreaterThan:
+        case TokenKind::GreaterThanEqual:
             return 1;
+        default:
+            return 0;
     }
-
-    return 0;
 }

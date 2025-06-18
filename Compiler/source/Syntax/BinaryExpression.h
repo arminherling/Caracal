@@ -13,6 +13,12 @@ namespace Caracal
         Subtraction,
         Multiplication,
         Division,
+        Equal,
+        NotEqual,
+        LessThan,
+        LessOrEqual,
+        GreaterThan,
+        GreaterOrEqual
     };
 
     class COMPILER_API BinaryExpression : public Expression

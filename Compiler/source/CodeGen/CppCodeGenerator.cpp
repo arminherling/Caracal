@@ -67,6 +67,18 @@ namespace Caracal
                 return QStringLiteral("*");
             case BinaryOperatorKind::Division:
                 return QStringLiteral("/");
+            case BinaryOperatorKind::Equal:
+                return QStringLiteral("==");
+            case BinaryOperatorKind::NotEqual:
+                return QStringLiteral("!=");
+            case BinaryOperatorKind::LessThan:
+                return QStringLiteral("<");
+            case BinaryOperatorKind::LessOrEqual:
+                return QStringLiteral("<=");
+            case BinaryOperatorKind::GreaterThan:
+                return QStringLiteral(">");
+            case BinaryOperatorKind::GreaterOrEqual:
+                return QStringLiteral(">=");
             default:
                 TODO("Implement StringifyBinaryOperator for all operators");
                 return QString();

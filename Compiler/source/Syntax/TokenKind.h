@@ -17,10 +17,17 @@ enum class COMPILER_API TokenKind
     Dot,
     Comma,
     Colon,
-    Equal,
     Semicolon,
     Underscore,
+
+    Equal,
+    EqualEqual,
     Bang,
+    BangEqual,
+    LessThan,
+    LessThanEqual,
+    GreaterThan,
+    GreaterThanEqual,
 
     OpenParenthesis,
     CloseParenthesis,

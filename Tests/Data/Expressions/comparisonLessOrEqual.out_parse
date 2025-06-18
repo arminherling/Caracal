@@ -1,0 +1,56 @@
+﻿FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: func
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(4): {
+        ConstantDeclaration: {
+            Left: {
+                NameExpression: {
+                    Name: x
+                }
+            }
+            Right: {
+                NumberLiteral: 1
+            }
+        }
+        ConstantDeclaration: {
+            Left: {
+                NameExpression: {
+                    Name: y
+                }
+            }
+            Right: {
+                NumberLiteral: 2
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Left: {
+                        NameExpression: {
+                            Name: x
+                        }
+                    }
+                    Operation: LessOrEqual
+                    Right: {
+                        NameExpression: {
+                            Name: y
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+        }
+    }
+}

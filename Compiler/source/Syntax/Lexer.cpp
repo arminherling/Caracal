@@ -13,10 +13,18 @@ namespace Caracal
             { TokenKind::Star,              1 },
             { TokenKind::Slash,             1 },
             { TokenKind::Dot,               1 },
-            { TokenKind::Colon,             1 },
             { TokenKind::Comma,             1 },
-            { TokenKind::Equal,             1 },
+            { TokenKind::Colon,             1 },
+            { TokenKind::Semicolon,         1 },
             { TokenKind::Underscore,        1 },
+            { TokenKind::Equal,             1 },
+            { TokenKind::EqualEqual,        2 },
+            { TokenKind::Bang,              1 },
+            { TokenKind::BangEqual,         2 },
+            { TokenKind::LessThan,          1 },
+            { TokenKind::LessThanEqual,     2 },
+            { TokenKind::GreaterThan,       1 },
+            { TokenKind::GreaterThanEqual,  2 },
             { TokenKind::OpenParenthesis,   1 },
             { TokenKind::CloseParenthesis,  1 },
             { TokenKind::OpenBracket,       1 },
@@ -257,12 +265,54 @@ namespace Caracal
                 }
                 case u'=':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Equal);
+                    if (PeekNextChar(source, currentIndex) == QChar(u'='))
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::EqualEqual);
+                        currentIndex++; // advance for the second '='
+                    }
+                    else
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Equal);
+                    }
                     break;
                 }
                 case u'!':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Bang);
+                    if (PeekNextChar(source, currentIndex) == QChar(u'='))
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::BangEqual);
+                        currentIndex++; // advance for the '='
+                    }
+                    else
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Bang);
+                    }
+                    break;
+                }
+                case u'<':
+                {
+                    if (PeekNextChar(source, currentIndex) == QChar(u'='))
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::LessThanEqual);
+                        currentIndex++; // advance for the '='
+                    }
+                    else
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::LessThan);
+                    }
+                    break;
+                }
+                case u'>':
+                {
+                    if (PeekNextChar(source, currentIndex) == QChar(u'='))
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::GreaterThanEqual);
+                        currentIndex++; // advance for the '='
+                    }
+                    else
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::GreaterThan);
+                    }
                     break;
                 }
                 case u'(':

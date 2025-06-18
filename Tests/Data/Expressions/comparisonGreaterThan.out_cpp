@@ -1,0 +1,13 @@
+﻿void func();
+
+void func()
+{
+    const auto x = 1;
+    const auto y = 2;
+    if (x > y)
+    {
+        return;
+    }
+    return;
+}
+

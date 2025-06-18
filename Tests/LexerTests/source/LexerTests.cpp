@@ -24,9 +24,11 @@ namespace
         std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         AalTest::AreEqual(expectedKind, token.kind);
+        // expected token + eof token
+        AalTest::AreEqual(tokens.size(), 2);
     }
 
-    QList<std::tuple<QString, QString, TokenKind>> SingleCharacter_Data()
+    QList<std::tuple<QString, QString, TokenKind>> Symbols_Data()
     {
         return {
             std::make_tuple(QString("Plus"), QString("+"), TokenKind::Plus),
@@ -37,10 +39,17 @@ namespace
             std::make_tuple(QString("Dot"), QString("."), TokenKind::Dot),
             std::make_tuple(QString("Comma"), QString(","), TokenKind::Comma),
             std::make_tuple(QString("Colon"), QString(":"), TokenKind::Colon),
-            std::make_tuple(QString("Equal"), QString("="), TokenKind::Equal),
             std::make_tuple(QString("Semicolon"), QString(";"), TokenKind::Semicolon),
             std::make_tuple(QString("Underscore"), QString("_"), TokenKind::Underscore),
+            
+            std::make_tuple(QString("Equal"), QString("="), TokenKind::Equal),
+            std::make_tuple(QString("EqualEqual"), QString("=="), TokenKind::EqualEqual),
             std::make_tuple(QString("Bang"), QString("!"), TokenKind::Bang),
+            std::make_tuple(QString("BangEqual"), QString("!="), TokenKind::BangEqual),
+            std::make_tuple(QString("LessThan"), QString("<"), TokenKind::LessThan),
+            std::make_tuple(QString("LessThanEqual"), QString("<="), TokenKind::LessThanEqual),
+            std::make_tuple(QString("GreaterThan"), QString(">"), TokenKind::GreaterThan),
+            std::make_tuple(QString("GreaterThanEqual"), QString(">="), TokenKind::GreaterThanEqual),
 
             std::make_tuple(QString("OpenParenthesis"), QString("("), TokenKind::OpenParenthesis),
             std::make_tuple(QString("CloseParenthesis"), QString(")"), TokenKind::CloseParenthesis),
@@ -48,8 +57,6 @@ namespace
             std::make_tuple(QString("CloseBracket"), QString("}"), TokenKind::CloseBracket),
 
             std::make_tuple(QString("Unknown"), QString("$"), TokenKind::Unknown),
-            std::make_tuple(QString("EOF"), QString(""), TokenKind::EndOfFile),
-            std::make_tuple(QString("EOF \\0"), QString("\0"), TokenKind::EndOfFile)
         };
     }
 
@@ -72,7 +79,6 @@ namespace
 
     void IgnoresWhitespaces(const QString& input)
     {
-        auto expectedToken = TokenKind::EndOfFile;
         auto startTime = std::chrono::high_resolution_clock::now();
 
         auto source = std::make_shared<Caracal::SourceText>(input);
@@ -96,7 +102,8 @@ namespace
             std::make_tuple(QString("\t")),
             std::make_tuple(QString("\r")),
             std::make_tuple(QString("\n")),
-            std::make_tuple(QString("\r\n"))
+            std::make_tuple(QString("\r\n")),
+            std::make_tuple(QString("\0"))
         };
     }
 
@@ -299,7 +306,7 @@ namespace
 AalTest::TestSuite LexerTestsSuite()
 {
     AalTest::TestSuite suite{};
-    suite.add(QString("SingleCharacter"), ExpectedTokenKind, SingleCharacter_Data);
+    suite.add(QString("SingleCharacter"), ExpectedTokenKind, Symbols_Data);
     suite.add(QString("IgnoresWhitespaces"), IgnoresWhitespaces, IgnoresWhitespaces_Data);
     suite.add(QString("Identifiers"), Identifiers, Identifiers_Data);
     suite.add(QString("Numbers"), Numbers, Numbers_Data);
