@@ -12,7 +12,7 @@
 #include <Syntax/ExpressionStatement.h>
 #include <Syntax/FunctionDefinitionStatement.h>
 #include <Syntax/EnumDefinitionStatement.h>
-//#include <Syntax/TypeDefinitionStatement.h>
+#include <Syntax/TypeDefinitionStatement.h>
 //#include <Syntax/FieldDefinitionStatement.h>
 //#include <Syntax/MethodDefinitionStatement.h>
 #include <Syntax/UnaryExpression.h>
@@ -114,6 +114,15 @@ namespace Caracal
                     return parseEnumDefinitionStatement();
                 }
                 TODO("Enum definition in other scopes");
+                break;
+            }
+            case TokenKind::TypeKeyword:
+            {
+                if (scope == StatementScope::Global)
+                {
+                    return parseTypeDefinitionStatement();
+                }
+                TODO("Type definition in other scopes");
                 break;
             }
             case TokenKind::CppKeyword:
@@ -344,10 +353,28 @@ namespace Caracal
         }
         return fields;
     }
+
+    StatementUPtr Parser::parseTypeDefinitionStatement()
+    {
+        auto keyword = advanceOnMatch(TokenKind::TypeKeyword);
+        auto nameExpression = parseNameExpression();
+        auto body = parseTypeBody();
+
+        return std::make_unique<TypeDefinitionStatement>(keyword, std::move(nameExpression), std::move(body));
+    }
     
     BlockNodeUPtr Parser::parseFunctionBody()
     {
         return parseBlockNode(StatementScope::Function);
+    }
+
+    BlockNodeUPtr Parser::parseTypeBody()
+    {
+        auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
+        auto statements = std::vector<StatementUPtr>();
+        auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
+
+        return std::make_unique<BlockNode>(openBracket, std::move(statements), closeBracket);
     }
 
     BlockNodeUPtr Parser::parseBlockNode(StatementScope scope)
@@ -662,171 +689,7 @@ namespace Caracal
     }
 }
 
-//
-//QList<Statement*> Parser::parseStatements(StatementScope scope)
-//{
-//    QList<Statement*> statements;
-//
-//    auto current = currentToken();
-//    while (true)
-//    {
-//        switch (current.kind)
-//        {
-//            case TokenKind::Underscore:
-//            {
-//                statements.append(parseAssignmentStatement());
-//                break;
-//            }
-//            case TokenKind::Dot:
-//            case TokenKind::Number:
-//            {
-//                statements.append(parseExpressionStatement());
-//                break;
-//            }
-//            case TokenKind::Identifier:
-//            {
-//                auto lexeme = m_tokens.getLexeme(current);
-//                if (scope == StatementScope::Global)
-//                {
-//                    if (IsFunctionDefinitionKeyword(lexeme))
-//                    {
-//                        statements.append(parseFunctionDefinitionStatement());
-//                        break;
-//                    }
-//                    else if (IsTypeDefinitionKeyword(lexeme))
-//                    {
-//                        statements.append(parseTypeDefinitionStatement());
-//                        break;
-//                    }
-//                    else if (IsEnumDefinitionKeyword(lexeme))
-//                    {
-//                        statements.append(parseEnumDefinitionStatement());
-//                        break;
-//                    }
-//                }
-//                else if (scope == StatementScope::Function || scope == StatementScope::Method)
-//                {
-//                    if (IsIfKeyword(lexeme))
-//                    {
-//                        statements.append(parseIfStatement(scope));
-//                        break;
-//                    }
-//                    else if (IsWhileKeyword(lexeme))
-//                    {
-//                        statements.append(parseWhileStatement(scope));
-//                        break;
-//                    }
-//                    else if (IsReturnKeyword(lexeme))
-//                    {
-//                        statements.append(parseReturnStatement());
-//                        break;
-//                    }
-//                }
-//                else if (scope == StatementScope::Type)
-//                {
-//                    if (IsFunctionDefinitionKeyword(lexeme))
-//                    {
-//                        statements.append(parseMethodDefinitionStatement());
-//                        break;
-//                    }
-//
-//                    statements.append(parseFieldDefinitionStatement());
-//                    break;
-//                }
-//
-//                auto next = nextToken();
-//                if (next.kind == TokenKind::Equal)
-//                {
-//                    statements.append(parseAssignmentStatement());
-//                }
-//                else if (next.kind == TokenKind::OpenParenthesis)
-//                {
-//                    auto expressionStatement = parseExpressionStatement();
-//                    statements.append(expressionStatement);
-//                }
-//                else
-//                {
-//                    const auto& location = m_tokens.getSourceLocation(current);
-//                    m_diagnostics.AddError(DiagnosticKind::Unknown, location);
-//
-//                    advanceCurrentIndex();
-//                }
-//                break;
-//            }
-//            case TokenKind::CloseBracket:
-//            {
-//                if (scope == StatementScope::Global)
-//                {
-//                    const auto& location = m_tokens.getSourceLocation(current);
-//                    m_diagnostics.AddError(DiagnosticKind::Unknown, location);
-//
-//                    advanceCurrentIndex();
-//                    break;
-//                }
-//                [[fallthrough]];
-//            }
-//            case TokenKind::EndOfFile:
-//            {
-//                return statements;
-//            }
-//            default:
-//            {
-//                const auto& location = m_tokens.getSourceLocation(current);
-//                m_diagnostics.AddError(DiagnosticKind::Unknown, location);
-//
-//                advanceCurrentIndex();
-//                break;
-//            }
-//        }
-//
-//        current = currentToken();
-//    }
-//}
 
-//QList<EnumFieldDefinitionStatement*> Parser::parseEnumFieldDefinitions()
-//{
-//    QList<EnumFieldDefinitionStatement*> definitions;
-//
-//    auto current = currentToken();
-//    while (true)
-//    {
-//        switch (current.kind)
-//        {
-//            case TokenKind::Identifier:
-//            {
-//                definitions.append(parseEnumFieldDefinitionStatement());
-//                break;
-//            }
-//            case TokenKind::CloseBracket:
-//            case TokenKind::EndOfFile:
-//            {
-//                return definitions;
-//            }
-//            default:
-//            {
-//                const auto& location = m_tokens.getSourceLocation(current);
-//                m_diagnostics.AddError(DiagnosticKind::Unknown, location);
-//
-//                advanceCurrentIndex();
-//                break;
-//            }
-//        }
-//
-//        current = currentToken();
-//    }
-//
-//    return definitions;
-//}
-//
-//Statement* Parser::parseTypeDefinitionStatement()
-//{
-//    auto keyword = advanceOnMatch(TokenKind::Identifier);
-//    auto name = advanceOnMatch(TokenKind::Identifier);
-//    auto body = parseTypeBody();
-//
-//    return new TypeDefinitionStatement(keyword, name, body);
-//}
-//
 //Statement* Parser::parseFieldDefinitionStatement()
 //{
 //    auto name = parseNameExpression();
@@ -862,16 +725,7 @@ namespace Caracal
 //
 //    return new MethodDefinitionStatement(keyword, name, signature, body);
 //}
-//
-//Statement* Parser::parseWhileStatement(StatementScope scope)
-//{
-//    auto keyword = advanceOnMatch(TokenKind::Identifier);
-//    auto condition = parseExpression();
-//    auto block = parseBlockNode(scope);
-//
-//    return new WhileStatement(keyword, condition, block);
-//}
-
+// 
 //
 //NumberLiteral* Parser::parseNumberLiteral()
 //{
@@ -887,22 +741,6 @@ namespace Caracal
 //    }
 //
 //    return new NumberLiteral(number);
-//}
-
-//
-//EnumFieldDefinitionStatement* Parser::parseEnumFieldDefinitionStatement()
-//{
-//    auto memberName = parseNameExpression();
-//
-//    auto current = currentToken();
-//    if (current.kind == TokenKind::Equal)
-//    {
-//        advanceCurrentIndex();
-//        auto value = parseNumberLiteral();
-//        return new EnumFieldDefinitionStatement(memberName, current, value);
-//    }
-//
-//    return new EnumFieldDefinitionStatement(memberName);
 //}
 
 //

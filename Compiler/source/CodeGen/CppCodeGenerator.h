@@ -27,6 +27,7 @@
 #include <Syntax/WhileStatement.h>
 #include <Syntax/BreakStatement.h>
 #include <Syntax/SkipStatement.h>
+#include <Syntax/TypeDefinitionStatement.h>
 
 namespace Caracal
 {
@@ -55,8 +56,9 @@ namespace Caracal
         void generateAssignmentStatement(AssignmentStatement* node) noexcept;
         QString generateEnumSignature(EnumDefinitionStatement* node) noexcept;
         QString generateFunctionSignature(FunctionDefinitionStatement* node) noexcept;
-        void generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept;
+        void generateTypeDefinitionStatement(TypeDefinitionStatement* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
+        void generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept;
         void generateIfStatement(IfStatement* node) noexcept;
         void generateWhileStatement(WhileStatement* node) noexcept;
         void generateBreakStatement(BreakStatement* node) noexcept;

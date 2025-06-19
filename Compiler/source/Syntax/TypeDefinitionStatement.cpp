@@ -1,12 +1,15 @@
-//#include "TypeDefinitionStatement.h"
-//
-//TypeDefinitionStatement::TypeDefinitionStatement(
-//    const Token& keyword,
-//    const Token& name,
-//    BlockNode* body)
-//    : Statement(NodeKind::TypeDefinitionStatement)
-//    , m_keyword{ keyword }
-//    , m_name{ name }
-//    , m_body{ body }
-//{
-//}
+#include "TypeDefinitionStatement.h"
+
+namespace Caracal
+{
+    TypeDefinitionStatement::TypeDefinitionStatement(
+        const Token& typeKeyword, 
+        NameExpressionUPtr&& nameExpression, 
+        BlockNodeUPtr&& bodyNode)
+        : Statement(NodeKind::TypeDefinitionStatement, Type::Undefined())
+        , m_typeKeyword(typeKeyword)
+        , m_nameExpression(std::move(nameExpression))
+        , m_bodyNode(std::move(bodyNode))
+    {
+    }
+}

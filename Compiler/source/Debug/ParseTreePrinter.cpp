@@ -48,6 +48,11 @@ namespace Caracal
                 prettyPrintAssignmentStatement((AssignmentStatement*)node);
                 break;
             }
+            case NodeKind::TypeDefinitionStatement:
+            {
+                prettyPrintTypeDefinitionStatement((TypeDefinitionStatement*)node);
+                break;
+            }
             case NodeKind::FunctionDefinitionStatement:
             {
                 prettyPrintFunctionDefinitionStatement((FunctionDefinitionStatement*)node);
@@ -235,6 +240,18 @@ namespace Caracal
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
         
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement)
+    {
+        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
+        pushIndentation();
+
+        prettyPrintNameExpression(statement->nameExpression().get());
+        prettyPrintBlockNode(statement->bodyNode().get());
+
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }

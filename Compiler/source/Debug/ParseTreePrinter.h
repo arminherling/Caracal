@@ -36,6 +36,7 @@
 #include <Syntax/WhileStatement.h>
 #include <Syntax/BreakStatement.h>
 #include <Syntax/SkipStatement.h>
+#include <Syntax/TypeDefinitionStatement.h>
 
 namespace Caracal 
 {
@@ -53,10 +54,10 @@ namespace Caracal
         void prettyPrintConstantDeclaration(ConstantDeclaration* statement);
         void prettyPrintVariableDeclaration(VariableDeclaration* statement);
         void prettyPrintAssignmentStatement(AssignmentStatement* statement);
+        void prettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement);
         void prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
         void prettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement);
         void prettyPrintEnumFieldNode(EnumFieldNode* statement);
-    //    void PrettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement);
     //    void PrettyPrintFieldDefinitionStatement(FieldDefinitionStatement* statement);
     //    void PrettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement);
         void prettyPrintIfStatement(IfStatement* statement);

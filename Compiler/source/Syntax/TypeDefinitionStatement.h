@@ -1,24 +1,28 @@
-//#pragma once
-//
-//#include <Compiler/API.h>
-//#include <Syntax/BlockNode.h>
-//#include <Syntax/Statement.h>
-//#include <Syntax/Token.h>
-//
-//class COMPILER_API TypeDefinitionStatement : public Statement
-//{
-//public:
-//    TypeDefinitionStatement(
-//        const Token& keyword, 
-//        const Token& name, 
-//        BlockNode* body);
-//
-//    [[nodiscard]] const Token& keyword() const noexcept { return m_keyword; }
-//    [[nodiscard]] const Token& name() const noexcept { return m_name; }
-//    [[nodiscard]] BlockNode* body() const noexcept { return m_body; }
-//
-//private:
-//    Token m_keyword;
-//    Token m_name;
-//    BlockNode* m_body;
-//};
+#pragma once
+
+#include <Compiler/API.h>
+#include <Syntax/BlockNode.h>
+#include <Syntax/Statement.h>
+#include <Syntax/NameExpression.h>
+#include <Syntax/Token.h>
+
+namespace Caracal
+{
+    class COMPILER_API TypeDefinitionStatement : public Statement
+    {
+    public:
+        TypeDefinitionStatement(
+            const Token& typeKeyword, 
+            NameExpressionUPtr&& nameExpression,
+            BlockNodeUPtr&& bodyNode);
+
+        [[nodiscard]] const Token& typeKeyword() const noexcept { return m_typeKeyword; }
+        [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }
+        [[nodiscard]] const BlockNodeUPtr& bodyNode() const noexcept { return m_bodyNode; }
+
+    private:
+        Token m_typeKeyword;
+        NameExpressionUPtr m_nameExpression;
+        BlockNodeUPtr m_bodyNode;
+    };
+}

@@ -46,7 +46,7 @@ namespace Caracal
         StatementUPtr parseAssignmentStatement(ExpressionUPtr&& leftExpression);
         StatementUPtr parseEnumDefinitionStatement();
         std::vector<EnumFieldNodeUPtr> parseEnumFields();
-        //Statement* parseTypeDefinitionStatement();
+        StatementUPtr parseTypeDefinitionStatement();
         //Statement* parseFieldDefinitionStatement();
         //Statement* parseMethodDefinitionStatement();
         StatementUPtr parseIfStatement(StatementScope scope);
@@ -66,7 +66,7 @@ namespace Caracal
         ReturnTypesNodeUPtr parseReturnTypesNode();
         ArgumentsNodeUPtr parseArgumentsNode();
         BlockNodeUPtr parseFunctionBody();
-        //BlockNode* parseTypeBody();
+        BlockNodeUPtr parseTypeBody();
         //BlockNode* parseMethodBody();
         BlockNodeUPtr parseBlockNode(StatementScope scope);
         ParameterNodeUPtr parseParameterNode();

@@ -1,0 +1,7 @@
+﻿TypeDefinitionStatement: {
+    NameExpression: {
+        Name: Empty
+    }
+    BlockNode(0): {
+    }
+}

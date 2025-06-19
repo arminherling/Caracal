@@ -205,6 +205,12 @@ namespace Caracal
                 generateAssignmentStatement((AssignmentStatement*)node);
                 break;
             }
+            case NodeKind::TypeDefinitionStatement:
+            {
+                m_currentStatement = NodeKind::TypeDefinitionStatement;
+                generateTypeDefinitionStatement((TypeDefinitionStatement*)node);
+                break;
+            }
             case NodeKind::FunctionDefinitionStatement:
             {
                 m_currentStatement = NodeKind::FunctionDefinitionStatement;
@@ -505,6 +511,26 @@ namespace Caracal
 
         sigStream << ")";
         return signature;
+    }
+
+    void CppCodeGenerator::generateTypeDefinitionStatement(TypeDefinitionStatement* node) noexcept
+    {
+        const auto& nameExpression = node->nameExpression();
+        const auto typeName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
+        const auto typeSignature = QString("class %2").arg(typeName);
+        m_forwardDeclarations.append(typeSignature % ";" % newLine());
+
+        stream() << indentation() << typeSignature << newLine();
+        
+        const auto& statements = node->bodyNode()->statements();
+        stream() << indentation() << "{" << newLine();
+        pushIndentation();
+        for (const auto& statement : statements)
+        {
+            generateNode(statement.get());
+        }
+        popIndentation();
+        stream() << indentation() << "};" << newLine();
     }
 
     void CppCodeGenerator::generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept

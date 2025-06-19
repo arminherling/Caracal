@@ -16,6 +16,7 @@ namespace Caracal
         CppBlockStatement,
         ExpressionStatement,
         AssignmentStatement,
+        TypeDefinitionStatement,
         FunctionDefinitionStatement,
         EnumDefinitionStatement,
         IfStatement,
