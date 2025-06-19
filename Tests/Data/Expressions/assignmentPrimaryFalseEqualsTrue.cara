@@ -1,0 +1,4 @@
+def func()
+{ 
+    x :: false == true;
+}

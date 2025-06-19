@@ -1,0 +1,7 @@
+﻿void func();
+
+void func()
+{
+    const auto x = true == false;
+}
+

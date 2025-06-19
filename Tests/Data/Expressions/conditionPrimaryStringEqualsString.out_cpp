@@ -1,0 +1,11 @@
+﻿void func();
+
+void func()
+{
+    if (std::string{"123"} == std::string{"123"})
+    {
+        return;
+    }
+    return;
+}
+

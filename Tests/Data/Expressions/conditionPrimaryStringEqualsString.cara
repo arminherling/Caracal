@@ -1,0 +1,9 @@
+def func()
+{ 
+    if "123" == "123"
+    {
+        return;
+    }
+
+    return;
+}

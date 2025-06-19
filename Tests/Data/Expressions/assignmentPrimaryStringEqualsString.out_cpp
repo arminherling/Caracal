@@ -1,0 +1,7 @@
+﻿void func();
+
+void func()
+{
+    const auto x = std::string{"123"} == std::string{"123"};
+}
+

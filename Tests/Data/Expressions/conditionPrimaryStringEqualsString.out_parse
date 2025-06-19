@@ -1,0 +1,32 @@
+﻿FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: func
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(2): {
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Left: {
+                        StringLiteral: "123"
+                    }
+                    Operation: Equal
+                    Right: {
+                        StringLiteral: "123"
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+        }
+    }
+}

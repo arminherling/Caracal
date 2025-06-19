@@ -1,0 +1,49 @@
+﻿FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: func
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        ConstantDeclaration: {
+            Left: {
+                NameExpression: {
+                    Name: x
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Left: {
+                        GroupingExpression: {
+                            BinaryExpression: {
+                                Left: {
+                                    NumberLiteral: 1
+                                }
+                                Operation: Addition
+                                Right: {
+                                    NumberLiteral: 2
+                                }
+                            }
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        GroupingExpression: {
+                            BinaryExpression: {
+                                Left: {
+                                    NumberLiteral: 1
+                                }
+                                Operation: Addition
+                                Right: {
+                                    NumberLiteral: 2
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
