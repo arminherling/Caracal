@@ -187,6 +187,12 @@ namespace Caracal
                     break;
                 }
             }
+            case NodeKind::TypeFieldDeclaration:
+            {
+                m_currentStatement = NodeKind::TypeFieldDeclaration;
+                generateTypeFieldDeclaration((TypeFieldDeclaration*)node);
+                break;
+            }
             case NodeKind::CppBlockStatement:
             {
                 m_currentStatement = NodeKind::CppBlockStatement;
@@ -399,6 +405,21 @@ namespace Caracal
         stream() << " ";
 
         generateNode(node->leftExpression().get());
+        stream() << " = ";
+        generateNode(node->rightExpression().get());
+        stream() << ";" << newLine();
+    }
+
+    void CppCodeGenerator::generateTypeFieldDeclaration(TypeFieldDeclaration* node) noexcept
+    {
+        const auto typeName = GetCppNameForType(node->rightExpression()->type());
+        stream() << "public:" << newLine() << indentation();
+        if(node->isConstant())
+        {
+            stream() << "const ";
+        }
+        stream() << typeName << " ";
+        generateNameExpression(node->nameExpression().get());
         stream() << " = ";
         generateNode(node->rightExpression().get());
         stream() << ";" << newLine();

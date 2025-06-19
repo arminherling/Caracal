@@ -12,6 +12,7 @@ namespace Caracal
 
             { NodeKind::ConstantDeclaration,            QStringLiteral("ConstantDeclaration") },
             { NodeKind::VariableDeclaration,            QStringLiteral("VariableDeclaration") },
+            { NodeKind::TypeFieldDeclaration,           QStringLiteral("TypeFieldDeclaration") },
 
             { NodeKind::CppBlockStatement,              QStringLiteral("CppBlockStatement") },
             { NodeKind::ExpressionStatement,            QStringLiteral("ExpressionStatement") },

@@ -12,6 +12,7 @@ namespace Caracal
 
         ConstantDeclaration,
         VariableDeclaration,
+        TypeFieldDeclaration,
 
         CppBlockStatement,
         ExpressionStatement,

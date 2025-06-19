@@ -13,7 +13,7 @@
 #include <Syntax/FunctionDefinitionStatement.h>
 #include <Syntax/EnumDefinitionStatement.h>
 #include <Syntax/TypeDefinitionStatement.h>
-//#include <Syntax/FieldDefinitionStatement.h>
+#include <Syntax/TypeFieldDeclaration.h>
 //#include <Syntax/MethodDefinitionStatement.h>
 #include <Syntax/UnaryExpression.h>
 #include <Syntax/BinaryExpression.h>
@@ -190,6 +190,10 @@ namespace Caracal
                     {
                         return parseConstantDeclaration(std::move(expression));
                     }
+                    else if(expression->kind() == NodeKind::NameExpression && scope == StatementScope::Type)
+                    {
+                        return parseTypeFieldDeclaration(std::move(expression));
+                    }
                     TODO("Emit an error");
                     break;
                 }
@@ -198,6 +202,10 @@ namespace Caracal
                     if (scope == StatementScope::Function)
                     {
                         return parseVariableDeclaration(std::move(expression));
+                    }
+                    else if (expression->kind() == NodeKind::NameExpression && scope == StatementScope::Type)
+                    {
+                        return parseTypeFieldDeclaration(std::move(expression));
                     }
                     TODO("Variable declaration in other scopes");
                     break;
@@ -362,6 +370,19 @@ namespace Caracal
 
         return std::make_unique<TypeDefinitionStatement>(keyword, std::move(nameExpression), std::move(body));
     }
+
+    StatementUPtr Parser::parseTypeFieldDeclaration(ExpressionUPtr&& leftExpression)
+    {
+        // the left expression is always a NameExpression
+        auto nameExpression = std::unique_ptr<NameExpression>(static_cast<NameExpression*>(leftExpression.release()));
+        auto firstColon = advanceOnMatch(TokenKind::Colon);
+        auto secondToken = currentToken();
+        advanceCurrentIndex();
+        auto rightExpression = parseExpression();
+        auto isConstant = secondToken.kind == TokenKind::Colon;
+
+        return std::make_unique<TypeFieldDeclaration>(std::move(nameExpression), firstColon, secondToken, std::move(rightExpression), isConstant);
+    }
     
     BlockNodeUPtr Parser::parseFunctionBody()
     {
@@ -370,11 +391,7 @@ namespace Caracal
 
     BlockNodeUPtr Parser::parseTypeBody()
     {
-        auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
-        auto statements = std::vector<StatementUPtr>();
-        auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
-
-        return std::make_unique<BlockNode>(openBracket, std::move(statements), closeBracket);
+        return parseBlockNode(StatementScope::Type);
     }
 
     BlockNodeUPtr Parser::parseBlockNode(StatementScope scope)
@@ -689,33 +706,6 @@ namespace Caracal
     }
 }
 
-
-//Statement* Parser::parseFieldDefinitionStatement()
-//{
-//    auto name = parseNameExpression();
-//    auto current = currentToken();
-//    std::optional<Token> colon;
-//    std::optional<TypeName> type;
-//    if (current.kind == TokenKind::Colon)
-//    {
-//        advanceCurrentIndex();
-//        colon = current;
-//        type = parseTypeNode();
-//        current = currentToken();
-//    }
-//
-//    std::optional<Token> equals;
-//    std::optional<Expression*> expression;
-//    if (current.kind == TokenKind::Equal)
-//    {
-//        equals = current;
-//        advanceCurrentIndex();
-//        expression = parseExpression();
-//    }
-//
-//    return new FieldDefinitionStatement(name, colon, type, equals, expression);
-//}
-//
 //Statement* Parser::parseMethodDefinitionStatement()
 //{
 //    auto keyword = advanceOnMatch(TokenKind::Identifier);

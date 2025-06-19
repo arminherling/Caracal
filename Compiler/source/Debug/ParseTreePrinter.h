@@ -37,6 +37,7 @@
 #include <Syntax/BreakStatement.h>
 #include <Syntax/SkipStatement.h>
 #include <Syntax/TypeDefinitionStatement.h>
+#include <Syntax/TypeFieldDeclaration.h>
 
 namespace Caracal 
 {
@@ -53,6 +54,7 @@ namespace Caracal
         void prettyPrintExpressionStatement(ExpressionStatement* statement);
         void prettyPrintConstantDeclaration(ConstantDeclaration* statement);
         void prettyPrintVariableDeclaration(VariableDeclaration* statement);
+        void prettyPrintTypeFieldDeclaration(TypeFieldDeclaration* statement);
         void prettyPrintAssignmentStatement(AssignmentStatement* statement);
         void prettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement);
         void prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement);

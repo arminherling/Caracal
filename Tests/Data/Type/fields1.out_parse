@@ -1,28 +1,28 @@
-TypeDefinitionStatement: {
-    NameExpression: Vector3D
-    BlockNode(3): {
-        FieldDefinitionStatement: {
-            Field: {
-                NameExpression: x
+﻿TypeDefinitionStatement: {
+    NameExpression: {
+        Name: Fields
+    }
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: true
+            Left: {
+                NameExpression: {
+                    Name: a
+                }
             }
-            Value: {
-                NumberLiteral: 0
-            }
-        }
-        FieldDefinitionStatement: {
-            Field: {
-                NameExpression: y
-            }
-            Value: {
-                NumberLiteral: 0
+            Right: {
+                BoolLiteral: true
             }
         }
-        FieldDefinitionStatement: {
-            Field: {
-                NameExpression: z
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Name: b
+                }
             }
-            Value: {
-                NumberLiteral: 0
+            Right: {
+                BoolLiteral: false
             }
         }
     }

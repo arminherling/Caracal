@@ -33,6 +33,11 @@ namespace Caracal
                 prettyPrintVariableDeclaration((VariableDeclaration*)node);
                 break;
             }
+            case NodeKind::TypeFieldDeclaration:
+            {
+                prettyPrintTypeFieldDeclaration((TypeFieldDeclaration*)node);
+                break;
+            }
             case NodeKind::CppBlockStatement:
             {
                 prettyPrintCppBlockStatement((CppBlockStatement*)node);
@@ -189,6 +194,28 @@ namespace Caracal
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
      
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintTypeFieldDeclaration(TypeFieldDeclaration* statement)
+    {
+        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
+        pushIndentation();
+
+        stream() << indentation() << QString("IsConstant: %1").arg(statement->isConstant() ? "true" : "false") << newLine();
+        stream() << indentation() << QString("Left: {") << newLine();
+        pushIndentation();
+        prettyPrintNode(statement->nameExpression().get());
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+
+        stream() << indentation() << QString("Right: {") << newLine();
+        pushIndentation();
+        prettyPrintNode(statement->rightExpression().get());
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }

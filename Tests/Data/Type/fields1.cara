@@ -1,0 +1,5 @@
+type Fields
+{
+    a :: true
+    b := false
+}

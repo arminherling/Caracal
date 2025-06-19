@@ -28,6 +28,7 @@
 #include <Syntax/BreakStatement.h>
 #include <Syntax/SkipStatement.h>
 #include <Syntax/TypeDefinitionStatement.h>
+#include <Syntax/TypeFieldDeclaration.h>
 
 namespace Caracal
 {
@@ -48,6 +49,7 @@ namespace Caracal
         void generateNode(Node* node)  noexcept;
         void generateConstantDeclaration(ConstantDeclaration* node) noexcept;
         void generateVariableDeclaration(VariableDeclaration* node) noexcept;
+        void generateTypeFieldDeclaration(TypeFieldDeclaration* node) noexcept;
         void generateGlobalDiscardedExpression(Expression* expression) noexcept;
         void generateLocalDiscardedExpression(Expression* expression) noexcept;
         void generateCppBlock(CppBlockStatement* node) noexcept;
