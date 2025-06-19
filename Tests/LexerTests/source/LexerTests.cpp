@@ -74,6 +74,8 @@ namespace
             std::make_tuple(QString("Return"), QString("return"), TokenKind::ReturnKeyword),
             std::make_tuple(QString("True"), QString("true"), TokenKind::TrueKeyword),
             std::make_tuple(QString("False"), QString("false"), TokenKind::FalseKeyword),
+            std::make_tuple(QString("And"), QString("and"), TokenKind::AndKeyword),
+            std::make_tuple(QString("Or"), QString("or"), TokenKind::OrKeyword),
             std::make_tuple(QString("Ref"), QString("ref"), TokenKind::RefKeyword),
             std::make_tuple(QString("C++"), QString("cpp"), TokenKind::CppKeyword),
         };

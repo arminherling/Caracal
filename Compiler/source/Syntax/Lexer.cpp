@@ -47,6 +47,8 @@ namespace Caracal
             { QStringView(u"return"),   TokenKind::ReturnKeyword },
             { QStringView(u"true"),     TokenKind::TrueKeyword },
             { QStringView(u"false"),    TokenKind::FalseKeyword },
+            { QStringView(u"and"),      TokenKind::AndKeyword },
+            { QStringView(u"or"),       TokenKind::OrKeyword },
             { QStringView(u"ref"),      TokenKind::RefKeyword },
             { QStringView(u"cpp"),      TokenKind::CppKeyword },
         };

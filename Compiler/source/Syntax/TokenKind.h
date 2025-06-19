@@ -49,6 +49,8 @@ enum class COMPILER_API TokenKind
     ReturnKeyword,
     TrueKeyword,
     FalseKeyword,
+    AndKeyword,
+    OrKeyword,
     RefKeyword,
     CppKeyword,
 

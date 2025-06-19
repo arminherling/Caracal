@@ -43,6 +43,8 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
         { TokenKind::ReturnKeyword,     QStringLiteral("ReturnKeyword") },
         { TokenKind::TrueKeyword,       QStringLiteral("TrueKeyword") },
         { TokenKind::FalseKeyword,      QStringLiteral("FalseKeyword") },
+        { TokenKind::AndKeyword,        QStringLiteral("AndKeyword") },
+        { TokenKind::OrKeyword,         QStringLiteral("OrKeyword") },
         { TokenKind::RefKeyword,        QStringLiteral("RefKeyword") },
         { TokenKind::CppKeyword,        QStringLiteral("CppKeyword") },
         { TokenKind::EndOfFile,         QStringLiteral("EndOfFile") },
@@ -61,10 +63,10 @@ i32 unaryOperatorPrecedence(TokenKind kind)
     switch (kind)
     {
         case TokenKind::RefKeyword:
-            return 6;
+            return 7;
         case TokenKind::Bang:
         case TokenKind::Minus:
-            return 5;
+            return 6;
         default:
             return 0;
     }
@@ -75,19 +77,22 @@ i32 binaryOperatorPrecedence(TokenKind kind)
     switch (kind)
     {
         case TokenKind::Dot:
-            return 4;
+            return 5;
         case TokenKind::Star:
         case TokenKind::Slash:
-            return 3;
+            return 4;
         case TokenKind::Plus:
         case TokenKind::Minus:
-            return 2;
+            return 3;
         case TokenKind::EqualEqual:
         case TokenKind::BangEqual:
         case TokenKind::LessThan:
         case TokenKind::LessThanEqual:
         case TokenKind::GreaterThan:
         case TokenKind::GreaterThanEqual:
+            return 2;
+        case TokenKind::AndKeyword:
+        case TokenKind::OrKeyword:
             return 1;
         default:
             return 0;

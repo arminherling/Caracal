@@ -79,6 +79,10 @@ namespace Caracal
                 return QStringLiteral(">");
             case BinaryOperatorKind::GreaterOrEqual:
                 return QStringLiteral(">=");
+            case BinaryOperatorKind::LogicalAnd:
+                return QStringLiteral("&&");
+            case BinaryOperatorKind::LogicalOr:
+                return QStringLiteral("||");
             default:
                 TODO("Implement StringifyBinaryOperator for all operators");
                 return QString();

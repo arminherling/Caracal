@@ -26,6 +26,10 @@ namespace Caracal
                 return BinaryOperatorKind::GreaterThan;
             case TokenKind::GreaterThanEqual:
                 return BinaryOperatorKind::GreaterOrEqual;
+            case TokenKind::AndKeyword:
+                return BinaryOperatorKind::LogicalAnd;
+            case TokenKind::OrKeyword:
+                return BinaryOperatorKind::LogicalOr;
             default:
                 return BinaryOperatorKind::Invalid;
         }
@@ -56,6 +60,8 @@ namespace Caracal
             { BinaryOperatorKind::LessOrEqual,     QStringLiteral("LessOrEqual") },
             { BinaryOperatorKind::GreaterThan,     QStringLiteral("GreaterThan") },
             { BinaryOperatorKind::GreaterOrEqual,  QStringLiteral("GreaterOrEqual") },
+            { BinaryOperatorKind::LogicalAnd,      QStringLiteral("LogicalAnd") },
+            { BinaryOperatorKind::LogicalOr,       QStringLiteral("LogicalOr") },
         };
 
         const auto it = opToString.find(operation);

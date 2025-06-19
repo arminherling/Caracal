@@ -71,6 +71,14 @@
 				{
 					"name": "keyword.control.skip.caracal",
 					"match": "\\bskip\\b"
+				},
+				{
+					"name": "keyword.control.and.caracal",
+					"match": "\\band\\b"
+				},
+				{
+					"name": "keyword.control.or.caracal",
+					"match": "\\bor\\b"
 				}
 			]
 		},

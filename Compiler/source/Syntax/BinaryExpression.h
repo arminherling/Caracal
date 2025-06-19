@@ -18,7 +18,9 @@ namespace Caracal
         LessThan,
         LessOrEqual,
         GreaterThan,
-        GreaterOrEqual
+        GreaterOrEqual,
+        LogicalAnd,
+        LogicalOr,
     };
 
     class COMPILER_API BinaryExpression : public Expression
