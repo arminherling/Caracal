@@ -1,0 +1,39 @@
+﻿EnumDefinitionStatement: {
+    NameExpression: {
+        Name: Values
+    }
+    FieldNodes(2): {
+        EnumFieldNode: {
+            NameExpression: {
+                Name: First
+            }
+        }
+        EnumFieldNode: {
+            NameExpression: {
+                Name: Second
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Left: {
+        NameExpression: {
+            Name: s
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Left: {
+                NameExpression: {
+                    Name: Values
+                }
+            }
+            Operation: MemberAccess
+            Right: {
+                NameExpression: {
+                    Name: Second
+                }
+            }
+        }
+    }
+}

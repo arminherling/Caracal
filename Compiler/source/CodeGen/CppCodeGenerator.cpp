@@ -36,6 +36,15 @@ namespace Caracal
         };
     }
 
+    [[nodiscard]] QStringView CppCodeGenerator::getCppNameForType(TypeNameNode* typeName) noexcept
+    {
+        static const auto cppTypeNames = InitializeTypeToCppName();
+        if (const auto result = cppTypeNames.find(typeName->type()); result != cppTypeNames.end())
+            return result->second;
+
+        return m_parseTree.tokens().getLexeme(typeName->name()->nameToken());
+    }
+
     [[nodiscard]] static QStringView GetCppNameForType(Type type) noexcept
     {
         static const auto cppTypeNames = InitializeTypeToCppName();
@@ -412,6 +421,29 @@ namespace Caracal
         stream() << ";" << newLine();
     }
 
+    QString CppCodeGenerator::generateEnumSignature(EnumDefinitionStatement* node) noexcept
+    {
+        const auto enumName = m_parseTree.tokens().getLexeme(node->nameExpression()->nameToken());
+
+        QString signature;
+        QTextStream sigStream(&signature);
+
+        sigStream << indentation() << "enum class " << enumName;
+        if (node->baseType().has_value())
+        {
+            const auto baseType = node->baseType().value().get();
+            const auto cppTypeName = GetCppNameForType(baseType->type());
+
+            sigStream << " : " << cppTypeName;
+        }
+        else
+        {
+            sigStream << " : unsigned char"; // 1 byte default size if not specified
+        }
+
+        return signature;
+    }
+
     QString CppCodeGenerator::generateFunctionSignature(FunctionDefinitionStatement* node) noexcept
     {
         const auto& returnTypes = node->returnTypesNode()->returnTypes();
@@ -453,7 +485,7 @@ namespace Caracal
         const auto& parameters = node->parametersNode()->parameters();
         for (const auto& parameter : parameters)
         {
-            const auto typeName = GetCppNameForType(parameter->typeName()->type());
+            const auto typeName = getCppNameForType(parameter->typeName().get());
             if (parameter->typeName()->isReference())
             {
                 sigStream << typeName << "& ";
@@ -477,20 +509,11 @@ namespace Caracal
 
     void CppCodeGenerator::generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept
     {
-        stream() << indentation() << "enum class ";
-        generateNameExpression(node->nameExpression().get());
-        if (node->baseType().has_value())
-        {
-            const auto baseType = node->baseType().value().get();
-            const auto cppTypeName = GetCppNameForType(baseType->type());
+        const auto signature = generateEnumSignature(node);
+        m_forwardDeclarations.append(signature % ";" % newLine());
+        stream() << indentation() << signature << newLine();
 
-            stream() << " : " << cppTypeName;
-        }
-        else
-        {
-            stream() << " : unsigned char"; // 1 byte default size if not specified
-        }
-        stream() << newLine() << "{" << newLine();
+        stream() << indentation() << "{" << newLine();
         pushIndentation();
         for (const auto& fieldNode : node->fieldNodes())
         {
@@ -666,11 +689,21 @@ namespace Caracal
 
     void CppCodeGenerator::generateBinaryExpression(BinaryExpression* node) noexcept
     {
-        const auto binaryOperator = StringifyBinaryOperator(node->binaryOperator());
+        const auto binaryOperator = node->binaryOperator();
+        if (binaryOperator == BinaryOperatorKind::MemberAccess)
+        {
+            generateNode(node->leftExpression().get());
+            stream() << "::";
+            generateNode(node->rightExpression().get());
+        }
+        else
+        {
+            const auto binaryOperatorString = StringifyBinaryOperator(node->binaryOperator());
 
-        generateNode(node->leftExpression().get());
-        stream() << " " << binaryOperator << " ";
-        generateNode(node->rightExpression().get());
+            generateNode(node->leftExpression().get());
+            stream() << " " << binaryOperatorString << " ";
+            generateNode(node->rightExpression().get());
+        }
     }
 
     void CppCodeGenerator::generateNameExpression(NameExpression* node) noexcept

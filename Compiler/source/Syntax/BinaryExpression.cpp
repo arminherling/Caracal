@@ -6,6 +6,8 @@ namespace Caracal
     {
         switch (kind)
         {
+            case TokenKind::Dot:
+                return BinaryOperatorKind::MemberAccess;
             case TokenKind::Plus:
                 return BinaryOperatorKind::Addition;
             case TokenKind::Minus:
@@ -50,6 +52,7 @@ namespace Caracal
     QString stringify(BinaryOperatorKind operation)
     {
         static const std::unordered_map<BinaryOperatorKind, QString> opToString{
+            { BinaryOperatorKind::MemberAccess,    QStringLiteral("MemberAccess") },
             { BinaryOperatorKind::Addition,        QStringLiteral("Addition") },
             { BinaryOperatorKind::Subtraction,     QStringLiteral("Subtraction") },
             { BinaryOperatorKind::Multiplication,  QStringLiteral("Multiplication") },

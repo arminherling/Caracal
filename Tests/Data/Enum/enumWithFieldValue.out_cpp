@@ -1,4 +1,6 @@
-﻿enum class Values : unsigned char
+﻿enum class Values : unsigned char;
+
+enum class Values : unsigned char
 {
     First,
     Second = 5,

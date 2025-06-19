@@ -4,6 +4,6 @@ enum class Values : unsigned char
 {
     First,
     Second,
-    Third,
 };
 
+const auto s = Values::Second;

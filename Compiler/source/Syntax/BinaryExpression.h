@@ -9,6 +9,7 @@ namespace Caracal
     enum class BinaryOperatorKind
     {
         Invalid,
+        MemberAccess,
         Addition,
         Subtraction,
         Multiplication,

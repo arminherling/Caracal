@@ -53,6 +53,7 @@ namespace Caracal
         void generateBlockNode(BlockNode* node) noexcept;
         void generateExpressionStatement(ExpressionStatement* node) noexcept;
         void generateAssignmentStatement(AssignmentStatement* node) noexcept;
+        QString generateEnumSignature(EnumDefinitionStatement* node) noexcept;
         QString generateFunctionSignature(FunctionDefinitionStatement* node) noexcept;
         void generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
@@ -71,6 +72,8 @@ namespace Caracal
         void generateStringLiteral(StringLiteral* node) noexcept;
 
         void generateBuiltinPrintFunction(ArgumentsNode* node) noexcept;
+
+        QStringView getCppNameForType(TypeNameNode* typeName) noexcept;
 
         ParseTree& m_parseTree;
         QStringList m_cppIncludes;
