@@ -69,6 +69,8 @@ namespace
             std::make_tuple(QString("If"), QString("if"), TokenKind::IfKeyword),
             std::make_tuple(QString("Else"), QString("else"), TokenKind::ElseKeyword),
             std::make_tuple(QString("While"), QString("while"), TokenKind::WhileKeyword),
+            std::make_tuple(QString("Break"), QString("break"), TokenKind::BreakKeyword),
+            std::make_tuple(QString("Skip"), QString("skip"), TokenKind::SkipKeyword),
             std::make_tuple(QString("Return"), QString("return"), TokenKind::ReturnKeyword),
             std::make_tuple(QString("True"), QString("true"), TokenKind::TrueKeyword),
             std::make_tuple(QString("False"), QString("false"), TokenKind::FalseKeyword),
