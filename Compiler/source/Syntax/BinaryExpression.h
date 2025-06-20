@@ -46,5 +46,5 @@ namespace Caracal
         BinaryOperatorKind m_binaryOperator;
     };
 
-    COMPILER_API [[nodiscard]] QString stringify(BinaryOperatorKind kind);
+    [[nodiscard]] COMPILER_API QString stringify(BinaryOperatorKind kind);
 }

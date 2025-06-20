@@ -33,5 +33,5 @@ namespace Caracal
         UnaryOperatorKind m_unaryOperator;
     };
 
-    COMPILER_API [[nodiscard]] QString stringify(UnaryOperatorKind kind);
+    [[nodiscard]] COMPILER_API QString stringify(UnaryOperatorKind kind);
 }

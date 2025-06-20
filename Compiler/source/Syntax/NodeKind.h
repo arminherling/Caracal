@@ -47,5 +47,5 @@ namespace Caracal
         BlockNode,
     };
 
-    COMPILER_API [[nodiscard]] QString stringify(NodeKind kind);
+    [[nodiscard]] COMPILER_API QString stringify(NodeKind kind);
 }
