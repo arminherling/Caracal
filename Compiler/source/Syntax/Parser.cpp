@@ -331,9 +331,9 @@ namespace Caracal
         return std::make_unique<EnumDefinitionStatement>(keyword, std::move(nameExpression), colonToken, std::move(baseType), openBracket, std::move(enumFields), closeBracket);
     }
 
-    std::vector<EnumFieldNodeUPtr> Parser::parseEnumFields()
+    std::vector<EnumFieldDeclarationUPtr> Parser::parseEnumFields()
     {
-        std::vector<EnumFieldNodeUPtr> fields;
+        std::vector<EnumFieldDeclarationUPtr> fields;
         auto current = currentToken();
         while (current.kind != TokenKind::CloseBracket && current.kind != TokenKind::EndOfFile)
         {
@@ -345,11 +345,11 @@ namespace Caracal
                     auto colon1 = advanceOnMatch(TokenKind::Colon);
                     auto colon2 = advanceOnMatch(TokenKind::Colon);
                     auto valueExpression = parseExpression();
-                    fields.push_back(std::make_unique<EnumFieldNode>(std::move(nameExpression), colon1, colon2, std::move(valueExpression)));
+                    fields.push_back(std::make_unique<EnumFieldDeclaration>(std::move(nameExpression), colon1, colon2, std::move(valueExpression)));
                 }
                 else
                 {
-                    fields.push_back(std::make_unique<EnumFieldNode>(std::move(nameExpression)));
+                    fields.push_back(std::make_unique<EnumFieldDeclaration>(std::move(nameExpression)));
                 }
             }
             else

@@ -21,6 +21,8 @@ namespace Caracal
             const Token& unaryOperatorToken,
             ExpressionUPtr&& expression);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(UnaryExpression)
+
         [[nodiscard]] const Token& unaryOperatorToken() const noexcept { return m_unaryOperatorToken; }
         [[nodiscard]] const ExpressionUPtr& expression() const noexcept { return m_expression; }
         [[nodiscard]] UnaryOperatorKind unaryOperator() const noexcept { return m_unaryOperator; }

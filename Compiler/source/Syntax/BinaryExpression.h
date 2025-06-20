@@ -32,6 +32,8 @@ namespace Caracal
             const Token& binaryOperatorToken,
             ExpressionUPtr&& rightExpression);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(BinaryExpression)
+
         [[nodiscard]] const ExpressionUPtr& leftExpression() const noexcept { return m_leftExpression; }
         [[nodiscard]] const Token& binaryOperatorToken() const noexcept { return m_binaryOperatorToken; }
         [[nodiscard]] const ExpressionUPtr& rightExpression() const noexcept { return m_rightExpression; }

@@ -37,6 +37,8 @@ namespace Caracal
     public:
         CppCodeGenerator(ParseTree& parseTree, i32 indentation = 4);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(CppCodeGenerator)
+
         [[nodiscard]] QString generate();
 
     private:

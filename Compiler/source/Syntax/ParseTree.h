@@ -13,11 +13,7 @@ namespace Caracal
             const TokenBuffer& tokens,
             std::vector<StatementUPtr>&& statements);
 
-        ParseTree(const ParseTree&) = delete;
-        ParseTree& operator=(const ParseTree&) = delete;
-
-        ParseTree(ParseTree&&) = default;
-        ParseTree& operator=(ParseTree&&) = default;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(ParseTree)
 
         [[nodiscard]] const std::vector<StatementUPtr>& statements() const noexcept { return m_statements; };
         [[nodiscard]] const TokenBuffer& tokens() const noexcept { return m_tokens; }

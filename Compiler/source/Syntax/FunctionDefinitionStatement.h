@@ -18,6 +18,8 @@ namespace Caracal
             ParametersNodeUPtr&& parametersNode,
             ReturnTypesNodeUPtr&& returnTypesNode,
             BlockNodeUPtr&& bodyNode);
+        
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(FunctionDefinitionStatement)
 
         [[nodiscard]] const Token& keywordToken() const noexcept { return m_keywordToken; }
         [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }

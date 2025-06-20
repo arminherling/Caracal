@@ -6,7 +6,7 @@
 #include <Syntax/ArgumentsNode.h>
 #include <Syntax/BlockNode.h>
 //#include <Syntax/EnumFieldDefinitionStatement.h>
-#include <Syntax/EnumFieldNode.h>
+#include <Syntax/EnumFieldDeclaration.h>
 #include <Syntax/Expression.h>
 #include <Syntax/NameExpression.h>
 //#include <Syntax/ParameterNode.h>
@@ -45,7 +45,7 @@ namespace Caracal
         StatementUPtr parseVariableDeclaration(ExpressionUPtr&& leftExpression);
         StatementUPtr parseAssignmentStatement(ExpressionUPtr&& leftExpression);
         StatementUPtr parseEnumDefinitionStatement();
-        std::vector<EnumFieldNodeUPtr> parseEnumFields();
+        std::vector<EnumFieldDeclarationUPtr> parseEnumFields();
         StatementUPtr parseTypeDefinitionStatement();
         StatementUPtr parseTypeFieldDeclaration(ExpressionUPtr&& leftExpression);
         //Statement* parseMethodDefinitionStatement();

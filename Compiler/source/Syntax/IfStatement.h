@@ -21,11 +21,7 @@ namespace Caracal
             const Token& elseKeyword,
             StatementUPtr&& falseStatement);
 
-        IfStatement(const IfStatement&) = delete;
-        IfStatement(IfStatement&&) = default;
-
-        IfStatement& operator=(const IfStatement&) = delete;
-        IfStatement& operator=(IfStatement&&) = default;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(IfStatement)
 
         [[nodiscard]] const Token& ifKeyword() const noexcept { return m_ifKeyword; }
         [[nodiscard]] const ExpressionUPtr& condition() const noexcept { return m_condition; }

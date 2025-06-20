@@ -15,6 +15,8 @@ namespace Caracal
             NameExpressionUPtr&& name,
             const Type& type);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(TypeNameNode)
+
         [[nodiscard]] const std::optional<Token>& ref() const noexcept { return m_refToken; }
         [[nodiscard]] bool isReference() const noexcept { return m_refToken.has_value(); }
         [[nodiscard]] const NameExpressionUPtr& name() const noexcept { return m_nameExpression; }

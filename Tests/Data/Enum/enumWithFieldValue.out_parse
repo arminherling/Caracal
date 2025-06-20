@@ -3,18 +3,18 @@
         Name: Values
     }
     FieldNodes(3): {
-        EnumFieldNode: {
+        EnumFieldDeclaration: {
             NameExpression: {
                 Name: First
             }
         }
-        EnumFieldNode: {
+        EnumFieldDeclaration: {
             NameExpression: {
                 Name: Second
             }
             NumberLiteral: 5
         }
-        EnumFieldNode: {
+        EnumFieldDeclaration: {
             NameExpression: {
                 Name: Third
             }

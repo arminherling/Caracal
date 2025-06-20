@@ -15,11 +15,7 @@ namespace Caracal
             std::optional<ExpressionUPtr>&& expression,
             const Token& semicolonToken);
 
-        ReturnStatement(const ReturnStatement&) = delete;
-        ReturnStatement& operator=(const ReturnStatement&) = delete;
-        
-        ReturnStatement(ReturnStatement&&) = default;
-        ReturnStatement& operator=(ReturnStatement&&) = default;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(ReturnStatement)
 
         [[nodiscard]] const Token& keywordToken() const noexcept { return m_keywordToken; }
         [[nodiscard]] const std::optional<ExpressionUPtr>& expression() const noexcept { return m_expression; }

@@ -2,6 +2,12 @@
 
 #include <cstdint>
 
+#define CARACAL_DELETE_COPY_DEFAULT_MOVE(ClassName)         \
+    ClassName(const ClassName&) = delete;                   \
+    ClassName& operator=(const ClassName&) = delete;        \
+    ClassName(ClassName&&) = default;                       \
+    ClassName& operator=(ClassName&&) = default;
+
 #define TODO(X) __debugbreak();
 
 using i8 = int8_t;

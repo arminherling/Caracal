@@ -312,7 +312,7 @@ namespace Caracal
     
         for (const auto& fieldNode : fieldNodes)
         {
-            prettyPrintEnumFieldNode(fieldNode.get());
+            prettyPrintEnumFieldDeclaration(fieldNode.get());
         }
     
         popIndentation();
@@ -322,7 +322,7 @@ namespace Caracal
         stream() << indentation() << QString("}") << newLine();
     }
     
-    void ParseTreePrinter::prettyPrintEnumFieldNode(EnumFieldNode* statement)
+    void ParseTreePrinter::prettyPrintEnumFieldDeclaration(EnumFieldDeclaration* statement)
     {
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
         pushIndentation();

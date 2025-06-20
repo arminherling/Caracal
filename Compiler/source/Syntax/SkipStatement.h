@@ -13,11 +13,7 @@ namespace Caracal
             const Token& keywordToken,
             const Token& semicolonToken);
 
-        SkipStatement(const SkipStatement&) = delete;
-        SkipStatement& operator=(const SkipStatement&) = delete;
-        
-        SkipStatement(SkipStatement&&) = default;
-        SkipStatement& operator=(SkipStatement&&) = default;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(SkipStatement)
 
         [[nodiscard]] const Token& keywordToken() const noexcept { return m_keywordToken; }
         [[nodiscard]] const Token& semicolonToken() const noexcept { return m_semicolonToken; }

@@ -16,6 +16,8 @@ namespace Caracal
             NameExpressionUPtr&& nameExpression,
             BlockNodeUPtr&& bodyNode);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(TypeDefinitionStatement)
+
         [[nodiscard]] const Token& typeKeyword() const noexcept { return m_typeKeyword; }
         [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }
         [[nodiscard]] const BlockNodeUPtr& bodyNode() const noexcept { return m_bodyNode; }

@@ -15,11 +15,7 @@ namespace Caracal
             std::vector<StatementUPtr>&& statements,
             const Token& closeBracketToken);
 
-        BlockNode(const BlockNode&) = delete;
-        BlockNode& operator=(const BlockNode&) = delete;
-
-        BlockNode(BlockNode&&) = default;
-        BlockNode& operator=(BlockNode&&) = default;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(BlockNode)
 
         [[nodiscard]] const Token& openBracketToken() const noexcept { return m_openBracketToken; }
         [[nodiscard]] const std::vector<StatementUPtr>& statements() const noexcept { return m_statements; }

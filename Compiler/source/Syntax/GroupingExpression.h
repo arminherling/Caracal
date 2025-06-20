@@ -14,6 +14,8 @@ namespace Caracal
             ExpressionUPtr&& expression,
             const Token& closeParenthesisToken);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(GroupingExpression)
+
         [[nodiscard]] const Token& openParenthesisToken() const noexcept { return m_openParenthesisToken; }
         [[nodiscard]] const ExpressionUPtr& expression() const noexcept { return m_expression; }
         [[nodiscard]] const Token& closeParenthesisToken() const noexcept { return m_closeParenthesisToken; }

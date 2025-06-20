@@ -17,6 +17,8 @@ namespace Caracal
             ExpressionUPtr&& rightExpression,
             bool isConstant);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(TypeFieldDeclaration)
+
         [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }
         [[nodiscard]] const Token& firstColonToken() const noexcept { return m_firstColonToken; }
         [[nodiscard]] const Token& secondToken() const noexcept { return m_secondToken; }

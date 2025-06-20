@@ -12,6 +12,8 @@ namespace Caracal
     public:
         BasePrinter(i32 indentation = 4);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(BasePrinter)
+
     protected:
         void pushIndentation() noexcept { m_indentationLevel++; }
         void popIndentation() noexcept { m_indentationLevel--; }

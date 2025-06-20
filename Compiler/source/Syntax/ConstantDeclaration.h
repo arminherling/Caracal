@@ -17,6 +17,8 @@ namespace Caracal
             ExpressionUPtr&& rightExpression,
             const Token& semicolonToken);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(ConstantDeclaration)
+
         [[nodiscard]] const ExpressionUPtr& leftExpression() const noexcept { return m_leftExpression; }
         [[nodiscard]] const Token& firstColonToken() const noexcept { return m_firstColonToken; }
         [[nodiscard]] const Token& secondColonToken() const noexcept { return m_secondColonToken; }

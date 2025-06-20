@@ -6,7 +6,7 @@
         Type: i32
     }
     FieldNodes(1): {
-        EnumFieldNode: {
+        EnumFieldDeclaration: {
             NameExpression: {
                 Name: Value
             }

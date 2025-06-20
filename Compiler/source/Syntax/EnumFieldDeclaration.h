@@ -7,24 +7,20 @@
 
 namespace Caracal
 {
-    class COMPILER_API EnumFieldNode : public Node
+    class COMPILER_API EnumFieldDeclaration : public Node
     {
     public:
-        EnumFieldNode(
+        EnumFieldDeclaration(
             NameExpressionUPtr&& nameExpression);
 
-        EnumFieldNode(
+        EnumFieldDeclaration(
             NameExpressionUPtr&& nameExpression,
             const Token& colon1,
             const Token& colon2,
             ExpressionUPtr&& valueExpression);
 
-        EnumFieldNode(const EnumFieldNode&) = delete;
-        EnumFieldNode& operator=(const EnumFieldNode&) = delete;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(EnumFieldDeclaration)
 
-        EnumFieldNode(EnumFieldNode&&) = default;
-        EnumFieldNode& operator=(EnumFieldNode&&) = default;
-        
         [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }
         [[nodiscard]] const std::optional<Token>& colon1() const noexcept { return m_colon1; }
         [[nodiscard]] const std::optional<Token>& colon2() const noexcept { return m_colon2; }
@@ -37,5 +33,5 @@ namespace Caracal
         std::optional<ExpressionUPtr> m_valueExpression;
     };
 
-    using EnumFieldNodeUPtr = std::unique_ptr<EnumFieldNode>;
+    using EnumFieldDeclarationUPtr = std::unique_ptr<EnumFieldDeclaration>;
 }

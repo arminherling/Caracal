@@ -14,11 +14,7 @@ namespace Caracal
             ExpressionUPtr&& expression,
             const Token& semicolonToken);
 
-        ExpressionStatement(const ExpressionStatement&) = delete;
-        ExpressionStatement& operator=(const ExpressionStatement&) = delete;
-
-        ExpressionStatement(ExpressionStatement&&) = default;
-        ExpressionStatement& operator=(ExpressionStatement&&) = default;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(ExpressionStatement)
 
         [[nodiscard]] const ExpressionUPtr& expression() const noexcept { return m_expression; }
         [[nodiscard]] const Token& semicolonToken() const noexcept { return m_semicolonToken; }

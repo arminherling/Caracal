@@ -11,11 +11,7 @@ namespace Caracal
     public:
         explicit ReturnTypesNode(std::vector<TypeNameNodeUPtr>&& returnTypes);
 
-        ReturnTypesNode(const ReturnTypesNode&) = delete;
-        ReturnTypesNode& operator=(const ReturnTypesNode&) = delete;
-        
-        ReturnTypesNode(ReturnTypesNode&&) = default;
-        ReturnTypesNode& operator=(ReturnTypesNode&&) = default;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(ReturnTypesNode)
 
         [[nodiscard]] const std::vector<TypeNameNodeUPtr>& returnTypes() const noexcept { return m_returnTypes; }
 

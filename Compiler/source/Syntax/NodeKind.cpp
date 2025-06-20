@@ -13,6 +13,7 @@ namespace Caracal
             { NodeKind::ConstantDeclaration,            QStringLiteral("ConstantDeclaration") },
             { NodeKind::VariableDeclaration,            QStringLiteral("VariableDeclaration") },
             { NodeKind::TypeFieldDeclaration,           QStringLiteral("TypeFieldDeclaration") },
+            { NodeKind::EnumFieldDeclaration,           QStringLiteral("EnumFieldDeclaration") },
 
             { NodeKind::CppBlockStatement,              QStringLiteral("CppBlockStatement") },
             { NodeKind::ExpressionStatement,            QStringLiteral("ExpressionStatement") },
@@ -38,7 +39,6 @@ namespace Caracal
             { NodeKind::StringLiteral,                  QStringLiteral("StringLiteral") },
 
             { NodeKind::TypeNameNode,                   QStringLiteral("TypeNameNode") },
-            { NodeKind::EnumFieldNode,                  QStringLiteral("EnumFieldNode") },
             { NodeKind::ParametersNode,                 QStringLiteral("ParametersNode") },
             { NodeKind::ParameterNode,                  QStringLiteral("ParameterNode") },
             { NodeKind::ReturnTypesNode,                QStringLiteral("ReturnTypesNode") },

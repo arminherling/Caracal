@@ -8,7 +8,7 @@ namespace Caracal
         const std::optional<Token>& colonToken, 
         std::optional<TypeNameNodeUPtr>&& baseType, 
         const Token& openBracket, 
-        std::vector<EnumFieldNodeUPtr>&& fieldNodes, 
+        std::vector<EnumFieldDeclarationUPtr>&& fieldNodes, 
         const Token& closeBracket)
         : Statement(NodeKind::EnumDefinitionStatement, Type::Undefined())
         , m_enumKeyword{ enumKeyword }

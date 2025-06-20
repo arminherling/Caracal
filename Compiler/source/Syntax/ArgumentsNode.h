@@ -14,11 +14,8 @@ namespace Caracal
             const Token& openParenthesisToken,
             std::vector<ExpressionUPtr>&& arguments,
             const Token& closeParenthesisToken);
-        ArgumentsNode(const ArgumentsNode&) = delete;
-        ArgumentsNode& operator=(const ArgumentsNode&) = delete;
-        
-        ArgumentsNode(ArgumentsNode&&) = default;
-        ArgumentsNode& operator=(ArgumentsNode&&) = default;
+
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(ArgumentsNode)
         
         [[nodiscard]] const Token& openParenthesisToken() const noexcept { return m_openParenthesisToken; }
         [[nodiscard]] const std::vector<ExpressionUPtr>& arguments() const noexcept { return m_arguments; }

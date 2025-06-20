@@ -9,7 +9,7 @@
 #include <Syntax/BinaryExpression.h>
 #include <Syntax/BlockNode.h>
 #include <Syntax/EnumDefinitionStatement.h>
-#include <Syntax/EnumFieldNode.h>
+#include <Syntax/EnumFieldDeclaration.h>
 //#include <Syntax/Error.h>
 #include <Syntax/ExpressionStatement.h>
 //#include <Syntax/FieldDefinitionStatement.h>
@@ -46,6 +46,8 @@ namespace Caracal
     public:
         ParseTreePrinter(ParseTree& parseTree, i32 indentation = 4);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(ParseTreePrinter)
+
         [[nodiscard]] QString prettyPrint();
 
     private:
@@ -59,7 +61,7 @@ namespace Caracal
         void prettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement);
         void prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
         void prettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement);
-        void prettyPrintEnumFieldNode(EnumFieldNode* statement);
+        void prettyPrintEnumFieldDeclaration(EnumFieldDeclaration* statement);
     //    void PrettyPrintFieldDefinitionStatement(FieldDefinitionStatement* statement);
     //    void PrettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement);
         void prettyPrintIfStatement(IfStatement* statement);

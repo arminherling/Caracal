@@ -13,11 +13,7 @@ namespace Caracal
             const Token& keywordToken,
             const Token& semicolonToken);
 
-        BreakStatement(const BreakStatement&) = delete;
-        BreakStatement& operator=(const BreakStatement&) = delete;
-        
-        BreakStatement(BreakStatement&&) = default;
-        BreakStatement& operator=(BreakStatement&&) = default;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(BreakStatement)
 
         [[nodiscard]] const Token& keywordToken() const noexcept { return m_keywordToken; }
         [[nodiscard]] const Token& semicolonToken() const noexcept { return m_semicolonToken; }

@@ -17,6 +17,8 @@ namespace Caracal
             const Token& colonToken,
             TypeNameNodeUPtr&& typeName);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(ParameterNode)
+
         [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }
         [[nodiscard]] const Token& colonToken() const noexcept { return m_colonToken; }
         [[nodiscard]] const TypeNameNodeUPtr& typeName() const noexcept { return m_typeName; }

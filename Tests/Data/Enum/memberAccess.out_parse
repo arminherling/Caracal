@@ -3,12 +3,12 @@
         Name: Values
     }
     FieldNodes(2): {
-        EnumFieldNode: {
+        EnumFieldDeclaration: {
             NameExpression: {
                 Name: First
             }
         }
-        EnumFieldNode: {
+        EnumFieldDeclaration: {
             NameExpression: {
                 Name: Second
             }

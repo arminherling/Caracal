@@ -12,11 +12,7 @@ namespace Caracal
     public:
         CppBlockStatement(const Token& cppKeywordToken, const Token& openBracketToken, const std::vector<Token>& lines, const Token& closeBracketToken);
 
-        CppBlockStatement(const CppBlockStatement&) = delete;
-        CppBlockStatement& operator=(const CppBlockStatement&) = delete;
-
-        CppBlockStatement(CppBlockStatement&&) = default;
-        CppBlockStatement& operator=(CppBlockStatement&&) = default;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(CppBlockStatement)
 
         [[nodiscard]] Token cppKeyword() const noexcept { return m_cppKeywordToken; }
         [[nodiscard]] Token openBracket() const noexcept { return m_openBracketToken; }

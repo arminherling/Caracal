@@ -13,6 +13,7 @@ namespace Caracal
         ConstantDeclaration,
         VariableDeclaration,
         TypeFieldDeclaration,
+        EnumFieldDeclaration,
 
         CppBlockStatement,
         ExpressionStatement,
@@ -38,7 +39,6 @@ namespace Caracal
         StringLiteral,
 
         TypeNameNode,
-        EnumFieldNode,
         ParametersNode,
         ParameterNode,
         ReturnTypesNode,

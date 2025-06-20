@@ -15,11 +15,7 @@ namespace Caracal
             ExpressionUPtr&& condition,
             StatementUPtr&& trueStatement);
 
-        WhileStatement(const WhileStatement&) = delete;
-        WhileStatement(WhileStatement&&) = default;
-
-        WhileStatement& operator=(const WhileStatement&) = delete;
-        WhileStatement& operator=(WhileStatement&&) = default;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(WhileStatement)
 
         [[nodiscard]] const Token& whileKeyword() const noexcept { return m_whileKeyword; }
         [[nodiscard]] const ExpressionUPtr& condition() const noexcept { return m_condition; }
