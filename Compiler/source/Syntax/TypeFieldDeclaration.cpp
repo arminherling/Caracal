@@ -7,7 +7,7 @@ namespace Caracal {
         const Token& secondToken,
         ExpressionUPtr&& rightExpression,
         bool isConstant)
-        : Statement(NodeKind::TypeFieldDeclaration, Type::Undefined())
+        : Statement(NodeKind::TypeFieldDeclaration, rightExpression->type())
         , m_nameExpression{ std::move(nameExpression) }
         , m_firstColonToken{ firstColonToken }
         , m_secondToken{ secondToken }

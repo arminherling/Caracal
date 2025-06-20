@@ -358,7 +358,7 @@ namespace Caracal
 
     void CppCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node) noexcept
     {
-        const auto type = node->rightExpression()->type();
+        const auto type = node->type();
         const auto include = GetCppIncludeForType(type);
         if (include.has_value())
         {
