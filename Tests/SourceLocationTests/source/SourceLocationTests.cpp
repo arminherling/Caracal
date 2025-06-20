@@ -9,7 +9,7 @@
 
 namespace 
 {
-    void SingleSourceLocation(const QString& testName, const Caracal::SourceTextSharedPtr& input, const Caracal::SourceLocation& expectedLocation)
+    void SingleSourceLocation(const QString& /*testName*/, const Caracal::SourceTextSharedPtr& input, const Caracal::SourceLocation& expectedLocation)
     {
         Caracal::DiagnosticsBag diagnostics;
 

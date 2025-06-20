@@ -696,12 +696,12 @@ namespace Caracal
         }
     }
 
-    void CppCodeGenerator::generateBreakStatement(BreakStatement* node) noexcept
+    void CppCodeGenerator::generateBreakStatement(BreakStatement* /*node*/) noexcept
     {
         stream() << indentation() << "break;" << newLine();
     }
 
-    void CppCodeGenerator::generateSkipStatement(SkipStatement* node) noexcept
+    void CppCodeGenerator::generateSkipStatement(SkipStatement* /*node*/) noexcept
     {
         stream() << indentation() << "continue;" << newLine();
     }

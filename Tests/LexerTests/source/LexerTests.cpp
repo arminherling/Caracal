@@ -10,7 +10,7 @@
 
 namespace
 {
-    void ExpectedTokenKind(const QString& testName, const QString& input, TokenKind expectedKind)
+    void ExpectedTokenKind(const QString& /*testName*/, const QString& input, TokenKind expectedKind)
     {
         auto startTime = std::chrono::high_resolution_clock::now();
 

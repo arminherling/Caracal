@@ -468,7 +468,7 @@ namespace Caracal
         stream() << indentation() << QString("}") << newLine();
     }
 
-    void ParseTreePrinter::prettyPrintDiscardLiteral(DiscardLiteral* discard)
+    void ParseTreePrinter::prettyPrintDiscardLiteral(DiscardLiteral* /*discard*/)
     {
         stream() << indentation() << QString("Discard: _") << newLine();
     }

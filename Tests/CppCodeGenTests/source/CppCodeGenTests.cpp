@@ -10,7 +10,7 @@
 
 namespace
 {
-    void FileTests(const QString& fileName, const QString& inputFilePath, const QString& outputFilePath, const QString& errorFilePath)
+    void FileTests(const QString& /*fileName*/, const QString& inputFilePath, const QString& outputFilePath, const QString& /*errorFilePath*/)
     {
         if (!QFile::exists(inputFilePath))
             AalTest::Fail();// ("In file missing");
