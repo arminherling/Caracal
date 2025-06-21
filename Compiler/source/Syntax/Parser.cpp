@@ -271,6 +271,7 @@ namespace Caracal
     StatementUPtr Parser::parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression)
     {
         auto firstColon = advanceOnMatch(TokenKind::Colon);
+
         std::optional<TypeNameNodeUPtr> explicitType;
         auto currentTokenKind = currentToken().kind;
         if (currentTokenKind != TokenKind::Colon && currentTokenKind != TokenKind::Equal)
@@ -376,12 +377,29 @@ namespace Caracal
         // the left expression is always a NameExpression
         auto nameExpression = std::unique_ptr<NameExpression>(static_cast<NameExpression*>(leftExpression.release()));
         auto firstColon = advanceOnMatch(TokenKind::Colon);
-        auto secondToken = currentToken();
-        advanceCurrentIndex();
-        auto rightExpression = parseExpression();
-        auto isConstant = secondToken.kind == TokenKind::Colon;
+        
+        std::optional<TypeNameNodeUPtr> explicitType;
+        auto currentTokenKind = currentToken().kind;
+        if (currentTokenKind != TokenKind::Colon && currentTokenKind != TokenKind::Equal)
+        {
+            explicitType = parseTypeNameNode();
+        }
 
-        return std::make_unique<TypeFieldDeclaration>(std::move(nameExpression), firstColon, secondToken, std::move(rightExpression), isConstant);
+        auto secondToken = tryMatchKind(TokenKind::Colon);
+        if (!secondToken.has_value())
+        {
+            secondToken = tryMatchKind(TokenKind::Equal);
+        }
+
+        std::optional<ExpressionUPtr> rightExpression;
+        if (secondToken.has_value())
+        {
+            rightExpression = parseExpression();
+        }
+
+        auto isConstant = secondToken.has_value() && secondToken.value().kind == TokenKind::Colon;
+
+        return std::make_unique<TypeFieldDeclaration>(std::move(nameExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), isConstant);
     }
     
     BlockNodeUPtr Parser::parseFunctionBody()

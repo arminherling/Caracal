@@ -447,16 +447,43 @@ namespace Caracal
 
     void CppCodeGenerator::generateTypeFieldDeclaration(TypeFieldDeclaration* node) noexcept
     {
-        const auto typeName = GetCppNameForType(node->rightExpression()->type());
         stream() << "public:" << newLine() << indentation();
+
         if(node->isConstant())
         {
             stream() << "const ";
         }
-        stream() << typeName << " ";
+
+        if (node->explicitType().has_value())
+        {
+            const auto typeNameNode = node->explicitType().value().get();
+            const auto typeName = getCppNameForType(typeNameNode);
+            const auto include = GetCppIncludeForType(typeNameNode->type());
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+            stream() << typeName;
+        }
+        else
+        {
+            const auto type = node->type();
+            const auto typeName = GetCppNameForType(node->type());
+            const auto include = GetCppIncludeForType(type);
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+            stream() << typeName;
+        }
+        stream() << " ";
         generateNameExpression(node->nameExpression().get());
-        stream() << " = ";
-        generateNode(node->rightExpression().get());
+
+        if (node->rightExpression().has_value())
+        {
+            stream() << " = ";
+            generateNode(node->rightExpression().value().get());
+        }
         stream() << ";" << newLine();
     }
 

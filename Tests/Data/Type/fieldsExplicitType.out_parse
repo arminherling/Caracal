@@ -1,0 +1,53 @@
+﻿TypeDefinitionStatement: {
+    NameExpression: {
+        Name: Fields
+    }
+    BlockNode(3): {
+        TypeFieldDeclaration: {
+            IsConstant: true
+            Left: {
+                NameExpression: {
+                    Name: x
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: i32
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Name: y
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: i32
+                }
+            }
+            Right: {
+                NumberLiteral: 10
+            }
+        }
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Name: z
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: i32
+                }
+            }
+            Right: null
+        }
+    }
+}

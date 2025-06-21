@@ -1,6 +1,6 @@
-type Vector2D
+type Fields
 {
     x:i32 : 0
     y:i32 = 10
-    y:i32
+    z:i32
 }
