@@ -178,7 +178,11 @@ namespace Caracal
                 const auto isDiscard = declaration->leftExpression()->kind() == NodeKind::DiscardLiteral;
                 if (isDiscard)
                 {
-                    generateLocalDiscardedExpression(declaration->rightExpression().get());
+                    if (!declaration->rightExpression().has_value())
+                    {
+                        TODO("Variable declaration with discard literal and no right expression shouldnt get here");
+                    }
+                    generateLocalDiscardedExpression(declaration->rightExpression().value().get());
                     return;
                 }
                 else
@@ -358,13 +362,27 @@ namespace Caracal
 
     void CppCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node) noexcept
     {
-        const auto type = node->type();
-        const auto include = GetCppIncludeForType(type);
-        if (include.has_value())
+        if (node->explicitType().has_value())
         {
-            m_cppIncludes.append(include.value() % newLine());
+            const auto typeNameNode = node->explicitType().value().get();
+            const auto typeName = getCppNameForType(typeNameNode);
+            const auto include = GetCppIncludeForType(typeNameNode->type());
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+            stream() << indentation() << "const " << typeName;
         }
-        stream() << indentation() << "const auto";
+        else
+        {
+            const auto type = node->type();
+            const auto include = GetCppIncludeForType(type);
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+            stream() << indentation() << "const auto";
+        }
 
         // check if right expression is a ref
         if (node->rightExpression()->kind() == NodeKind::UnaryExpression)
@@ -385,18 +403,32 @@ namespace Caracal
 
     void CppCodeGenerator::generateVariableDeclaration(VariableDeclaration* node) noexcept
     {
-        const auto type = node->rightExpression()->type();
-        const auto include = GetCppIncludeForType(type);
-        if (include.has_value())
+        if (node->explicitType().has_value())
         {
-            m_cppIncludes.append(include.value() % newLine());
+            const auto typeNameNode = node->explicitType().value().get();
+            const auto typeName = getCppNameForType(typeNameNode);
+            const auto include = GetCppIncludeForType(typeNameNode->type());
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+            stream() << indentation() << typeName;
         }
-        stream() << indentation() << "auto";
+        else
+        {
+            const auto type = node->type();
+            const auto include = GetCppIncludeForType(type);
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+            stream() << indentation() << "auto";
+        }
 
         // check if right expression is a ref
-        if (node->rightExpression()->kind() == NodeKind::UnaryExpression)
+        if (node->rightExpression().has_value() && node->rightExpression().value()->kind() == NodeKind::UnaryExpression)
         {
-            const auto unaryExpression = (UnaryExpression*)node->rightExpression().get();
+            const auto unaryExpression = (UnaryExpression*)node->rightExpression().value().get();
             if (unaryExpression->unaryOperator() == UnaryOperatorKind::ReferenceOf)
             {
                 stream() << StringifyUnaryOperator(UnaryOperatorKind::ReferenceOf);
@@ -405,8 +437,11 @@ namespace Caracal
         stream() << " ";
 
         generateNode(node->leftExpression().get());
-        stream() << " = ";
-        generateNode(node->rightExpression().get());
+        if (node->rightExpression().has_value())
+        {
+            stream() << " = ";
+            generateNode(node->rightExpression().value().get());
+        }
         stream() << ";" << newLine();
     }
 

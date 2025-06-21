@@ -167,6 +167,15 @@ namespace Caracal
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
 
+        if (statement->explicitType().has_value())
+        {
+            stream() << indentation() << QString("ExplicitType: {") << newLine();
+            pushIndentation();
+            prettyPrintNode(statement->explicitType().value().get());
+            popIndentation();
+            stream() << indentation() << QString("}") << newLine();
+        }
+
         stream() << indentation() << QString("Right: {") << newLine();
         pushIndentation();
         prettyPrintNode(statement->rightExpression().get());
@@ -187,12 +196,28 @@ namespace Caracal
         prettyPrintNode(statement->leftExpression().get());
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
+        
+        if (statement->explicitType().has_value())
+        {
+            stream() << indentation() << QString("ExplicitType: {") << newLine();
+            pushIndentation();
+            prettyPrintNode(statement->explicitType().value().get());
+            popIndentation();
+            stream() << indentation() << QString("}") << newLine();
+        }
 
-        stream() << indentation() << QString("Right: {") << newLine();
-        pushIndentation();
-        prettyPrintNode(statement->rightExpression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        if(statement->rightExpression().has_value())
+        {
+            stream() << indentation() << QString("Right: {") << newLine();
+            pushIndentation();
+            prettyPrintNode(statement->rightExpression().value().get());
+            popIndentation();
+            stream() << indentation() << QString("}") << newLine();
+        }
+        else
+        {
+            stream() << indentation() << QString("Right: null") << newLine();
+        }
      
         popIndentation();
         stream() << indentation() << QString("}") << newLine();

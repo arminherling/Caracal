@@ -1,0 +1,7 @@
+﻿int main();
+
+int main()
+{
+    bool isMain = true;
+}
+

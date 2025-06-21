@@ -184,30 +184,17 @@ namespace Caracal
             case TokenKind::Identifier:
             {
                 auto expression = parsePrimaryExpression();
-                if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Colon)
+                if (currentToken().kind == TokenKind::Colon)
                 {
                     if (scope == StatementScope::Global || scope == StatementScope::Function)
                     {
-                        return parseConstantDeclaration(std::move(expression));
+                        return parseConstantOrVariableDeclaration(std::move(expression));
                     }
-                    else if(expression->kind() == NodeKind::NameExpression && scope == StatementScope::Type)
+                    else if(scope == StatementScope::Type && expression->kind() == NodeKind::NameExpression)
                     {
                         return parseTypeFieldDeclaration(std::move(expression));
                     }
-                    TODO("Emit an error");
-                    break;
-                }
-                if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Equal)
-                {
-                    if (scope == StatementScope::Function)
-                    {
-                        return parseVariableDeclaration(std::move(expression));
-                    }
-                    else if (expression->kind() == NodeKind::NameExpression && scope == StatementScope::Type)
-                    {
-                        return parseTypeFieldDeclaration(std::move(expression));
-                    }
-                    TODO("Variable declaration in other scopes");
+                    TODO("Constant or variable declaration in other scopes");
                     break;
                 }
                 if (expression->kind() == NodeKind::FunctionCallExpression)
@@ -281,24 +268,37 @@ namespace Caracal
         return std::make_unique<FunctionDefinitionStatement>(keyword, std::move(nameExpression), std::move(parameters), std::move(returnTypes), std::move(body));
     }
 
-    StatementUPtr Parser::parseConstantDeclaration(ExpressionUPtr&& leftExpression)
+    StatementUPtr Parser::parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression)
     {
         auto firstColon = advanceOnMatch(TokenKind::Colon);
-        auto secondColon = advanceOnMatch(TokenKind::Colon);
-        auto rightExpression = parseExpression();
+        std::optional<TypeNameNodeUPtr> explicitType;
+        auto currentTokenKind = currentToken().kind;
+        if (currentTokenKind != TokenKind::Colon && currentTokenKind != TokenKind::Equal)
+        {
+            explicitType = parseTypeNameNode();
+        }
+        
+        auto secondToken = tryMatchKind(TokenKind::Colon);
+        if(!secondToken.has_value())
+        {
+            secondToken = advanceOnMatch(TokenKind::Equal);
+        }
+
+        std::optional<ExpressionUPtr> rightExpression;
+        if (secondToken.has_value())
+        {
+            rightExpression = parseExpression();
+        }
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
-        return std::make_unique<ConstantDeclaration>(std::move(leftExpression), firstColon, secondColon, std::move(rightExpression), semicolon);
-    }
-
-    StatementUPtr Parser::parseVariableDeclaration(ExpressionUPtr&& leftExpression)
-    {
-        auto colon = advanceOnMatch(TokenKind::Colon);
-        auto equal = advanceOnMatch(TokenKind::Equal);
-        auto rightExpression = parseExpression();
-        auto semicolon = advanceOnMatch(TokenKind::Semicolon);
-
-        return std::make_unique<VariableDeclaration>(std::move(leftExpression), colon, equal, std::move(rightExpression), semicolon);
+        if (secondToken.has_value() && secondToken.value().kind == TokenKind::Colon)
+        {
+            return std::make_unique<ConstantDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken.value(), std::move(rightExpression.value()), semicolon);
+        }
+        else
+        {
+            return std::make_unique<VariableDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), semicolon);
+        }
     }
 
     StatementUPtr Parser::parseAssignmentStatement(ExpressionUPtr&& leftExpression)

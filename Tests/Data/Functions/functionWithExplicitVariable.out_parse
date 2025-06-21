@@ -1,0 +1,26 @@
+﻿FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: main
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        VariableDeclaration: {
+            Left: {
+                NameExpression: {
+                    Name: isMain
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: bool
+                }
+            }
+            Right: {
+                BoolLiteral: true
+            }
+        }
+    }
+}

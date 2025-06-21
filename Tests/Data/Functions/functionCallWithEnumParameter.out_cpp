@@ -1,0 +1,19 @@
+﻿enum class Values : unsigned char;
+void inner(Values x);
+void outer();
+
+enum class Values : unsigned char
+{
+    First,
+    Second,
+};
+
+void inner(Values x)
+{
+}
+
+void outer()
+{
+    inner(Values::First);
+}
+

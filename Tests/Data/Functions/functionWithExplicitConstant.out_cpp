@@ -1,0 +1,7 @@
+﻿int main();
+
+int main()
+{
+    const bool isMain = true;
+}
+

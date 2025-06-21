@@ -1,0 +1,15 @@
+﻿ConstantDeclaration: {
+    Left: {
+        NameExpression: {
+            Name: a
+        }
+    }
+    ExplicitType: {
+        TypeNameNode: {
+            Type: bool
+        }
+    }
+    Right: {
+        BoolLiteral: true
+    }
+}

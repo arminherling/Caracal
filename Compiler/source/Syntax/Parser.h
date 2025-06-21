@@ -41,8 +41,7 @@ namespace Caracal
         StatementUPtr parseExpressionStatement(ExpressionUPtr&& expression);
         //Statement* parseAssignmentStatement();
         StatementUPtr parseFunctionDefinitionStatement();
-        StatementUPtr parseConstantDeclaration(ExpressionUPtr&& leftExpression);
-        StatementUPtr parseVariableDeclaration(ExpressionUPtr&& leftExpression);
+        StatementUPtr parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression);
         StatementUPtr parseAssignmentStatement(ExpressionUPtr&& leftExpression);
         StatementUPtr parseEnumDefinitionStatement();
         std::vector<EnumFieldDeclarationUPtr> parseEnumFields();
