@@ -2,7 +2,6 @@ type Zero
 {
     def value()
     {
-        zero = 0
-        return zero
+        return 0;
     }
 }

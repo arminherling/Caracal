@@ -1,0 +1,7 @@
+type Zero
+{
+    def _value()
+    {
+        return 0;
+    }
+}

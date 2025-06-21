@@ -10,5 +10,5 @@ def inner(x: Values)
 
 def outer()
 {
-    inner(Values::First)
+    inner(Values.First);
 }

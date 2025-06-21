@@ -1,9 +1,0 @@
-AssignmentStatement: {
-    Left: {
-        NameExpression: a
-    }
-    Right: {
-        NumberLiteral: 0
-        TypeName: i32
-    }
-}
