@@ -549,7 +549,13 @@ namespace Caracal
             case TokenKind::Number:
             {
                 advanceCurrentIndex();
-                return std::make_unique<NumberLiteral>(current);
+                auto uptick = tryMatchKind(TokenKind::Uptick);
+                std::optional<TypeNameNodeUPtr> explicitType;
+                if (uptick.has_value())
+                {
+                    explicitType = parseTypeNameNode();
+                }
+                return std::make_unique<NumberLiteral>(current, uptick, std::move(explicitType));
             }
             case TokenKind::String:
             {

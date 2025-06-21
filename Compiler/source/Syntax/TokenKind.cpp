@@ -6,14 +6,18 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
     static const std::unordered_map<TokenKind, QString> kindToString{
         { TokenKind::Unknown,           QStringLiteral("Unknown") },
         { TokenKind::Error,             QStringLiteral("Error") },
+
         { TokenKind::Plus,              QStringLiteral("Plus") },
         { TokenKind::Minus,             QStringLiteral("Minus") },
         { TokenKind::Star,              QStringLiteral("Star") },
         { TokenKind::Slash,             QStringLiteral("Slash") },
         { TokenKind::Dot,               QStringLiteral("Dot") },
+        { TokenKind::Comma,             QStringLiteral("Comma") },
         { TokenKind::Colon,             QStringLiteral("Colon") },
         { TokenKind::Semicolon,         QStringLiteral("Semicolon") },
-        { TokenKind::Comma,             QStringLiteral("Comma") },
+        { TokenKind::Underscore,        QStringLiteral("Underscore") },
+        { TokenKind::Uptick,            QStringLiteral("Uptick") },
+
         { TokenKind::Equal,             QStringLiteral("Equal") },
         { TokenKind::EqualEqual,        QStringLiteral("EqualEqual") },
         { TokenKind::Bang,              QStringLiteral("Bang") },
@@ -24,14 +28,16 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
         { TokenKind::GreaterThanEqual,  QStringLiteral("GreaterThanEqual") },
         { TokenKind::LessThan,          QStringLiteral("LessThan") },
         { TokenKind::GreaterThan,       QStringLiteral("GreaterThan") },
-        { TokenKind::Underscore,        QStringLiteral("Underscore") },
+
         { TokenKind::OpenParenthesis,   QStringLiteral("OpenParenthesis") },
         { TokenKind::CloseParenthesis,  QStringLiteral("CloseParenthesis") },
         { TokenKind::OpenBracket,       QStringLiteral("OpenBracket") },
         { TokenKind::CloseBracket,      QStringLiteral("CloseBracket") },
+
         { TokenKind::Identifier,        QStringLiteral("Identifier") },
         { TokenKind::Number,            QStringLiteral("Number") },
         { TokenKind::String,            QStringLiteral("String") },
+
         { TokenKind::DefKeyword,        QStringLiteral("DefKeyword") },
         { TokenKind::EnumKeyword,       QStringLiteral("EnumKeyword") },
         { TokenKind::TypeKeyword,       QStringLiteral("TypeKeyword") },
@@ -47,6 +53,7 @@ QString Stringify(TokenKind kind, bool /*quoteStrings*/)
         { TokenKind::OrKeyword,         QStringLiteral("OrKeyword") },
         { TokenKind::RefKeyword,        QStringLiteral("RefKeyword") },
         { TokenKind::CppKeyword,        QStringLiteral("CppKeyword") },
+
         { TokenKind::EndOfFile,         QStringLiteral("EndOfFile") },
     };
 

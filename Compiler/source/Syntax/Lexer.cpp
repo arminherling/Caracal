@@ -260,6 +260,11 @@ namespace Caracal
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Semicolon);
                     break;
                 }
+                case u'\'':
+                {
+                    AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Uptick);
+                    break;
+                }
                 case u',':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Comma);

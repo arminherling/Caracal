@@ -19,6 +19,7 @@ enum class COMPILER_API TokenKind
     Colon,
     Semicolon,
     Underscore,
+    Uptick,
 
     Equal,
     EqualEqual,

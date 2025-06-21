@@ -1,6 +1,7 @@
 #include "TypeFieldDeclaration.h"
 
-namespace Caracal {
+namespace Caracal 
+{
     TypeFieldDeclaration::TypeFieldDeclaration(
         NameExpressionUPtr&& nameExpression,
         const Token& firstColonToken,

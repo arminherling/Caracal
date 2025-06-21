@@ -2,7 +2,7 @@
 
 int main()
 {
-    const auto a = true;
+    const bool a = true;
     const auto& b = a;
 }
 

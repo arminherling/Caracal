@@ -1,0 +1,13 @@
+﻿ConstantDeclaration: {
+    Left: {
+        NameExpression: {
+            Name: a
+        }
+    }
+    Right: {
+        NumberLiteral: 0
+        TypeNameNode: {
+            Type: i32
+        }
+    }
+}

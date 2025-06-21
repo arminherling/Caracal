@@ -51,7 +51,6 @@ namespace Caracal
         if (const auto result = cppTypeNames.find(type); result != cppTypeNames.end())
             return result->second;
 
-        TODO("Type not found in GetCppNameForType");
         return QStringView(u"");
     }
 
@@ -376,12 +375,21 @@ namespace Caracal
         else
         {
             const auto type = node->type();
+            const auto cppTypeName = GetCppNameForType(type);
             const auto include = GetCppIncludeForType(type);
             if (include.has_value())
             {
                 m_cppIncludes.append(include.value() % newLine());
             }
-            stream() << indentation() << "const auto";
+
+            if(cppTypeName.isEmpty())
+            {
+                stream() << indentation() << "const auto";
+            }
+            else
+            {
+                stream() << indentation() << "const " << cppTypeName;
+            }
         }
 
         // check if right expression is a ref

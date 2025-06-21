@@ -524,6 +524,10 @@ namespace Caracal
     {
         const auto lexeme = m_parseTree.tokens().getLexeme(number->literalToken());
         stream() << indentation() << stringify(number->kind()) << QString(": %1").arg(lexeme) << newLine();
+        if(number->explicitType().has_value())
+        {
+            prettyPrintTypeNameNode(number->explicitType().value().get());
+        }
     }
 
     void ParseTreePrinter::prettyPrintStringLiteral(StringLiteral* string)
