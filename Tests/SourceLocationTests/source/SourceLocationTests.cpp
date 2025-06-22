@@ -1,4 +1,4 @@
-#include <AalTest.h>
+#include <CaraTest.h>
 #include <iostream>
 #include <Syntax/Lexer.h>
 #include <Syntax/Token.h>
@@ -18,11 +18,11 @@ namespace
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto& location = tokens.getSourceLocation(token);
-        AalTest::AreEqual(location.startIndex, expectedLocation.startIndex);
-        AalTest::AreEqual(location.endIndex, expectedLocation.endIndex);
+        CaraTest::AreEqual(location.startIndex, expectedLocation.startIndex);
+        CaraTest::AreEqual(location.endIndex, expectedLocation.endIndex);
     }
 
     QList<std::tuple<QString, Caracal::SourceTextSharedPtr, Caracal::SourceLocation>> SingleSourceLocation_Data()
@@ -95,22 +95,22 @@ namespace
         auto tokens = Caracal::lex(input, diagnostics);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
-        AalTest::AreEqual(tokens.size(), expectedList.size());
+        CaraTest::AreEqual(tokens.size(), expectedList.size());
         for (auto i = 0; i < tokens.size(); i++)
         {
             auto& location = tokens.getSourceLocation(tokens.getToken(i));
 
-            AalTest::AreEqual(location.startIndex, expectedList[i].startIndex);
-            AalTest::AreEqual(location.endIndex, expectedList[i].endIndex);
+            CaraTest::AreEqual(location.startIndex, expectedList[i].startIndex);
+            CaraTest::AreEqual(location.endIndex, expectedList[i].endIndex);
         }
     }
 }
 
-AalTest::TestSuite SourceLocationTests()
+CaraTest::TestSuite SourceLocationTests()
 {
-    AalTest::TestSuite suite{};
+    CaraTest::TestSuite suite{};
 
     suite.add(QString("SingleSourceLocation"), SingleSourceLocation, SingleSourceLocation_Data);
     suite.add(QString("MultipleSourceLocations"), MultipleSourceLocations);

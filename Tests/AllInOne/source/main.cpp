@@ -1,4 +1,4 @@
-#include <AalTest.h>
+#include <CaraTest.h>
 #include "../../CppCodeGenTests/source/CppCodeGenTests.h"
 #include "../../LexerTests/source/LexerTests.h"
 #include "../../ParserTests/source/ParserTests.h"
@@ -6,10 +6,10 @@
 #include "../../SourceLocationTests/source/SourceLocationTests.h"
 #include "../../VirtualMachineTests/source/VirtualMachineTests.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-    AalTest::TestRunner runner{};
-    QList<AalTest::TestSuite> testSuites{};
+    CaraTest::TestRunner runner{ argc, argv };
+    QList<CaraTest::TestSuite> testSuites{};
     testSuites << LexerTestsSuite();
     testSuites << ParserTestsSuite();
     testSuites << TypeCheckerTestsSuite();

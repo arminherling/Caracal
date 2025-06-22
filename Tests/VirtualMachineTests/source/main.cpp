@@ -1,12 +1,10 @@
-#include <AalTest.h>
+#include <CaraTest.h>
 #include "VirtualMachineTests.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-    AalTest::TestRunner runner{};
+    CaraTest::TestRunner runner{ argc, argv };
     auto testSuites = VirtualMachineTests();
 
-    runner.run(testSuites);
-
-    return 0;
+    return runner.run(testSuites);
 }

@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 qt_standard_project_setup()
 
-include(CMake/AalTest.cmake)
+include(CMake/CaraTest.cmake)
 
 add_subdirectory(Compiler)
 add_subdirectory(Driver)

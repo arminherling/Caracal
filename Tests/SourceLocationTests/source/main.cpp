@@ -1,12 +1,10 @@
-#include <AalTest.h>
+#include <CaraTest.h>
 #include "SourceLocationTests.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-    AalTest::TestRunner runner{};
+    CaraTest::TestRunner runner{ argc, argv };
     auto testSuite = SourceLocationTests();
 
-    runner.run(testSuite);
-
-    return 0;
+    return runner.run(testSuite);
 }

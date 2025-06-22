@@ -58,6 +58,6 @@ enum class COMPILER_API TokenKind
     EndOfFile
 };
 
-[[nodiscard]] COMPILER_API QString Stringify(TokenKind kind, bool quoteStrings = false);
+[[nodiscard]] COMPILER_API QString Stringify(TokenKind kind);
 [[nodiscard]] COMPILER_API i32 unaryOperatorPrecedence(TokenKind kind);
 [[nodiscard]] COMPILER_API i32 binaryOperatorPrecedence(TokenKind kind);

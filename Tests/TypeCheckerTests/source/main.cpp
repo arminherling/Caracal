@@ -1,12 +1,10 @@
-#include <AalTest.h>
+#include <CaraTest.h>
 #include "TypeCheckerTests.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-    AalTest::TestRunner runner{};
+    CaraTest::TestRunner runner{ argc, argv };
     auto testSuites = TypeCheckerTestsSuite();
 
-    runner.run(testSuites);
-
-    return 0;
+    return runner.run(testSuites);
 }

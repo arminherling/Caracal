@@ -1,5 +1,5 @@
 #include "TypeCheckerTests.h"
-#include <AalTest.h>
+#include <CaraTest.h>
 #include <Compiler/DiagnosticsBag.h>
 #include <Compiler/File.h>
 #include <Debug/TypedTreePrinter.h>
@@ -11,18 +11,18 @@
 #include <Syntax/Lexer.h>
 #include <Syntax/Parser.h>
 
-using namespace AalTest;
+using namespace CaraTest;
 
 namespace
 {
     void FileTests(const QString& fileName, const QString& inputFilePath, const QString& outputFilePath, const QString& errorFilePath)
     {
-        AalTest::Skip();
+        CaraTest::Skip();
 
         //if (!QFile::exists(inputFilePath))
-        //    AalTest::Fail();// ("In file missing");
+        //    CaraTest::Fail();// ("In file missing");
         //if (!QFile::exists(outputFilePath))
-        //    AalTest::Skip();// ("Out file missing");
+        //    CaraTest::Skip();// ("Out file missing");
 
         //auto input = File::ReadAllText(inputFilePath);
         //auto source = std::make_shared<SourceText>(input);
@@ -47,7 +47,7 @@ namespace
         //auto output = printer.PrettyPrint();
         //auto expectedOutput = File::ReadAllText(outputFilePath);
 
-        //AalTest::AreEqual(expectedOutput, output);
+        //CaraTest::AreEqual(expectedOutput, output);
         //if (!QFile::exists(errorFilePath))
         //{
         //    // TODO maybe split up errors and warnings
@@ -55,14 +55,14 @@ namespace
         //    {
         //        if (diagnostic.level == DiagnosticLevel::Error)
         //        {
-        //            AalTest::Fail();
+        //            CaraTest::Fail();
         //            break;
         //        }
         //    }
         //}
         //else
         //{
-        //    AalTest::Fail();// ("TODO compare errors with error file once we got some");
+        //    CaraTest::Fail();// ("TODO compare errors with error file once we got some");
         //}
     }
 
@@ -91,9 +91,9 @@ namespace
     }
 }
 
-AalTest::TestSuite TypeCheckerTestsSuite()
+CaraTest::TestSuite TypeCheckerTestsSuite()
 {
-    AalTest::TestSuite suite{};
+    CaraTest::TestSuite suite{};
 
     suite.add(QString("FileTests"), FileTests, FileTests_Data);
 

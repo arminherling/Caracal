@@ -1,7 +1,7 @@
 #include <Syntax/TokenKind.h>
 #include <unordered_map>
 
-QString Stringify(TokenKind kind, bool /*quoteStrings*/)
+QString Stringify(TokenKind kind)
 {
     static const std::unordered_map<TokenKind, QString> kindToString{
         { TokenKind::Unknown,           QStringLiteral("Unknown") },

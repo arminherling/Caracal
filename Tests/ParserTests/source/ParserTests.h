@@ -1,5 +1,5 @@
 #pragma once
 
-#include <AalTest/TestSuite.h>
+#include <CaraTest/TestSuite.h>
 
-AalTest::TestSuite ParserTestsSuite();
+CaraTest::TestSuite ParserTestsSuite();

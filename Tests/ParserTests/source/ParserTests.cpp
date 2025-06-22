@@ -1,5 +1,5 @@
 #include "ParserTests.h"
-#include <AalTest.h>
+#include <CaraTest.h>
 #include <Compiler/DiagnosticsBag.h>
 #include <Compiler/File.h>
 #include <Debug/ParseTreePrinter.h>
@@ -13,9 +13,9 @@ namespace
     void FileTests(const QString& fileName, const QString& inputFilePath, const QString& outputFilePath, const QString& errorFilePath)
     {
         if (!QFile::exists(inputFilePath))
-            AalTest::Fail();// ("In file missing");
+            CaraTest::Fail();// ("In file missing");
         if (!QFile::exists(outputFilePath))
-            AalTest::Skip();// ("Out file missing");
+            CaraTest::Skip();// ("Out file missing");
 
         auto input = Caracal::File::ReadAllText(inputFilePath);
         auto source = std::make_shared<Caracal::SourceText>(input);
@@ -27,13 +27,13 @@ namespace
         auto parseTree = Caracal::parse(tokens, diagnostics);
         auto endTime = std::chrono::high_resolution_clock::now();
 
-        std::cout << "      parse(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      parse(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
         Caracal::ParseTreePrinter printer{ parseTree };
         auto output = printer.prettyPrint();
 
-        AalTest::IsTrue(diagnostics.Diagnostics().empty());
-        AalTest::EqualsFile(output, QFileInfo(outputFilePath));
+        CaraTest::IsTrue(diagnostics.Diagnostics().empty());
+        CaraTest::EqualsFile(QFileInfo(outputFilePath), output);
     }
 
     QList<std::tuple<QString, QString, QString, QString>> FileTests_Data()
@@ -61,9 +61,9 @@ namespace
     }
 }
 
-AalTest::TestSuite ParserTestsSuite()
+CaraTest::TestSuite ParserTestsSuite()
 {
-    AalTest::TestSuite suite{};
+    CaraTest::TestSuite suite{};
 
     suite.add(QString("FileTests"), FileTests, FileTests_Data);
 

@@ -10,7 +10,7 @@ qt_add_executable(
     "${PROJECT_SOURCE_DIR}/../VirtualMachineTests/source/VirtualMachineTests.cpp"
     "source/main.cpp")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Compiler AalTest Qt6::Core)
+target_link_libraries(${PROJECT_NAME} PRIVATE Compiler CaraTest Qt6::Core)
 
 if (WIN32)
     add_custom_command(

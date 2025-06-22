@@ -1,4 +1,4 @@
-#include <AalTest.h>
+#include <CaraTest.h>
 
 #include <Syntax/Lexer.h>
 #include <Syntax/Token.h>
@@ -21,11 +21,11 @@ namespace
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
-        AalTest::AreEqual(expectedKind, token.kind);
+        CaraTest::AreEqual(expectedKind, token.kind);
         // expected token + eof token
-        AalTest::AreEqual(tokens.size(), 2);
+        CaraTest::AreEqual(tokens.size(), 2);
     }
 
     QList<std::tuple<QString, QString, TokenKind>> Symbols_Data()
@@ -93,9 +93,9 @@ namespace
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
-        AalTest::AreEqual(TokenKind::EndOfFile, token.kind);
+        CaraTest::AreEqual(TokenKind::EndOfFile, token.kind);
     }
 
     QList<std::tuple<QString>> IgnoresWhitespaces_Data()
@@ -123,11 +123,11 @@ namespace
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
-        AalTest::AreEqual(TokenKind::Identifier, token.kind);
+        CaraTest::AreEqual(TokenKind::Identifier, token.kind);
         auto lexeme = tokens.getLexeme(token);
-        AalTest::AreEqual(expectedLexeme, lexeme);
+        CaraTest::AreEqual(expectedLexeme, lexeme);
     }
 
     QList<std::tuple<QString, QString>> Identifiers_Data()
@@ -159,11 +159,11 @@ namespace
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
-        AalTest::AreEqual(TokenKind::Number, token.kind);
+        CaraTest::AreEqual(TokenKind::Number, token.kind);
         auto lexeme = tokens.getLexeme(token);
-        AalTest::AreEqual(expectedLexeme, lexeme);
+        CaraTest::AreEqual(expectedLexeme, lexeme);
     }
 
     QList<std::tuple<QString, QString>> Numbers_Data()
@@ -192,11 +192,11 @@ namespace
         auto& token = tokens.getToken(0);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
-        AalTest::AreEqual(TokenKind::String, token.kind);
+        CaraTest::AreEqual(TokenKind::String, token.kind);
         auto lexeme = tokens.getLexeme(token);
-        AalTest::AreEqual(expectedLexeme, lexeme);
+        CaraTest::AreEqual(expectedLexeme, lexeme);
     }
 
     QList<std::tuple<QString, QString>> Strings_Data()
@@ -235,14 +235,14 @@ namespace
         auto tokens = Caracal::lex(source, diagnostics);
         auto& token = tokens.getToken(0);
 
-        AalTest::IsTrue(!diagnostics.Diagnostics().empty());
+        CaraTest::IsTrue(!diagnostics.Diagnostics().empty());
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
-        AalTest::AreEqual(TokenKind::Error, token.kind);
+        CaraTest::AreEqual(TokenKind::Error, token.kind);
         auto lexeme = tokens.getLexeme(token);
-        AalTest::AreEqual(expectedLexeme, lexeme);
+        CaraTest::AreEqual(expectedLexeme, lexeme);
     }
 
     QList<std::tuple<QString, QString>> UnterminatedStrings_Data()
@@ -265,10 +265,10 @@ namespace
         auto tokens = Caracal::lex(source, diagnostics);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
 
-        AalTest::IsTrue(diagnostics.Diagnostics().empty());
-        AalTest::AreEqual(tokenCount, tokens.size());
+        CaraTest::IsTrue(diagnostics.Diagnostics().empty());
+        CaraTest::AreEqual(tokenCount, tokens.size());
     }
 
     QList<std::tuple<QString, i32>> WholeInput_Data()
@@ -287,13 +287,13 @@ namespace
     void OneMillionLinesTime()
     {
 #ifdef QT_DEBUG
-        AalTest::Skip();// ("");
+        CaraTest::Skip();// ("");
 #endif
         auto testFile = QDir::cleanPath(QString("../../Tests/LexerTests/data/oneMilLines.txt"));
 
         QFile file(testFile);
         if (!file.open(QFile::ReadOnly | QFile::Text))
-            AalTest::Fail();// ("Couldnt open file");
+            CaraTest::Fail();// ("Couldnt open file");
 
         QString data = file.readAll();
 
@@ -304,13 +304,13 @@ namespace
         auto tokens = Caracal::lex(source, diagnostics);
 
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << AalTest::Stringify(endTime - startTime).toStdString() << std::endl;
+        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
     }
 }
 
-AalTest::TestSuite LexerTestsSuite()
+CaraTest::TestSuite LexerTestsSuite()
 {
-    AalTest::TestSuite suite{};
+    CaraTest::TestSuite suite{};
     suite.add(QString("SingleCharacter"), ExpectedTokenKind, Symbols_Data);
     suite.add(QString("IgnoresWhitespaces"), IgnoresWhitespaces, IgnoresWhitespaces_Data);
     suite.add(QString("Identifiers"), Identifiers, Identifiers_Data);

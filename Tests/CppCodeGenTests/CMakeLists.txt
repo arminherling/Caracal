@@ -5,7 +5,7 @@ file(GLOB HEADERS CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/source/*.h")
 
 qt_add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Compiler AalTest Qt6::Core)
+target_link_libraries(${PROJECT_NAME} PRIVATE Compiler CaraTest Qt6::Core)
 
 if (WIN32)
     add_custom_command(

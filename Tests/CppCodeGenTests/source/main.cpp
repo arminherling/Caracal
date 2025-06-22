@@ -1,12 +1,10 @@
-#include <AalTest.h>
+#include <CaraTest.h>
 #include "CppCodeGenTests.h"
 
 int main(int argc, char* argv[])
 {
-    AalTest::TestRunner runner{ argc, argv };
+    CaraTest::TestRunner runner{ argc, argv };
     auto testSuites = CppCodeGenTestsSuite();
 
-    runner.run(testSuites);
-
-    return 0;
+    return runner.run(testSuites);
 }

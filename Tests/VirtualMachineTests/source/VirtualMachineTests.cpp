@@ -1,4 +1,4 @@
-#include <AalTest.h>
+#include <CaraTest.h>
 #include <Debug/ByteCodeDisassembler.h>
 #include <iostream>
 #include <VirtualMachine/ByteCode.h>
@@ -6,7 +6,7 @@
 #include <VirtualMachine/Register.h>
 #include <VirtualMachine/VM.h>
 
-using namespace AalTest;
+using namespace CaraTest;
 
 namespace
 {
@@ -25,8 +25,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(1);
-        AalTest::IsTrue(loadedValue.isBool());
-        AalTest::AreEqual(loadedValue.asBool(), value);
+        CaraTest::IsTrue(loadedValue.isBool());
+        CaraTest::AreEqual(loadedValue.asBool(), value);
     }
 
     QList<std::tuple<QString, bool>> LoadBool_Data()
@@ -53,8 +53,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isBool());
-        AalTest::AreEqual(loadedValue.asBool(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isBool());
+        CaraTest::AreEqual(loadedValue.asBool(), expectedResult);
     }
 
     QList<std::tuple<QString, bool, bool>> NotBool_Data()
@@ -82,8 +82,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isBool());
-        AalTest::AreEqual(loadedValue.asBool(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isBool());
+        CaraTest::AreEqual(loadedValue.asBool(), expectedResult);
     }
 
     QList<std::tuple<QString, bool, bool, bool>> EqualBool_Data()
@@ -112,8 +112,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isBool());
-        AalTest::AreEqual(loadedValue.asBool(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isBool());
+        CaraTest::AreEqual(loadedValue.asBool(), expectedResult);
     }
 
     QList<std::tuple<QString, bool, bool, bool>> NotEqualBool_Data()
@@ -140,8 +140,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(1);
-        AalTest::IsTrue(loadedValue.isInt32());
-        AalTest::AreEqual(loadedValue.asInt32(), value);
+        CaraTest::IsTrue(loadedValue.isInt32());
+        CaraTest::AreEqual(loadedValue.asInt32(), value);
     }
 
     QList<std::tuple<QString, i32>> LoadInt32_Data()
@@ -169,8 +169,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isInt32());
-        AalTest::AreEqual(loadedValue.asInt32(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isInt32());
+        CaraTest::AreEqual(loadedValue.asInt32(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32, i32>> AddInt32_Data()
@@ -198,8 +198,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isInt32());
-        AalTest::AreEqual(loadedValue.asInt32(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isInt32());
+        CaraTest::AreEqual(loadedValue.asInt32(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32, i32>> SubtractInt32_Data()
@@ -227,8 +227,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isInt32());
-        AalTest::AreEqual(loadedValue.asInt32(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isInt32());
+        CaraTest::AreEqual(loadedValue.asInt32(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32, i32>> MultiplyInt32_Data()
@@ -256,8 +256,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isInt32());
-        AalTest::AreEqual(loadedValue.asInt32(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isInt32());
+        CaraTest::AreEqual(loadedValue.asInt32(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32, i32>> DivideInt32_Data()
@@ -284,8 +284,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isInt32());
-        AalTest::AreEqual(loadedValue.asInt32(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isInt32());
+        CaraTest::AreEqual(loadedValue.asInt32(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32>> NegateIn32_Data()
@@ -314,8 +314,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isBool());
-        AalTest::AreEqual(loadedValue.asBool(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isBool());
+        CaraTest::AreEqual(loadedValue.asBool(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32, bool>> EqualInt32_Data()
@@ -343,8 +343,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isBool());
-        AalTest::AreEqual(loadedValue.asBool(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isBool());
+        CaraTest::AreEqual(loadedValue.asBool(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32, bool>> NotEqualInt32_Data()
@@ -372,8 +372,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isBool());
-        AalTest::AreEqual(loadedValue.asBool(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isBool());
+        CaraTest::AreEqual(loadedValue.asBool(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32, bool>> GreaterInt32_Data()
@@ -402,8 +402,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isBool());
-        AalTest::AreEqual(loadedValue.asBool(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isBool());
+        CaraTest::AreEqual(loadedValue.asBool(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32, bool>> GreaterOrEqualInt32_Data()
@@ -432,8 +432,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isBool());
-        AalTest::AreEqual(loadedValue.asBool(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isBool());
+        CaraTest::AreEqual(loadedValue.asBool(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32, bool>> LessInt32_Data()
@@ -462,8 +462,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isBool());
-        AalTest::AreEqual(loadedValue.asBool(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isBool());
+        CaraTest::AreEqual(loadedValue.asBool(), expectedResult);
     }
 
     QList<std::tuple<QString, i32, i32, bool>> LessOrEqualInt32_Data()
@@ -491,7 +491,7 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::AreEqual(loadedValue.asBool(), value);
+        CaraTest::AreEqual(loadedValue.asBool(), value);
     }
 
     QList<std::tuple<QString, bool>> MoveBool_Data()
@@ -518,7 +518,7 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::AreEqual(loadedValue.asInt32(), value);
+        CaraTest::AreEqual(loadedValue.asInt32(), value);
     }
 
     QList<std::tuple<QString, i32>> MoveInt32_Data()
@@ -549,8 +549,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isInt32());
-        AalTest::AreEqual(loadedValue.asInt32(), 10);
+        CaraTest::IsTrue(loadedValue.isInt32());
+        CaraTest::AreEqual(loadedValue.asInt32(), 10);
     }
 
     void JumpIfTrue(const QString& testName, bool condition, i32 expectedResult)
@@ -573,8 +573,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(1);
-        AalTest::IsTrue(loadedValue.isInt32());
-        AalTest::AreEqual(loadedValue.asInt32(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isInt32());
+        CaraTest::AreEqual(loadedValue.asInt32(), expectedResult);
     }
 
     QList<std::tuple<QString, bool, i32>> JumpIfTrue_Data()
@@ -605,8 +605,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(1);
-        AalTest::IsTrue(loadedValue.isInt32());
-        AalTest::AreEqual(loadedValue.asInt32(), expectedResult);
+        CaraTest::IsTrue(loadedValue.isInt32());
+        CaraTest::AreEqual(loadedValue.asInt32(), expectedResult);
     }
 
     QList<std::tuple<QString, bool, i32>> JumpIfFalse_Data()
@@ -712,8 +712,8 @@ namespace
         std::cout << "      run(): " << Stringify(endTime - startTime).toStdString() << std::endl;
 
         auto loadedValue = vm.getValue(0);
-        AalTest::IsTrue(loadedValue.isInt32());
-        AalTest::AreEqual(loadedValue.asInt32(), 10);
+        CaraTest::IsTrue(loadedValue.isInt32());
+        CaraTest::AreEqual(loadedValue.asInt32(), 10);
     }
 
     void FunctionDeclarationTest()
@@ -727,11 +727,11 @@ namespace
         assembler.declareFunction(functionName, returnValues, parameterValues);
 
         auto optDeclaration = code.getFunctionDeclaration(functionName);
-        AalTest::IsTrue(optDeclaration.has_value());
+        CaraTest::IsTrue(optDeclaration.has_value());
         auto declaration = optDeclaration.value();
-        AalTest::AreEqual(declaration.name, functionName);
-        AalTest::AreEqual(declaration.returnValues, returnValues);
-        AalTest::AreEqual(declaration.parameterValues, parameterValues);
+        CaraTest::AreEqual(declaration.name, functionName);
+        CaraTest::AreEqual(declaration.returnValues, returnValues);
+        CaraTest::AreEqual(declaration.parameterValues, parameterValues);
     }
 
     void FunctionCall()
@@ -822,9 +822,9 @@ namespace
     }
 }
 
-AalTest::TestSuite VirtualMachineTests()
+CaraTest::TestSuite VirtualMachineTests()
 {
-    AalTest::TestSuite suite{};
+    CaraTest::TestSuite suite{};
 
     suite.add(QString("LoadBool"), LoadBool, LoadBool_Data);
     suite.add(QString("NotBool"), NotBool, NotBool_Data);
