@@ -1,0 +1,22 @@
+﻿TypeDefinitionStatement: {
+    NameExpression: {
+        Name: Zero
+    }
+    BlockNode(1): {
+        MethodDefinitionStatement: {
+            Modifier: Public
+            NameExpression: {
+                Name: value
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    NumberLiteral: 0
+                }
+            }
+        }
+    }
+}

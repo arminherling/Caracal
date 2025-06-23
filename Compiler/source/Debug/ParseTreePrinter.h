@@ -19,7 +19,7 @@
 #include <Syntax/GroupingExpression.h>
 #include <Syntax/IfStatement.h>
 //#include <Syntax/MemberAccessExpression.h>
-//#include <Syntax/MethodDefinitionStatement.h>
+#include <Syntax/MethodDefinitionStatement.h>
 #include <Syntax/NameExpression.h>
 #include <Syntax/ParametersNode.h>
 #include <Syntax/ParseTree.h>
@@ -63,7 +63,7 @@ namespace Caracal
         void prettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement);
         void prettyPrintEnumFieldDeclaration(EnumFieldDeclaration* statement);
     //    void PrettyPrintFieldDefinitionStatement(FieldDefinitionStatement* statement);
-    //    void PrettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement);
+        void prettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement);
         void prettyPrintIfStatement(IfStatement* statement);
         void prettyPrintWhileStatement(WhileStatement* statement);
         void prettyPrintBreakStatement(BreakStatement* statement);

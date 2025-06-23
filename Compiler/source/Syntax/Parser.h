@@ -34,12 +34,10 @@ namespace Caracal
             Type
         };
 
-        //QList<Statement*> parseGlobalStatements();
         std::vector<StatementUPtr> parseStatements(StatementScope scope);
         StatementUPtr parseStatement(StatementScope scope);
         StatementUPtr parseCppBlock();
         StatementUPtr parseExpressionStatement(ExpressionUPtr&& expression);
-        //Statement* parseAssignmentStatement();
         StatementUPtr parseFunctionDefinitionStatement();
         StatementUPtr parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression);
         StatementUPtr parseAssignmentStatement(ExpressionUPtr&& leftExpression);
@@ -47,7 +45,7 @@ namespace Caracal
         std::vector<EnumFieldDeclarationUPtr> parseEnumFields();
         StatementUPtr parseTypeDefinitionStatement();
         StatementUPtr parseTypeFieldDeclaration(ExpressionUPtr&& leftExpression);
-        //Statement* parseMethodDefinitionStatement();
+        StatementUPtr parseMethodDefinitionStatement();
         StatementUPtr parseIfStatement(StatementScope scope);
         StatementUPtr parseWhileStatement(StatementScope scope);
         StatementUPtr parseBreakStatement();
@@ -66,11 +64,10 @@ namespace Caracal
         ArgumentsNodeUPtr parseArgumentsNode();
         BlockNodeUPtr parseFunctionBody();
         BlockNodeUPtr parseTypeBody();
-        //BlockNode* parseMethodBody();
+        BlockNodeUPtr parseMethodBody();
         BlockNodeUPtr parseBlockNode(StatementScope scope);
         ParameterNodeUPtr parseParameterNode();
         //NumberLiteral* parseNumberLiteral();
-        //EnumFieldDefinitionStatementUPtr parseEnumFieldDefinitionStatement();
 
         Token advanceOnMatch(TokenKind kind);
         //std::optional<BoolLiteral*> tryParseBoolLiteral();
@@ -85,9 +82,6 @@ namespace Caracal
         //i32 lineDistanceSinceLastToken();
         //bool tokenIsOnNextLine();
         //bool hasEmptyLineSinceLastToken();
-
-        //UnaryOperatornKind convertUnaryOperatorTokenKindToEnum(TokenKind kind) const;
-        //BinaryOperatornKind convertBinaryOperatorTokenKindToEnum(TokenKind kind) const;
 
         TokenBuffer m_tokens;
         DiagnosticsBag& m_diagnostics;

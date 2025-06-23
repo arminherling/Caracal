@@ -14,7 +14,7 @@
 #include <Syntax/EnumDefinitionStatement.h>
 #include <Syntax/TypeDefinitionStatement.h>
 #include <Syntax/TypeFieldDeclaration.h>
-//#include <Syntax/MethodDefinitionStatement.h>
+#include <Syntax/MethodDefinitionStatement.h>
 #include <Syntax/UnaryExpression.h>
 #include <Syntax/BinaryExpression.h>
 #include <Syntax/NameExpression.h>
@@ -91,7 +91,7 @@ namespace Caracal
         {
             case TokenKind::OpenBracket:
             {
-                if (scope == StatementScope::Function)
+                if (scope == StatementScope::Function || scope == StatementScope::Method)
                 {
                     return parseBlockNode(scope);
                 }
@@ -103,6 +103,10 @@ namespace Caracal
                 if (scope == StatementScope::Global)
                 {
                     return parseFunctionDefinitionStatement();
+                }
+                else if (scope == StatementScope::Type)
+                {
+                    return parseMethodDefinitionStatement();
                 }
                 TODO("Function definition in other scopes");
                 break;
@@ -127,7 +131,7 @@ namespace Caracal
             }
             case TokenKind::CppKeyword:
             {
-                if (scope == StatementScope::Global || scope == StatementScope::Function)
+                if (scope == StatementScope::Global || scope == StatementScope::Function || scope == StatementScope::Method)
                 {
                     return parseCppBlock();
                 }
@@ -136,7 +140,7 @@ namespace Caracal
             }
             case TokenKind::IfKeyword:
             {
-                if (scope == StatementScope::Function)
+                if (scope == StatementScope::Function || scope == StatementScope::Method)
                 {
                     return parseIfStatement(scope);
                 }
@@ -146,7 +150,7 @@ namespace Caracal
             }
             case TokenKind::WhileKeyword:
             {
-                if (scope == StatementScope::Function)
+                if (scope == StatementScope::Function || scope == StatementScope::Method)
                 {
                     return parseWhileStatement(scope);
                 }
@@ -155,7 +159,7 @@ namespace Caracal
             }
             case TokenKind::BreakKeyword:
             {
-                if (scope == StatementScope::Function)
+                if (scope == StatementScope::Function || scope == StatementScope::Method)
                 {
                     return parseBreakStatement();
                 }
@@ -164,7 +168,7 @@ namespace Caracal
             }
             case TokenKind::SkipKeyword:
             {
-                if (scope == StatementScope::Function)
+                if (scope == StatementScope::Function || scope == StatementScope::Method)
                 {
                     return parseSkipStatement();
                 }
@@ -173,7 +177,7 @@ namespace Caracal
             }
             case TokenKind::ReturnKeyword:
             {
-                if (scope == StatementScope::Function)
+                if (scope == StatementScope::Function || scope == StatementScope::Method)
                 {
                     return parseReturnStatement();
                 }
@@ -186,7 +190,7 @@ namespace Caracal
                 auto expression = parsePrimaryExpression();
                 if (currentToken().kind == TokenKind::Colon)
                 {
-                    if (scope == StatementScope::Global || scope == StatementScope::Function)
+                    if (scope == StatementScope::Global || scope == StatementScope::Function || scope == StatementScope::Method)
                     {
                         return parseConstantOrVariableDeclaration(std::move(expression));
                     }
@@ -199,7 +203,7 @@ namespace Caracal
                 }
                 if (expression->kind() == NodeKind::FunctionCallExpression)
                 {
-                    if (scope == StatementScope::Function)
+                    if (scope == StatementScope::Function || scope == StatementScope::Method)
                     {
                         return parseExpressionStatement(std::move(expression));
                     }
@@ -208,7 +212,7 @@ namespace Caracal
                 }
                 if (expression->kind() == NodeKind::NameExpression && currentToken().kind == TokenKind::Equal)
                 {
-                    if (scope == StatementScope::Function)
+                    if (scope == StatementScope::Function || scope == StatementScope::Method)
                     {
                         return parseAssignmentStatement(std::move(expression));
                         break;
@@ -401,6 +405,31 @@ namespace Caracal
 
         return std::make_unique<TypeFieldDeclaration>(std::move(nameExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), isConstant);
     }
+
+    StatementUPtr Parser::parseMethodDefinitionStatement()
+    {
+        auto keyword = advanceOnMatch(TokenKind::DefKeyword);
+        auto nameExpression = parseNameExpression();
+        auto parameters = parseParametersNode();
+        auto returnTypes = parseReturnTypesNode();
+        auto body = parseMethodBody();
+        auto modifier = MethodModifier::Public;
+
+        const auto& nameToken = nameExpression->nameToken();
+        const auto nameLexeme = m_tokens.getLexeme(nameToken);
+        if(nameLexeme.startsWith('_'))
+        {
+            modifier = MethodModifier::Private;
+        }
+
+        return std::make_unique<MethodDefinitionStatement>(
+            keyword, 
+            std::move(nameExpression), 
+            std::move(parameters), 
+            std::move(returnTypes), 
+            std::move(body), 
+            modifier);
+    }
     
     BlockNodeUPtr Parser::parseFunctionBody()
     {
@@ -410,6 +439,11 @@ namespace Caracal
     BlockNodeUPtr Parser::parseTypeBody()
     {
         return parseBlockNode(StatementScope::Type);
+    }
+
+    BlockNodeUPtr Parser::parseMethodBody()
+    {
+        return parseBlockNode(StatementScope::Method);
     }
 
     BlockNodeUPtr Parser::parseBlockNode(StatementScope scope)
@@ -730,17 +764,6 @@ namespace Caracal
     }
 }
 
-//Statement* Parser::parseMethodDefinitionStatement()
-//{
-//    auto keyword = advanceOnMatch(TokenKind::Identifier);
-//    auto name = advanceOnMatch(TokenKind::Identifier);
-//    auto signature = parseParametersNode();
-//    auto body = parseMethodBody();
-//
-//    return new MethodDefinitionStatement(keyword, name, signature, body);
-//}
-// 
-//
 //NumberLiteral* Parser::parseNumberLiteral()
 //{
 //    auto number = advanceOnMatch(TokenKind::Number);
