@@ -408,23 +408,34 @@ namespace Caracal
 
     StatementUPtr Parser::parseMethodDefinitionStatement()
     {
+        auto modifier = MethodModifier::Public;
         auto keyword = advanceOnMatch(TokenKind::DefKeyword);
-        auto nameExpression = parseNameExpression();
+        auto methodNameNode = parseMethodNameNode();
         auto parameters = parseParametersNode();
         auto returnTypes = parseReturnTypesNode();
         auto body = parseMethodBody();
-        auto modifier = MethodModifier::Public;
 
-        const auto& nameToken = nameExpression->nameToken();
+        if(methodNameNode->typeNameExpression().has_value())
+        {
+            modifier = MethodModifier::Static;
+        }
+
+        auto methodNameExpression = methodNameNode->methodNameExpression().get();
+        const auto& nameToken = methodNameExpression->nameToken();
         const auto nameLexeme = m_tokens.getLexeme(nameToken);
-        if(nameLexeme.startsWith('_'))
+        const auto isPrivate = nameLexeme.startsWith('_');
+        if(modifier == MethodModifier::Public && isPrivate)
         {
             modifier = MethodModifier::Private;
+        }
+        else if (modifier == MethodModifier::Static && isPrivate)
+        {
+            TODO("Static methods can't begin with an underscore");
         }
 
         return std::make_unique<MethodDefinitionStatement>(
             keyword, 
-            std::move(nameExpression), 
+            std::move(methodNameNode),
             std::move(parameters), 
             std::move(returnTypes), 
             std::move(body), 
@@ -677,6 +688,19 @@ namespace Caracal
         auto type = TypeDatabase::TryFindBuiltin(m_tokens.getLexeme(nameToken));
 
         return std::make_unique<TypeNameNode>(refToken, std::move(nameExpression), type);
+    }
+
+    MethodNameNodeUPtr Parser::parseMethodNameNode()
+    {
+        auto firstNameExpression = parseNameExpression();
+        auto dotToken = tryMatchKind(TokenKind::Dot);
+        if (dotToken.has_value())
+        {
+            auto secondNameExpression = parseNameExpression();
+            return std::make_unique<MethodNameNode>(std::move(firstNameExpression), dotToken.value(), std::move(secondNameExpression));
+        }
+
+        return std::make_unique<MethodNameNode>(std::move(firstNameExpression));
     }
 
     ParametersNodeUPtr Parser::parseParametersNode()

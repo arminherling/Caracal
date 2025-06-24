@@ -346,7 +346,7 @@ namespace Caracal
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
         pushIndentation();
         stream() << indentation() << QString("Modifier: %1").arg(stringify(statement->modifier())) << newLine();
-        prettyPrintNameExpression(statement->nameExpression().get());
+        prettyPrintMethodNameNode(statement->methodNameNode().get());
         prettyPrintParametersNode(statement->parametersNode().get());
         prettyPrintReturnTypesNode(statement->returnTypesNode().get());
         prettyPrintBlockNode(statement->bodyNode().get());
@@ -513,6 +513,24 @@ namespace Caracal
         const auto& identifierToken = name->nameToken();
         const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
         stream() << indentation() << QString("Name: %1").arg(identifierLexeme) << newLine();
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintMethodNameNode(MethodNameNode* methodName)
+    {
+        stream() << indentation() << stringify(methodName->kind()) << QString(": {") << newLine();
+        pushIndentation();
+        stream() << indentation() << QString("MethodName: ");
+        if (methodName->typeNameExpression().has_value())
+        {
+            const auto& typeNameToken = methodName->typeNameExpression().value()->nameToken();
+            const auto typeNameLexeme = m_parseTree.tokens().getLexeme(typeNameToken);
+            stream() << typeNameLexeme << QString(".");
+        }
+        const auto& methodNameToken = methodName->methodNameExpression()->nameToken();
+        const auto methodNameLexeme = m_parseTree.tokens().getLexeme(methodNameToken);
+        stream() << methodNameLexeme << newLine();
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }

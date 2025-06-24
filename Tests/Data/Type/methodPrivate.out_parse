@@ -5,8 +5,8 @@
     BlockNode(1): {
         MethodDefinitionStatement: {
             Modifier: Private
-            NameExpression: {
-                Name: _value
+            MethodNameNode: {
+                MethodName: _value
             }
             ParametersNode(0): {
             }

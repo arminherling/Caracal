@@ -40,6 +40,7 @@ namespace Caracal
             { NodeKind::StringLiteral,                  QStringLiteral("StringLiteral") },
 
             { NodeKind::TypeNameNode,                   QStringLiteral("TypeNameNode") },
+            { NodeKind::MethodNameNode,                 QStringLiteral("MethodNameNode") },
             { NodeKind::ParametersNode,                 QStringLiteral("ParametersNode") },
             { NodeKind::ParameterNode,                  QStringLiteral("ParameterNode") },
             { NodeKind::ReturnTypesNode,                QStringLiteral("ReturnTypesNode") },

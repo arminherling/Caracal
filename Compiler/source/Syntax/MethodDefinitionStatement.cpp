@@ -4,14 +4,14 @@ namespace Caracal
 {
     MethodDefinitionStatement::MethodDefinitionStatement(
         const Token& keywordToken, 
-        NameExpressionUPtr&& nameExpression, 
+        MethodNameNodeUPtr&& methodNameNode,
         ParametersNodeUPtr&& parametersNode, 
         ReturnTypesNodeUPtr&& returnTypesNode, 
         BlockNodeUPtr&& bodyNode, 
         MethodModifier modifier)
         : Statement(NodeKind::MethodDefinitionStatement, Type::Undefined())
         , m_keywordToken(keywordToken)
-        , m_nameExpression(std::move(nameExpression))
+        , m_methodNameNode(std::move(methodNameNode))
         , m_parametersNode(std::move(parametersNode))
         , m_returnTypesNode(std::move(returnTypesNode))
         , m_bodyNode(std::move(bodyNode))

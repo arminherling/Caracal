@@ -40,6 +40,7 @@ namespace Caracal
         StringLiteral,
 
         TypeNameNode,
+        MethodNameNode,
         ParametersNode,
         ParameterNode,
         ReturnTypesNode,

@@ -3,6 +3,7 @@
 #include <Compiler/API.h>
 #include <Syntax/Statement.h>
 #include <Syntax/Token.h>
+#include <Syntax/MethodNameNode.h>
 #include <Syntax/ParametersNode.h>
 #include <Syntax/ReturnTypesNode.h>
 #include <Syntax/BlockNode.h>
@@ -21,7 +22,7 @@ namespace Caracal
     public:
         MethodDefinitionStatement(
             const Token& keywordToken,
-            NameExpressionUPtr&& nameExpression,
+            MethodNameNodeUPtr&& methodNameNode,
             ParametersNodeUPtr&& parametersNode,
             ReturnTypesNodeUPtr&& returnTypesNode,
             BlockNodeUPtr&& bodyNode,
@@ -30,7 +31,7 @@ namespace Caracal
         CARACAL_DELETE_COPY_DEFAULT_MOVE(MethodDefinitionStatement)
 
         [[nodiscard]] const Token& keywordToken() const noexcept { return m_keywordToken; }
-        [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }
+        [[nodiscard]] const MethodNameNodeUPtr& methodNameNode() const noexcept { return m_methodNameNode; }
         [[nodiscard]] const ParametersNodeUPtr& parametersNode() const noexcept { return m_parametersNode; }
         [[nodiscard]] const ReturnTypesNodeUPtr& returnTypesNode() const noexcept { return m_returnTypesNode; }
         [[nodiscard]] const BlockNodeUPtr& bodyNode() const noexcept { return m_bodyNode; }
@@ -38,7 +39,7 @@ namespace Caracal
 
     private:
         Token m_keywordToken;
-        NameExpressionUPtr m_nameExpression;
+        MethodNameNodeUPtr m_methodNameNode;
         ParametersNodeUPtr m_parametersNode;
         ReturnTypesNodeUPtr m_returnTypesNode;
         BlockNodeUPtr m_bodyNode;

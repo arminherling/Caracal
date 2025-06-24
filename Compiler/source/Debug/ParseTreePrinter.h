@@ -21,6 +21,7 @@
 //#include <Syntax/MemberAccessExpression.h>
 #include <Syntax/MethodDefinitionStatement.h>
 #include <Syntax/NameExpression.h>
+#include <Syntax/MethodNameNode.h>
 #include <Syntax/ParametersNode.h>
 #include <Syntax/ParseTree.h>
 #include <Syntax/ReturnStatement.h>
@@ -79,6 +80,7 @@ namespace Caracal
         void prettyPrintUnaryExpression(UnaryExpression* unaryExpression);
         void prettyPrintBinaryExpression(BinaryExpression* binaryExpression);
         void prettyPrintNameExpression(NameExpression* name);
+        void prettyPrintMethodNameNode(MethodNameNode* methodName);
         void prettyPrintFunctionCallExpression(FunctionCallExpression* functionCall);
         void prettyPrintDiscardLiteral(DiscardLiteral* discard);
         void prettyPrintBoolLiteral(BoolLiteral* node);

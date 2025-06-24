@@ -15,6 +15,7 @@
 #include <Syntax/ParseTree.h>
 #include <Syntax/TokenBuffer.h>
 #include <Syntax/TypeNameNode.h>
+#include <Syntax/MethodNameNode.h>
 
 namespace Caracal
 {
@@ -59,6 +60,7 @@ namespace Caracal
         ExpressionUPtr parseFunctionCallOrNameExpression();
         ExpressionUPtr parseFunctionCallExpression();
         TypeNameNodeUPtr parseTypeNameNode();
+        MethodNameNodeUPtr parseMethodNameNode();
         ParametersNodeUPtr parseParametersNode();
         ReturnTypesNodeUPtr parseReturnTypesNode();
         ArgumentsNodeUPtr parseArgumentsNode();

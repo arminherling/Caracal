@@ -4,9 +4,9 @@
     }
     BlockNode(1): {
         MethodDefinitionStatement: {
-            Modifier: Public
+            Modifier: Static
             MethodNameNode: {
-                MethodName: value
+                MethodName: Zero.value
             }
             ParametersNode(0): {
             }
