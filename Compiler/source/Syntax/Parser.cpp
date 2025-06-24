@@ -24,7 +24,7 @@
 #include <Syntax/SkipStatement.h>
 #include <Syntax/ReturnStatement.h>
 #include <Syntax/DiscardLiteral.h>
-//#include <Syntax/MemberAccessExpression.h>
+#include <Syntax/MemberAccessExpression.h>
 //#include <Syntax/ScopeAccessExpression.h>
 #include <Syntax/FunctionCallExpression.h>
 
@@ -577,6 +577,10 @@ namespace Caracal
                 advanceCurrentIndex();
                 return std::make_unique<DiscardLiteral>(current);
             }
+            case TokenKind::Dot:
+            {
+                return parseMemberAccessExpression();
+            }
             case TokenKind::Identifier:
             {
                 return parseFunctionCallOrNameExpression();
@@ -628,6 +632,14 @@ namespace Caracal
         auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
     
         return std::make_unique<GroupingExpression>(openParenthesis, std::move(expression), closeParenthesis);
+    }
+
+    ExpressionUPtr Parser::parseMemberAccessExpression()
+    {
+        auto dotToken = advanceOnMatch(TokenKind::Dot);
+        auto expression = parseFunctionCallOrNameExpression();
+     
+        return std::make_unique<MemberAccessExpression>(dotToken, std::move(expression));
     }
 
     NameExpressionUPtr Parser::parseNameExpression()

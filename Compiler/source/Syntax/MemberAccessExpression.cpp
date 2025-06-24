@@ -1,11 +1,14 @@
-//#include "MemberAccessExpression.h"
-//
-//MemberAccessExpression::MemberAccessExpression(
-//    const Token& dot,
-//    Expression* expression)
-//    : Expression(NodeKind::MemberAccessExpression)
-//    , m_dot{ dot }
-//    , m_expression{ expression }
-//{
-//}
-//
+#include "MemberAccessExpression.h"
+
+namespace Caracal 
+{
+    MemberAccessExpression::MemberAccessExpression(
+        const Token& dot,
+        ExpressionUPtr&& expression)
+        : Expression(NodeKind::MemberAccessExpression, expression->type())
+        , m_dot{ dot }
+        , m_expression{ std::move(expression) }
+    {
+    }
+}
+

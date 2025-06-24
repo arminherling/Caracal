@@ -56,6 +56,7 @@ namespace Caracal
         ExpressionUPtr parseBinaryExpression(i32 parentPrecedence);
         ExpressionUPtr parsePrimaryExpression();
         ExpressionUPtr parseGroupingExpression();
+        ExpressionUPtr parseMemberAccessExpression();
         NameExpressionUPtr parseNameExpression();
         ExpressionUPtr parseFunctionCallOrNameExpression();
         ExpressionUPtr parseFunctionCallExpression();

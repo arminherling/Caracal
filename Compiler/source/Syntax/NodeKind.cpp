@@ -33,6 +33,7 @@ namespace Caracal
             { NodeKind::BinaryExpression,               QStringLiteral("BinaryExpression") },
             { NodeKind::NameExpression,                 QStringLiteral("NameExpression") },
             { NodeKind::FunctionCallExpression,         QStringLiteral("FunctionCallExpression") },
+            { NodeKind::MemberAccessExpression,         QStringLiteral("MemberAccessExpression") },
 
             { NodeKind::DiscardLiteral,                 QStringLiteral("DiscardLiteral") },
             { NodeKind::BoolLiteral,                    QStringLiteral("BoolLiteral") },

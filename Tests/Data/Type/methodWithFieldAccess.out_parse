@@ -1,0 +1,37 @@
+﻿TypeDefinitionStatement: {
+    NameExpression: {
+        Name: One
+    }
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: true
+            Left: {
+                NameExpression: {
+                    Name: one
+                }
+            }
+            Right: {
+                NumberLiteral: 1
+            }
+        }
+        MethodDefinitionStatement: {
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: value
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    MemberAccessExpression: {
+                        NameExpression: {
+                            Name: one
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

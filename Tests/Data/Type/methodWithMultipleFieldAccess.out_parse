@@ -1,0 +1,76 @@
+﻿TypeDefinitionStatement: {
+    NameExpression: {
+        Name: Two
+    }
+    BlockNode(3): {
+        TypeFieldDeclaration: {
+            IsConstant: true
+            Left: {
+                NameExpression: {
+                    Name: one
+                }
+            }
+            Right: {
+                NumberLiteral: 1
+            }
+        }
+        MethodDefinitionStatement: {
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: one
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    MemberAccessExpression: {
+                        NameExpression: {
+                            Name: one
+                        }
+                    }
+                }
+            }
+        }
+        MethodDefinitionStatement: {
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: value
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    BinaryExpression: {
+                        Left: {
+                            MemberAccessExpression: {
+                                FunctionCallExpression: {
+                                    NameExpression: {
+                                        Name: one
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                        Operation: Addition
+                        Right: {
+                            MemberAccessExpression: {
+                                FunctionCallExpression: {
+                                    NameExpression: {
+                                        Name: one
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

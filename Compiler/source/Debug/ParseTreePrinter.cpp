@@ -123,6 +123,11 @@ namespace Caracal
                 prettyPrintFunctionCallExpression((FunctionCallExpression*)node);
                 break;
             }
+            case NodeKind::MemberAccessExpression:
+            {
+                prettyPrintMemberAccessExpression((MemberAccessExpression*)node);
+                break;
+            }
             case NodeKind::DiscardLiteral:
             {
                 prettyPrintDiscardLiteral((DiscardLiteral*)node);
@@ -541,6 +546,15 @@ namespace Caracal
         pushIndentation();
         prettyPrintNameExpression(functionCall->nameExpression().get());
         prettyPrintArgumentsNode(functionCall->argumentsNode().get());
+        popIndentation();
+        stream() << indentation() << QString("}") << newLine();
+    }
+
+    void ParseTreePrinter::prettyPrintMemberAccessExpression(MemberAccessExpression* expression)
+    {
+        stream() << indentation() << stringify(expression->kind()) << QString(": {") << newLine();
+        pushIndentation();
+        prettyPrintNode(expression->expression().get());
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }

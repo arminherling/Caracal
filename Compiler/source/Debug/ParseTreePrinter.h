@@ -39,6 +39,7 @@
 #include <Syntax/SkipStatement.h>
 #include <Syntax/TypeDefinitionStatement.h>
 #include <Syntax/TypeFieldDeclaration.h>
+#include <Syntax/MemberAccessExpression.h>
 
 namespace Caracal 
 {
@@ -82,6 +83,7 @@ namespace Caracal
         void prettyPrintNameExpression(NameExpression* name);
         void prettyPrintMethodNameNode(MethodNameNode* methodName);
         void prettyPrintFunctionCallExpression(FunctionCallExpression* functionCall);
+        void prettyPrintMemberAccessExpression(MemberAccessExpression* expression);
         void prettyPrintDiscardLiteral(DiscardLiteral* discard);
         void prettyPrintBoolLiteral(BoolLiteral* node);
         void prettyPrintNumberLiteral(NumberLiteral* number);

@@ -33,6 +33,7 @@ namespace Caracal
         BinaryExpression,
         NameExpression,
         FunctionCallExpression,
+        MemberAccessExpression,
 
         DiscardLiteral,
         BoolLiteral,
