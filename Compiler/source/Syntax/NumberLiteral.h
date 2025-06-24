@@ -24,4 +24,6 @@ namespace Caracal
         std::optional<Token> m_uptickToken;
         std::optional<TypeNameNodeUPtr> m_explicitType;
     };
+
+    using NumberLiteralUPtr = std::unique_ptr<NumberLiteral>;
 }

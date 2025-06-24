@@ -5,11 +5,10 @@
 #include <Compiler/DiagnosticsBag.h>
 #include <Syntax/ArgumentsNode.h>
 #include <Syntax/BlockNode.h>
-//#include <Syntax/EnumFieldDefinitionStatement.h>
 #include <Syntax/EnumFieldDeclaration.h>
 #include <Syntax/Expression.h>
 #include <Syntax/NameExpression.h>
-//#include <Syntax/ParameterNode.h>
+#include <Syntax/NumberLiteral.h>
 #include <Syntax/ParametersNode.h>
 #include <Syntax/ReturnTypesNode.h>
 #include <Syntax/ParseTree.h>
@@ -70,10 +69,9 @@ namespace Caracal
         BlockNodeUPtr parseMethodBody();
         BlockNodeUPtr parseBlockNode(StatementScope scope);
         ParameterNodeUPtr parseParameterNode();
-        //NumberLiteral* parseNumberLiteral();
+        NumberLiteralUPtr parseNumberLiteral();
 
         Token advanceOnMatch(TokenKind kind);
-        //std::optional<BoolLiteral*> tryParseBoolLiteral();
         std::optional<Token> tryMatchKind(TokenKind kind);
         //void skipUntil(TokenKind kind);
 

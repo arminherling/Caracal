@@ -1,7 +1,6 @@
 #include <Syntax/Parser.h>
 #include <Syntax/CppBlockStatement.h>
 #include <Syntax/BoolLiteral.h>
-#include <Syntax/NumberLiteral.h>
 #include <Syntax/StringLiteral.h>
 #include <Syntax/ErrorExpression.h>
 #include <Semantic/TypeDatabase.h>
@@ -475,6 +474,19 @@ namespace Caracal
         return std::make_unique<ParameterNode>(std::move(name), colon, std::move(typeName));
     }
 
+    NumberLiteralUPtr Parser::parseNumberLiteral()
+    {
+        auto literal = advanceOnMatch(TokenKind::Number);
+        auto uptick = tryMatchKind(TokenKind::Uptick);
+        std::optional<TypeNameNodeUPtr> explicitType;
+        if (uptick.has_value())
+        {
+            explicitType = parseTypeNameNode();
+        }
+
+        return std::make_unique<NumberLiteral>(literal, uptick, std::move(explicitType));
+    }
+
     StatementUPtr Parser::parseIfStatement(StatementScope scope)
     {
         auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
@@ -597,14 +609,7 @@ namespace Caracal
             }
             case TokenKind::Number:
             {
-                advanceCurrentIndex();
-                auto uptick = tryMatchKind(TokenKind::Uptick);
-                std::optional<TypeNameNodeUPtr> explicitType;
-                if (uptick.has_value())
-                {
-                    explicitType = parseTypeNameNode();
-                }
-                return std::make_unique<NumberLiteral>(current, uptick, std::move(explicitType));
+                return parseNumberLiteral();
             }
             case TokenKind::String:
             {
@@ -799,22 +804,6 @@ namespace Caracal
         return parser.parse();
     }
 }
-
-//NumberLiteral* Parser::parseNumberLiteral()
-//{
-//    auto number = advanceOnMatch(TokenKind::Number);
-//
-//    auto current = currentToken();
-//    if (current.kind == TokenKind::Colon)
-//    {
-//        advanceCurrentIndex();
-//        auto type = parseTypeNode();
-//        // TODO add diagnostic for invalid type
-//        return new NumberLiteral(number, current, type);
-//    }
-//
-//    return new NumberLiteral(number);
-//}
 
 //
 //void Parser::skipUntil(TokenKind kind)
