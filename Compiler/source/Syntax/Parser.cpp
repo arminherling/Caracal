@@ -1,31 +1,30 @@
-#include <Syntax/Parser.h>
-#include <Syntax/CppBlockStatement.h>
-#include <Syntax/BoolLiteral.h>
-#include <Syntax/StringLiteral.h>
-#include <Syntax/ErrorExpression.h>
 #include <Semantic/TypeDatabase.h>
 #include <Syntax/AssignmentStatement.h>
+#include <Syntax/BinaryExpression.h>
+#include <Syntax/BoolLiteral.h>
+#include <Syntax/BreakStatement.h>
 #include <Syntax/ConstantDeclaration.h>
-#include <Syntax/VariableDeclaration.h>
-#include <Syntax/GroupingExpression.h>
-#include <Syntax/ExpressionStatement.h>
-#include <Syntax/FunctionDefinitionStatement.h>
+#include <Syntax/CppBlockStatement.h>
+#include <Syntax/DiscardLiteral.h>
 #include <Syntax/EnumDefinitionStatement.h>
+#include <Syntax/ErrorExpression.h>
+#include <Syntax/ExpressionStatement.h>
+#include <Syntax/FunctionCallExpression.h>
+#include <Syntax/FunctionDefinitionStatement.h>
+#include <Syntax/GroupingExpression.h>
+#include <Syntax/IfStatement.h>
+#include <Syntax/MemberAccessExpression.h>
+#include <Syntax/MethodDefinitionStatement.h>
+#include <Syntax/NameExpression.h>
+#include <Syntax/Parser.h>
+#include <Syntax/ReturnStatement.h>
+#include <Syntax/SkipStatement.h>
+#include <Syntax/StringLiteral.h>
 #include <Syntax/TypeDefinitionStatement.h>
 #include <Syntax/TypeFieldDeclaration.h>
-#include <Syntax/MethodDefinitionStatement.h>
 #include <Syntax/UnaryExpression.h>
-#include <Syntax/BinaryExpression.h>
-#include <Syntax/NameExpression.h>
-#include <Syntax/IfStatement.h>
+#include <Syntax/VariableDeclaration.h>
 #include <Syntax/WhileStatement.h>
-#include <Syntax/BreakStatement.h>
-#include <Syntax/SkipStatement.h>
-#include <Syntax/ReturnStatement.h>
-#include <Syntax/DiscardLiteral.h>
-#include <Syntax/MemberAccessExpression.h>
-//#include <Syntax/ScopeAccessExpression.h>
-#include <Syntax/FunctionCallExpression.h>
 
 namespace Caracal
 {
@@ -178,7 +177,7 @@ namespace Caracal
             {
                 if (scope == StatementScope::Function || scope == StatementScope::Method)
                 {
-                    return parseReturnStatement();
+                    return parseReturnStatement(scope);
                 }
                 TODO("Return statement in other scopes");
                 break;
@@ -186,12 +185,12 @@ namespace Caracal
             case TokenKind::Underscore:
             case TokenKind::Identifier:
             {
-                auto expression = parsePrimaryExpression();
+                auto expression = parsePrimaryExpression(scope);
                 if (currentToken().kind == TokenKind::Colon)
                 {
                     if (scope == StatementScope::Global || scope == StatementScope::Function || scope == StatementScope::Method)
                     {
-                        return parseConstantOrVariableDeclaration(std::move(expression));
+                        return parseConstantOrVariableDeclaration(std::move(expression), scope);
                     }
                     else if(scope == StatementScope::Type && expression->kind() == NodeKind::NameExpression)
                     {
@@ -213,7 +212,7 @@ namespace Caracal
                 {
                     if (scope == StatementScope::Function || scope == StatementScope::Method)
                     {
-                        return parseAssignmentStatement(std::move(expression));
+                        return parseAssignmentStatement(std::move(expression), scope);
                         break;
                     }
                     TODO("Assignment statement in other scopes");
@@ -271,7 +270,7 @@ namespace Caracal
         return std::make_unique<FunctionDefinitionStatement>(keyword, std::move(nameExpression), std::move(parameters), std::move(returnTypes), std::move(body));
     }
 
-    StatementUPtr Parser::parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression)
+    StatementUPtr Parser::parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression, StatementScope scope)
     {
         auto firstColon = advanceOnMatch(TokenKind::Colon);
 
@@ -291,7 +290,7 @@ namespace Caracal
         std::optional<ExpressionUPtr> rightExpression;
         if (secondToken.has_value())
         {
-            rightExpression = parseExpression();
+            rightExpression = parseExpression(scope);
         }
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
@@ -305,10 +304,10 @@ namespace Caracal
         }
     }
 
-    StatementUPtr Parser::parseAssignmentStatement(ExpressionUPtr&& leftExpression)
+    StatementUPtr Parser::parseAssignmentStatement(ExpressionUPtr&& leftExpression, StatementScope scope)
     {
         auto equal = advanceOnMatch(TokenKind::Equal);
-        auto rightExpression = parseExpression();
+        auto rightExpression = parseExpression(scope);
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
      
         return std::make_unique<AssignmentStatement>(std::move(leftExpression), equal, std::move(rightExpression), semicolon);
@@ -348,7 +347,7 @@ namespace Caracal
                 {
                     auto colon1 = advanceOnMatch(TokenKind::Colon);
                     auto colon2 = advanceOnMatch(TokenKind::Colon);
-                    auto valueExpression = parseExpression();
+                    auto valueExpression = parseExpression(StatementScope::Enum);
                     fields.push_back(std::make_unique<EnumFieldDeclaration>(std::move(nameExpression), colon1, colon2, std::move(valueExpression)));
                 }
                 else
@@ -397,7 +396,7 @@ namespace Caracal
         std::optional<ExpressionUPtr> rightExpression;
         if (secondToken.has_value())
         {
-            rightExpression = parseExpression();
+            rightExpression = parseExpression(StatementScope::Type);
         }
 
         auto isConstant = secondToken.has_value() && secondToken.value().kind == TokenKind::Colon;
@@ -490,7 +489,7 @@ namespace Caracal
     StatementUPtr Parser::parseIfStatement(StatementScope scope)
     {
         auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
-        auto condition = parseExpression();
+        auto condition = parseExpression(scope);
         auto trueStatement = parseStatement(scope);
 
         if (currentToken().kind == TokenKind::ElseKeyword)
@@ -506,7 +505,7 @@ namespace Caracal
     StatementUPtr Parser::parseWhileStatement(StatementScope scope)
     {
         auto whileKeyword = advanceOnMatch(TokenKind::WhileKeyword);
-        auto condition = parseExpression();
+        auto condition = parseExpression(scope);
         auto trueStatement = parseStatement(scope);
 
         return std::make_unique<WhileStatement>(whileKeyword, std::move(condition), std::move(trueStatement));
@@ -526,25 +525,25 @@ namespace Caracal
         return std::make_unique<SkipStatement>(keyword, semicolon);
     }
     
-    StatementUPtr Parser::parseReturnStatement()
+    StatementUPtr Parser::parseReturnStatement(StatementScope scope)
     {
         auto returnKeyword = advanceOnMatch(TokenKind::ReturnKeyword);
         std::optional<ExpressionUPtr> expression;
         if (currentToken().kind != TokenKind::Semicolon)
         {
-            expression = parseExpression();
+            expression = parseExpression(scope);
         }
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
         return std::make_unique<ReturnStatement>(returnKeyword, std::move(expression), semicolon);
     }
 
-    ExpressionUPtr Parser::parseExpression()
+    ExpressionUPtr Parser::parseExpression(StatementScope scope)
     {
-        return parseBinaryExpression(0);
+        return parseBinaryExpression(0, scope);
     }
 
-    ExpressionUPtr Parser::parseBinaryExpression(i32 parentPrecedence)
+    ExpressionUPtr Parser::parseBinaryExpression(i32 parentPrecedence, StatementScope scope)
     {
         ExpressionUPtr left{};
         auto unaryOperatorToken = currentToken();
@@ -552,12 +551,12 @@ namespace Caracal
         auto unaryPrecedence = unaryOperatorPrecedence(unaryOperatorToken.kind);
         if (unaryPrecedence == 0 || unaryPrecedence < parentPrecedence)
         {
-            left = parsePrimaryExpression();
+            left = parsePrimaryExpression(scope);
         }
         else
         {
             advanceCurrentIndex();
-            auto expression = parseBinaryExpression(unaryPrecedence);
+            auto expression = parseBinaryExpression(unaryPrecedence, scope);
             left = std::make_unique<UnaryExpression>(unaryOperatorToken, std::move(expression));
         }
 
@@ -572,14 +571,14 @@ namespace Caracal
                 break;
 
             advanceCurrentIndex();
-            auto right = parseBinaryExpression(binaryPrecedence);
+            auto right = parseBinaryExpression(binaryPrecedence, scope);
             left = std::make_unique<BinaryExpression>(std::move(left), binaryOperatorToken, std::move(right));
         }
 
         return left;
     }
 
-    ExpressionUPtr Parser::parsePrimaryExpression()
+    ExpressionUPtr Parser::parsePrimaryExpression(StatementScope scope)
     {
         auto current = currentToken();
         switch (current.kind)
@@ -589,13 +588,9 @@ namespace Caracal
                 advanceCurrentIndex();
                 return std::make_unique<DiscardLiteral>(current);
             }
-            case TokenKind::Dot:
-            {
-                return parseMemberAccessExpression();
-            }
             case TokenKind::Identifier:
             {
-                return parseFunctionCallOrNameExpression();
+                return parseFunctionCallOrNameExpression(scope);
             }
             case TokenKind::TrueKeyword:
             {
@@ -618,7 +613,16 @@ namespace Caracal
             }
             case TokenKind::OpenParenthesis:
             {
-                return parseGroupingExpression();
+                return parseGroupingExpression(scope);
+            }
+            case TokenKind::Dot:
+            {
+                if (scope == StatementScope::Method)
+                {
+                    return parseMemberAccessExpression();
+                }
+                TODO("Member access in other scopes");
+                [[fallthrough]];
             }
             default:
             {
@@ -630,10 +634,10 @@ namespace Caracal
         }
     }
     
-    ExpressionUPtr Parser::parseGroupingExpression()
+    ExpressionUPtr Parser::parseGroupingExpression(StatementScope scope)
     {
         auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
-        auto expression = parseExpression();
+        auto expression = parseExpression(scope);
         auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
     
         return std::make_unique<GroupingExpression>(openParenthesis, std::move(expression), closeParenthesis);
@@ -642,7 +646,7 @@ namespace Caracal
     ExpressionUPtr Parser::parseMemberAccessExpression()
     {
         auto dotToken = advanceOnMatch(TokenKind::Dot);
-        auto expression = parseFunctionCallOrNameExpression();
+        auto expression = parseFunctionCallOrNameExpression(StatementScope::Method);
      
         return std::make_unique<MemberAccessExpression>(dotToken, std::move(expression));
     }
@@ -653,12 +657,12 @@ namespace Caracal
         return std::make_unique<NameExpression>(name);
     }
 
-    ExpressionUPtr Parser::parseFunctionCallOrNameExpression()
+    ExpressionUPtr Parser::parseFunctionCallOrNameExpression(StatementScope scope)
     {
         auto next = nextToken();
         if (next.kind == TokenKind::OpenParenthesis)
         {
-            return parseFunctionCallExpression();
+            return parseFunctionCallExpression(scope);
         }
         else
         {
@@ -666,14 +670,14 @@ namespace Caracal
         }
     }
 
-    ExpressionUPtr Parser::parseFunctionCallExpression()
+    ExpressionUPtr Parser::parseFunctionCallExpression(StatementScope scope)
     {
         auto nameExpression = parseNameExpression();
-        auto arguments = parseArgumentsNode();
+        auto arguments = parseArgumentsNode(scope);
         return std::make_unique<FunctionCallExpression>(std::move(nameExpression), std::move(arguments));
     }
 
-    ArgumentsNodeUPtr Parser::parseArgumentsNode()
+    ArgumentsNodeUPtr Parser::parseArgumentsNode(StatementScope scope)
     {
         auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
         auto current = currentToken();
@@ -681,7 +685,7 @@ namespace Caracal
         std::vector<ExpressionUPtr> arguments;
         while (current.kind != TokenKind::CloseParenthesis)
         {
-            auto expression = parseExpression();
+            auto expression = parseExpression(scope);
             arguments.push_back(std::move(expression));
             if (currentToken().kind == TokenKind::Comma)
             {

@@ -1,20 +1,20 @@
 #pragma once
 
-#include <Defines.h>
 #include <Compiler/API.h>
 #include <Compiler/DiagnosticsBag.h>
+#include <Defines.h>
 #include <Syntax/ArgumentsNode.h>
 #include <Syntax/BlockNode.h>
 #include <Syntax/EnumFieldDeclaration.h>
 #include <Syntax/Expression.h>
+#include <Syntax/MethodNameNode.h>
 #include <Syntax/NameExpression.h>
 #include <Syntax/NumberLiteral.h>
 #include <Syntax/ParametersNode.h>
-#include <Syntax/ReturnTypesNode.h>
 #include <Syntax/ParseTree.h>
+#include <Syntax/ReturnTypesNode.h>
 #include <Syntax/TokenBuffer.h>
 #include <Syntax/TypeNameNode.h>
-#include <Syntax/MethodNameNode.h>
 
 namespace Caracal
 {
@@ -31,7 +31,8 @@ namespace Caracal
             Global,
             Function,
             Method,
-            Type
+            Type,
+            Enum
         };
 
         std::vector<StatementUPtr> parseStatements(StatementScope scope);
@@ -39,8 +40,8 @@ namespace Caracal
         StatementUPtr parseCppBlock();
         StatementUPtr parseExpressionStatement(ExpressionUPtr&& expression);
         StatementUPtr parseFunctionDefinitionStatement();
-        StatementUPtr parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression);
-        StatementUPtr parseAssignmentStatement(ExpressionUPtr&& leftExpression);
+        StatementUPtr parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression, StatementScope scope);
+        StatementUPtr parseAssignmentStatement(ExpressionUPtr&& leftExpression, StatementScope scope);
         StatementUPtr parseEnumDefinitionStatement();
         std::vector<EnumFieldDeclarationUPtr> parseEnumFields();
         StatementUPtr parseTypeDefinitionStatement();
@@ -50,20 +51,20 @@ namespace Caracal
         StatementUPtr parseWhileStatement(StatementScope scope);
         StatementUPtr parseBreakStatement();
         StatementUPtr parseSkipStatement();
-        StatementUPtr parseReturnStatement();
-        ExpressionUPtr parseExpression();
-        ExpressionUPtr parseBinaryExpression(i32 parentPrecedence);
-        ExpressionUPtr parsePrimaryExpression();
-        ExpressionUPtr parseGroupingExpression();
+        StatementUPtr parseReturnStatement(StatementScope scope);
+        ExpressionUPtr parseExpression(StatementScope scope);
+        ExpressionUPtr parseBinaryExpression(i32 parentPrecedence, StatementScope scope);
+        ExpressionUPtr parsePrimaryExpression(StatementScope scope);
+        ExpressionUPtr parseGroupingExpression(StatementScope scope);
         ExpressionUPtr parseMemberAccessExpression();
         NameExpressionUPtr parseNameExpression();
-        ExpressionUPtr parseFunctionCallOrNameExpression();
-        ExpressionUPtr parseFunctionCallExpression();
+        ExpressionUPtr parseFunctionCallOrNameExpression(StatementScope scope);
+        ExpressionUPtr parseFunctionCallExpression(StatementScope scope);
         TypeNameNodeUPtr parseTypeNameNode();
         MethodNameNodeUPtr parseMethodNameNode();
         ParametersNodeUPtr parseParametersNode();
         ReturnTypesNodeUPtr parseReturnTypesNode();
-        ArgumentsNodeUPtr parseArgumentsNode();
+        ArgumentsNodeUPtr parseArgumentsNode(StatementScope scope);
         BlockNodeUPtr parseFunctionBody();
         BlockNodeUPtr parseTypeBody();
         BlockNodeUPtr parseMethodBody();
@@ -71,18 +72,12 @@ namespace Caracal
         ParameterNodeUPtr parseParameterNode();
         NumberLiteralUPtr parseNumberLiteral();
 
-        Token advanceOnMatch(TokenKind kind);
-        std::optional<Token> tryMatchKind(TokenKind kind);
-        //void skipUntil(TokenKind kind);
-
         Token peek(i32 offset);
         Token currentToken() { return peek(0); }
         Token nextToken() { return peek(1); }
         void advanceCurrentIndex() { m_currentIndex++; }
-
-        //i32 lineDistanceSinceLastToken();
-        //bool tokenIsOnNextLine();
-        //bool hasEmptyLineSinceLastToken();
+        Token advanceOnMatch(TokenKind kind);
+        std::optional<Token> tryMatchKind(TokenKind kind);
 
         TokenBuffer m_tokens;
         DiagnosticsBag& m_diagnostics;
