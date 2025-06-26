@@ -350,6 +350,10 @@ namespace Caracal
     {
         stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
         pushIndentation();
+        if (statement->specialFunctionType() != SpecialFunctionType::None)
+        {
+            stream() << indentation() << QString("SpecialFunctionType: %1").arg(stringify(statement->specialFunctionType())) << newLine();
+        }
         stream() << indentation() << QString("Modifier: %1").arg(stringify(statement->modifier())) << newLine();
         prettyPrintMethodNameNode(statement->methodNameNode().get());
         prettyPrintParametersNode(statement->parametersNode().get());

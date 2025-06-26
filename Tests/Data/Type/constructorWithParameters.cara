@@ -1,0 +1,9 @@
+type Number
+{
+    value: i32
+
+    def this(value: i32)
+    {
+        .value = value;
+    }
+}

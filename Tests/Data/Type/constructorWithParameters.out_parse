@@ -1,0 +1,54 @@
+﻿TypeDefinitionStatement: {
+    NameExpression: {
+        Name: Number
+    }
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Name: value
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: i32
+                }
+            }
+            Right: null
+        }
+        MethodDefinitionStatement: {
+            SpecialFunctionType: Constructor
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: this
+            }
+            ParametersNode(1): {
+                ParameterNode: {
+                    Name: value
+                    TypeNameNode: {
+                        Type: i32
+                    }
+                }
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(1): {
+                AssignmentStatement: {
+                    Left: {
+                        MemberAccessExpression: {
+                            NameExpression: {
+                                Name: value
+                            }
+                        }
+                    }
+                    Right: {
+                        NameExpression: {
+                            Name: value
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -182,6 +182,15 @@ namespace Caracal
                 TODO("Return statement in other scopes");
                 break;
             }
+            case TokenKind::Dot:
+            {
+                if (scope != StatementScope::Method)
+                {
+                    TODO("Dot token in other scopes");
+                    break;
+                }
+                [[fallthrough]];
+            }
             case TokenKind::Underscore:
             case TokenKind::Identifier:
             {
@@ -199,16 +208,7 @@ namespace Caracal
                     TODO("Constant or variable declaration in other scopes");
                     break;
                 }
-                if (expression->kind() == NodeKind::FunctionCallExpression)
-                {
-                    if (scope == StatementScope::Function || scope == StatementScope::Method)
-                    {
-                        return parseExpressionStatement(std::move(expression));
-                    }
-                    TODO("Function call expression in other scopes");
-                    break;
-                }
-                if (expression->kind() == NodeKind::NameExpression && currentToken().kind == TokenKind::Equal)
+                if ((expression->kind() == NodeKind::NameExpression || expression->kind() == NodeKind::MemberAccessExpression) && currentToken().kind == TokenKind::Equal)
                 {
                     if (scope == StatementScope::Function || scope == StatementScope::Method)
                     {
@@ -216,6 +216,15 @@ namespace Caracal
                         break;
                     }
                     TODO("Assignment statement in other scopes");
+                    break;
+                }
+                if (expression->kind() == NodeKind::FunctionCallExpression || expression->kind() == NodeKind::MemberAccessExpression)
+                {
+                    if (scope == StatementScope::Function || scope == StatementScope::Method)
+                    {
+                        return parseExpressionStatement(std::move(expression));
+                    }
+                    TODO("Function call expression in other scopes");
                     break;
                 }
 
@@ -407,7 +416,9 @@ namespace Caracal
     StatementUPtr Parser::parseMethodDefinitionStatement()
     {
         auto modifier = MethodModifier::Public;
+        auto specialFunctionType = SpecialFunctionType::None;
         auto keyword = advanceOnMatch(TokenKind::DefKeyword);
+        auto maybeNegation = tryMatchKind(TokenKind::Bang);
         auto methodNameNode = parseMethodNameNode();
         auto parameters = parseParametersNode();
         auto returnTypes = parseReturnTypesNode();
@@ -431,13 +442,29 @@ namespace Caracal
             TODO("Static methods can't begin with an underscore");
         }
 
+        if (maybeNegation.has_value())
+        {
+            if (nameLexeme == QStringLiteral("this"))
+            {
+                specialFunctionType = SpecialFunctionType::Destructor;
+            }
+            else
+            {
+                TODO("Error about destructor keyword");
+            }
+        }
+
+        if (specialFunctionType == SpecialFunctionType::None && nameLexeme == QStringLiteral("this"))
+            specialFunctionType = SpecialFunctionType::Constructor;
+
         return std::make_unique<MethodDefinitionStatement>(
             keyword, 
             std::move(methodNameNode),
             std::move(parameters), 
             std::move(returnTypes), 
             std::move(body), 
-            modifier);
+            modifier,
+            specialFunctionType);
     }
     
     BlockNodeUPtr Parser::parseFunctionBody()

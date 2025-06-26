@@ -17,6 +17,13 @@ namespace Caracal
         Static
     };
 
+    enum class SpecialFunctionType
+    {
+        None,
+        Constructor,
+        Destructor
+    };
+
     class COMPILER_API MethodDefinitionStatement : public Statement
     {
     public:
@@ -26,7 +33,8 @@ namespace Caracal
             ParametersNodeUPtr&& parametersNode,
             ReturnTypesNodeUPtr&& returnTypesNode,
             BlockNodeUPtr&& bodyNode,
-            MethodModifier modifier);
+            MethodModifier modifier,
+            SpecialFunctionType specialFunctionType);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(MethodDefinitionStatement)
 
@@ -36,6 +44,8 @@ namespace Caracal
         [[nodiscard]] const ReturnTypesNodeUPtr& returnTypesNode() const noexcept { return m_returnTypesNode; }
         [[nodiscard]] const BlockNodeUPtr& bodyNode() const noexcept { return m_bodyNode; }
         [[nodiscard]] MethodModifier modifier() const noexcept { return m_modifier; }
+        [[nodiscard]] SpecialFunctionType specialFunctionType() const noexcept { return m_specialFunctionType; }
+
 
     private:
         Token m_keywordToken;
@@ -44,7 +54,9 @@ namespace Caracal
         ReturnTypesNodeUPtr m_returnTypesNode;
         BlockNodeUPtr m_bodyNode;
         MethodModifier m_modifier;
+        SpecialFunctionType m_specialFunctionType;
     };
 
     [[nodiscard]] COMPILER_API QString stringify(MethodModifier modifier);
+    [[nodiscard]] COMPILER_API QString stringify(SpecialFunctionType specialFunctionType);
 }
