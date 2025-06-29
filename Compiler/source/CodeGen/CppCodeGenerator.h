@@ -87,6 +87,15 @@ namespace Caracal
         Scope m_currentScope;
         i32 m_discardCount;
         NodeKind m_currentStatement;
+
+        struct CppTypeDef
+        {
+            QStringView name;
+            std::vector<TypeFieldDeclaration*> publicFields;
+        };
+
+
+        std::unordered_map<QStringView, CppTypeDef> m_cppTypeDefs;
     };
 
     COMPILER_API QString generateCpp(ParseTree& parseTree) noexcept;

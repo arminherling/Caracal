@@ -190,12 +190,6 @@ namespace Caracal
                     break;
                 }
             }
-            case NodeKind::TypeFieldDeclaration:
-            {
-                m_currentStatement = NodeKind::TypeFieldDeclaration;
-                generateTypeFieldDeclaration((TypeFieldDeclaration*)node);
-                break;
-            }
             case NodeKind::CppBlockStatement:
             {
                 m_currentStatement = NodeKind::CppBlockStatement;
@@ -455,8 +449,7 @@ namespace Caracal
 
     void CppCodeGenerator::generateTypeFieldDeclaration(TypeFieldDeclaration* node) noexcept
     {
-        stream() << "public:" << newLine() << indentation();
-
+        stream() << indentation();
         if(node->isConstant())
         {
             stream() << "const ";
@@ -608,17 +601,34 @@ namespace Caracal
     {
         const auto& nameExpression = node->nameExpression();
         const auto typeName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
+
+        auto cppTypeDef = std::make_unique<CppTypeDef>();
+        cppTypeDef->name = typeName;
+        
+        // collect fields
+        const auto& statements = node->bodyNode()->statements();
+        for (const auto& statement : statements)
+        {
+            if(statement->kind() == NodeKind::TypeFieldDeclaration)
+            {
+                const auto typeFieldDeclaration = (TypeFieldDeclaration*)statement.get();
+                cppTypeDef->publicFields.emplace_back(typeFieldDeclaration);
+            }
+        }
+        
         const auto typeSignature = QString("class %2").arg(typeName);
         m_forwardDeclarations.append(typeSignature % ";" % newLine());
 
         stream() << indentation() << typeSignature << newLine();
-        
-        const auto& statements = node->bodyNode()->statements();
         stream() << indentation() << "{" << newLine();
         pushIndentation();
-        for (const auto& statement : statements)
+        if (!cppTypeDef->publicFields.empty())
         {
-            generateNode(statement.get());
+            stream() << "public:" << newLine();
+            for (const auto& publicField : cppTypeDef->publicFields)
+            {
+                generateTypeFieldDeclaration(publicField);
+            }
         }
         popIndentation();
         stream() << indentation() << "};" << newLine();

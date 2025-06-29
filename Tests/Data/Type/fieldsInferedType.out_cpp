@@ -4,6 +4,5 @@ class Fields
 {
 public:
     const bool a = true;
-public:
     bool b = false;
 };
