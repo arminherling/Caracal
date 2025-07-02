@@ -2,12 +2,12 @@ type Two
 {
     one :: 1
     
-    def one()
+    def one() i32
     {
         return .one;
     }
 
-    def value()
+    def value() i32
     {
         return .one() + .one();
     }

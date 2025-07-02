@@ -1,6 +1,6 @@
 type Zero
 {
-    def _value()
+    def _value() i32
     {
         return 0;
     }

@@ -1,6 +1,6 @@
 type Zero
 {
-    def value()
+    def value() i32
     {
         return 0;
     }

@@ -1,0 +1,13 @@
+﻿class Zero;
+
+class Zero
+{
+public:
+    int value();
+};
+
+int Zero::value()
+{
+    return 0;
+}
+

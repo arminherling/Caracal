@@ -2,7 +2,7 @@ type One
 {
     one :: 1
 
-    def value()
+    def value() i32
     {
         return .one;
     }

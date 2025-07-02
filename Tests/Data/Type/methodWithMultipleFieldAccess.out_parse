@@ -21,7 +21,10 @@
             }
             ParametersNode(0): {
             }
-            ReturnTypesNode(0): {
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                }
             }
             BlockNode(1): {
                 ReturnStatement: {
@@ -40,7 +43,10 @@
             }
             ParametersNode(0): {
             }
-            ReturnTypesNode(0): {
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                }
             }
             BlockNode(1): {
                 ReturnStatement: {

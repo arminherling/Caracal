@@ -29,6 +29,7 @@
 #include <Syntax/SkipStatement.h>
 #include <Syntax/TypeDefinitionStatement.h>
 #include <Syntax/TypeFieldDeclaration.h>
+#include <Syntax/MethodDefinitionStatement.h>
 
 namespace Caracal
 {
@@ -48,10 +49,23 @@ namespace Caracal
             Function
         };
 
+        struct CppTypeDef
+        {
+            QStringView name;
+            std::vector<TypeFieldDeclaration*> publicFields;
+            std::vector<MethodDefinitionStatement*> constructors;
+            MethodDefinitionStatement* destructor;
+            std::vector<MethodDefinitionStatement*> publicMethods;
+            std::vector<MethodDefinitionStatement*> staticMethods;
+            std::vector<MethodDefinitionStatement*> privateMethods;
+        };
+
         void generateNode(Node* node)  noexcept;
         void generateConstantDeclaration(ConstantDeclaration* node) noexcept;
         void generateVariableDeclaration(VariableDeclaration* node) noexcept;
         void generateTypeFieldDeclaration(TypeFieldDeclaration* node) noexcept;
+        void generateMethodDeclaration(MethodDefinitionStatement* node) noexcept;
+        void generateMethodDefinition(const QStringView& typeName, MethodDefinitionStatement* node) noexcept;
         void generateGlobalDiscardedExpression(Expression* expression) noexcept;
         void generateLocalDiscardedExpression(Expression* expression) noexcept;
         void generateCppBlock(CppBlockStatement* node) noexcept;
@@ -59,7 +73,7 @@ namespace Caracal
         void generateExpressionStatement(ExpressionStatement* node) noexcept;
         void generateAssignmentStatement(AssignmentStatement* node) noexcept;
         QString generateEnumSignature(EnumDefinitionStatement* node) noexcept;
-        QString generateFunctionSignature(FunctionDefinitionStatement* node) noexcept;
+        QString generateFunctionSignature(std::optional<QStringView> className, NameExpression* nameExpression, ParametersNode* parametersNode, ReturnTypesNode* returnTypesNode) noexcept;
         void generateTypeDefinitionStatement(TypeDefinitionStatement* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
         void generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept;
@@ -79,6 +93,7 @@ namespace Caracal
 
         void generateBuiltinPrintFunction(ArgumentsNode* node) noexcept;
 
+        CppTypeDef* buildCppTypeDefinition(TypeDefinitionStatement* node) noexcept;
         QStringView getCppNameForType(TypeNameNode* typeName) noexcept;
 
         ParseTree& m_parseTree;
@@ -88,14 +103,7 @@ namespace Caracal
         i32 m_discardCount;
         NodeKind m_currentStatement;
 
-        struct CppTypeDef
-        {
-            QStringView name;
-            std::vector<TypeFieldDeclaration*> publicFields;
-        };
-
-
-        std::unordered_map<QStringView, CppTypeDef> m_cppTypeDefs;
+        std::unordered_map<QStringView, std::unique_ptr<CppTypeDef>> m_cppTypeDefs;
     };
 
     COMPILER_API QString generateCpp(ParseTree& parseTree) noexcept;

@@ -1,6 +1,6 @@
 type Fields
 {
-    x:i32 : 0
-    y:i32 = 10
-    z:i32
+    x : i32 : 0
+    y : i32 = 10
+    z : i32
 }

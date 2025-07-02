@@ -36,6 +36,56 @@ namespace Caracal
         };
     }
 
+    CppCodeGenerator::CppTypeDef* CppCodeGenerator::buildCppTypeDefinition(TypeDefinitionStatement* node) noexcept
+    {
+        const auto& nameExpression = node->nameExpression();
+        const auto typeName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
+
+        auto cppTypeDef = std::make_unique<CppTypeDef>();
+        cppTypeDef->name = typeName;
+
+        // collect fields
+        const auto& statements = node->bodyNode()->statements();
+        for (const auto& statement : statements)
+        {
+            const auto kind = statement->kind();
+            if (kind == NodeKind::TypeFieldDeclaration)
+            {
+                const auto typeFieldDeclaration = (TypeFieldDeclaration*)statement.get();
+                cppTypeDef->publicFields.emplace_back(typeFieldDeclaration);
+            }
+            else if (kind == NodeKind::MethodDefinitionStatement)
+            {
+                const auto methodDefinition = (MethodDefinitionStatement*)statement.get();
+                const auto methodModifier = methodDefinition->modifier();
+                const auto specialFunctionType = methodDefinition->specialFunctionType();
+                if (methodModifier == MethodModifier::Public)
+                {
+                    cppTypeDef->publicMethods.emplace_back(methodDefinition);
+                }
+                else if (methodModifier == MethodModifier::Private)
+                {
+                    cppTypeDef->privateMethods.emplace_back(methodDefinition);
+                }
+                else if (methodModifier == MethodModifier::Static)
+                {
+                    cppTypeDef->staticMethods.emplace_back(methodDefinition);
+                }
+                if (specialFunctionType == SpecialFunctionType::Constructor)
+                {
+                    cppTypeDef->constructors.emplace_back(methodDefinition);
+                }
+                else if (specialFunctionType == SpecialFunctionType::Destructor)
+                {
+                    cppTypeDef->destructor = methodDefinition;
+                }
+            }
+        }
+
+        m_cppTypeDefs.insert({ typeName, std::move(cppTypeDef) });
+        return m_cppTypeDefs[typeName].get();
+    }
+
     [[nodiscard]] QStringView CppCodeGenerator::getCppNameForType(TypeNameNode* typeName) noexcept
     {
         static const auto cppTypeNames = InitializeTypeToCppName();
@@ -129,6 +179,24 @@ namespace Caracal
         for (const auto& statement : m_parseTree.statements())
         {
             generateNode(statement.get());
+        }
+        if (!m_cppTypeDefs.empty())
+            stream() << newLine();
+        // generate cpp method definitions
+        for (const auto& [typeName, cppTypeDef] : m_cppTypeDefs)
+        {
+            for (const auto& staticMethod : cppTypeDef->staticMethods)
+            {
+                generateMethodDefinition(typeName, staticMethod);
+            }
+            for (const auto& publicMethod : cppTypeDef->publicMethods)
+            {
+                generateMethodDefinition(typeName, publicMethod);
+            }
+            for (const auto& privateMethod : cppTypeDef->privateMethods)
+            {
+                generateMethodDefinition(typeName, privateMethod);
+            }
         }
 
         if (!m_cppIncludes.isEmpty())
@@ -376,7 +444,7 @@ namespace Caracal
                 m_cppIncludes.append(include.value() % newLine());
             }
 
-            if(cppTypeName.isEmpty())
+            if (cppTypeName.isEmpty())
             {
                 stream() << indentation() << "const auto";
             }
@@ -450,7 +518,7 @@ namespace Caracal
     void CppCodeGenerator::generateTypeFieldDeclaration(TypeFieldDeclaration* node) noexcept
     {
         stream() << indentation();
-        if(node->isConstant())
+        if (node->isConstant())
         {
             stream() << "const ";
         }
@@ -486,6 +554,38 @@ namespace Caracal
             generateNode(node->rightExpression().value().get());
         }
         stream() << ";" << newLine();
+    }
+
+    void CppCodeGenerator::generateMethodDeclaration(MethodDefinitionStatement* node) noexcept
+    {
+        stream() << indentation();
+        auto methodName = node->methodNameNode()->methodNameExpression().get();
+        auto parametersNode = node->parametersNode().get();
+        auto returnTypesNode = node->returnTypesNode().get();
+        const auto signature = generateFunctionSignature(std::nullopt, methodName, parametersNode, returnTypesNode);
+        if (node->modifier() == MethodModifier::Static)
+        {
+            stream() << "static ";
+        }
+
+        stream() << signature << ";" << newLine();
+    }
+
+    void CppCodeGenerator::generateMethodDefinition(const QStringView& typeName, MethodDefinitionStatement* node) noexcept
+    {
+        auto methodName = node->methodNameNode()->methodNameExpression().get();
+        auto parametersNode = node->parametersNode().get();
+        auto returnTypesNode = node->returnTypesNode().get();
+        const auto signature = generateFunctionSignature(typeName, methodName, parametersNode, returnTypesNode);
+        stream() << signature << newLine() << "{" << newLine();
+        pushIndentation();
+        const auto& body = node->bodyNode();
+        for (const auto& statement : body->statements())
+        {
+            generateNode(statement.get());
+        }
+        popIndentation();
+        stream() << "}" << newLine() << newLine();
     }
 
     void CppCodeGenerator::generateGlobalDiscardedExpression(Expression* expression) noexcept
@@ -534,11 +634,11 @@ namespace Caracal
         return signature;
     }
 
-    QString CppCodeGenerator::generateFunctionSignature(FunctionDefinitionStatement* node) noexcept
+    QString CppCodeGenerator::generateFunctionSignature(std::optional<QStringView> className, NameExpression* nameExpression, ParametersNode* parametersNode, ReturnTypesNode* returnTypesNode) noexcept
     {
-        const auto& returnTypes = node->returnTypesNode()->returnTypes();
+        const auto& returnTypes = returnTypesNode->returnTypes();
         const auto hasReturnTypes = !returnTypes.empty();
-        const auto functionName = m_parseTree.tokens().getLexeme(node->nameExpression()->nameToken());
+        const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
         const auto isMainFunction = functionName == QStringLiteral("main");
 
         QString signature;
@@ -548,11 +648,11 @@ namespace Caracal
         {
             if (isMainFunction)
             {
-                sigStream << "int " << functionName << "(";
+                sigStream << "int ";
             }
             else
             {
-                sigStream << "void " << functionName << "(";
+                sigStream << "void ";
             }
         }
         else
@@ -569,10 +669,25 @@ namespace Caracal
                 m_cppIncludes.append(include.value() % newLine());
             }
             const auto returnTypeName = GetCppNameForType(returnType);
-            sigStream << returnTypeName << " " << functionName << "(";
+            sigStream << returnTypeName << " ";
         }
 
-        const auto& parameters = node->parametersNode()->parameters();
+        if (className.has_value())
+        {
+            sigStream << className.value() << "::";
+        }
+
+        if (functionName.startsWith('_'))
+        {
+            // remove first letter
+            sigStream << functionName.mid(1) << "(";
+        }
+        else
+        {
+            sigStream << functionName << "(";
+        }
+
+        const auto& parameters = parametersNode->parameters();
         for (const auto& parameter : parameters)
         {
             const auto typeName = getCppNameForType(parameter->typeName().get());
@@ -586,7 +701,7 @@ namespace Caracal
             }
             const auto& parameterNameToken = parameter->nameExpression()->nameToken();
             sigStream << m_parseTree.tokens().getLexeme(parameterNameToken);
-            
+
             if (&parameter != &parameters.back())
             {
                 sigStream << ", ";
@@ -599,32 +714,42 @@ namespace Caracal
 
     void CppCodeGenerator::generateTypeDefinitionStatement(TypeDefinitionStatement* node) noexcept
     {
-        const auto& nameExpression = node->nameExpression();
-        const auto typeName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
+        auto cppTypeDef = buildCppTypeDefinition(node);
+        auto typeName = cppTypeDef->name;
 
-        auto cppTypeDef = std::make_unique<CppTypeDef>();
-        cppTypeDef->name = typeName;
-        
-        // collect fields
-        const auto& statements = node->bodyNode()->statements();
-        for (const auto& statement : statements)
-        {
-            if(statement->kind() == NodeKind::TypeFieldDeclaration)
-            {
-                const auto typeFieldDeclaration = (TypeFieldDeclaration*)statement.get();
-                cppTypeDef->publicFields.emplace_back(typeFieldDeclaration);
-            }
-        }
-        
         const auto typeSignature = QString("class %2").arg(typeName);
         m_forwardDeclarations.append(typeSignature % ";" % newLine());
 
         stream() << indentation() << typeSignature << newLine();
         stream() << indentation() << "{" << newLine();
         pushIndentation();
-        if (!cppTypeDef->publicFields.empty())
         {
-            stream() << "public:" << newLine();
+            if (!cppTypeDef->constructors.empty() || !cppTypeDef->staticMethods.empty() || !cppTypeDef->publicMethods.empty())
+            {
+                stream() << "public:" << newLine();
+                for (const auto& staticMethod : cppTypeDef->staticMethods)
+                {
+                    generateMethodDeclaration(staticMethod);
+                }
+                for (const auto& publicMethod : cppTypeDef->publicMethods)
+                {
+                    generateMethodDeclaration(publicMethod);
+                }
+            }
+
+            if (!cppTypeDef->privateMethods.empty())
+            {
+                stream() << "private:" << newLine();
+                for (const auto& privateMethod : cppTypeDef->privateMethods)
+                {
+                    generateMethodDeclaration(privateMethod);
+                }
+            }
+
+            if (!cppTypeDef->publicFields.empty())
+            {
+                stream() << "public:" << newLine();
+            }
             for (const auto& publicField : cppTypeDef->publicFields)
             {
                 generateTypeFieldDeclaration(publicField);
@@ -662,7 +787,11 @@ namespace Caracal
         const auto oldScope = m_currentScope;
         m_currentScope = Scope::Function;
 
-        const auto signature = generateFunctionSignature(node);
+        auto nameExpression = node->nameExpression().get();
+        auto parametersNode = node->parametersNode().get();
+        auto returnTypesNode = node->returnTypesNode().get();
+
+        const auto signature = generateFunctionSignature(std::nullopt, nameExpression, parametersNode, returnTypesNode);
         m_forwardDeclarations.append(signature % ";" % newLine());
         stream() << indentation() << signature << newLine();
         stream() << indentation() << "{" << newLine();

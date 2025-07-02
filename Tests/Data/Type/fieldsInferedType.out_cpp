@@ -6,3 +6,4 @@ public:
     const bool a = true;
     bool b = false;
 };
+
