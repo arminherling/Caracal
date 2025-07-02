@@ -1,0 +1,6 @@
+type Number
+{
+    def this()
+    {
+    }
+}

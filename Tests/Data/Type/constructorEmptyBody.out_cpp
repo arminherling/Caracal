@@ -1,0 +1,8 @@
+﻿class Number;
+
+class Number
+{
+public:
+    Number() = default;
+};
+

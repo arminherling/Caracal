@@ -1,0 +1,20 @@
+﻿TypeDefinitionStatement: {
+    NameExpression: {
+        Name: Number
+    }
+    BlockNode(1): {
+        MethodDefinitionStatement: {
+            SpecialFunctionType: Constructor
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: this
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(0): {
+            }
+        }
+    }
+}
