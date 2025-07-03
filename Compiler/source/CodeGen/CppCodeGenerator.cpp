@@ -654,8 +654,6 @@ namespace Caracal
 
     QString CppCodeGenerator::generateFunctionSignature(std::optional<QStringView> className, QStringView functionName, ParametersNode* parametersNode, ReturnTypesNode* returnTypesNode, SpecialFunctionType specialFunctionType, bool isDeclaration) noexcept
     {
-        const auto& returnTypes = returnTypesNode->returnTypes();
-        const auto hasReturnTypes = !returnTypes.empty();
         const auto isMainFunction = functionName == QStringLiteral("main");
 
         QString signature;
@@ -663,33 +661,7 @@ namespace Caracal
 
         if (specialFunctionType == SpecialFunctionType::None)
         {
-            if (!hasReturnTypes)
-            {
-                if (isMainFunction)
-                {
-                    sigStream << "int ";
-                }
-                else
-                {
-                    sigStream << "void ";
-                }
-            }
-            else
-            {
-                if (returnTypes.size() != 1)
-                {
-                    TODO("Implement multiple return types in CppCodeGenerator::generateFunctionSignature");
-                }
-
-                const auto returnType = returnTypes[0]->type();
-                const auto include = GetCppIncludeForType(returnType);
-                if (include.has_value())
-                {
-                    m_cppIncludes.append(include.value() % newLine());
-                }
-                const auto returnTypeName = GetCppNameForType(returnType);
-                sigStream << returnTypeName << " ";
-            }
+            sigStream << generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
         }
 
         if (className.has_value())
@@ -745,6 +717,45 @@ namespace Caracal
         }
 
         sigStream << ")";
+        return signature;
+    }
+
+    QString CppCodeGenerator::generateFunctionSignatureReturnPart(ReturnTypesNode* returnTypesNode, bool isMainFunction) noexcept
+    {
+        const auto& returnTypes = returnTypesNode->returnTypes();
+        const auto hasReturnTypes = !returnTypes.empty();
+
+        QString signature;
+        QTextStream sigStream(&signature);
+
+        if (!hasReturnTypes)
+        {
+            if (isMainFunction)
+            {
+                sigStream << "int ";
+            }
+            else
+            {
+                sigStream << "void ";
+            }
+        }
+        else
+        {
+            if (returnTypes.size() != 1)
+            {
+                TODO("Implement multiple return types in CppCodeGenerator::generateFunctionSignature");
+            }
+
+            const auto returnType = returnTypes[0]->type();
+            const auto include = GetCppIncludeForType(returnType);
+            if (include.has_value())
+            {
+                m_cppIncludes.append(include.value() % newLine());
+            }
+            const auto returnTypeName = GetCppNameForType(returnType);
+            sigStream << returnTypeName << " ";
+        }
+
         return signature;
     }
 
