@@ -663,36 +663,7 @@ namespace Caracal
         {
             sigStream << generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
         }
-
-        if (className.has_value())
-        {
-            if(!isDeclaration)
-            {
-                sigStream << className.value() << "::";
-            }
-
-            if (specialFunctionType == SpecialFunctionType::Constructor)
-            {
-                sigStream << className.value();
-            }
-            else if (specialFunctionType == SpecialFunctionType::Destructor)
-            {
-                sigStream << "~" << className.value();
-            }
-        }
-
-        if (specialFunctionType == SpecialFunctionType::None)
-        {
-            if (functionName.startsWith('_'))
-            {
-                // remove first letter
-                sigStream << functionName.mid(1);
-            }
-            else
-            {
-                sigStream << functionName;
-            }
-        }
+        sigStream << generateFunctionSignatureNamePart(className, functionName, specialFunctionType, !isDeclaration);
         sigStream << "(";
 
         const auto& parameters = parametersNode->parameters();
@@ -754,6 +725,44 @@ namespace Caracal
             }
             const auto returnTypeName = GetCppNameForType(returnType);
             sigStream << returnTypeName << " ";
+        }
+
+        return signature;
+    }
+
+    QString CppCodeGenerator::generateFunctionSignatureNamePart(std::optional<QStringView> className, QStringView functionName, SpecialFunctionType specialFunctionType, bool isDefinition) noexcept
+    {
+        QString signature;
+        QTextStream sigStream(&signature);
+
+        if (className.has_value())
+        {
+            if (isDefinition)
+            {
+                sigStream << className.value() << "::";
+            }
+
+            if (specialFunctionType == SpecialFunctionType::Constructor)
+            {
+                sigStream << className.value();
+            }
+            else if (specialFunctionType == SpecialFunctionType::Destructor)
+            {
+                sigStream << "~" << className.value();
+            }
+        }
+
+        if (specialFunctionType == SpecialFunctionType::None)
+        {
+            if (functionName.startsWith('_'))
+            {
+                // remove first letter
+                sigStream << functionName.mid(1);
+            }
+            else
+            {
+                sigStream << functionName;
+            }
         }
 
         return signature;
