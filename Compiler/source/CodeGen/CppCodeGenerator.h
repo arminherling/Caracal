@@ -77,6 +77,7 @@ namespace Caracal
         QString generateFunctionSignature(std::optional<QStringView> className, QStringView functionName, ParametersNode* parametersNode, ReturnTypesNode* returnTypesNode, SpecialFunctionType specialFunctionType, bool isDeclaration) noexcept;
         QString generateFunctionSignatureReturnPart(ReturnTypesNode* returnTypesNode, bool isMainFunction) noexcept;
         QString generateFunctionSignatureNamePart(std::optional<QStringView> className, QStringView functionName, SpecialFunctionType specialFunctionType, bool isDefinition) noexcept;
+        QString generateFunctionSignatureParameterPart(ParametersNode* parametersNode) noexcept;
         void generateTypeDefinitionStatement(TypeDefinitionStatement* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
         void generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept;

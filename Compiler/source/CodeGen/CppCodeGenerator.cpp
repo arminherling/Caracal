@@ -664,30 +664,8 @@ namespace Caracal
             sigStream << generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
         }
         sigStream << generateFunctionSignatureNamePart(className, functionName, specialFunctionType, !isDeclaration);
-        sigStream << "(";
+        sigStream << generateFunctionSignatureParameterPart(parametersNode);
 
-        const auto& parameters = parametersNode->parameters();
-        for (const auto& parameter : parameters)
-        {
-            const auto typeName = getCppNameForType(parameter->typeName().get());
-            if (parameter->typeName()->isReference())
-            {
-                sigStream << typeName << "& ";
-            }
-            else
-            {
-                sigStream << typeName << " ";
-            }
-            const auto& parameterNameToken = parameter->nameExpression()->nameToken();
-            sigStream << m_parseTree.tokens().getLexeme(parameterNameToken);
-
-            if (&parameter != &parameters.back())
-            {
-                sigStream << ", ";
-            }
-        }
-
-        sigStream << ")";
         return signature;
     }
 
@@ -764,6 +742,37 @@ namespace Caracal
                 sigStream << functionName;
             }
         }
+
+        return signature;
+    }
+
+    QString CppCodeGenerator::generateFunctionSignatureParameterPart(ParametersNode* parametersNode) noexcept
+    {
+        const auto& parameters = parametersNode->parameters();
+        QString signature;
+        QTextStream sigStream(&signature);
+
+        sigStream << "(";
+        for (const auto& parameter : parameters)
+        {
+            const auto typeName = getCppNameForType(parameter->typeName().get());
+            if (parameter->typeName()->isReference())
+            {
+                sigStream << typeName << "& ";
+            }
+            else
+            {
+                sigStream << typeName << " ";
+            }
+            const auto& parameterNameToken = parameter->nameExpression()->nameToken();
+            sigStream << m_parseTree.tokens().getLexeme(parameterNameToken);
+
+            if (&parameter != &parameters.back())
+            {
+                sigStream << ", ";
+            }
+        }
+        sigStream << ")";
 
         return signature;
     }
