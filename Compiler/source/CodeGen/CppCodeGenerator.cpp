@@ -187,15 +187,15 @@ namespace Caracal
         {
             for (const auto& staticMethod : cppTypeDef->staticMethods)
             {
-                generateMethodDefinition(typeName, staticMethod);
+                generateMethodDefinitionSignature(typeName, staticMethod);
             }
             for (const auto& publicMethod : cppTypeDef->publicMethods)
             {
-                generateMethodDefinition(typeName, publicMethod);
+                generateMethodDefinitionSignature(typeName, publicMethod);
             }
             for (const auto& privateMethod : cppTypeDef->privateMethods)
             {
-                generateMethodDefinition(typeName, privateMethod);
+                generateMethodDefinitionSignature(typeName, privateMethod);
             }
         }
 
@@ -556,20 +556,51 @@ namespace Caracal
         stream() << ";" << newLine();
     }
 
-    void CppCodeGenerator::generateMethodDeclaration(std::optional<QStringView> className, MethodDefinitionStatement* node) noexcept
+    void CppCodeGenerator::generateConstructorDeclarationSignature(QStringView className, MethodDefinitionStatement* node) noexcept
     {
-        stream() << indentation();
-        auto methodName = node->methodNameNode()->methodNameExpression().get();
+        auto parametersNode = node->parametersNode().get();
+        const auto isEmpty = node->bodyNode()->statements().empty();
+
+        stream() << indentation() << className << generateFunctionSignatureParameterPart(parametersNode);
+
+        if (isEmpty)
+        {
+            stream() << " = default";
+        }
+
+        stream() << ";" << newLine();
+    }
+
+    void CppCodeGenerator::generateDestructorDeclarationSignature(QStringView className, MethodDefinitionStatement* node) noexcept
+    {
+        const auto isEmpty = node->bodyNode()->statements().empty();
+
+        stream() << indentation() << "~" << className << "()";
+        if (isEmpty)
+        {
+            stream() << " = default";
+        }
+        stream() << ";" << newLine();
+    }
+
+    void CppCodeGenerator::generateMethodDeclarationSignature(MethodDefinitionStatement* node) noexcept
+    {
+        auto nameExpression = node->methodNameNode()->methodNameExpression().get();
+        const auto methodName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
         auto parametersNode = node->parametersNode().get();
         auto returnTypesNode = node->returnTypesNode().get();
         const auto specialFunctionType = node->specialFunctionType();
-        const auto signature = generateFunctionSignature(className, methodName, parametersNode, returnTypesNode, specialFunctionType, true);
+
+        stream() << indentation();
         if (node->modifier() == MethodModifier::Static)
         {
             stream() << "static ";
         }
 
-        stream() << signature; 
+        stream() << generateFunctionSignatureReturnPart(returnTypesNode, false);
+        stream() << generateFunctionSignatureNamePart(methodName);
+        stream() << generateFunctionSignatureParameterPart(parametersNode);
+
         if (specialFunctionType != SpecialFunctionType::None)
         {
             const auto& statements = node->bodyNode()->statements();
@@ -582,13 +613,19 @@ namespace Caracal
         stream() << ";" << newLine();
     }
 
-    void CppCodeGenerator::generateMethodDefinition(const QStringView& typeName, MethodDefinitionStatement* node) noexcept
+    void CppCodeGenerator::generateMethodDefinitionSignature(const QStringView& typeName, MethodDefinitionStatement* node) noexcept
     {
-        auto methodName = node->methodNameNode()->methodNameExpression().get();
+        auto nameExpression = node->methodNameNode()->methodNameExpression().get();
+        const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
+        const auto isMainFunction = functionName == QStringLiteral("main");
         auto parametersNode = node->parametersNode().get();
         auto returnTypesNode = node->returnTypesNode().get();
-        const auto specialFunctionType = node->specialFunctionType();
-        const auto signature = generateFunctionSignature(typeName, methodName, parametersNode, returnTypesNode, specialFunctionType, false);
+        
+        const auto returnPart = generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
+        const auto namePart = generateFunctionSignatureNamePart(functionName);
+        const auto parameterPart = generateFunctionSignatureParameterPart(parametersNode);
+        const auto signature = returnPart % typeName % "::" % namePart % parameterPart;
+
         stream() << signature << newLine() << "{" << newLine();
         pushIndentation();
         const auto& body = node->bodyNode();
@@ -646,29 +683,6 @@ namespace Caracal
         return signature;
     }
 
-    QString CppCodeGenerator::generateFunctionSignature(std::optional<QStringView> className, NameExpression* nameExpression, ParametersNode* parametersNode, ReturnTypesNode* returnTypesNode, SpecialFunctionType specialFunctionType, bool isDeclaration) noexcept
-    {
-        const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
-        return generateFunctionSignature(className, functionName, parametersNode, returnTypesNode, specialFunctionType, isDeclaration);
-    }
-
-    QString CppCodeGenerator::generateFunctionSignature(std::optional<QStringView> className, QStringView functionName, ParametersNode* parametersNode, ReturnTypesNode* returnTypesNode, SpecialFunctionType specialFunctionType, bool isDeclaration) noexcept
-    {
-        const auto isMainFunction = functionName == QStringLiteral("main");
-
-        QString signature;
-        QTextStream sigStream(&signature);
-
-        if (specialFunctionType == SpecialFunctionType::None)
-        {
-            sigStream << generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
-        }
-        sigStream << generateFunctionSignatureNamePart(className, functionName, specialFunctionType, !isDeclaration);
-        sigStream << generateFunctionSignatureParameterPart(parametersNode);
-
-        return signature;
-    }
-
     QString CppCodeGenerator::generateFunctionSignatureReturnPart(ReturnTypesNode* returnTypesNode, bool isMainFunction) noexcept
     {
         const auto& returnTypes = returnTypesNode->returnTypes();
@@ -708,42 +722,17 @@ namespace Caracal
         return signature;
     }
 
-    QString CppCodeGenerator::generateFunctionSignatureNamePart(std::optional<QStringView> className, QStringView functionName, SpecialFunctionType specialFunctionType, bool isDefinition) noexcept
+    QString CppCodeGenerator::generateFunctionSignatureNamePart(QStringView functionName) noexcept
     {
-        QString signature;
-        QTextStream sigStream(&signature);
-
-        if (className.has_value())
+        if (functionName.startsWith('_'))
         {
-            if (isDefinition)
-            {
-                sigStream << className.value() << "::";
-            }
-
-            if (specialFunctionType == SpecialFunctionType::Constructor)
-            {
-                sigStream << className.value();
-            }
-            else if (specialFunctionType == SpecialFunctionType::Destructor)
-            {
-                sigStream << "~" << className.value();
-            }
+            // remove first letter
+            return functionName.mid(1).toString();
         }
-
-        if (specialFunctionType == SpecialFunctionType::None)
+        else
         {
-            if (functionName.startsWith('_'))
-            {
-                // remove first letter
-                sigStream << functionName.mid(1);
-            }
-            else
-            {
-                sigStream << functionName;
-            }
+            return functionName.toString();
         }
-
-        return signature;
     }
 
     QString CppCodeGenerator::generateFunctionSignatureParameterPart(ParametersNode* parametersNode) noexcept
@@ -795,20 +784,20 @@ namespace Caracal
 
                 for (const auto& constructor : cppTypeDef->constructors)
                 {
-                    generateMethodDeclaration(typeName, constructor);
+                    generateConstructorDeclarationSignature(typeName, constructor);
                 }
                 if (cppTypeDef->destructor != nullptr)
                 {
-                    generateMethodDeclaration(typeName, cppTypeDef->destructor);
+                    generateDestructorDeclarationSignature(typeName, cppTypeDef->destructor);
                 }
 
                 for (const auto& staticMethod : cppTypeDef->staticMethods)
                 {
-                    generateMethodDeclaration(std::nullopt, staticMethod);
+                    generateMethodDeclarationSignature(staticMethod);
                 }
                 for (const auto& publicMethod : cppTypeDef->publicMethods)
                 {
-                    generateMethodDeclaration(std::nullopt, publicMethod);
+                    generateMethodDeclarationSignature(publicMethod);
                 }
             }
 
@@ -817,7 +806,7 @@ namespace Caracal
                 stream() << "private:" << newLine();
                 for (const auto& privateMethod : cppTypeDef->privateMethods)
                 {
-                    generateMethodDeclaration(std::nullopt, privateMethod);
+                    generateMethodDeclarationSignature(privateMethod);
                 }
             }
 
@@ -863,13 +852,18 @@ namespace Caracal
         m_currentScope = Scope::Function;
 
         auto nameExpression = node->nameExpression().get();
+        const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
+        const auto isMainFunction = functionName == QStringLiteral("main");
         auto parametersNode = node->parametersNode().get();
         auto returnTypesNode = node->returnTypesNode().get();
 
-        const auto signature = generateFunctionSignature(std::nullopt, nameExpression, parametersNode, returnTypesNode, SpecialFunctionType::None, false);
+        const auto returnPart = generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
+        const auto namePart = generateFunctionSignatureNamePart(functionName);
+        const auto parameterPart = generateFunctionSignatureParameterPart(parametersNode);
+        const auto signature = returnPart % namePart % parameterPart;
+
         m_forwardDeclarations.append(signature % ";" % newLine());
-        stream() << indentation() << signature << newLine();
-        stream() << indentation() << "{" << newLine();
+        stream() << indentation() << signature << newLine() << indentation() << "{" << newLine();
 
         pushIndentation();
         const auto& body = node->bodyNode();

@@ -64,8 +64,10 @@ namespace Caracal
         void generateConstantDeclaration(ConstantDeclaration* node) noexcept;
         void generateVariableDeclaration(VariableDeclaration* node) noexcept;
         void generateTypeFieldDeclaration(TypeFieldDeclaration* node) noexcept;
-        void generateMethodDeclaration(std::optional<QStringView> className, MethodDefinitionStatement* node) noexcept;
-        void generateMethodDefinition(const QStringView& typeName, MethodDefinitionStatement* node) noexcept;
+        void generateConstructorDeclarationSignature(QStringView className, MethodDefinitionStatement* node) noexcept;
+        void generateDestructorDeclarationSignature(QStringView className, MethodDefinitionStatement* node) noexcept;
+        void generateMethodDeclarationSignature(MethodDefinitionStatement* node) noexcept;
+        void generateMethodDefinitionSignature(const QStringView& typeName, MethodDefinitionStatement* node) noexcept;
         void generateGlobalDiscardedExpression(Expression* expression) noexcept;
         void generateLocalDiscardedExpression(Expression* expression) noexcept;
         void generateCppBlock(CppBlockStatement* node) noexcept;
@@ -73,10 +75,8 @@ namespace Caracal
         void generateExpressionStatement(ExpressionStatement* node) noexcept;
         void generateAssignmentStatement(AssignmentStatement* node) noexcept;
         QString generateEnumSignature(EnumDefinitionStatement* node) noexcept;
-        QString generateFunctionSignature(std::optional<QStringView> className, NameExpression* nameExpression, ParametersNode* parametersNode, ReturnTypesNode* returnTypesNode, SpecialFunctionType specialFunctionType, bool isDeclaration) noexcept;
-        QString generateFunctionSignature(std::optional<QStringView> className, QStringView functionName, ParametersNode* parametersNode, ReturnTypesNode* returnTypesNode, SpecialFunctionType specialFunctionType, bool isDeclaration) noexcept;
         QString generateFunctionSignatureReturnPart(ReturnTypesNode* returnTypesNode, bool isMainFunction) noexcept;
-        QString generateFunctionSignatureNamePart(std::optional<QStringView> className, QStringView functionName, SpecialFunctionType specialFunctionType, bool isDefinition) noexcept;
+        QString generateFunctionSignatureNamePart(QStringView functionName) noexcept;
         QString generateFunctionSignatureParameterPart(ParametersNode* parametersNode) noexcept;
         void generateTypeDefinitionStatement(TypeDefinitionStatement* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
