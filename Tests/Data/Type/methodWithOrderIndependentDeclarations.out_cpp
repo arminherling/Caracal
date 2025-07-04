@@ -1,0 +1,22 @@
+﻿class Two;
+
+class Two
+{
+public:
+    int value();
+    int one();
+
+public:
+    const int m_one = 1;
+};
+
+int Two::value()
+{
+    return this->one() + this->one();
+}
+
+int Two::one()
+{
+    return this->m_one;
+}
+

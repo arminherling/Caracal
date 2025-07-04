@@ -1,0 +1,16 @@
+﻿class One;
+
+class One
+{
+public:
+    int value();
+
+public:
+    const int m_one = 1;
+};
+
+int One::value()
+{
+    return this->m_one;
+}
+

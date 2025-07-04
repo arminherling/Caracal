@@ -358,6 +358,11 @@ namespace Caracal
                 generateFunctionCallExpression(functionCallExpression);
                 break;
             }
+            case NodeKind::MemberAccessExpression:
+            {
+                generateMemberAccessExpression((MemberAccessExpression*)node);
+                break;
+            }
             case NodeKind::BoolLiteral:
             {
                 generateBoolLiteral((BoolLiteral*)node);
@@ -532,7 +537,7 @@ namespace Caracal
             {
                 m_cppIncludes.append(include.value() % newLine());
             }
-            stream() << typeName;
+            stream() << typeName << " ";
         }
         else
         {
@@ -543,10 +548,10 @@ namespace Caracal
             {
                 m_cppIncludes.append(include.value() % newLine());
             }
-            stream() << typeName;
+            stream() << typeName << " ";
         }
-        stream() << " ";
-        generateNameExpression(node->nameExpression().get());
+
+        generateTypeFieldName(node->nameExpression().get());
 
         if (node->rightExpression().has_value())
         {
@@ -778,7 +783,11 @@ namespace Caracal
         stream() << indentation() << "{" << newLine();
         pushIndentation();
         {
-            if (!cppTypeDef->constructors.empty() || cppTypeDef->destructor != nullptr || !cppTypeDef->staticMethods.empty() || !cppTypeDef->publicMethods.empty())
+            const auto hasPublicMethods = (!cppTypeDef->constructors.empty() || cppTypeDef->destructor != nullptr || !cppTypeDef->staticMethods.empty() || !cppTypeDef->publicMethods.empty());
+            const auto hasPrivateMethods = (!cppTypeDef->privateMethods.empty());
+            const auto hasPublicFields = (!cppTypeDef->publicFields.empty());
+
+            if (hasPublicMethods)
             {
                 stream() << "public:" << newLine();
 
@@ -801,8 +810,13 @@ namespace Caracal
                 }
             }
 
-            if (!cppTypeDef->privateMethods.empty())
+            if (hasPrivateMethods)
             {
+                if(hasPublicMethods)
+                {
+                    stream() << newLine();
+                }
+
                 stream() << "private:" << newLine();
                 for (const auto& privateMethod : cppTypeDef->privateMethods)
                 {
@@ -810,17 +824,35 @@ namespace Caracal
                 }
             }
 
-            if (!cppTypeDef->publicFields.empty())
+            if (hasPublicFields)
             {
+                if (hasPublicMethods || hasPrivateMethods)
+                {
+                    stream() << newLine();
+                }
+
                 stream() << "public:" << newLine();
-            }
-            for (const auto& publicField : cppTypeDef->publicFields)
-            {
-                generateTypeFieldDeclaration(publicField);
+                for (const auto& publicField : cppTypeDef->publicFields)
+                {
+                    generateTypeFieldDeclaration(publicField);
+                }
             }
         }
         popIndentation();
         stream() << indentation() << "};" << newLine();
+    }
+
+    void CppCodeGenerator::generateTypeFieldName(NameExpression* node) noexcept
+    {
+        const auto fieldName = m_parseTree.tokens().getLexeme(node->nameToken());
+        if (fieldName.startsWith('_'))
+        {
+            stream() << "m" << fieldName;
+        }
+        else
+        {
+            stream() << "m_" << fieldName;
+        }
     }
 
     void CppCodeGenerator::generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept
@@ -1051,6 +1083,20 @@ namespace Caracal
             }
         }
         stream() << ")";
+    }
+
+    void CppCodeGenerator::generateMemberAccessExpression(MemberAccessExpression* node) noexcept
+    {
+        auto expression = node->expression().get();
+        stream() << "this->";
+        if (expression->kind() == NodeKind::FunctionCallExpression)
+        {
+            generateFunctionCallExpression((FunctionCallExpression*)expression);
+        }
+        else
+        {
+            generateTypeFieldName((NameExpression*)expression);
+        }
     }
 
     void CppCodeGenerator::generateBoolLiteral(BoolLiteral* node) noexcept

@@ -1,6 +1,6 @@
 type One
 {
-    one :: 1
+    one : i32 : 1
 
     def value() i32
     {

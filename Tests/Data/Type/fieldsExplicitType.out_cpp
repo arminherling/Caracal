@@ -3,8 +3,8 @@
 class Fields
 {
 public:
-    const int x = 0;
-    int y = 10;
-    int z;
+    const int m_x = 0;
+    int m_y = 10;
+    int m_z;
 };
 

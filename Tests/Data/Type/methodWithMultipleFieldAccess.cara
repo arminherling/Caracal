@@ -1,6 +1,6 @@
 type Two
 {
-    one :: 1
+    one : i32 : 1
     
     def one() i32
     {

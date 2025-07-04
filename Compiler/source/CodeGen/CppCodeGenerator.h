@@ -30,6 +30,7 @@
 #include <Syntax/TypeDefinitionStatement.h>
 #include <Syntax/TypeFieldDeclaration.h>
 #include <Syntax/MethodDefinitionStatement.h>
+#include <Syntax/MemberAccessExpression.h>
 
 namespace Caracal
 {
@@ -79,6 +80,7 @@ namespace Caracal
         QString generateFunctionSignatureNamePart(QStringView functionName) noexcept;
         QString generateFunctionSignatureParameterPart(ParametersNode* parametersNode) noexcept;
         void generateTypeDefinitionStatement(TypeDefinitionStatement* node) noexcept;
+        void generateTypeFieldName(NameExpression* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
         void generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept;
         void generateIfStatement(IfStatement* node) noexcept;
@@ -91,6 +93,7 @@ namespace Caracal
         void generateBinaryExpression(BinaryExpression* node) noexcept;
         void generateNameExpression(NameExpression* node) noexcept;
         void generateFunctionCallExpression(FunctionCallExpression* node) noexcept;
+        void generateMemberAccessExpression(MemberAccessExpression* node) noexcept;
         void generateBoolLiteral(BoolLiteral* node) noexcept;
         void generateNumberLiteral(NumberLiteral* node) noexcept;
         void generateStringLiteral(StringLiteral* node) noexcept;

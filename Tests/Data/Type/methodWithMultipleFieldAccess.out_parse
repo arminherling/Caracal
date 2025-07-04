@@ -10,6 +10,11 @@
                     Name: one
                 }
             }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: i32
+                }
+            }
             Right: {
                 NumberLiteral: 1
             }

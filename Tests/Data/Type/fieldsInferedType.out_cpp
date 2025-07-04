@@ -3,7 +3,7 @@
 class Fields
 {
 public:
-    const bool a = true;
-    bool b = false;
+    const bool m_a = true;
+    bool m_b = false;
 };
 
