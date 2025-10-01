@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="Caracal.ebb9f041-b845-4739-9fa6-6b96bc0fe0d0" Version="1.0" Language="en-US" Publisher="Anwender" />
+        <Identity Id="Caracal.ebb9f041-b845-4739-9fa6-6b96bc0fe0d0" Version="1.0" Language="en-US" Publisher="Armin Herling" />
         <DisplayName>Caracal</DisplayName>
         <Description xml:space="preserve">Caracal language support for VS.</Description>
         <License>LICENSE</License>

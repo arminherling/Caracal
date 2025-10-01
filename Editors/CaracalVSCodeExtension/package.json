@@ -14,10 +14,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/arminherling/Aalenian.git"
+    "url": "https://github.com/arminherling/Caracal.git"
   },
-  "homepage": "https://github.com/arminherling/Aalenian",
-  "qna": "https://github.com/arminherling/Aalenian/issues",
+  "homepage": "https://github.com/arminherling/Caracal",
+  "qna": "https://github.com/arminherling/Caracal/issues",
   "categories": [
     "Programming Languages"
   ],

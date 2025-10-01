@@ -1,28 +1,24 @@
-# Aalenian
+# Caracal
 
 > [!NOTE]
 > Everything from syntax to semantics is currently work-in-progress and might change at any point.
 
 ## Description
-Aalenian is an imperative, compiled programming language designed with a focus on simple and enjoyable syntax with sensible defaults.
+Caracal is an imperative, compiled programming language designed with a focus on simple and enjoyable syntax with sensible defaults.
 The goal is a statically typed language that feels like a dynamically typed language thanks to type inference.
 
 ## Features
 - Static typing
 - Type inference
-- Modules
-- No semicolons
 
 ## Roadmap
-The current focus is on getting a minimal version up and running. For that, I'm targeting a bytecode VM, that is later going to be reused for compile time execution.
+The current focus is on getting a minimal version up and running. For that, I'm generating C++ code, later on I'm probably gonna use LLVM.
 
 - Lexer: mostly done
 - Parser: basic syntax can be parsed but is missing advanced features
-- Typechecker: current focus of development
+- Typechecker: none yet
 - Optimizer: none yet
-- Codegen: none yet
-- Bytecode VM: very early version
-- Compile time execution: none yet
+- Codegen: some code is already executable
 
 ## Examples
 
@@ -31,8 +27,8 @@ The current focus is on getting a minimal version up and running. For that, I'm 
 The global scope can't contain variables, any identifier defined here is a constant and can't be changed at runtime.
 
 ```rb
-year = 2024
-currentOS = OS::Windows
+year :: 2024;
+currentOS :: OS.Windows;
 ```
 
 ### Functions
@@ -42,10 +38,10 @@ The global scope can also contain functions, they can be used to initialize cons
 ```rb
 def square(x: i32) 
 { 
-    return x * x 
+    return x * x;
 }
 
-y = square(10)
+y :: square(10);
 ```
 
 ### Types
@@ -55,16 +51,16 @@ Types are the data objects of the language, they are similar to structs in other
 ```rb
 type Two
 {
-    one = 1
+    one :: 1
     
-    def one()
+    def one() i32
     {
-        return .one
+        return .one;
     }
 
-    def value()
+    def value() i32
     {
-        return .one() + .one()
+        return .one() + .one();
     }
 }
 ```
@@ -78,16 +74,16 @@ The first member has a value of 0, and each successive member has a value one gr
 enum Values
 {
     First
-    Second = 5
+    Second :: 5
     Third
 }
 
-s = Values::Second
+s :: Values.Second;
 ```
 
 ### Variants
 
-Variants, also known as sum types or tagged unions, are Aalenian's way to do polymorphism, they allow you to put different types behind a unified interface. They can be extended from multiple files.
+Variants, also known as sum types or tagged unions, are Caracal's way to do polymorphism, they allow you to put different types behind a unified interface. They can be extended from multiple files.
 
 ```rb
 variant V : Vector1D | Vector2D | Vector3D
