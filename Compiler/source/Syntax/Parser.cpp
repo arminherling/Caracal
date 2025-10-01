@@ -378,9 +378,16 @@ namespace Caracal
     {
         auto keyword = advanceOnMatch(TokenKind::TypeKeyword);
         auto nameExpression = parseNameExpression();
+        
+        std::optional<ParametersNodeUPtr> maybeParameters;
+        if (currentToken().kind == TokenKind::OpenParenthesis)
+        {
+            maybeParameters = parseParametersNode();
+        }
+
         auto body = parseTypeBody();
 
-        return std::make_unique<TypeDefinitionStatement>(keyword, std::move(nameExpression), std::move(body));
+        return std::make_unique<TypeDefinitionStatement>(keyword, std::move(nameExpression), std::move(maybeParameters), std::move(body));
     }
 
     StatementUPtr Parser::parseTypeFieldDeclaration(ExpressionUPtr&& leftExpression)
@@ -416,9 +423,7 @@ namespace Caracal
     StatementUPtr Parser::parseMethodDefinitionStatement()
     {
         auto modifier = MethodModifier::Public;
-        auto specialFunctionType = SpecialFunctionType::None;
         auto keyword = advanceOnMatch(TokenKind::DefKeyword);
-        auto maybeNegation = tryMatchKind(TokenKind::Bang);
         auto methodNameNode = parseMethodNameNode();
         auto parameters = parseParametersNode();
         auto returnTypes = parseReturnTypesNode();
@@ -426,6 +431,7 @@ namespace Caracal
 
         if(methodNameNode->typeNameExpression().has_value())
         {
+            // Methods defined as "def Type.function()" are considered static
             modifier = MethodModifier::Static;
         }
 
@@ -439,23 +445,8 @@ namespace Caracal
         }
         else if (modifier == MethodModifier::Static && isPrivate)
         {
-            TODO("Static methods can't begin with an underscore");
+            TODO("Static methods can't begin with an underscore for now");
         }
-
-        if (maybeNegation.has_value())
-        {
-            if (nameLexeme == QStringLiteral("this"))
-            {
-                specialFunctionType = SpecialFunctionType::Destructor;
-            }
-            else
-            {
-                TODO("Error about destructor keyword");
-            }
-        }
-
-        if (specialFunctionType == SpecialFunctionType::None && nameLexeme == QStringLiteral("this"))
-            specialFunctionType = SpecialFunctionType::Constructor;
 
         return std::make_unique<MethodDefinitionStatement>(
             keyword, 
@@ -464,7 +455,7 @@ namespace Caracal
             std::move(returnTypes), 
             std::move(body), 
             modifier,
-            specialFunctionType);
+            SpecialFunctionType::None);
     }
     
     BlockNodeUPtr Parser::parseFunctionBody()

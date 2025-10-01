@@ -1,0 +1,33 @@
+﻿TypeDefinitionStatement: {
+    NameExpression: {
+        Name: Number
+    }
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: para
+            TypeNameNode: {
+                Type: i32
+            }
+        }
+    }
+    BlockNode(1): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Name: value
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: i32
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Name: para
+                }
+            }
+        }
+    }
+}

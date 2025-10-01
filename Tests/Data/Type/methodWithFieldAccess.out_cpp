@@ -3,6 +3,9 @@
 class One
 {
 public:
+    One() = default;
+    ~One() = default;
+
     int value();
 
 public:

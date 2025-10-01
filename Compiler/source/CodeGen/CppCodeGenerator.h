@@ -53,9 +53,8 @@ namespace Caracal
         struct CppTypeDef
         {
             QStringView name;
+            ParametersNode* constructorParameters = nullptr;
             std::vector<TypeFieldDeclaration*> publicFields;
-            std::vector<MethodDefinitionStatement*> constructors;
-            MethodDefinitionStatement* destructor;
             std::vector<MethodDefinitionStatement*> publicMethods;
             std::vector<MethodDefinitionStatement*> staticMethods;
             std::vector<MethodDefinitionStatement*> privateMethods;
@@ -65,10 +64,11 @@ namespace Caracal
         void generateConstantDeclaration(ConstantDeclaration* node) noexcept;
         void generateVariableDeclaration(VariableDeclaration* node) noexcept;
         void generateTypeFieldDeclaration(TypeFieldDeclaration* node) noexcept;
-        void generateConstructorDeclarationSignature(QStringView className, MethodDefinitionStatement* node) noexcept;
-        void generateDestructorDeclarationSignature(QStringView className, MethodDefinitionStatement* node) noexcept;
+        void generateConstructorDeclarationSignature(QStringView className, ParametersNode* node) noexcept;
+        void generateConstructorDefinition(CppTypeDef* cppType) noexcept;
+        void generateDestructorDeclarationSignature(QStringView className) noexcept;
         void generateMethodDeclarationSignature(MethodDefinitionStatement* node) noexcept;
-        void generateMethodDefinitionSignature(const QStringView& typeName, MethodDefinitionStatement* node) noexcept;
+        void generateMethodDefinition(const QStringView& typeName, MethodDefinitionStatement* node) noexcept;
         void generateGlobalDiscardedExpression(Expression* expression) noexcept;
         void generateLocalDiscardedExpression(Expression* expression) noexcept;
         void generateCppBlock(CppBlockStatement* node) noexcept;
@@ -80,7 +80,7 @@ namespace Caracal
         QString generateFunctionSignatureNamePart(QStringView functionName) noexcept;
         QString generateFunctionSignatureParameterPart(ParametersNode* parametersNode) noexcept;
         void generateTypeDefinitionStatement(TypeDefinitionStatement* node) noexcept;
-        void generateTypeFieldName(NameExpression* node) noexcept;
+        QString generateTypeFieldName(NameExpression* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
         void generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept;
         void generateIfStatement(IfStatement* node) noexcept;

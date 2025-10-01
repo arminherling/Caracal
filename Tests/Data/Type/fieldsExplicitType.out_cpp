@@ -3,6 +3,10 @@
 class Fields
 {
 public:
+    Fields() = default;
+    ~Fields() = default;
+
+public:
     const int m_x = 0;
     int m_y = 10;
     int m_z;

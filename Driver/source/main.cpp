@@ -54,10 +54,11 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    auto sourceFilePath = tempFile.fileName();
-    tempFile.write(cppCode.toUtf8());
+    auto generatedCode = cppCode.toUtf8();
+    tempFile.write(generatedCode);
     tempFile.close();
 
+    auto sourceFilePath = tempFile.fileName();
     auto baseName = fileInfo.baseName();
     auto executablePath = baseName + ".exe";
     auto arguments = QStringList()
@@ -113,7 +114,7 @@ int main(int argc, char* argv[])
     executionDuration -= seconds;
     const auto milliseconds = duration_cast<std::chrono::milliseconds>(executionDuration);
 
-    std::cout << "\nTime: " << seconds << " " << milliseconds << '\n';
+    std::cout << "\nExecution Time: " << seconds << " " << milliseconds << '\n';
 
     return 0;
 }

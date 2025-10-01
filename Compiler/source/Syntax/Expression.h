@@ -9,6 +9,8 @@ namespace Caracal
     {
     public:
         Expression(NodeKind kind, const Type& type);
+
+        [[nodiscard]] bool isLiteral() const noexcept;
     };
 
     using ExpressionUPtr = std::unique_ptr<Expression>;

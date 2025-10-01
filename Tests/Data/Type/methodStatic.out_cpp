@@ -3,6 +3,9 @@
 class Zero
 {
 public:
+    Zero() = default;
+    ~Zero() = default;
+
     static int value();
 };
 

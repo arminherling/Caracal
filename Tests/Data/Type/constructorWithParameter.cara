@@ -1,0 +1,4 @@
+type Number(para: i32)
+{
+    value: i32 = para
+}

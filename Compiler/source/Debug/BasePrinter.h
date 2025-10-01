@@ -20,8 +20,8 @@ namespace Caracal
         [[nodiscard]] QTextStream& stream() noexcept { return m_stream; }
         [[nodiscard]] QByteArray toUtf8() const noexcept { return m_output.toUtf8(); }
 
-        [[nodiscard]] QString indentation() const noexcept { return QString(" ").repeated(m_indentation * m_indentationLevel); }
-        [[nodiscard]] QString newLine() const noexcept { return QString("\n"); }
+        [[nodiscard]] QString indentation() const noexcept { return QStringLiteral(" ").repeated(m_indentation * m_indentationLevel); }
+        [[nodiscard]] QString newLine() const noexcept { return QStringLiteral("\n"); }
 
         i32 m_indentation;
         i32 m_indentationLevel;

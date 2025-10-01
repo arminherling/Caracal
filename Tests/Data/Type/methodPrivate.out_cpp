@@ -2,6 +2,10 @@
 
 class Zero
 {
+public:
+    Zero() = default;
+    ~Zero() = default;
+
 private:
     int value();
 };

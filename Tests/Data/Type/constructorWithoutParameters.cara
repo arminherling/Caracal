@@ -1,9 +1,0 @@
-type Number
-{
-    value: i32
-
-    def this()
-    {
-        .value = 42;
-    }
-}

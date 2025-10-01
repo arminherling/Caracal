@@ -328,6 +328,10 @@ namespace Caracal
         pushIndentation();
 
         prettyPrintNameExpression(statement->nameExpression().get());
+        if (statement->constructorParameters().has_value())
+        {
+            prettyPrintParametersNode(statement->constructorParameters().value().get());
+        }
         prettyPrintBlockNode(statement->bodyNode().get());
 
         popIndentation();

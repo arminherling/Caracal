@@ -3,6 +3,10 @@
 class Fields
 {
 public:
+    Fields() = default;
+    ~Fields() = default;
+
+public:
     const bool m_a = true;
     bool m_b = false;
 };

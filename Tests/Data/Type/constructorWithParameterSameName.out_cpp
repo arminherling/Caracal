@@ -1,0 +1,17 @@
+﻿class Number;
+
+class Number
+{
+public:
+    Number(int value);
+    ~Number() = default;
+
+public:
+    int m_value;
+};
+
+Number::Number(int value)
+    : m_value{ value }
+{
+}
+

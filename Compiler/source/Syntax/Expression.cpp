@@ -6,4 +6,10 @@ namespace Caracal
         : Node(kind, type)
     {
     }
+
+    bool Expression::isLiteral() const noexcept
+    {
+        const auto thisKind = kind();
+        return (thisKind == NodeKind::BoolLiteral || thisKind == NodeKind::NumberLiteral || thisKind == NodeKind::StringLiteral);
+    }
 }

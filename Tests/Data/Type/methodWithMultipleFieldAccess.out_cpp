@@ -3,6 +3,9 @@
 class Two
 {
 public:
+    Two() = default;
+    ~Two() = default;
+
     int one();
     int value();
 
