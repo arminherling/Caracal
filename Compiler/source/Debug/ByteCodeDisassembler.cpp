@@ -1,14 +1,14 @@
-#include "ByteCodeDisassembler.h"
+﻿#include "ByteCodeDisassembler.h"
 
 #include <VirtualMachine/Op.h>
 
 namespace
 {
-    const auto LongestOpNameSize = StringifyOp(Op::GreaterOrEqualInt32).size();
+    const auto LongestOpNameSize = stringifyOp(Op::GreaterOrEqualInt32).size();
 
     QString StringifyAndPadOp(Op op)
     {
-        return StringifyOp(op).leftJustified(LongestOpNameSize, ' ');
+        return stringifyOp(op).leftJustified(LongestOpNameSize, ' ');
     }
 
     QString StringifyRegister(u16 reg)

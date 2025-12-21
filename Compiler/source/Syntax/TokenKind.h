@@ -1,9 +1,9 @@
-#pragma once
+﻿#pragma once
 
 #include <Defines.h>
 #include <Compiler/API.h>
 
-#include <QString>
+#include <string>
 
 enum class COMPILER_API TokenKind
 {
@@ -58,6 +58,6 @@ enum class COMPILER_API TokenKind
     EndOfFile
 };
 
-[[nodiscard]] COMPILER_API QString Stringify(TokenKind kind);
+[[nodiscard]] COMPILER_API std::string stringify(TokenKind kind);
 [[nodiscard]] COMPILER_API i32 unaryOperatorPrecedence(TokenKind kind);
 [[nodiscard]] COMPILER_API i32 binaryOperatorPrecedence(TokenKind kind);

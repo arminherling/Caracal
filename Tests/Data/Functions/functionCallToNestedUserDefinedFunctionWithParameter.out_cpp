@@ -1,4 +1,4 @@
-﻿int one();
+int one();
 void inner(int x);
 void outer();
 

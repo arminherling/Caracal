@@ -1,4 +1,4 @@
-﻿void inner(bool x);
+void inner(bool x);
 void outer();
 
 void inner(bool x)

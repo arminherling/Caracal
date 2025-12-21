@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Defines.h>
 #include <Compiler/API.h>
@@ -17,18 +17,21 @@ namespace Caracal
 
         void addToken(const Token& token) noexcept;
         [[nodiscard]] i32 addLexeme(QStringView lexeme) noexcept;
+        [[nodiscard]] i32 addTrivia(QStringView trivia) noexcept;
         [[nodiscard]] i32 addSourceLocation(const SourceLocation& sourceLocation) noexcept;
 
         [[nodiscard]] i32 size() const noexcept;
         [[nodiscard]] const Token& getToken(i32 position) const noexcept;
         [[nodiscard]] const Token& getLastToken() const noexcept;
-        [[nodiscard]] const SourceLocation& getSourceLocation(const Token& token) const noexcept;
         [[nodiscard]] QStringView getLexeme(const Token& token) const noexcept;
+        [[nodiscard]] QStringView getTrivia(const Token& token) const noexcept;
+        [[nodiscard]] const SourceLocation& getSourceLocation(const Token& token) const noexcept;
 
     private:
         SourceTextSharedPtr source;
         std::vector<Token> tokens;
         std::vector<QStringView> lexemes;
+        std::vector<QStringView> trivias;
         std::vector<SourceLocation> sourceLocations;
     };
 }

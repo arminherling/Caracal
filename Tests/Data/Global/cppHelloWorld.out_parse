@@ -1,4 +1,4 @@
-﻿CppBlockStatement: {
+CppBlockStatement: {
     Lines (5): {
         "#include <iostream>"
         "int main() {"

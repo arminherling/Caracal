@@ -1,2 +1,2 @@
-﻿const auto x = 1;
+const auto x = 1;
 const auto& y = x;

@@ -1,68 +1,68 @@
-#include <Syntax/TokenKind.h>
+﻿#include <Syntax/TokenKind.h>
 #include <unordered_map>
 
-QString Stringify(TokenKind kind)
+std::string stringify(TokenKind kind)
 {
-    static const std::unordered_map<TokenKind, QString> kindToString{
-        { TokenKind::Unknown,           QStringLiteral("Unknown") },
-        { TokenKind::Error,             QStringLiteral("Error") },
+    static const std::unordered_map<TokenKind, std::string_view> kindToString{
+        { TokenKind::Unknown,           std::string_view("Unknown") },
+        { TokenKind::Error,             std::string_view("Error") },
 
-        { TokenKind::Plus,              QStringLiteral("Plus") },
-        { TokenKind::Minus,             QStringLiteral("Minus") },
-        { TokenKind::Star,              QStringLiteral("Star") },
-        { TokenKind::Slash,             QStringLiteral("Slash") },
-        { TokenKind::Dot,               QStringLiteral("Dot") },
-        { TokenKind::Comma,             QStringLiteral("Comma") },
-        { TokenKind::Colon,             QStringLiteral("Colon") },
-        { TokenKind::Semicolon,         QStringLiteral("Semicolon") },
-        { TokenKind::Underscore,        QStringLiteral("Underscore") },
-        { TokenKind::Uptick,            QStringLiteral("Uptick") },
+        { TokenKind::Plus,              std::string_view("Plus") },
+        { TokenKind::Minus,             std::string_view("Minus") },
+        { TokenKind::Star,              std::string_view("Star") },
+        { TokenKind::Slash,             std::string_view("Slash") },
+        { TokenKind::Dot,               std::string_view("Dot") },
+        { TokenKind::Comma,             std::string_view("Comma") },
+        { TokenKind::Colon,             std::string_view("Colon") },
+        { TokenKind::Semicolon,         std::string_view("Semicolon") },
+        { TokenKind::Underscore,        std::string_view("Underscore") },
+        { TokenKind::Uptick,            std::string_view("Uptick") },
 
-        { TokenKind::Equal,             QStringLiteral("Equal") },
-        { TokenKind::EqualEqual,        QStringLiteral("EqualEqual") },
-        { TokenKind::Bang,              QStringLiteral("Bang") },
-        { TokenKind::BangEqual,         QStringLiteral("BangEqual") },
-        { TokenKind::LessThan,          QStringLiteral("LessThan") },
-        { TokenKind::LessThanEqual,     QStringLiteral("LessThanEqual") },
-        { TokenKind::GreaterThan,       QStringLiteral("GreaterThan") },
-        { TokenKind::GreaterThanEqual,  QStringLiteral("GreaterThanEqual") },
-        { TokenKind::LessThan,          QStringLiteral("LessThan") },
-        { TokenKind::GreaterThan,       QStringLiteral("GreaterThan") },
+        { TokenKind::Equal,             std::string_view("Equal") },
+        { TokenKind::EqualEqual,        std::string_view("EqualEqual") },
+        { TokenKind::Bang,              std::string_view("Bang") },
+        { TokenKind::BangEqual,         std::string_view("BangEqual") },
+        { TokenKind::LessThan,          std::string_view("LessThan") },
+        { TokenKind::LessThanEqual,     std::string_view("LessThanEqual") },
+        { TokenKind::GreaterThan,       std::string_view("GreaterThan") },
+        { TokenKind::GreaterThanEqual,  std::string_view("GreaterThanEqual") },
+        { TokenKind::LessThan,          std::string_view("LessThan") },
+        { TokenKind::GreaterThan,       std::string_view("GreaterThan") },
 
-        { TokenKind::OpenParenthesis,   QStringLiteral("OpenParenthesis") },
-        { TokenKind::CloseParenthesis,  QStringLiteral("CloseParenthesis") },
-        { TokenKind::OpenBracket,       QStringLiteral("OpenBracket") },
-        { TokenKind::CloseBracket,      QStringLiteral("CloseBracket") },
+        { TokenKind::OpenParenthesis,   std::string_view("OpenParenthesis") },
+        { TokenKind::CloseParenthesis,  std::string_view("CloseParenthesis") },
+        { TokenKind::OpenBracket,       std::string_view("OpenBracket") },
+        { TokenKind::CloseBracket,      std::string_view("CloseBracket") },
 
-        { TokenKind::Identifier,        QStringLiteral("Identifier") },
-        { TokenKind::Number,            QStringLiteral("Number") },
-        { TokenKind::String,            QStringLiteral("String") },
-
-        { TokenKind::DefKeyword,        QStringLiteral("DefKeyword") },
-        { TokenKind::EnumKeyword,       QStringLiteral("EnumKeyword") },
-        { TokenKind::TypeKeyword,       QStringLiteral("TypeKeyword") },
-        { TokenKind::IfKeyword,         QStringLiteral("IfKeyword") },
-        { TokenKind::ElseKeyword,       QStringLiteral("ElseKeyword") },
-        { TokenKind::WhileKeyword,      QStringLiteral("WhileKeyword") },
-        { TokenKind::BreakKeyword,      QStringLiteral("BreakKeyword") },
-        { TokenKind::SkipKeyword,       QStringLiteral("SkipKeyword") },
-        { TokenKind::ReturnKeyword,     QStringLiteral("ReturnKeyword") },
-        { TokenKind::TrueKeyword,       QStringLiteral("TrueKeyword") },
-        { TokenKind::FalseKeyword,      QStringLiteral("FalseKeyword") },
-        { TokenKind::AndKeyword,        QStringLiteral("AndKeyword") },
-        { TokenKind::OrKeyword,         QStringLiteral("OrKeyword") },
-        { TokenKind::RefKeyword,        QStringLiteral("RefKeyword") },
-        { TokenKind::CppKeyword,        QStringLiteral("CppKeyword") },
-
-        { TokenKind::EndOfFile,         QStringLiteral("EndOfFile") },
+        { TokenKind::Identifier,        std::string_view("Identifier") },
+        { TokenKind::Number,            std::string_view("Number") },
+        { TokenKind::String,            std::string_view("String") },
+                                        
+        { TokenKind::DefKeyword,        std::string_view("DefKeyword") },
+        { TokenKind::EnumKeyword,       std::string_view("EnumKeyword") },
+        { TokenKind::TypeKeyword,       std::string_view("TypeKeyword") },
+        { TokenKind::IfKeyword,         std::string_view("IfKeyword") },
+        { TokenKind::ElseKeyword,       std::string_view("ElseKeyword") },
+        { TokenKind::WhileKeyword,      std::string_view("WhileKeyword") },
+        { TokenKind::BreakKeyword,      std::string_view("BreakKeyword") },
+        { TokenKind::SkipKeyword,       std::string_view("SkipKeyword") },
+        { TokenKind::ReturnKeyword,     std::string_view("ReturnKeyword") },
+        { TokenKind::TrueKeyword,       std::string_view("TrueKeyword") },
+        { TokenKind::FalseKeyword,      std::string_view("FalseKeyword") },
+        { TokenKind::AndKeyword,        std::string_view("AndKeyword") },
+        { TokenKind::OrKeyword,         std::string_view("OrKeyword") },
+        { TokenKind::RefKeyword,        std::string_view("RefKeyword") },
+        { TokenKind::CppKeyword,        std::string_view("CppKeyword") },
+                                        
+        { TokenKind::EndOfFile,         std::string_view("EndOfFile") },
     };
 
     const auto it = kindToString.find(kind);
     if (it != kindToString.end())
-        return it->second;
+        return std::string(it->second);
 
     TODO("String for TokenKind value was not defined yet");
-    return QString();
+    return std::string();
 }
 
 i32 unaryOperatorPrecedence(TokenKind kind)

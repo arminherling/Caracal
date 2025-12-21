@@ -1,4 +1,4 @@
-﻿enum class Empty : unsigned char;
+enum class Empty : unsigned char;
 
 enum class Empty : unsigned char
 {

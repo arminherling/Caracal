@@ -1,4 +1,4 @@
-﻿void square(int x);
+void square(int x);
 
 void square(int x)
 {

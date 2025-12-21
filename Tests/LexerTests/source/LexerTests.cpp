@@ -1,4 +1,4 @@
-#include <CaraTest.h>
+﻿#include <CaraTest.h>
 
 #include <Syntax/Lexer.h>
 #include <Syntax/Token.h>
@@ -8,319 +8,345 @@
 #include <iostream>
 #include <QDir>
 
-namespace
+static void ExpectedTokenKind(const std::string& /*testName*/, const std::string& input, TokenKind expectedKind)
 {
-    void ExpectedTokenKind(const QString& /*testName*/, const QString& input, TokenKind expectedKind)
-    {
-        auto startTime = std::chrono::high_resolution_clock::now();
+    auto startTime = std::chrono::high_resolution_clock::now();
 
-        auto source = std::make_shared<Caracal::SourceText>(input);
-        Caracal::DiagnosticsBag diagnostics;
+    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    Caracal::DiagnosticsBag diagnostics;
 
-        auto tokens = Caracal::lex(source, diagnostics);
-        auto& token = tokens.getToken(0);
+    auto tokens = Caracal::lex(source, diagnostics);
+    auto& token = tokens.getToken(0);
 
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
-        CaraTest::AreEqual(expectedKind, token.kind);
-        // expected token + eof token
-        CaraTest::AreEqual(tokens.size(), 2);
-    }
+    CaraTest::areEqual(expectedKind, token.kind);
+    // expected token + eof token
+    CaraTest::areEqual(tokens.size(), 2);
+}
 
-    QList<std::tuple<QString, QString, TokenKind>> Symbols_Data()
-    {
-        return {
-            std::make_tuple(QString("Plus"), QString("+"), TokenKind::Plus),
-            std::make_tuple(QString("Minus"), QString("-"), TokenKind::Minus),
-            std::make_tuple(QString("Star"), QString("*"), TokenKind::Star),
-            std::make_tuple(QString("Slash"), QString("/"), TokenKind::Slash),
+static QList<std::tuple<std::string, std::string, TokenKind>> Symbols_Data()
+{
+    return {
+        std::make_tuple("Plus", "+", TokenKind::Plus),
+        std::make_tuple("Minus", "-", TokenKind::Minus),
+        std::make_tuple("Star", "*", TokenKind::Star),
+        std::make_tuple("Slash", "/", TokenKind::Slash),
 
-            std::make_tuple(QString("Dot"), QString("."), TokenKind::Dot),
-            std::make_tuple(QString("Comma"), QString(","), TokenKind::Comma),
-            std::make_tuple(QString("Colon"), QString(":"), TokenKind::Colon),
-            std::make_tuple(QString("Semicolon"), QString(";"), TokenKind::Semicolon),
-            std::make_tuple(QString("Underscore"), QString("_"), TokenKind::Underscore),
-            std::make_tuple(QString("Uptick"), QString("'"), TokenKind::Uptick),
+        std::make_tuple("Dot", ".", TokenKind::Dot),
+        std::make_tuple("Comma", ",", TokenKind::Comma),
+        std::make_tuple("Colon", ":", TokenKind::Colon),
+        std::make_tuple("Semicolon", ";", TokenKind::Semicolon),
+        std::make_tuple("Underscore", "_", TokenKind::Underscore),
+        std::make_tuple("Uptick", "'", TokenKind::Uptick),
             
-            std::make_tuple(QString("Equal"), QString("="), TokenKind::Equal),
-            std::make_tuple(QString("EqualEqual"), QString("=="), TokenKind::EqualEqual),
-            std::make_tuple(QString("Bang"), QString("!"), TokenKind::Bang),
-            std::make_tuple(QString("BangEqual"), QString("!="), TokenKind::BangEqual),
-            std::make_tuple(QString("LessThan"), QString("<"), TokenKind::LessThan),
-            std::make_tuple(QString("LessThanEqual"), QString("<="), TokenKind::LessThanEqual),
-            std::make_tuple(QString("GreaterThan"), QString(">"), TokenKind::GreaterThan),
-            std::make_tuple(QString("GreaterThanEqual"), QString(">="), TokenKind::GreaterThanEqual),
+        std::make_tuple("Equal", "=", TokenKind::Equal),
+        std::make_tuple("EqualEqual", "==", TokenKind::EqualEqual),
+        std::make_tuple("Bang", "!", TokenKind::Bang),
+        std::make_tuple("BangEqual", "!=", TokenKind::BangEqual),
+        std::make_tuple("LessThan", "<", TokenKind::LessThan),
+        std::make_tuple("LessThanEqual", "<=", TokenKind::LessThanEqual),
+        std::make_tuple("GreaterThan", ">", TokenKind::GreaterThan),
+        std::make_tuple("GreaterThanEqual", ">=", TokenKind::GreaterThanEqual),
 
-            std::make_tuple(QString("OpenParenthesis"), QString("("), TokenKind::OpenParenthesis),
-            std::make_tuple(QString("CloseParenthesis"), QString(")"), TokenKind::CloseParenthesis),
-            std::make_tuple(QString("OpenBracket"), QString("{"), TokenKind::OpenBracket),
-            std::make_tuple(QString("CloseBracket"), QString("}"), TokenKind::CloseBracket),
+        std::make_tuple("OpenParenthesis", "(", TokenKind::OpenParenthesis),
+        std::make_tuple("CloseParenthesis", ")", TokenKind::CloseParenthesis),
+        std::make_tuple("OpenBracket", "{", TokenKind::OpenBracket),
+        std::make_tuple("CloseBracket", "}", TokenKind::CloseBracket),
 
-            std::make_tuple(QString("Unknown"), QString("$"), TokenKind::Unknown),
-        };
-    }
-
-    QList<std::tuple<QString, QString, TokenKind>> Keyword_Data()
-    {
-        return {
-            std::make_tuple(QString("Def"), QString("def"), TokenKind::DefKeyword),
-            std::make_tuple(QString("Enum"), QString("enum"), TokenKind::EnumKeyword),
-            std::make_tuple(QString("Type"), QString("type"), TokenKind::TypeKeyword),
-            std::make_tuple(QString("If"), QString("if"), TokenKind::IfKeyword),
-            std::make_tuple(QString("Else"), QString("else"), TokenKind::ElseKeyword),
-            std::make_tuple(QString("While"), QString("while"), TokenKind::WhileKeyword),
-            std::make_tuple(QString("Break"), QString("break"), TokenKind::BreakKeyword),
-            std::make_tuple(QString("Skip"), QString("skip"), TokenKind::SkipKeyword),
-            std::make_tuple(QString("Return"), QString("return"), TokenKind::ReturnKeyword),
-            std::make_tuple(QString("True"), QString("true"), TokenKind::TrueKeyword),
-            std::make_tuple(QString("False"), QString("false"), TokenKind::FalseKeyword),
-            std::make_tuple(QString("And"), QString("and"), TokenKind::AndKeyword),
-            std::make_tuple(QString("Or"), QString("or"), TokenKind::OrKeyword),
-            std::make_tuple(QString("Ref"), QString("ref"), TokenKind::RefKeyword),
-            std::make_tuple(QString("C++"), QString("cpp"), TokenKind::CppKeyword),
-        };
-    }
-
-    void IgnoresWhitespaces(const QString& input)
-    {
-        auto startTime = std::chrono::high_resolution_clock::now();
-
-        auto source = std::make_shared<Caracal::SourceText>(input);
-        Caracal::DiagnosticsBag diagnostics;
-
-        auto tokens = Caracal::lex(source, diagnostics);
-        auto& token = tokens.getToken(0);
-
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
-
-        CaraTest::AreEqual(TokenKind::EndOfFile, token.kind);
-    }
-
-    QList<std::tuple<QString>> IgnoresWhitespaces_Data()
-    {
-        return {
-            std::make_tuple(QString("")),
-            std::make_tuple(QString(" ")),
-            std::make_tuple(QString("     ")),
-            std::make_tuple(QString("\t")),
-            std::make_tuple(QString("\r")),
-            std::make_tuple(QString("\n")),
-            std::make_tuple(QString("\r\n")),
-            std::make_tuple(QString("\0"))
-        };
-    }
-
-    void Identifiers(const QString& input, const QString& expectedLexeme)
-    {
-        auto startTime = std::chrono::high_resolution_clock::now();
-
-        auto source = std::make_shared<Caracal::SourceText>(input);
-        Caracal::DiagnosticsBag diagnostics;
-
-        auto tokens = Caracal::lex(source, diagnostics);
-        auto& token = tokens.getToken(0);
-
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
-
-        CaraTest::AreEqual(TokenKind::Identifier, token.kind);
-        auto lexeme = tokens.getLexeme(token);
-        CaraTest::AreEqual(expectedLexeme, lexeme);
-    }
-
-    QList<std::tuple<QString, QString>> Identifiers_Data()
-    {
-        return {
-            std::make_tuple(QString("x"), QString("x")),
-            std::make_tuple(QString("foo"), QString("foo")),
-            std::make_tuple(QString(" bar "), QString("bar")),
-            std::make_tuple(QString("i32"), QString("i32")),
-            std::make_tuple(QString("use"), QString("use")),
-            std::make_tuple(QString("class"), QString("class")),
-            std::make_tuple(QString("define"), QString("define")),
-            std::make_tuple(QString(" _name"), QString("_name")),
-            std::make_tuple(QString("m_index"), QString("m_index")),
-            std::make_tuple(QString("_10"), QString("_10")),
-            std::make_tuple(QString("\n returned"), QString("returned")),
-            std::make_tuple(QString("enumeration"), QString("enumeration")),
-        };
-    }
-
-    void Numbers(const QString& input, const QString& expectedLexeme)
-    {
-        auto startTime = std::chrono::high_resolution_clock::now();
-
-        auto source = std::make_shared<Caracal::SourceText>(input);
-        Caracal::DiagnosticsBag diagnostics;
-
-        auto tokens = Caracal::lex(source, diagnostics);
-        auto& token = tokens.getToken(0);
-
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
-
-        CaraTest::AreEqual(TokenKind::Number, token.kind);
-        auto lexeme = tokens.getLexeme(token);
-        CaraTest::AreEqual(expectedLexeme, lexeme);
-    }
-
-    QList<std::tuple<QString, QString>> Numbers_Data()
-    {
-        return {
-            std::make_tuple(QString("0"), QString("0")),
-            std::make_tuple(QString("  1234 "), QString("1234")),
-            std::make_tuple(QString("  1_234 "), QString("1_234")),
-            std::make_tuple(QString("12."), QString("12")),
-            std::make_tuple(QString("12.34"), QString("12.34")),
-            std::make_tuple(QString("1_2.3_4"), QString("1_2.3_4")),
-            std::make_tuple(QString("12.34_"), QString("12.34_")),
-            std::make_tuple(QString("12.34. "), QString("12.34")),
-            std::make_tuple(QString(" 1234567890"), QString("1234567890"))
-        };
-    }
-
-    void Strings(const QString& input, const QString& expectedLexeme)
-    {
-        auto startTime = std::chrono::high_resolution_clock::now();
-
-        auto source = std::make_shared<Caracal::SourceText>(input);
-        Caracal::DiagnosticsBag diagnostics;
-
-        auto tokens = Caracal::lex(source, diagnostics);
-        auto& token = tokens.getToken(0);
-
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
-
-        CaraTest::AreEqual(TokenKind::String, token.kind);
-        auto lexeme = tokens.getLexeme(token);
-        CaraTest::AreEqual(expectedLexeme, lexeme);
-    }
-
-    QList<std::tuple<QString, QString>> Strings_Data()
-    {
-        return {
-            std::make_tuple(QString(" \"\" "), QString("\"\"")),
-            std::make_tuple(QString("  \"1234\" "), QString("\"1234\"")),
-            std::make_tuple(QString("\"string with whitespace\" "), QString("\"string with whitespace\"")),
-            std::make_tuple(QString(" \"1234567890\""), QString("\"1234567890\""))
-        };
-    }
-
-    QList<std::tuple<QString, QString>> StringsWithEscapes_Data()
-    {
-        return {
-            std::make_tuple(QString("\"single quote\\'\""), QString("\"single quote\\'\"")),
-            std::make_tuple(QString("\"double quote\\\"\""), QString("\"double quote\\\"\"")),
-            std::make_tuple(QString("\"backslash\\\\\""), QString("\"backslash\\\\\"")),
-            std::make_tuple(QString("\"audible bell\\a\""), QString("\"audible bell\\a\"")),
-            std::make_tuple(QString("\"backspace\\b\""), QString("\"backspace\\b\"")),
-            std::make_tuple(QString("\"form feed\\f\""), QString("\"form feed\\f\"")),
-            std::make_tuple(QString("\"line feed\\n\""), QString("\"line feed\\n\"")),
-            std::make_tuple(QString("\"carriage return\\r\""), QString("\"carriage return\\r\"")),
-            std::make_tuple(QString("\"horizonal tab\\t\""), QString("\"horizonal tab\\t\"")),
-            std::make_tuple(QString("\"vertical tab\\v\""), QString("\"vertical tab\\v\"")),
-        };
-    }
-
-    void UnterminatedStrings(const QString& input, const QString& expectedLexeme)
-    {
-        auto startTime = std::chrono::high_resolution_clock::now();
-
-        auto source = std::make_shared<Caracal::SourceText>(input);
-        Caracal::DiagnosticsBag diagnostics;
-
-        auto tokens = Caracal::lex(source, diagnostics);
-        auto& token = tokens.getToken(0);
-
-        CaraTest::IsTrue(!diagnostics.Diagnostics().empty());
-
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
-
-        CaraTest::AreEqual(TokenKind::Error, token.kind);
-        auto lexeme = tokens.getLexeme(token);
-        CaraTest::AreEqual(expectedLexeme, lexeme);
-    }
-
-    QList<std::tuple<QString, QString>> UnterminatedStrings_Data()
-    {
-        return {
-            std::make_tuple(QString(" \" "), QString("\" ")),
-            std::make_tuple(QString("  \"1234 "), QString("\"1234 ")),
-            std::make_tuple(QString("\"string with whitespace "), QString("\"string with whitespace ")),
-            std::make_tuple(QString(" \"1234567890"), QString("\"1234567890"))
-        };
-    }
-
-    void WholeInput(QString input, i32 tokenCount)
-    {
-        auto startTime = std::chrono::high_resolution_clock::now();
-
-        auto source = std::make_shared<Caracal::SourceText>(input);
-        Caracal::DiagnosticsBag diagnostics;
-
-        auto tokens = Caracal::lex(source, diagnostics);
-
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
-
-        CaraTest::IsTrue(diagnostics.Diagnostics().empty());
-        CaraTest::AreEqual(tokenCount, tokens.size());
-    }
-
-    QList<std::tuple<QString, i32>> WholeInput_Data()
-    {
-        return {
-            std::make_tuple(QString(""), 1),
-            std::make_tuple(QString("name"), 2),
-            std::make_tuple(QString("use name"), 3),
-            std::make_tuple(QString("return (x, y)"), 7),
-            //std::make_tuple(QString("a = () => 3"), 8),
-            std::make_tuple(QString("enum Value { A B = 5 C D }"), 11),
-            std::make_tuple(QString("define sum(a int, b int) { return a + b }"), 16)
-        };
-    }
-
-    void OneMillionLinesTime()
-    {
-#ifdef QT_DEBUG
-        CaraTest::Skip();// ("");
-#endif
-        auto testFile = QDir::cleanPath(QString("../../Tests/LexerTests/data/oneMilLines.txt"));
-
-        QFile file(testFile);
-        if (!file.open(QFile::ReadOnly | QFile::Text))
-            CaraTest::Fail();// ("Couldnt open file");
-
-        QString data = file.readAll();
-
-        auto source = std::make_shared<Caracal::SourceText>(data);
-        Caracal::DiagnosticsBag diagnostics;
-
-        auto startTime = std::chrono::high_resolution_clock::now();
-        auto tokens = Caracal::lex(source, diagnostics);
-
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "      lex(): " << CaraTest::Stringify(endTime - startTime).toStdString() << std::endl;
-    }
+        std::make_tuple("Unknown", "$", TokenKind::Unknown),
+    };
 }
 
-CaraTest::TestSuite LexerTestsSuite()
+static QList<std::tuple<std::string, std::string, TokenKind>> Keyword_Data()
 {
-    CaraTest::TestSuite suite{};
-    suite.add(QString("SingleCharacter"), ExpectedTokenKind, Symbols_Data);
-    suite.add(QString("IgnoresWhitespaces"), IgnoresWhitespaces, IgnoresWhitespaces_Data);
-    suite.add(QString("Identifiers"), Identifiers, Identifiers_Data);
-    suite.add(QString("Numbers"), Numbers, Numbers_Data);
-    suite.add(QString("Strings"), Strings, Strings_Data);
-    suite.add(QString("StringsWithEscapes"), Strings, StringsWithEscapes_Data);
-    suite.add(QString("UnterminatedStrings"), UnterminatedStrings, UnterminatedStrings_Data);
-    suite.add(QString("Keywords"), ExpectedTokenKind, Keyword_Data);
-    suite.add(QString("WholeInput"), WholeInput, WholeInput_Data);
-    suite.add(QString("OneMillionLinesTime"), OneMillionLinesTime);
-
-    return suite;
+    return {
+        std::make_tuple("Def", "def", TokenKind::DefKeyword),
+        std::make_tuple("Enum", "enum", TokenKind::EnumKeyword),
+        std::make_tuple("Type", "type", TokenKind::TypeKeyword),
+        std::make_tuple("If", "if", TokenKind::IfKeyword),
+        std::make_tuple("Else", "else", TokenKind::ElseKeyword),
+        std::make_tuple("While", "while", TokenKind::WhileKeyword),
+        std::make_tuple("Break", "break", TokenKind::BreakKeyword),
+        std::make_tuple("Skip", "skip", TokenKind::SkipKeyword),
+        std::make_tuple("Return", "return", TokenKind::ReturnKeyword),
+        std::make_tuple("True", "true", TokenKind::TrueKeyword),
+        std::make_tuple("False", "false", TokenKind::FalseKeyword),
+        std::make_tuple("And", "and", TokenKind::AndKeyword),
+        std::make_tuple("Or", "or", TokenKind::OrKeyword),
+        std::make_tuple("Ref", "ref", TokenKind::RefKeyword),
+        std::make_tuple("C++", "cpp", TokenKind::CppKeyword),
+    };
 }
+
+static void IgnoresWhitespaces(const std::string& input)
+{
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    Caracal::DiagnosticsBag diagnostics;
+
+    auto tokens = Caracal::lex(source, diagnostics);
+    auto& token = tokens.getToken(0);
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+
+    CaraTest::areEqual(TokenKind::EndOfFile, token.kind);
+}
+
+static QList<std::tuple<std::string>> IgnoresWhitespaces_Data()
+{
+    return {
+        std::make_tuple(""),
+        std::make_tuple(" "),
+        std::make_tuple("     "),
+        std::make_tuple("\t"),
+        std::make_tuple("\r"),
+        std::make_tuple("\n"),
+        std::make_tuple("\r\n"),
+        std::make_tuple("\0")
+    };
+}
+
+static void Identifiers(const std::string& input, const std::string& expectedLexeme)
+{
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    Caracal::DiagnosticsBag diagnostics;
+
+    auto tokens = Caracal::lex(source, diagnostics);
+    auto& token = tokens.getToken(0);
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+
+    CaraTest::areEqual(TokenKind::Identifier, token.kind);
+    auto lexeme = tokens.getLexeme(token);
+    CaraTest::areEqual(expectedLexeme, lexeme.toString().toStdString());
+}
+
+static QList<std::tuple<std::string, std::string>> Identifiers_Data()
+{
+    return {
+        std::make_tuple("x", "x"),
+        std::make_tuple("foo", "foo"),
+        std::make_tuple(" bar ", "bar"),
+        std::make_tuple("i32", "i32"),
+        std::make_tuple("use", "use"),
+        std::make_tuple("class", "class"),
+        std::make_tuple("define", "define"),
+        std::make_tuple(" _name", "_name"),
+        std::make_tuple("m_index", "m_index"),
+        std::make_tuple("_10", "_10"),
+        std::make_tuple("\n returned", "returned"),
+        std::make_tuple("enumeration", "enumeration"),
+    };
+}
+
+static void Numbers(const std::string& input, const std::string& expectedLexeme)
+{
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    Caracal::DiagnosticsBag diagnostics;
+
+    auto tokens = Caracal::lex(source, diagnostics);
+    auto& token = tokens.getToken(0);
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+
+    CaraTest::areEqual(TokenKind::Number, token.kind);
+    auto lexeme = tokens.getLexeme(token);
+    CaraTest::areEqual(expectedLexeme, lexeme.toString().toStdString());
+}
+
+static QList<std::tuple<std::string, std::string>> Numbers_Data()
+{
+    return {
+        std::make_tuple("0", "0"),
+        std::make_tuple("  1234 ", "1234"),
+        std::make_tuple("  1_234 ", "1_234"),
+        std::make_tuple("12.", "12"),
+        std::make_tuple("12.34", "12.34"),
+        std::make_tuple("1_2.3_4", "1_2.3_4"),
+        std::make_tuple("12.34_", "12.34_"),
+        std::make_tuple("12.34. ", "12.34"),
+        std::make_tuple(" 1234567890", "1234567890")
+    };
+}
+
+static void Strings(const std::string& input, const std::string& expectedLexeme)
+{
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    Caracal::DiagnosticsBag diagnostics;
+
+    auto tokens = Caracal::lex(source, diagnostics);
+    auto& token = tokens.getToken(0);
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+
+    CaraTest::areEqual(TokenKind::String, token.kind);
+    auto lexeme = tokens.getLexeme(token);
+    CaraTest::areEqual(expectedLexeme, lexeme.toString().toStdString());
+}
+
+static QList<std::tuple<std::string, std::string>> Strings_Data()
+{
+    return {
+        std::make_tuple(" \"\" ", "\"\""),
+        std::make_tuple("  \"1234\" ", "\"1234\""),
+        std::make_tuple("\"string with whitespace\" ", "\"string with whitespace\""),
+        std::make_tuple(" \"1234567890\"", "\"1234567890\"")
+    };
+}
+
+static QList<std::tuple<std::string, std::string>> StringsWithEscapes_Data()
+{
+    return {
+        std::make_tuple("\"single quote\\'\"", "\"single quote\\'\""),
+        std::make_tuple("\"double quote\\\"\"", "\"double quote\\\"\""),
+        std::make_tuple("\"backslash\\\\\"", "\"backslash\\\\\""),
+        std::make_tuple("\"audible bell\\a\"", "\"audible bell\\a\""),
+        std::make_tuple("\"backspace\\b\"", "\"backspace\\b\""),
+        std::make_tuple("\"form feed\\f\"", "\"form feed\\f\""),
+        std::make_tuple("\"line feed\\n\"", "\"line feed\\n\""),
+        std::make_tuple("\"carriage return\\r\"", "\"carriage return\\r\""),
+        std::make_tuple("\"horizonal tab\\t\"", "\"horizonal tab\\t\""),
+        std::make_tuple("\"vertical tab\\v\"", "\"vertical tab\\v\""),
+    };
+}
+
+static void UnterminatedStrings(const std::string& input, const std::string& expectedLexeme)
+{
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    Caracal::DiagnosticsBag diagnostics;
+
+    auto tokens = Caracal::lex(source, diagnostics);
+    auto& token = tokens.getToken(0);
+
+    CaraTest::isTrue(!diagnostics.Diagnostics().empty());
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+
+    CaraTest::areEqual(TokenKind::Error, token.kind);
+    auto lexeme = tokens.getLexeme(token);
+    CaraTest::areEqual(expectedLexeme, lexeme.toString().toStdString());
+}
+
+static QList<std::tuple<std::string, std::string>> UnterminatedStrings_Data()
+{
+    return {
+        std::make_tuple(" \" ", "\" "),
+        std::make_tuple("  \"1234 ", "\"1234 "),
+        std::make_tuple("\"string with whitespace ", "\"string with whitespace "),
+        std::make_tuple(" \"1234567890", "\"1234567890")
+    };
+}
+
+//static void WhiteSpaceTrivia(const std::string& input, const std::string& expectedTrivia)
+//{
+//    auto startTime = std::chrono::high_resolution_clock::now();
+
+//    auto source = std::make_shared<Caracal::SourceText>(input);
+//    Caracal::DiagnosticsBag diagnostics;
+
+//    auto tokens = Caracal::lex(source, diagnostics);
+//    auto& token = tokens.getToken(0);
+
+//    auto endTime = std::chrono::high_resolution_clock::now();
+//    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+
+//    auto lexeme = tokens.getTrivia(token);
+//    CaraTest::areEqual(expectedTrivia, lexeme);
+//}
+
+//static std::vector<std::tuple<std::string, std::string>> WhiteSpaceTrivia_Data()
+//{
+//    return {
+//        std::make_tuple(std::string("", std::string(""),
+//        std::make_tuple(std::string(" 1234567890", std::string(" "),
+//        std::make_tuple(std::string(" \"hello\"", std::string(" "),
+//        std::make_tuple(std::string(" bool", std::string(" "),
+//        std::make_tuple(std::string("   // 1234567890", std::string("   // 1234567890"),
+//        std::make_tuple(std::string("// hello\n123", std::string("// hello\n"),
+//        std::make_tuple(std::string(" /* block comment */ 123", std::string(" /* block comment */ "),
+//        std::make_tuple(std::string(" 1  id   \"hi\"    ", std::string(" "),
+//    };
+//}
+
+static void WholeInput(const std::string& input, i32 tokenCount)
+{
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    Caracal::DiagnosticsBag diagnostics;
+
+    auto tokens = Caracal::lex(source, diagnostics);
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+
+    CaraTest::isTrue(diagnostics.Diagnostics().empty());
+    CaraTest::areEqual(tokenCount, tokens.size());
+}
+
+static QList<std::tuple<std::string, i32>> WholeInput_Data()
+{
+    return {
+        std::make_tuple("", 1),
+        std::make_tuple("name", 2),
+        std::make_tuple("use name", 3),
+        std::make_tuple("return (x, y)", 7),
+        //std::make_tuple("a = () => 3", 8),
+        std::make_tuple("enum Value { A B = 5 C D }", 11),
+        std::make_tuple("define sum(a int, b int) { return a + b }", 16)
+    };
+}
+
+static void OneMillionLinesTime()
+{
+#ifdef QT_DEBUG
+    CaraTest::skip();// ("";
+#endif
+    auto testFile = QDir::cleanPath("../../Tests/LexerTests/data/oneMilLines.txt");
+
+    QFile file(testFile);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+        CaraTest::fail();// ("Couldnt open file";
+
+    QString data = file.readAll();
+
+    auto source = std::make_shared<Caracal::SourceText>(data);
+    Caracal::DiagnosticsBag diagnostics;
+
+    auto startTime = std::chrono::high_resolution_clock::now();
+    auto tokens = Caracal::lex(source, diagnostics);
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+}
+
+static auto tests =
+{
+    CaraTest::addTest("SingleCharacter", ExpectedTokenKind, Symbols_Data),
+    CaraTest::addTest("IgnoresWhitespaces", IgnoresWhitespaces, IgnoresWhitespaces_Data),
+    CaraTest::addTest("Identifiers", Identifiers, Identifiers_Data),
+    CaraTest::addTest("Numbers", Numbers, Numbers_Data),
+    CaraTest::addTest("Strings", Strings, Strings_Data),
+    CaraTest::addTest("StringsWithEscapes", StringsWithEscapes_Data),
+    CaraTest::addTest("UnterminatedStrings", UnterminatedStrings, UnterminatedStrings_Data),
+    CaraTest::addTest("Keywords", ExpectedTokenKind, Keyword_Data),
+    //CaraTest::addTest("WhiteSpaceTrivia", WhiteSpaceTrivia, WhiteSpaceTrivia_Data),
+    CaraTest::addTest("WholeInput", WholeInput, WholeInput_Data),
+    CaraTest::addTest("OneMillionLinesTime", OneMillionLinesTime),
+};

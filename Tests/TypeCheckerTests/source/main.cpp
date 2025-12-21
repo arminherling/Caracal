@@ -1,10 +1,6 @@
-#include <CaraTest.h>
-#include "TypeCheckerTests.h"
+﻿#include <CaraTest.h>
 
 int main(int argc, char* argv[])
 {
-    CaraTest::TestRunner runner{ argc, argv };
-    auto testSuites = TypeCheckerTestsSuite();
-
-    return runner.run(testSuites);
+    return CaraTest::runAll(argc, argv);
 }

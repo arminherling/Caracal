@@ -1,4 +1,4 @@
-#include <Syntax/TokenBuffer.h>
+﻿#include <Syntax/TokenBuffer.h>
 
 namespace Caracal
 {
@@ -25,6 +25,12 @@ namespace Caracal
         return lexemes.size() - 1;
     }
 
+    i32 TokenBuffer::addTrivia(QStringView trivia) noexcept
+    {
+        trivias.push_back(trivia);
+        return trivias.size() - 1;
+    }
+
     i32 TokenBuffer::addSourceLocation(const SourceLocation& sourceLocation) noexcept
     {
         sourceLocations.push_back(sourceLocation);
@@ -46,13 +52,18 @@ namespace Caracal
         return tokens.at(tokens.size() - 1);
     }
 
-    const SourceLocation& TokenBuffer::getSourceLocation(const Token& token) const noexcept
-    {
-        return sourceLocations.at(token.locationIndex);
-    }
-
     QStringView TokenBuffer::getLexeme(const Token& token) const noexcept
     {
         return lexemes.at(token.lexemeIndex);
+    }
+
+    QStringView TokenBuffer::getTrivia(const Token& token) const noexcept
+    {
+        return trivias.at(token.triviaIndex);
+    }
+
+    const SourceLocation& TokenBuffer::getSourceLocation(const Token& token) const noexcept
+    {
+        return sourceLocations.at(token.locationIndex);
     }
 }

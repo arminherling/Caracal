@@ -1,4 +1,4 @@
-﻿enum class Values : unsigned char;
+enum class Values : unsigned char;
 void inner(Values x);
 void outer();
 

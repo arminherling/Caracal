@@ -1,4 +1,4 @@
-﻿float random();
+float random();
 
 float random()
 {

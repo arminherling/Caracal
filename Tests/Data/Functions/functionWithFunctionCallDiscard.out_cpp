@@ -1,4 +1,4 @@
-﻿int value();
+int value();
 int main();
 
 int value()

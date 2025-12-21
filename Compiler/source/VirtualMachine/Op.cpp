@@ -1,6 +1,6 @@
-#include "Op.h"
+﻿#include "Op.h"
 
-QString StringifyOp(Op op)
+QString stringifyOp(Op op)
 {
     switch (op)
     {

@@ -1,4 +1,4 @@
-﻿FunctionDefinitionStatement: {
+FunctionDefinitionStatement: {
     NameExpression: {
         Name: func
     }

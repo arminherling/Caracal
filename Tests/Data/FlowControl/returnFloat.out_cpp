@@ -1,4 +1,4 @@
-﻿float func();
+float func();
 
 float func()
 {

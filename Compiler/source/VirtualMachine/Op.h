@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Defines.h>
 #include <Compiler/API.h>
@@ -34,4 +34,4 @@ enum Op : u8
     Halt
 };
 
-COMPILER_API [[nodiscard]] QString StringifyOp(Op op);
+COMPILER_API [[nodiscard]] QString stringifyOp(Op op);
