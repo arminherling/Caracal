@@ -1,4 +1,4 @@
-#include <Debug/ParseTreePrinter.h>
+﻿#include <Debug/ParseTreePrinter.h>
 #include <Semantic/TypeDatabase.h>
 
 namespace Caracal
@@ -282,7 +282,7 @@ namespace Caracal
         for (const auto& line : lines)
         {
             auto lexeme = m_parseTree.tokens().getLexeme(line);
-            stream() << indentation() << QString("%1").arg(lexeme) << newLine();
+            stream() << indentation() << QString("%1").arg(QString::fromStdString(std::string(lexeme))) << newLine();
         }
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
@@ -525,7 +525,7 @@ namespace Caracal
         pushIndentation();
         const auto& identifierToken = name->nameToken();
         const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
-        stream() << indentation() << QString("Name: %1").arg(identifierLexeme) << newLine();
+        stream() << indentation() << QString("Name: %1").arg(QString::fromStdString(std::string(identifierLexeme))) << newLine();
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }
@@ -539,11 +539,11 @@ namespace Caracal
         {
             const auto& typeNameToken = methodName->typeNameExpression().value()->nameToken();
             const auto typeNameLexeme = m_parseTree.tokens().getLexeme(typeNameToken);
-            stream() << typeNameLexeme << QString(".");
+            stream() << QString::fromStdString(std::string(typeNameLexeme)) << QString(".");
         }
         const auto& methodNameToken = methodName->methodNameExpression()->nameToken();
         const auto methodNameLexeme = m_parseTree.tokens().getLexeme(methodNameToken);
-        stream() << methodNameLexeme << newLine();
+        stream() << QString::fromStdString(std::string(methodNameLexeme)) << newLine();
         popIndentation();
         stream() << indentation() << QString("}") << newLine();
     }
@@ -575,13 +575,13 @@ namespace Caracal
     void ParseTreePrinter::prettyPrintBoolLiteral(BoolLiteral* node)
     {
         const auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
-        stream() << indentation() << stringify(node->kind()) << QString(": %1").arg(lexeme) << newLine();
+        stream() << indentation() << stringify(node->kind()) << QString(": %1").arg(QString::fromStdString(std::string(lexeme))) << newLine();
     }
 
     void ParseTreePrinter::prettyPrintNumberLiteral(NumberLiteral* number)
     {
         const auto lexeme = m_parseTree.tokens().getLexeme(number->literalToken());
-        stream() << indentation() << stringify(number->kind()) << QString(": %1").arg(lexeme) << newLine();
+        stream() << indentation() << stringify(number->kind()) << QString(": %1").arg(QString::fromStdString(std::string(lexeme))) << newLine();
         if(number->explicitType().has_value())
         {
             prettyPrintTypeNameNode(number->explicitType().value().get());
@@ -591,7 +591,7 @@ namespace Caracal
     void ParseTreePrinter::prettyPrintStringLiteral(StringLiteral* string)
     {
         const auto lexeme = m_parseTree.tokens().getLexeme(string->literalToken());
-        stream() << indentation() << stringify(string->kind()) << QString(": %1").arg(lexeme) << newLine();
+        stream() << indentation() << stringify(string->kind()) << QString(": %1").arg(QString::fromStdString(std::string(lexeme))) << newLine();
     }
     
     void ParseTreePrinter::prettyPrintArgumentsNode(ArgumentsNode* node)
@@ -614,7 +614,7 @@ namespace Caracal
 
         const auto& nameToken = parameter->nameExpression()->nameToken();
         const auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
-        stream() << indentation() << QString("Name: %1").arg(nameLexeme) << newLine();
+        stream() << indentation() << QString("Name: %1").arg(QString::fromStdString(std::string(nameLexeme))) << newLine();
         prettyPrintTypeNameNode(parameter->typeName().get());
 
         popIndentation();
@@ -655,7 +655,7 @@ namespace Caracal
         const auto type = node->type();
         const auto typeName = TypeDatabase::TryFindName(type);
 
-        stream() << indentation() << QString("Type: %1").arg(typeName) << newLine();
+        stream() << indentation() << QString("Type: %1").arg(QString::fromStdString(std::string(typeName))) << newLine();
         if (node->isReference())
         {
             stream() << indentation() << QString("Ref: true") << newLine();

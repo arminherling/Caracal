@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Defines.h>
 #include <Compiler/API.h>
@@ -6,8 +6,7 @@
 #include <Semantic/Type.h>
 //#include <Semantic/TypeDefinition.h>
 //#include <Semantic/FunctionDefinition.h>
-#include <QHash>
-#include <QStringView>
+#include <string_view>
 #include <unordered_map>
 
 namespace Caracal
@@ -15,8 +14,8 @@ namespace Caracal
     class COMPILER_API TypeDatabase
     {
     public:
-        [[nodiscard]] static Type TryFindBuiltin(QStringView typeName) noexcept;
-        [[nodiscard]] static QStringView TryFindName(Type type) noexcept;
+        [[nodiscard]] static Type TryFindBuiltin(std::string_view typeName) noexcept;
+        [[nodiscard]] static std::string_view TryFindName(Type type) noexcept;
 
     private:
         TypeDatabase();

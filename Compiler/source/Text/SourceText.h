@@ -1,18 +1,17 @@
-#pragma once
+﻿#pragma once
 
-#include <Defines.h>
 #include <Compiler/API.h>
-
-#include <QString>
+#include <string>
+#include <filesystem>
 
 namespace Caracal
 {
     struct COMPILER_API SourceText
     {
-        SourceText(const QString& text, const QString& filePath = QString());
+        SourceText(const std::string& text, const std::filesystem::path& filePath = std::filesystem::path());
 
-        QString text;
-        QString filePath;
+        std::string text;
+        std::filesystem::path filePath;
     };
 
     using SourceTextSharedPtr = std::shared_ptr<SourceText>;

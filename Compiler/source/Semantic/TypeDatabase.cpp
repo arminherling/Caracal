@@ -1,4 +1,4 @@
-#include "TypeDatabase.h"
+﻿#include "TypeDatabase.h"
 //
 //TypeDatabase::TypeDatabase()
 //    : m_nextId{ 100 }
@@ -105,26 +105,26 @@ namespace Caracal
 {
     [[nodiscard]] static auto InitializeBuiltinTypes() noexcept
     {
-        return std::unordered_map<QStringView, Type>{
-            { QStringView(u"bool"), Type::Bool()},
-            { QStringView(u"i32") , Type::I32() },
-            { QStringView(u"f32") ,Type::F32() },
-            { QStringView(u"string") ,Type::String() },
+        return std::unordered_map<std::string_view, Type>{
+            { std::string_view("bool"), Type::Bool()},
+            { std::string_view("i32") , Type::I32() },
+            { std::string_view("f32") ,Type::F32() },
+            { std::string_view("string") ,Type::String() },
         };
     }
 
     [[nodiscard]] static auto InitializeTypeToName() noexcept
     {
-        return std::unordered_map<Type, QStringView>{
-            { Type::Undefined(), QStringView(u"undefined") },
-            { Type::Bool(), QStringView(u"bool") },
-            { Type::I32(), QStringView(u"i32") },
-            { Type::F32(), QStringView(u"f32") },
-            { Type::String(), QStringView(u"string") },
+        return std::unordered_map<Type, std::string_view>{
+            { Type::Undefined(), std::string_view("undefined") },
+            { Type::Bool(), std::string_view("bool") },
+            { Type::I32(), std::string_view("i32") },
+            { Type::F32(), std::string_view("f32") },
+            { Type::String(), std::string_view("string") },
         };
     }
 
-    Type TypeDatabase::TryFindBuiltin(QStringView typeName) noexcept
+    Type TypeDatabase::TryFindBuiltin(std::string_view typeName) noexcept
     {
         static const auto tokenSizes = InitializeBuiltinTypes();
         if (const auto result = tokenSizes.find(typeName); result != tokenSizes.end())
@@ -133,12 +133,12 @@ namespace Caracal
         return Type::Undefined();
     }
 
-    QStringView TypeDatabase::TryFindName(Type type) noexcept
+    std::string_view TypeDatabase::TryFindName(Type type) noexcept
     {
         static const auto tokenSizes = InitializeTypeToName();
         if (const auto result = tokenSizes.find(type); result != tokenSizes.end())
             return result->second;
      
-        return QStringView(u"???");
+        return std::string_view("???");
     }
 }

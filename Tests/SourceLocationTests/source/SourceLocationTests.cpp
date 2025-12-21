@@ -26,13 +26,13 @@ static void SingleSourceLocation(const std::string& /*testName*/, const Caracal:
 
 static QList<std::tuple<std::string, Caracal::SourceTextSharedPtr, Caracal::SourceLocation>> SingleSourceLocation_Data()
 {
-    auto source1 = std::make_shared<Caracal::SourceText>(QString("+"));
-    auto source2 = std::make_shared<Caracal::SourceText>(QString(" bar "));
-    auto source3 = std::make_shared<Caracal::SourceText>(QString("\nreturn"));
-    auto source4 = std::make_shared<Caracal::SourceText>(QString("\r\nreturn"));
-    auto source5 = std::make_shared<Caracal::SourceText>(QString("  1_234 "));
-    auto source6 = std::make_shared<Caracal::SourceText>(QString(" \"1234567890\""));
-    auto source7 = std::make_shared<Caracal::SourceText>(QString("$"));
+    auto source1 = std::make_shared<Caracal::SourceText>("+");
+    auto source2 = std::make_shared<Caracal::SourceText>(" bar ");
+    auto source3 = std::make_shared<Caracal::SourceText>("\nreturn");
+    auto source4 = std::make_shared<Caracal::SourceText>("\r\nreturn");
+    auto source5 = std::make_shared<Caracal::SourceText>("  1_234 ");
+    auto source6 = std::make_shared<Caracal::SourceText>(" \"1234567890\"");
+    auto source7 = std::make_shared<Caracal::SourceText>("$");
 
     return {
         std::make_tuple(
@@ -68,7 +68,7 @@ static QList<std::tuple<std::string, Caracal::SourceTextSharedPtr, Caracal::Sour
 
 static void MultipleSourceLocations()
 {
-    auto input = std::make_shared<Caracal::SourceText>(QString("define sum(a int, b int) \r\n {\r\n return a + b \r\n}\r\n"));
+    auto input = std::make_shared<Caracal::SourceText>("define sum(a int, b int) \r\n {\r\n return a + b \r\n}\r\n");
     auto expectedList = QList<Caracal::SourceLocation>
     {
         { .startIndex = 0, .endIndex = 6 },  // define

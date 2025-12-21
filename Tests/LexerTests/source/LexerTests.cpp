@@ -1,18 +1,18 @@
 ﻿#include <CaraTest.h>
 
+#include <Compiler/File.h>
 #include <Syntax/Lexer.h>
 #include <Syntax/Token.h>
 #include <Syntax/TokenKind.h>
 #include <Syntax/TokenBuffer.h>
 #include <Text/SourceText.h>
 #include <iostream>
-#include <QDir>
 
 static void ExpectedTokenKind(const std::string& /*testName*/, const std::string& input, TokenKind expectedKind)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
     auto tokens = Caracal::lex(source, diagnostics);
@@ -26,7 +26,7 @@ static void ExpectedTokenKind(const std::string& /*testName*/, const std::string
     CaraTest::areEqual(tokens.size(), 2);
 }
 
-static QList<std::tuple<std::string, std::string, TokenKind>> Symbols_Data()
+static std::vector<std::tuple<std::string, std::string, TokenKind>> Symbols_Data()
 {
     return {
         std::make_tuple("Plus", "+", TokenKind::Plus),
@@ -59,7 +59,7 @@ static QList<std::tuple<std::string, std::string, TokenKind>> Symbols_Data()
     };
 }
 
-static QList<std::tuple<std::string, std::string, TokenKind>> Keyword_Data()
+static std::vector<std::tuple<std::string, std::string, TokenKind>> Keyword_Data()
 {
     return {
         std::make_tuple("Def", "def", TokenKind::DefKeyword),
@@ -84,7 +84,7 @@ static void IgnoresWhitespaces(const std::string& input)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
     auto tokens = Caracal::lex(source, diagnostics);
@@ -96,7 +96,7 @@ static void IgnoresWhitespaces(const std::string& input)
     CaraTest::areEqual(TokenKind::EndOfFile, token.kind);
 }
 
-static QList<std::tuple<std::string>> IgnoresWhitespaces_Data()
+static std::vector<std::tuple<std::string>> IgnoresWhitespaces_Data()
 {
     return {
         std::make_tuple(""),
@@ -110,11 +110,11 @@ static QList<std::tuple<std::string>> IgnoresWhitespaces_Data()
     };
 }
 
-static void Identifiers(const std::string& input, const std::string& expectedLexeme)
+static void Identifiers(const std::string& input, const std::string_view& expectedLexeme)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
     auto tokens = Caracal::lex(source, diagnostics);
@@ -125,10 +125,10 @@ static void Identifiers(const std::string& input, const std::string& expectedLex
 
     CaraTest::areEqual(TokenKind::Identifier, token.kind);
     auto lexeme = tokens.getLexeme(token);
-    CaraTest::areEqual(expectedLexeme, lexeme.toString().toStdString());
+    CaraTest::areEqual(expectedLexeme, lexeme);
 }
 
-static QList<std::tuple<std::string, std::string>> Identifiers_Data()
+static std::vector<std::tuple<std::string, std::string_view>> Identifiers_Data()
 {
     return {
         std::make_tuple("x", "x"),
@@ -146,11 +146,11 @@ static QList<std::tuple<std::string, std::string>> Identifiers_Data()
     };
 }
 
-static void Numbers(const std::string& input, const std::string& expectedLexeme)
+static void Numbers(const std::string& input, const std::string_view& expectedLexeme)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
     auto tokens = Caracal::lex(source, diagnostics);
@@ -161,10 +161,10 @@ static void Numbers(const std::string& input, const std::string& expectedLexeme)
 
     CaraTest::areEqual(TokenKind::Number, token.kind);
     auto lexeme = tokens.getLexeme(token);
-    CaraTest::areEqual(expectedLexeme, lexeme.toString().toStdString());
+    CaraTest::areEqual(expectedLexeme, lexeme);
 }
 
-static QList<std::tuple<std::string, std::string>> Numbers_Data()
+static std::vector<std::tuple<std::string, std::string_view>> Numbers_Data()
 {
     return {
         std::make_tuple("0", "0"),
@@ -179,11 +179,11 @@ static QList<std::tuple<std::string, std::string>> Numbers_Data()
     };
 }
 
-static void Strings(const std::string& input, const std::string& expectedLexeme)
+static void Strings(const std::string& input, const std::string_view& expectedLexeme)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
     auto tokens = Caracal::lex(source, diagnostics);
@@ -194,10 +194,10 @@ static void Strings(const std::string& input, const std::string& expectedLexeme)
 
     CaraTest::areEqual(TokenKind::String, token.kind);
     auto lexeme = tokens.getLexeme(token);
-    CaraTest::areEqual(expectedLexeme, lexeme.toString().toStdString());
+    CaraTest::areEqual(expectedLexeme, lexeme);
 }
 
-static QList<std::tuple<std::string, std::string>> Strings_Data()
+static std::vector<std::tuple<std::string, std::string_view>> Strings_Data()
 {
     return {
         std::make_tuple(" \"\" ", "\"\""),
@@ -207,7 +207,7 @@ static QList<std::tuple<std::string, std::string>> Strings_Data()
     };
 }
 
-static QList<std::tuple<std::string, std::string>> StringsWithEscapes_Data()
+static std::vector<std::tuple<std::string, std::string_view>> StringsWithEscapes_Data()
 {
     return {
         std::make_tuple("\"single quote\\'\"", "\"single quote\\'\""),
@@ -223,11 +223,11 @@ static QList<std::tuple<std::string, std::string>> StringsWithEscapes_Data()
     };
 }
 
-static void UnterminatedStrings(const std::string& input, const std::string& expectedLexeme)
+static void UnterminatedStrings(const std::string& input, const std::string_view& expectedLexeme)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
     auto tokens = Caracal::lex(source, diagnostics);
@@ -240,10 +240,10 @@ static void UnterminatedStrings(const std::string& input, const std::string& exp
 
     CaraTest::areEqual(TokenKind::Error, token.kind);
     auto lexeme = tokens.getLexeme(token);
-    CaraTest::areEqual(expectedLexeme, lexeme.toString().toStdString());
+    CaraTest::areEqual(expectedLexeme, lexeme);
 }
 
-static QList<std::tuple<std::string, std::string>> UnterminatedStrings_Data()
+static std::vector<std::tuple<std::string, std::string_view>> UnterminatedStrings_Data()
 {
     return {
         std::make_tuple(" \" ", "\" "),
@@ -288,7 +288,7 @@ static void WholeInput(const std::string& input, i32 tokenCount)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(QString::fromStdString(input));
+    auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
     auto tokens = Caracal::lex(source, diagnostics);
@@ -300,7 +300,7 @@ static void WholeInput(const std::string& input, i32 tokenCount)
     CaraTest::areEqual(tokenCount, tokens.size());
 }
 
-static QList<std::tuple<std::string, i32>> WholeInput_Data()
+static std::vector<std::tuple<std::string, i32>> WholeInput_Data()
 {
     return {
         std::make_tuple("", 1),
@@ -315,18 +315,12 @@ static QList<std::tuple<std::string, i32>> WholeInput_Data()
 
 static void OneMillionLinesTime()
 {
-#ifdef QT_DEBUG
+#ifdef _DEBUG
     CaraTest::skip();// ("";
 #endif
-    auto testFile = QDir::cleanPath("../../Tests/LexerTests/data/oneMilLines.txt");
+    auto data = Caracal::File::ReadAllText("../../Tests/LexerTests/data/oneMilLines.txt");
 
-    QFile file(testFile);
-    if (!file.open(QFile::ReadOnly | QFile::Text))
-        CaraTest::fail();// ("Couldnt open file";
-
-    QString data = file.readAll();
-
-    auto source = std::make_shared<Caracal::SourceText>(data);
+    auto source = std::make_shared<Caracal::SourceText>(data.toStdString());
     Caracal::DiagnosticsBag diagnostics;
 
     auto startTime = std::chrono::high_resolution_clock::now();

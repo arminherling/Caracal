@@ -19,13 +19,13 @@ namespace Caracal
         tokens.push_back(token);
     }
 
-    i32 TokenBuffer::addLexeme(QStringView lexeme) noexcept
+    i32 TokenBuffer::addLexeme(std::string_view lexeme) noexcept
     {
         lexemes.push_back(lexeme);
         return lexemes.size() - 1;
     }
 
-    i32 TokenBuffer::addTrivia(QStringView trivia) noexcept
+    i32 TokenBuffer::addTrivia(std::string_view trivia) noexcept
     {
         trivias.push_back(trivia);
         return trivias.size() - 1;
@@ -52,12 +52,12 @@ namespace Caracal
         return tokens.at(tokens.size() - 1);
     }
 
-    QStringView TokenBuffer::getLexeme(const Token& token) const noexcept
+    std::string_view TokenBuffer::getLexeme(const Token& token) const noexcept
     {
         return lexemes.at(token.lexemeIndex);
     }
 
-    QStringView TokenBuffer::getTrivia(const Token& token) const noexcept
+    std::string_view TokenBuffer::getTrivia(const Token& token) const noexcept
     {
         return trivias.at(token.triviaIndex);
     }

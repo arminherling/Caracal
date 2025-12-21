@@ -1,31 +1,42 @@
-#include <CodeGen/CppCodeGenerator.h>
+﻿#include <CodeGen/CppCodeGenerator.h>
 #include <QStringBuilder>
 
 namespace Caracal
 {
-    static QString ReplaceEscapeSequences(QStringView input)
+    static std::string ReplaceEscapeSequences(std::string_view input)
     {
-        QString result = input.toString();
-        result.replace(QLatin1StringView("\\\'"), QLatin1StringView("\'"));
-        result.replace(QLatin1StringView("\\\""), QLatin1StringView("\""));
-        result.replace(QLatin1StringView("\\a"), QLatin1StringView("\a"));
-        result.replace(QLatin1StringView("\\b"), QLatin1StringView("\b"));
-        result.replace(QLatin1StringView("\\f"), QLatin1StringView("\f"));
-        result.replace(QLatin1StringView("\\n"), QLatin1StringView("\n"));
-        result.replace(QLatin1StringView("\\r"), QLatin1StringView("\r"));
-        result.replace(QLatin1StringView("\\t"), QLatin1StringView("\t"));
-        result.replace(QLatin1StringView("\\v"), QLatin1StringView("\v"));
-        result.replace(QLatin1StringView("\\\\"), QLatin1StringView("\\"));
+        std::string result(input);
+
+        auto replaceAll = [](std::string& str, const std::string& from, const std::string& to) {
+            size_t startPos = 0;
+            while ((startPos = str.find(from, startPos)) != std::string::npos)
+            {
+                str.replace(startPos, from.length(), to);
+                startPos += to.length(); // Weiter nach dem ersetzten Teil suchen
+            }
+            };
+
+        replaceAll(result, "\\\'", "\'");
+        replaceAll(result, "\\\"", "\"");
+        replaceAll(result, "\\a", "\a");
+        replaceAll(result, "\\b", "\b");
+        replaceAll(result, "\\f", "\f");
+        replaceAll(result, "\\n", "\n");
+        replaceAll(result, "\\r", "\r");
+        replaceAll(result, "\\t", "\t");
+        replaceAll(result, "\\v", "\v");
+        replaceAll(result, "\\\\", "\\");
+
         return result;
     }
 
     [[nodiscard]] static auto InitializeTypeToCppName() noexcept
     {
-        return std::unordered_map<Type, QStringView>{
-            { Type::Bool(), QStringView(u"bool") },
-            { Type::I32(), QStringView(u"int") },
-            { Type::F32(), QStringView(u"float") },
-            { Type::String(), QStringView(u"std::string") },
+        return std::unordered_map<Type, std::string_view>{
+            { Type::Bool(), std::string_view("bool") },
+            { Type::I32(), std::string_view("int") },
+            { Type::F32(), std::string_view("float") },
+            { Type::String(), std::string_view("std::string") },
         };
     }
 
@@ -84,7 +95,7 @@ namespace Caracal
         return m_cppTypeDefs[typeName].get();
     }
 
-    [[nodiscard]] QStringView CppCodeGenerator::getCppNameForType(TypeNameNode* typeName) noexcept
+    [[nodiscard]] std::string_view CppCodeGenerator::getCppNameForType(TypeNameNode* typeName) noexcept
     {
         static const auto cppTypeNames = InitializeTypeToCppName();
         if (const auto result = cppTypeNames.find(typeName->type()); result != cppTypeNames.end())
@@ -93,13 +104,13 @@ namespace Caracal
         return m_parseTree.tokens().getLexeme(typeName->name()->nameToken());
     }
 
-    [[nodiscard]] static QStringView GetCppNameForType(Type type) noexcept
+    [[nodiscard]] static std::string_view GetCppNameForType(Type type) noexcept
     {
         static const auto cppTypeNames = InitializeTypeToCppName();
         if (const auto result = cppTypeNames.find(type); result != cppTypeNames.end())
             return result->second;
 
-        return QStringView(u"");
+        return std::string_view();
     }
 
     [[nodiscard]] static std::optional<QString> GetCppIncludeForType(Type type) noexcept
@@ -348,7 +359,7 @@ namespace Caracal
                 auto functionCallExpression = (FunctionCallExpression*)node;
                 // if name is print use builtin
                 auto& nameToken = functionCallExpression->nameExpression()->nameToken();
-                if (m_parseTree.tokens().getLexeme(nameToken) == QStringLiteral("print"))
+                if (m_parseTree.tokens().getLexeme(nameToken) == std::string_view("print"))
                 {
                     generateBuiltinPrintFunction(functionCallExpression->argumentsNode().get());
                     break;
@@ -399,9 +410,9 @@ namespace Caracal
         {
             auto lexeme = m_parseTree.tokens().getLexeme(line);
             // remove the first and last quotes
-            lexeme = lexeme.mid(1, lexeme.length() - 2);
+            lexeme = lexeme.substr(1, lexeme.length() - 2);
             const auto result = ReplaceEscapeSequences(lexeme);
-            stream() << indentation() << result << newLine();
+            stream() << indentation() << QString::fromStdString(result) << newLine();
         }
     }
 
@@ -436,7 +447,7 @@ namespace Caracal
             {
                 m_cppIncludes.append(include.value() % newLine());
             }
-            stream() << indentation() << "const " << typeName;
+            stream() << indentation() << "const " << QString::fromStdString(std::string(typeName));
         }
         else
         {
@@ -448,13 +459,13 @@ namespace Caracal
                 m_cppIncludes.append(include.value() % newLine());
             }
 
-            if (cppTypeName.isEmpty())
+            if (cppTypeName.empty())
             {
                 stream() << indentation() << "const auto";
             }
             else
             {
-                stream() << indentation() << "const " << cppTypeName;
+                stream() << indentation() << "const " << QString::fromStdString(std::string(cppTypeName));
             }
         }
 
@@ -486,7 +497,7 @@ namespace Caracal
             {
                 m_cppIncludes.append(include.value() % newLine());
             }
-            stream() << indentation() << typeName;
+            stream() << indentation() << QString::fromStdString(std::string(typeName));
         }
         else
         {
@@ -536,7 +547,7 @@ namespace Caracal
             {
                 m_cppIncludes.append(include.value() % newLine());
             }
-            stream() << typeName << " ";
+            stream() << QString::fromStdString(std::string(typeName)) << " ";
         }
         else
         {
@@ -547,7 +558,7 @@ namespace Caracal
             {
                 m_cppIncludes.append(include.value() % newLine());
             }
-            stream() << typeName << " ";
+            stream() << QString::fromStdString(std::string(typeName)) << " ";
         }
 
         stream() << generateTypeFieldName(node->nameExpression().get());
@@ -563,17 +574,17 @@ namespace Caracal
         stream() << ";" << newLine();
     }
 
-    void CppCodeGenerator::generateConstructorDeclarationSignature(QStringView className, ParametersNode* parametersNode) noexcept
+    void CppCodeGenerator::generateConstructorDeclarationSignature(std::string_view className, ParametersNode* parametersNode) noexcept
     {
         if(parametersNode == nullptr)
         {
-            stream() << indentation() << className << "() = default;" << newLine();
+            stream() << indentation() << QString::fromStdString(std::string(className)) << "() = default;" << newLine();
             return;
         }
 
         const auto isEmpty = parametersNode->parameters().empty();
 
-        stream() << indentation() << className << generateFunctionSignatureParameterPart(parametersNode);
+        stream() << indentation() << QString::fromStdString(std::string(className)) << generateFunctionSignatureParameterPart(parametersNode);
 
         if (isEmpty)
         {
@@ -585,7 +596,7 @@ namespace Caracal
 
     void CppCodeGenerator::generateConstructorDefinition(CppTypeDef* cppType) noexcept
     {
-        const auto& typeName = cppType->name;
+        const auto& typeName = QString::fromStdString(std::string(cppType->name));
         const auto& parametersNode = cppType->constructorParameters;
         if (parametersNode == nullptr)
             return;
@@ -616,7 +627,7 @@ namespace Caracal
                 const auto fieldName = generateTypeFieldName(field->nameExpression().get());
                 const auto parameterName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
 
-                const auto initEntry = fieldName % "{ " % parameterName % " }";
+                const auto initEntry = fieldName + "{ " + QString::fromStdString(std::string(parameterName)) + " }";
 
                 initList.push_back(initEntry);
             }
@@ -631,9 +642,9 @@ namespace Caracal
         stream() << "{" << newLine() << "}" << newLine() << newLine();
     }
 
-    void CppCodeGenerator::generateDestructorDeclarationSignature(QStringView className) noexcept
+    void CppCodeGenerator::generateDestructorDeclarationSignature(std::string_view className) noexcept
     {
-        stream() << indentation() << "~" << className << "() = default;" << newLine();
+        stream() << indentation() << "~" << QString::fromStdString(std::string(className)) << "() = default;" << newLine();
     }
 
     void CppCodeGenerator::generateMethodDeclarationSignature(MethodDefinitionStatement* node) noexcept
@@ -651,7 +662,7 @@ namespace Caracal
         }
 
         stream() << generateFunctionSignatureReturnPart(returnTypesNode, false);
-        stream() << generateFunctionSignatureNamePart(methodName);
+        stream() << QString::fromStdString(generateFunctionSignatureNamePart(methodName));
         stream() << generateFunctionSignatureParameterPart(parametersNode);
 
         if (specialFunctionType != SpecialFunctionType::None)
@@ -666,18 +677,18 @@ namespace Caracal
         stream() << ";" << newLine();
     }
 
-    void CppCodeGenerator::generateMethodDefinition(const QStringView& typeName, MethodDefinitionStatement* node) noexcept
+    void CppCodeGenerator::generateMethodDefinition(const std::string_view& typeName, MethodDefinitionStatement* node) noexcept
     {
         auto nameExpression = node->methodNameNode()->methodNameExpression().get();
         const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
-        const auto isMainFunction = functionName == QStringLiteral("main");
+        const auto isMainFunction = functionName == std::string_view("main");
         auto parametersNode = node->parametersNode().get();
         auto returnTypesNode = node->returnTypesNode().get();
         
         const auto returnPart = generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
         const auto namePart = generateFunctionSignatureNamePart(functionName);
         const auto parameterPart = generateFunctionSignatureParameterPart(parametersNode);
-        const auto signature = returnPart % typeName % "::" % namePart % parameterPart;
+        const auto signature = returnPart + QString::fromStdString(std::string(typeName)) + "::" + QString::fromStdString(namePart) + parameterPart;
 
         stream() << signature << newLine() << "{" << newLine();
         pushIndentation();
@@ -720,13 +731,13 @@ namespace Caracal
         QString signature;
         QTextStream sigStream(&signature);
 
-        sigStream << indentation() << "enum class " << enumName;
+        sigStream << indentation() << "enum class " << QString::fromStdString(std::string(enumName));
         if (node->baseType().has_value())
         {
             const auto baseType = node->baseType().value().get();
             const auto cppTypeName = GetCppNameForType(baseType->type());
 
-            sigStream << " : " << cppTypeName;
+            sigStream << " : " << QString::fromStdString(std::string(cppTypeName));
         }
         else
         {
@@ -769,22 +780,22 @@ namespace Caracal
                 m_cppIncludes.append(include.value() % newLine());
             }
             const auto returnTypeName = GetCppNameForType(returnType);
-            sigStream << returnTypeName << " ";
+            sigStream << QString::fromStdString(std::string(returnTypeName)) << " ";
         }
 
         return signature;
     }
 
-    QString CppCodeGenerator::generateFunctionSignatureNamePart(QStringView functionName) noexcept
+    std::string CppCodeGenerator::generateFunctionSignatureNamePart(std::string_view functionName) noexcept
     {
-        if (functionName.startsWith('_'))
+        if (functionName.starts_with('_'))
         {
             // remove first letter
-            return functionName.mid(1).toString();
+            return std::string(functionName.substr(1));
         }
         else
         {
-            return functionName.toString();
+            return std::string(functionName);
         }
     }
 
@@ -800,14 +811,14 @@ namespace Caracal
             const auto typeName = getCppNameForType(parameter->typeName().get());
             if (parameter->typeName()->isReference())
             {
-                sigStream << typeName << "& ";
+                sigStream << QString::fromStdString(std::string(typeName)) << "& ";
             }
             else
             {
-                sigStream << typeName << " ";
+                sigStream << QString::fromStdString(std::string(typeName)) << " ";
             }
             const auto& parameterNameToken = parameter->nameExpression()->nameToken();
-            sigStream << m_parseTree.tokens().getLexeme(parameterNameToken);
+            sigStream << QString::fromStdString(std::string(m_parseTree.tokens().getLexeme(parameterNameToken)));
 
             if (&parameter != &parameters.back())
             {
@@ -824,7 +835,7 @@ namespace Caracal
         auto cppTypeDef = buildCppTypeDefinition(node);
         auto typeName = cppTypeDef->name;
 
-        const auto typeSignature = QString("class %2").arg(typeName);
+        const auto typeSignature = QString("class %2").arg(QString::fromStdString(std::string(typeName)));
         m_forwardDeclarations.append(typeSignature % ";" % newLine());
 
         stream() << indentation() << typeSignature << newLine();
@@ -884,13 +895,13 @@ namespace Caracal
     QString CppCodeGenerator::generateTypeFieldName(NameExpression* node) noexcept
     {
         const auto fieldName = m_parseTree.tokens().getLexeme(node->nameToken());
-        if (fieldName.startsWith('_'))
+        if (fieldName.starts_with('_'))
         {
-            return "m" % fieldName;
+            return "m" + QString::fromStdString(std::string(fieldName));
         }
         else
         {
-            return "m_" % fieldName;
+            return "m_" + QString::fromStdString(std::string(fieldName));
         }
     }
 
@@ -924,14 +935,14 @@ namespace Caracal
 
         auto nameExpression = node->nameExpression().get();
         const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
-        const auto isMainFunction = functionName == QStringLiteral("main");
+        const auto isMainFunction = functionName == std::string_view("main");
         auto parametersNode = node->parametersNode().get();
         auto returnTypesNode = node->returnTypesNode().get();
 
         const auto returnPart = generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
         const auto namePart = generateFunctionSignatureNamePart(functionName);
         const auto parameterPart = generateFunctionSignatureParameterPart(parametersNode);
-        const auto signature = returnPart % namePart % parameterPart;
+        const auto signature = returnPart + QString::fromStdString(std::string(namePart)) + parameterPart;
 
         m_forwardDeclarations.append(signature % ";" % newLine());
         stream() << indentation() << signature << newLine() << indentation() << "{" << newLine();
@@ -1104,7 +1115,7 @@ namespace Caracal
 
     void CppCodeGenerator::generateNameExpression(NameExpression* node) noexcept
     {
-        stream() << m_parseTree.tokens().getLexeme(node->nameToken());
+        stream() << QString::fromStdString(std::string(m_parseTree.tokens().getLexeme(node->nameToken())));
     }
 
     void CppCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node) noexcept
@@ -1147,13 +1158,13 @@ namespace Caracal
     void CppCodeGenerator::generateNumberLiteral(NumberLiteral* node) noexcept
     {
         auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
-        stream() << lexeme;
+        stream() << QString::fromStdString(std::string(lexeme));
     }
 
     void CppCodeGenerator::generateStringLiteral(StringLiteral* node) noexcept
     {
         auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
-        stream() << QString("std::string{%1}").arg(lexeme);
+        stream() << QString("std::string{%1}").arg(QString::fromStdString(std::string(lexeme)));
     }
 
     void CppCodeGenerator::generateBuiltinPrintFunction(ArgumentsNode* node) noexcept

@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     
     auto absolutePath = fileInfo.absoluteFilePath();
     auto fileContent = Caracal::File::ReadAllText(absolutePath);
-    auto source = std::make_shared<Caracal::SourceText>(fileContent);
+    auto source = std::make_shared<Caracal::SourceText>(fileContent.toStdString());
     Caracal::DiagnosticsBag diagnostics;
 
     auto tokens = Caracal::lex(source, diagnostics);

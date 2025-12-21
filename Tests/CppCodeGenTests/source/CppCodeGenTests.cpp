@@ -19,7 +19,7 @@ static void FileTests(
         CaraTest::skip();// ("Out file missing");
 
     auto input = Caracal::File::ReadAllText(QString::fromStdString(inputFilePath));
-    auto source = std::make_shared<Caracal::SourceText>(input);
+    auto source = std::make_shared<Caracal::SourceText>(input.toStdString());
     Caracal::DiagnosticsBag diagnostics;
 
     auto tokens = Caracal::lex(source, diagnostics);

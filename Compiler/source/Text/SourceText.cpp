@@ -1,10 +1,10 @@
-#include <Text/SourceText.h>
+﻿#include <Text/SourceText.h>
 
 namespace Caracal
 {
     SourceText::SourceText(
-        const QString& text,
-        const QString& filePath)
+        const std::string& text,
+        const std::filesystem::path& filePath)
         : text(text)
         , filePath(filePath)
     {

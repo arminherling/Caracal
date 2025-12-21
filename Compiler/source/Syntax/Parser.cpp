@@ -1,4 +1,4 @@
-#include <Semantic/TypeDatabase.h>
+﻿#include <Semantic/TypeDatabase.h>
 #include <Syntax/AssignmentStatement.h>
 #include <Syntax/BinaryExpression.h>
 #include <Syntax/BoolLiteral.h>
@@ -438,7 +438,7 @@ namespace Caracal
         auto methodNameExpression = methodNameNode->methodNameExpression().get();
         const auto& nameToken = methodNameExpression->nameToken();
         const auto nameLexeme = m_tokens.getLexeme(nameToken);
-        const auto isPrivate = nameLexeme.startsWith('_');
+        const auto isPrivate = nameLexeme.starts_with('_');
         if(modifier == MethodModifier::Public && isPrivate)
         {
             modifier = MethodModifier::Private;

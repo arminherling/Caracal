@@ -35,22 +35,22 @@ namespace Caracal
 
     [[nodiscard]] static auto InitializeKeywords() noexcept
     {
-        return std::unordered_map<QStringView, TokenKind>{
-            { QStringView(u"def"),      TokenKind::DefKeyword},
-            { QStringView(u"enum"),     TokenKind::EnumKeyword },
-            { QStringView(u"type"),     TokenKind::TypeKeyword },
-            { QStringView(u"if"),       TokenKind::IfKeyword },
-            { QStringView(u"else"),     TokenKind::ElseKeyword },
-            { QStringView(u"while"),    TokenKind::WhileKeyword },
-            { QStringView(u"break"),    TokenKind::BreakKeyword },
-            { QStringView(u"skip"),     TokenKind::SkipKeyword },
-            { QStringView(u"return"),   TokenKind::ReturnKeyword },
-            { QStringView(u"true"),     TokenKind::TrueKeyword },
-            { QStringView(u"false"),    TokenKind::FalseKeyword },
-            { QStringView(u"and"),      TokenKind::AndKeyword },
-            { QStringView(u"or"),       TokenKind::OrKeyword },
-            { QStringView(u"ref"),      TokenKind::RefKeyword },
-            { QStringView(u"cpp"),      TokenKind::CppKeyword },
+        return std::unordered_map<std::string_view, TokenKind>{
+            { std::string_view("def"),      TokenKind::DefKeyword},
+            { std::string_view("enum"),     TokenKind::EnumKeyword },
+            { std::string_view("type"),     TokenKind::TypeKeyword },
+            { std::string_view("if"),       TokenKind::IfKeyword },
+            { std::string_view("else"),     TokenKind::ElseKeyword },
+            { std::string_view("while"),    TokenKind::WhileKeyword },
+            { std::string_view("break"),    TokenKind::BreakKeyword },
+            { std::string_view("skip"),     TokenKind::SkipKeyword },
+            { std::string_view("return"),   TokenKind::ReturnKeyword },
+            { std::string_view("true"),     TokenKind::TrueKeyword },
+            { std::string_view("false"),    TokenKind::FalseKeyword },
+            { std::string_view("and"),      TokenKind::AndKeyword },
+            { std::string_view("or"),       TokenKind::OrKeyword },
+            { std::string_view("ref"),      TokenKind::RefKeyword },
+            { std::string_view("cpp"),      TokenKind::CppKeyword },
         };
     }
 
@@ -63,30 +63,40 @@ namespace Caracal
         return 1;
     }
 
-    [[nodiscard]] static auto IsUnderscoreOrNumber(QChar c) noexcept
+    [[nodiscard]] static auto IsLetter(char c) noexcept
     {
-        return c == QChar(u'_') || c.isNumber();
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
     }
 
-    [[nodiscard]] static auto IsUnderscoreOrLetter(QChar c) noexcept
+    [[nodiscard]] static auto IsNumber(char c) noexcept
     {
-        return c == QChar(u'_') || c.isLetter();
+        return (c >= '0' && c <= '9');
     }
 
-    [[nodiscard]] static auto IsUnderscoreOrLetterOrNumber(QChar c) noexcept
+    [[nodiscard]] static auto IsUnderscoreOrNumber(char c) noexcept
     {
-        return c == QChar(u'_') || c.isLetterOrNumber();
+        return (c == '_') || IsNumber(c);
     }
 
-    [[nodiscard]] static auto PeekCurrentChar(QStringView source, i32 charIndex) noexcept
+    [[nodiscard]] static auto IsUnderscoreOrLetter(char c) noexcept
+    {
+        return (c == '_') || IsLetter(c);
+    }
+
+    [[nodiscard]] static auto IsUnderscoreOrLetterOrNumber(char c) noexcept
+    {
+        return (c == '_') || IsLetter(c) || IsNumber(c);
+    }
+
+    [[nodiscard]] static auto PeekCurrentChar(std::string_view source, i32 charIndex) noexcept
     {
         if (charIndex >= source.length())
-            return QChar(u'\0');
+            return '\0';
 
         return source[charIndex];
     }
 
-    [[nodiscard]] static auto PeekNextChar(QStringView source, i32& currentIndex) noexcept { return PeekCurrentChar(source, currentIndex + 1); }
+    [[nodiscard]] static auto PeekNextChar(std::string_view source, i32& currentIndex) noexcept { return PeekCurrentChar(source, currentIndex + 1); }
 
     static void AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, i32& currentIndex, TokenKind tokenKind) noexcept
     {
@@ -100,10 +110,10 @@ namespace Caracal
         tokenBuffer.addToken({ .kind = tokenKind, .locationIndex = locationIndex });
     };
 
-    [[nodiscard]] static void AddKindAndLexeme(TokenBuffer& tokenBuffer, QStringView source, i32 currentIndex, TokenKind tokenKind, i32 startIndex) noexcept
+    [[nodiscard]] static void AddKindAndLexeme(TokenBuffer& tokenBuffer, std::string_view source, i32 currentIndex, TokenKind tokenKind, i32 startIndex) noexcept
     {
         const auto length = currentIndex - startIndex;
-        const auto identifierIndex = tokenBuffer.addLexeme(source.sliced(startIndex, length));
+        const auto identifierIndex = tokenBuffer.addLexeme(source.substr(startIndex, length));
         const auto locationIndex = tokenBuffer.addSourceLocation(
             {
                 .startIndex = startIndex,
@@ -112,11 +122,11 @@ namespace Caracal
         tokenBuffer.addToken({ .kind = tokenKind, .lexemeIndex = identifierIndex, .locationIndex = locationIndex });
     };
 
-    static auto IdentifierKind(QStringView source, i32 currentIndex, i32 startIndex) noexcept
+    static auto IdentifierKind(std::string_view source, i32 currentIndex, i32 startIndex) noexcept
     {
         static const auto keywords = InitializeKeywords();
         const auto length = currentIndex - startIndex;
-        const auto lexeme = source.sliced(startIndex, length);
+        const auto lexeme = source.substr(startIndex, length);
 
         if (const auto result = keywords.find(lexeme); result != keywords.end())
             return result->second;
@@ -124,7 +134,7 @@ namespace Caracal
         return TokenKind::Identifier;
     }
 
-    static void LexIdentifier(TokenBuffer& tokenBuffer, QStringView source, i32& currentIndex) noexcept
+    static void LexIdentifier(TokenBuffer& tokenBuffer, std::string_view source, i32& currentIndex) noexcept
     {
         const auto startIndex = currentIndex;
         while (IsUnderscoreOrLetterOrNumber(PeekCurrentChar(source, currentIndex)))
@@ -135,18 +145,18 @@ namespace Caracal
         AddKindAndLexeme(tokenBuffer, source, currentIndex, maybeKeywordKind, startIndex);
     };
 
-    static void LexNumber(TokenBuffer& tokenBuffer, QStringView source, i32& currentIndex) noexcept
+    static void LexNumber(TokenBuffer& tokenBuffer, std::string_view source, i32& currentIndex) noexcept
     {
         const auto startIndex = currentIndex;
 
         auto current = PeekCurrentChar(source, currentIndex);
-        while (current.isNumber() || (current == QChar(u'_') && PeekNextChar(source, currentIndex) != QChar(u'.')))
+        while (IsNumber(current) || (current == '_' && PeekNextChar(source, currentIndex) != '.'))
         {
             currentIndex++;
             current = PeekCurrentChar(source, currentIndex);
         }
 
-        if (current == QChar(u'.') && PeekNextChar(source, currentIndex).isNumber())
+        if (current == '.' && IsNumber(PeekNextChar(source, currentIndex)))
         {
             currentIndex++;
 
@@ -157,16 +167,16 @@ namespace Caracal
         AddKindAndLexeme(tokenBuffer, source, currentIndex, TokenKind::Number, startIndex);
     };
 
-    static void LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, QStringView source, i32& currentIndex) noexcept
+    static void LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, std::string_view source, i32& currentIndex) noexcept
     {
         const auto startIndex = currentIndex;
 
         // Consume opening quotation mark
         currentIndex++;
         auto current = PeekCurrentChar(source, currentIndex);
-        while (current != QChar(u'\"') && current != QChar(u'\0'))
+        while (current != '\"' && current != '\0')
         {
-            if (current == QChar(u'\\'))
+            if (current == '\\')
             {
                 currentIndex++;
             }
@@ -174,7 +184,7 @@ namespace Caracal
             current = PeekCurrentChar(source, currentIndex);
         }
 
-        if (current == QChar(u'\"'))
+        if (current == '\"')
         {
             // Consume closing quotation mark
             currentIndex++;
@@ -192,87 +202,86 @@ namespace Caracal
     [[nodiscard]] TokenBuffer lex(const SourceTextSharedPtr& sourceText, DiagnosticsBag& diagnostics) noexcept
     {
         TokenBuffer tokenBuffer{ sourceText };
-        const auto source = QStringView(sourceText->text);
+        const auto source = std::string_view(sourceText->text);
         i32 currentIndex = 0;
 
         while (true)
         {
             const auto current = PeekCurrentChar(source, currentIndex);
-
-            switch (current.unicode())
+            switch (current)
             {
-                case u'\r':
+                case '\r':
                 {
-                    if (PeekNextChar(source, currentIndex) == QChar(u'\n'))
+                    if (PeekNextChar(source, currentIndex) == '\n')
                         currentIndex++;
 
                     currentIndex++;
                     break;
                 }
-                case u'\n':
+                case '\n':
                 {
                     currentIndex++;
                     break;
                 }
-                case u'\t':
-                case u' ':
+                case '\t':
+                case ' ':
                 {
                     currentIndex++;
                     break;
                 }
-                case u'\0':
+                case '\0':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::EndOfFile);
                     return tokenBuffer;
                 }
-                case u'+':
+                case '+':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Plus);
                     break;
                 }
-                case u'-':
+                case '-':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Minus);
                     break;
                 }
-                case u'*':
+                case '*':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Star);
                     break;
                 }
-                case u'/':
+                case '/':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Slash);
                     break;
                 }
-                case u'.':
+                case '.':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Dot);
                     break;
                 }
-                case u':':
+                case ':':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Colon);
                     break;
                 }
-                case u';':
+                case ';':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Semicolon);
                     break;
                 }
-                case u'\'':
+                case '\'':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Uptick);
                     break;
                 }
-                case u',':
+                case ',':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Comma);
                     break;
                 }
-                case u'=':
+                case '=':
                 {
-                    if (PeekNextChar(source, currentIndex) == QChar(u'='))
+                    if (PeekNextChar(source, currentIndex) == '=')
                     {
                         AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::EqualEqual);
                         currentIndex++; // advance for the second '='
@@ -283,9 +292,9 @@ namespace Caracal
                     }
                     break;
                 }
-                case u'!':
+                case '!':
                 {
-                    if (PeekNextChar(source, currentIndex) == QChar(u'='))
+                    if (PeekNextChar(source, currentIndex) == '=')
                     {
                         AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::BangEqual);
                         currentIndex++; // advance for the '='
@@ -296,9 +305,9 @@ namespace Caracal
                     }
                     break;
                 }
-                case u'<':
+                case '<':
                 {
-                    if (PeekNextChar(source, currentIndex) == QChar(u'='))
+                    if (PeekNextChar(source, currentIndex) == '=')
                     {
                         AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::LessThanEqual);
                         currentIndex++; // advance for the '='
@@ -309,9 +318,9 @@ namespace Caracal
                     }
                     break;
                 }
-                case u'>':
+                case '>':
                 {
-                    if (PeekNextChar(source, currentIndex) == QChar(u'='))
+                    if (PeekNextChar(source, currentIndex) == '=')
                     {
                         AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::GreaterThanEqual);
                         currentIndex++; // advance for the '='
@@ -322,34 +331,34 @@ namespace Caracal
                     }
                     break;
                 }
-                case u'(':
+                case '(':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::OpenParenthesis);
                     break;
                 }
-                case u')':
+                case ')':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::CloseParenthesis);
                     break;
                 }
-                case u'{':
+                case '{':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::OpenBracket);
                     break;
                 }
-                case u'}':
+                case '}':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::CloseBracket);
                     break;
                 }
-                case u'\"':
+                case '\"':
                 {
                     LexString(tokenBuffer, diagnostics, source, currentIndex);
                     break;
                 }
                 default:
                 {
-                    if (current == QChar(u'_') && !IsUnderscoreOrLetterOrNumber(PeekNextChar(source, currentIndex)))
+                    if (current == '_' && !IsUnderscoreOrLetterOrNumber(PeekNextChar(source, currentIndex)))
                     {
                         AddTokenKindAndAdvance(tokenBuffer, currentIndex, TokenKind::Underscore);
                         break;
@@ -359,7 +368,7 @@ namespace Caracal
                         LexIdentifier(tokenBuffer, source, currentIndex);
                         break;
                     }
-                    else if (current.isNumber())
+                    else if (IsNumber(current))
                     {
                         LexNumber(tokenBuffer, source, currentIndex);
                         break;
