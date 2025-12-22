@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <Compiler/API.h>
-#include <QString>
+#include <string>
 
 namespace Caracal
 {

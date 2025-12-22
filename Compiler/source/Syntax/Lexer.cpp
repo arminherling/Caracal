@@ -205,6 +205,14 @@ namespace Caracal
         const auto source = std::string_view(sourceText->text);
         i32 currentIndex = 0;
 
+        // skip optional BOM at start of file
+        if (source.length() >= 3 &&
+            static_cast<u8>(source[0]) == 0xEF &&
+            static_cast<u8>(source[1]) == 0xBB &&
+            static_cast<u8>(source[2]) == 0xBF)
+        {
+            currentIndex = 3;
+        }
         while (true)
         {
             const auto current = PeekCurrentChar(source, currentIndex);

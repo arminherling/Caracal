@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Compiler/API.h>
 #include <Syntax/Node.h>

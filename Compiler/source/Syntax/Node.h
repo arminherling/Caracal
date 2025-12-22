@@ -1,8 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include <Compiler/API.h>
 #include <Syntax/NodeKind.h>
 #include <Semantic/Type.h>
+#include <memory>
+#include <optional>
 
 namespace Caracal
 {

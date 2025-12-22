@@ -24,17 +24,22 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    auto filePath = QString::fromLocal8Bit(argv[1]);
-    auto fileInfo = QFileInfo(filePath);
-    if (!fileInfo.isFile())
+    const auto parameterFilePath = std::filesystem::path(argv[1]);
+    const auto absolutePath = std::filesystem::absolute(parameterFilePath);
+    if (!std::filesystem::exists(absolutePath))
     {
         std::cout << "The parameter is not a valid file.\n";
         return -1;
     }
-    
-    auto absolutePath = fileInfo.absoluteFilePath();
-    auto fileContent = Caracal::File::ReadAllText(absolutePath);
-    auto source = std::make_shared<Caracal::SourceText>(fileContent.toStdString());
+
+    auto fileContent = Caracal::File::readText(absolutePath);
+    if(!fileContent.has_value())
+    {
+        std::cout << "Failed to read the file content.\n";
+        return -1;
+    }
+
+    auto source = std::make_shared<Caracal::SourceText>(fileContent.value());
     Caracal::DiagnosticsBag diagnostics;
 
     auto tokens = Caracal::lex(source, diagnostics);
@@ -59,8 +64,8 @@ int main(int argc, char* argv[])
     tempFile.close();
 
     auto sourceFilePath = tempFile.fileName();
-    auto baseName = fileInfo.baseName();
-    auto executablePath = baseName + ".exe";
+    auto baseName = parameterFilePath.stem().string();
+    auto executablePath = QString::fromStdString(baseName + ".exe");
     auto arguments = QStringList()
         << "-x"                    // Specify language flag
         << "c++"                   // Specify C++ language
