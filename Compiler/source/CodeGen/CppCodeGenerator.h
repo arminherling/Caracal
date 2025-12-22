@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <Compiler/API.h>
-#include <Debug/BasePrinter.h>
 #include <Defines.h>
 #include <Syntax/ParseTree.h>
 #include <Syntax/CppBlockStatement.h>

@@ -833,7 +833,6 @@ namespace Caracal
         auto cppTypeDef = buildCppTypeDefinition(node);
         auto typeName = cppTypeDef->name;
 
-        const auto typeSignature = QString("class %2").arg(QString::fromStdString(std::string(typeName)));
         m_forwardDeclarations.append("class ").append(typeName).appendLine(";");
 
         m_builder.append("class ").appendLine(typeName);
