@@ -253,36 +253,36 @@ static std::vector<std::tuple<std::string, std::string_view>> UnterminatedString
     };
 }
 
-//static void WhiteSpaceTrivia(const std::string& input, const std::string& expectedTrivia)
-//{
-//    const auto startTime = std::chrono::high_resolution_clock::now();
+static void WhiteSpaceTrivia(const std::string& input, const std::string& expectedTrivia)
+{
+    const auto startTime = std::chrono::high_resolution_clock::now();
 
-//    const auto source = std::make_shared<Caracal::SourceText>(input);
-//    Caracal::DiagnosticsBag diagnostics;
+    const auto source = std::make_shared<Caracal::SourceText>(input);
+    Caracal::DiagnosticsBag diagnostics;
 
-//    const auto tokens = Caracal::lex(source, diagnostics);
-//    const auto& token = tokens.getToken(0);
+    const auto tokens = Caracal::lex(source, diagnostics);
+    const auto& token = tokens.getToken(0);
 
-//    const auto endTime = std::chrono::high_resolution_clock::now();
-//    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+    const auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
-//    const auto lexeme = tokens.getTrivia(token);
-//    CaraTest::areEqual(expectedTrivia, lexeme);
-//}
+    const auto lexeme = tokens.getTrivia(token);
+    CaraTest::areEqual(expectedTrivia, lexeme);
+}
 
-//static std::vector<std::tuple<std::string, std::string>> WhiteSpaceTrivia_Data()
-//{
-//    return {
-//        std::make_tuple(std::string("", std::string(""),
-//        std::make_tuple(std::string(" 1234567890", std::string(" "),
-//        std::make_tuple(std::string(" \"hello\"", std::string(" "),
-//        std::make_tuple(std::string(" bool", std::string(" "),
-//        std::make_tuple(std::string("   // 1234567890", std::string("   // 1234567890"),
-//        std::make_tuple(std::string("// hello\n123", std::string("// hello\n"),
-//        std::make_tuple(std::string(" /* block comment */ 123", std::string(" /* block comment */ "),
-//        std::make_tuple(std::string(" 1  id   \"hi\"    ", std::string(" "),
-//    };
-//}
+static std::vector<std::tuple<std::string, std::string>> WhiteSpaceTrivia_Data()
+{
+    return {
+        std::make_tuple(std::string(""), std::string("")),
+        std::make_tuple(std::string(" 1234567890"), std::string(" ")),
+        std::make_tuple(std::string(" \"hello\""), std::string(" ")),
+        std::make_tuple(std::string(" bool"), std::string(" ")),
+        std::make_tuple(std::string("   // 1234567890"), std::string("   // 1234567890")),
+        std::make_tuple(std::string("// hello\n123"), std::string("// hello\n")),
+        std::make_tuple(std::string(" /* block comment */ 123"), std::string(" /* block comment */ ")),
+        std::make_tuple(std::string(" 1  id   \"hi\"    "), std::string(" ")),
+    };
+}
 
 static void WholeInput(const std::string& input, i32 tokenCount)
 {
@@ -345,7 +345,7 @@ static const auto tests =
     CaraTest::addTest("StringsWithEscapes", StringsWithEscapes_Data),
     CaraTest::addTest("UnterminatedStrings", UnterminatedStrings, UnterminatedStrings_Data),
     CaraTest::addTest("Keywords", ExpectedTokenKind, Keyword_Data),
-    //CaraTest::addTest("WhiteSpaceTrivia", WhiteSpaceTrivia, WhiteSpaceTrivia_Data),
+    CaraTest::addTest("WhiteSpaceTrivia", WhiteSpaceTrivia, WhiteSpaceTrivia_Data),
     CaraTest::addTest("WholeInput", WholeInput, WholeInput_Data),
     CaraTest::addTest("OneMillionLinesTime", OneMillionLinesTime),
 };
