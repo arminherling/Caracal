@@ -3,10 +3,9 @@
 file(GLOB SOURCES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/source/**/*.cpp")
 file(GLOB HEADERS CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/source/**/*.h")
 
-qt_add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/source")
-#target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Core)
 
 include(GenerateExportHeader)
 generate_export_header(${PROJECT_NAME}
