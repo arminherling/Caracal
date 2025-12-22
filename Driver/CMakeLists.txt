@@ -1,11 +1,11 @@
-project(Driver)
+﻿project(Driver)
 
 file(GLOB SOURCES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/source/*.cpp")
 file(GLOB HEADERS CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/source/*.h")
 
-qt_add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Compiler Qt6::Core)
+target_link_libraries(${PROJECT_NAME} PRIVATE Compiler)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "Caracal")
 
 if (WIN32)
