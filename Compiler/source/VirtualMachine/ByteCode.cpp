@@ -1,4 +1,4 @@
-#include "ByteCode.h"
+﻿#include "ByteCode.h"
 
 inline u8 ByteCode::readUInt8(u16& ip) const
 {
@@ -45,7 +45,7 @@ void ByteCode::setFunctionDeclaration(const FunctionDeclaration& declaration)
     functions.insert({ declaration.name, declaration });
 }
 
-std::optional<FunctionDeclaration> ByteCode::getFunctionDeclaration(const QString& name)
+std::optional<FunctionDeclaration> ByteCode::getFunctionDeclaration(const std::string& name)
 {
     if (auto search = functions.find(name); search != functions.end())
         return search->second;

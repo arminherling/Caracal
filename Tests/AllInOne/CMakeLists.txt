@@ -1,6 +1,6 @@
-project(AllInOne)
+﻿project(AllInOne)
 
-qt_add_executable(
+add_executable(
     ${PROJECT_NAME} 
     "${PROJECT_SOURCE_DIR}/../CppCodeGenTests/source/CppCodeGenTests.cpp"
     "${PROJECT_SOURCE_DIR}/../LexerTests/source/LexerTests.cpp"
@@ -10,7 +10,7 @@ qt_add_executable(
     "${PROJECT_SOURCE_DIR}/../VirtualMachineTests/source/VirtualMachineTests.cpp"
     "source/main.cpp")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Compiler CaraTest Qt6::Core)
+target_link_libraries(${PROJECT_NAME} PRIVATE Compiler CaraTest)
 
 if (WIN32)
     add_custom_command(

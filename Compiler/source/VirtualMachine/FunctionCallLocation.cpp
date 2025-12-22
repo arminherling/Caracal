@@ -1,7 +1,7 @@
-#include "FunctionCallLocation.h"
+﻿#include "FunctionCallLocation.h"
 
 FunctionCallLocation::FunctionCallLocation(
-    const QString& name,
+    const std::string& name,
     JumpIndex target)
     : name{ name }
     , target{ target }

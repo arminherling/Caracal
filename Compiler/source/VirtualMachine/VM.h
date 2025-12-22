@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Defines.h>
 #include <Compiler/API.h>
@@ -10,19 +10,22 @@
 #include <vector>
 #include <stack>
 
-class COMPILER_API VM
+namespace Caracal
 {
-public:
-    VM();
+    class COMPILER_API VM
+    {
+    public:
+        VM();
 
-    i32 run(ByteCode& instructions);
-    Value getValue(Register);
-    Value getRelativeValue(Register);
+        i32 run(ByteCode& instructions);
+        Value getValue(Register);
+        Value getRelativeValue(Register);
 
-private:
-    void setValue(Register, const Value&);
-    void setRelativeValue(Register, const Value&);
+    private:
+        void setValue(Register, const Value&);
+        void setRelativeValue(Register, const Value&);
 
-    std::vector<Value> m_registers;
-    std::stack<CallFrame> m_callFrames;
-};
+        std::vector<Value> m_registers;
+        std::stack<CallFrame> m_callFrames;
+    };
+}

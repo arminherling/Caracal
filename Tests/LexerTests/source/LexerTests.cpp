@@ -318,20 +318,20 @@ static void OneMillionLinesTime()
 #ifdef _DEBUG
     CaraTest::skip();// ("";
 #endif
-    const const auto filePath = std::filesystem::path("../../Tests/LexerTests/data/oneMilLines.txt");
-    const const auto data = Caracal::File::readText(filePath);
+    const auto filePath = std::filesystem::path("../../Tests/LexerTests/data/oneMilLines.txt");
+    const auto data = Caracal::File::readText(filePath);
     if (!data.has_value())
     {
         CaraTest::fail();// ("Could not read oneMilLines.txt");
     }
 
-    const const auto source = std::make_shared<Caracal::SourceText>(data.value());
+    const auto source = std::make_shared<Caracal::SourceText>(data.value());
     Caracal::DiagnosticsBag diagnostics;
 
-    const const auto startTime = std::chrono::high_resolution_clock::now();
-    const const auto tokens = Caracal::lex(source, diagnostics);
+    const auto startTime = std::chrono::high_resolution_clock::now();
+    const auto tokens = Caracal::lex(source, diagnostics);
 
-    const const auto endTime = std::chrono::high_resolution_clock::now();
+    const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 }
 

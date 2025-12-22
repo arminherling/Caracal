@@ -1,5 +1,5 @@
 ﻿#include <CaraTest.h>
-#include <Debug/ByteCodeDisassembler.h>
+//#include <Debug/ByteCodeDisassembler.h>
 #include <iostream>
 #include <VirtualMachine/ByteCode.h>
 #include <VirtualMachine/ByteCodeAssembler.h>
@@ -7,6 +7,7 @@
 #include <VirtualMachine/VM.h>
 
 using namespace CaraTest;
+using namespace Caracal;
 
 static void LoadBool(const std::string& testName, bool value)
 {
@@ -27,7 +28,7 @@ static void LoadBool(const std::string& testName, bool value)
     CaraTest::areEqual(loadedValue.asBool(), value);
 }
 
-static QList<std::tuple<std::string, bool>> LoadBool_Data()
+static std::vector<std::tuple<std::string, bool>> LoadBool_Data()
 {
     return {
         std::make_tuple(std::string("true"), true),
@@ -55,7 +56,7 @@ static void NotBool(const std::string& testName, bool value, bool expectedResult
     CaraTest::areEqual(loadedValue.asBool(), expectedResult);
 }
 
-static QList<std::tuple<std::string, bool, bool>> NotBool_Data()
+static std::vector<std::tuple<std::string, bool, bool>> NotBool_Data()
 {
     return {
         std::make_tuple(std::string("!true = false"), true, false),
@@ -84,7 +85,7 @@ static void EqualBool(const std::string& testName, bool lhs, bool rhs, bool expe
     CaraTest::areEqual(loadedValue.asBool(), expectedResult);
 }
 
-static QList<std::tuple<std::string, bool, bool, bool>> EqualBool_Data()
+static std::vector<std::tuple<std::string, bool, bool, bool>> EqualBool_Data()
 {
     return {
         std::make_tuple(std::string("true == false = false"), true, false, false),
@@ -114,7 +115,7 @@ static void NotEqualBool(const std::string& testName, bool lhs, bool rhs, bool e
     CaraTest::areEqual(loadedValue.asBool(), expectedResult);
 }
 
-static QList<std::tuple<std::string, bool, bool, bool>> NotEqualBool_Data()
+static std::vector<std::tuple<std::string, bool, bool, bool>> NotEqualBool_Data()
 {
     return {
         std::make_tuple(std::string("true != false = true"), true, false, true),
@@ -142,7 +143,7 @@ static void LoadInt32(const std::string& testName, i32 value)
     CaraTest::areEqual(loadedValue.asInt32(), value);
 }
 
-static QList<std::tuple<std::string, i32>> LoadInt32_Data()
+static std::vector<std::tuple<std::string, i32>> LoadInt32_Data()
 {
     return {
         std::make_tuple(std::string("123"), 123),
@@ -171,7 +172,7 @@ static void AddInt32(const std::string& testName, i32 lhs, i32 rhs, i32 expected
     CaraTest::areEqual(loadedValue.asInt32(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32, i32>> AddInt32_Data()
+static std::vector<std::tuple<std::string, i32, i32, i32>> AddInt32_Data()
 {
     return {
         std::make_tuple(std::string("10 + 100 = 110"), 10, 100, 110),
@@ -200,7 +201,7 @@ static void SubtractInt32(const std::string& testName, i32 lhs, i32 rhs, i32 exp
     CaraTest::areEqual(loadedValue.asInt32(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32, i32>> SubtractInt32_Data()
+static std::vector<std::tuple<std::string, i32, i32, i32>> SubtractInt32_Data()
 {
     return {
         std::make_tuple(std::string("10 - 100 = -90"), 10, 100, -90),
@@ -229,7 +230,7 @@ static void MultiplyInt32(const std::string& testName, i32 lhs, i32 rhs, i32 exp
     CaraTest::areEqual(loadedValue.asInt32(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32, i32>> MultiplyInt32_Data()
+static std::vector<std::tuple<std::string, i32, i32, i32>> MultiplyInt32_Data()
 {
     return {
         std::make_tuple(std::string("10 * 100 = 1000"), 10, 100, 1000),
@@ -258,7 +259,7 @@ static void DivideInt32(const std::string& testName, i32 lhs, i32 rhs, i32 expec
     CaraTest::areEqual(loadedValue.asInt32(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32, i32>> DivideInt32_Data()
+static std::vector<std::tuple<std::string, i32, i32, i32>> DivideInt32_Data()
 {
     return {
         std::make_tuple(std::string("100 / 10 = 10"), 100, 10, 10),
@@ -286,7 +287,7 @@ static void NegateIn32(const std::string& testName, i32 value, i32 expectedResul
     CaraTest::areEqual(loadedValue.asInt32(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32>> NegateIn32_Data()
+static std::vector<std::tuple<std::string, i32, i32>> NegateIn32_Data()
 {
     return {
         std::make_tuple(std::string("-(10) = -10"), 10, -10),
@@ -316,7 +317,7 @@ static void EqualInt32(const std::string& testName, i32 lhs, i32 rhs, bool expec
     CaraTest::areEqual(loadedValue.asBool(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32, bool>> EqualInt32_Data()
+static std::vector<std::tuple<std::string, i32, i32, bool>> EqualInt32_Data()
 {
     return {
         std::make_tuple(std::string("100 == 10 = false"), 100, 10, false),
@@ -345,7 +346,7 @@ static void NotEqualInt32(const std::string& testName, i32 lhs, i32 rhs, bool ex
     CaraTest::areEqual(loadedValue.asBool(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32, bool>> NotEqualInt32_Data()
+static std::vector<std::tuple<std::string, i32, i32, bool>> NotEqualInt32_Data()
 {
     return {
         std::make_tuple(std::string("100 != 10 = true"), 100, 10, true),
@@ -374,7 +375,7 @@ static void GreaterInt32(const std::string& testName, i32 lhs, i32 rhs, bool exp
     CaraTest::areEqual(loadedValue.asBool(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32, bool>> GreaterInt32_Data()
+static std::vector<std::tuple<std::string, i32, i32, bool>> GreaterInt32_Data()
 {
     return {
         std::make_tuple(std::string("100 > 10 = true"), 100, 10, true),
@@ -404,7 +405,7 @@ static void GreaterOrEqualInt32(const std::string& testName, i32 lhs, i32 rhs, b
     CaraTest::areEqual(loadedValue.asBool(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32, bool>> GreaterOrEqualInt32_Data()
+static std::vector<std::tuple<std::string, i32, i32, bool>> GreaterOrEqualInt32_Data()
 {
     return {
         std::make_tuple(std::string("100 >= 10 = true"), 100, 10, true),
@@ -434,7 +435,7 @@ static void LessInt32(const std::string& testName, i32 lhs, i32 rhs, bool expect
     CaraTest::areEqual(loadedValue.asBool(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32, bool>> LessInt32_Data()
+static std::vector<std::tuple<std::string, i32, i32, bool>> LessInt32_Data()
 {
     return {
         std::make_tuple(std::string("100 < 10 = false"), 100, 10, false),
@@ -464,7 +465,7 @@ static void LessOrEqualInt32(const std::string& testName, i32 lhs, i32 rhs, bool
     CaraTest::areEqual(loadedValue.asBool(), expectedResult);
 }
 
-static QList<std::tuple<std::string, i32, i32, bool>> LessOrEqualInt32_Data()
+static std::vector<std::tuple<std::string, i32, i32, bool>> LessOrEqualInt32_Data()
 {
     return {
         std::make_tuple(std::string("100 <= 10 = false"), 100, 10, false),
@@ -492,7 +493,7 @@ static void MoveBool(const std::string& testName, bool value)
     CaraTest::areEqual(loadedValue.asBool(), value);
 }
 
-static QList<std::tuple<std::string, bool>> MoveBool_Data()
+static std::vector<std::tuple<std::string, bool>> MoveBool_Data()
 {
     return {
         std::make_tuple(std::string("true"), true),
@@ -519,7 +520,7 @@ static void MoveInt32(const std::string& testName, i32 value)
     CaraTest::areEqual(loadedValue.asInt32(), value);
 }
 
-static QList<std::tuple<std::string, i32>> MoveInt32_Data()
+static std::vector<std::tuple<std::string, i32>> MoveInt32_Data()
 {
     return {
         std::make_tuple(std::string("0"), 0),
@@ -575,7 +576,7 @@ static void JumpIfTrue(const std::string& testName, bool condition, i32 expected
     CaraTest::areEqual(loadedValue.asInt32(), expectedResult);
 }
 
-static QList<std::tuple<std::string, bool, i32>> JumpIfTrue_Data()
+static std::vector<std::tuple<std::string, bool, i32>> JumpIfTrue_Data()
 {
     return {
         std::make_tuple(std::string("false -> 20"), false, 20),
@@ -607,7 +608,7 @@ static void JumpIfFalse(const std::string& testName, bool condition, i32 expecte
     CaraTest::areEqual(loadedValue.asInt32(), expectedResult);
 }
 
-static QList<std::tuple<std::string, bool, i32>> JumpIfFalse_Data()
+static std::vector<std::tuple<std::string, bool, i32>> JumpIfFalse_Data()
 {
     return {
         std::make_tuple(std::string("false -> 10"), false, 10),
@@ -632,7 +633,7 @@ static void PrintBool(const std::string& testName, bool value)
     std::cout << "      run(): " << stringify(endTime - startTime) << std::endl;
 }
 
-static QList<std::tuple<std::string, bool>> PrintBool_Data()
+static std::vector<std::tuple<std::string, bool>> PrintBool_Data()
 {
     return {
         std::make_tuple(std::string("true"), true),
@@ -657,7 +658,7 @@ static void PrintInt32(const std::string& testName, i32 value)
     std::cout << "      run(): " << stringify(endTime - startTime) << std::endl;
 }
 
-static QList<std::tuple<std::string, i32>> PrintInt32_Data()
+static std::vector<std::tuple<std::string, i32>> PrintInt32_Data()
 {
     return {
         std::make_tuple(std::string("0"), 0),
@@ -716,7 +717,7 @@ static void LoweredWhileLoop()
 
 static void FunctionDeclarationTest()
 {
-    auto functionName = QString("function");
+    auto functionName = std::string("function");
     auto returnValues = 1;
     auto parameterValues = 2;
 
@@ -726,15 +727,15 @@ static void FunctionDeclarationTest()
 
     auto optDeclaration = code.getFunctionDeclaration(functionName);
     CaraTest::isTrue(optDeclaration.has_value());
-    auto declaration = optDeclaration.value();
-    CaraTest::areEqual(declaration.name.toStdString(), functionName.toStdString());
+    auto& declaration = optDeclaration.value();
+    CaraTest::areEqual(declaration.name, functionName);
     CaraTest::areEqual(declaration.returnValues, returnValues);
     CaraTest::areEqual(declaration.parameterValues, parameterValues);
 }
 
 static void FunctionCall()
 {
-    auto addFunctionName = QString("add");
+    auto addFunctionName = std::string("add");
 
     ByteCode code;
     ByteCodeAssembler assembler{ code };
@@ -775,7 +776,7 @@ static void Fib20()
     //    }
     //}
 
-    auto fibFunctionName = QString("fib");
+    auto fibFunctionName = std::string("fib");
 
     ByteCode code;
     ByteCodeAssembler assembler{ code };

@@ -1,14 +1,13 @@
-#pragma once
+﻿#pragma once
 
 #include <Compiler/API.h>
 #include <VirtualMachine/JumpIndex.h>
-
-#include <QString>
+#include <string>
 
 struct COMPILER_API FunctionCallLocation
 {
-    FunctionCallLocation(const QString& name, JumpIndex target);
+    FunctionCallLocation(const std::string& name, JumpIndex target);
 
-    QString name;
+    std::string name;
     JumpIndex target;
 };

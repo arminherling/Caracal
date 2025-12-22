@@ -1,14 +1,14 @@
-#pragma once
+﻿#pragma once
 
 #include <Defines.h>
 #include <Compiler/API.h>
 #include <VirtualMachine/Label.h>
 
-#include <QString>
+#include <string>
 
 struct COMPILER_API FunctionDeclaration
 {
-    QString name;
+    std::string name;
     Label entryPoint;
     u8 returnValues;
     u8 parameterValues;

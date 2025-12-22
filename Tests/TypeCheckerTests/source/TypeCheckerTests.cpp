@@ -3,7 +3,6 @@
 #include <Compiler/File.h>
 #include <Debug/TypedTreePrinter.h>
 #include <iostream>
-#include <QDirIterator>
 #include <Semantic/TypeChecker.h>
 #include <Semantic/TypeCheckerOptions.h>
 #include <Semantic/TypeDatabase.h>

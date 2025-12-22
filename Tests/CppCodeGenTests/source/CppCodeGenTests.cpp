@@ -3,7 +3,6 @@
 #include <Compiler/DiagnosticsBag.h>
 #include <Compiler/File.h>
 #include <iostream>
-#include <QDirIterator>
 #include <Syntax/Lexer.h>
 #include <Syntax/Parser.h>
 
@@ -13,9 +12,9 @@ static void FileTests(
     const std::filesystem::path& outputFilePath, 
     const std::filesystem::path& /*errorFilePath*/)
 {
-    if (!QFile::exists(inputFilePath))
+    if (!std::filesystem::exists(inputFilePath))
         CaraTest::fail();// ("In file missing");
-    if (!QFile::exists(outputFilePath))
+    if (!std::filesystem::exists(outputFilePath))
         CaraTest::skip();// ("Out file missing");
 
     const auto input = Caracal::File::readText(inputFilePath);

@@ -1,61 +1,64 @@
 ﻿#include "Op.h"
 
-QString stringifyOp(Op op)
+namespace Caracal
 {
-    switch (op)
+    std::string stringify(Op op)
     {
-        case Op::LoadBool:
-            return QString("LoadBool");
-        case Op::NotBool:
-            return QString("NotBool");
-        case Op::EqualBool:
-            return QString("EqualBool");
-        case Op::NotEqualBool:
-            return QString("NotEqualBool");
-        case Op::LoadInt32:
-            return QString("LoadInt32");
-        case Op::AddInt32:
-            return QString("AddInt32");
-        case Op::SubtractInt32:
-            return QString("SubtractInt32");
-        case Op::MultiplyInt32:
-            return QString("MultiplyInt32");
-        case Op::DivideInt32:
-            return QString("DivideInt32");
-        case Op::NegateInt32:
-            return QString("NegateInt32");
-        case Op::EqualInt32:
-            return QString("EqualInt32");
-        case Op::NotEqualInt32:
-            return QString("NotEqualInt32");
-        case Op::GreaterInt32:
-            return QString("GreaterInt32");
-        case Op::GreaterOrEqualInt32:
-            return QString("GreaterOrEqualInt32");
-        case Op::LessInt32:
-            return QString("LessInt32");
-        case Op::LessOrEqualInt32:
-            return QString("LessOrEqualInt32");
-        case Op::FunctionCall:
-            return QString("FunctionCall");
-        case Op::Jump:
-            return QString("Jump");
-        case Op::JumpIfTrue:
-            return QString("JumpIfTrue");
-        case Op::JumpIfFalse:
-            return QString("JumpIfFalse");
-        case Op::Move:
-            return QString("Move");
-        case Op::PrintBool:
-            return QString("PrintBool");
-        case Op::PrintInt32:
-            return QString("PrintInt32");
-        case Op::PrintNewLine:
-            return QString("PrintNewLine");
-        case Op::Halt:
-            return QString("Halt");
-        default:
-            TODO("String for Op code value was not defined yet");
+        switch (op)
+        {
+            case Op::LoadBool:
+                return std::string("LoadBool");
+            case Op::NotBool:
+                return std::string("NotBool");
+            case Op::EqualBool:
+                return std::string("EqualBool");
+            case Op::NotEqualBool:
+                return std::string("NotEqualBool");
+            case Op::LoadInt32:
+                return std::string("LoadInt32");
+            case Op::AddInt32:
+                return std::string("AddInt32");
+            case Op::SubtractInt32:
+                return std::string("SubtractInt32");
+            case Op::MultiplyInt32:
+                return std::string("MultiplyInt32");
+            case Op::DivideInt32:
+                return std::string("DivideInt32");
+            case Op::NegateInt32:
+                return std::string("NegateInt32");
+            case Op::EqualInt32:
+                return std::string("EqualInt32");
+            case Op::NotEqualInt32:
+                return std::string("NotEqualInt32");
+            case Op::GreaterInt32:
+                return std::string("GreaterInt32");
+            case Op::GreaterOrEqualInt32:
+                return std::string("GreaterOrEqualInt32");
+            case Op::LessInt32:
+                return std::string("LessInt32");
+            case Op::LessOrEqualInt32:
+                return std::string("LessOrEqualInt32");
+            case Op::FunctionCall:
+                return std::string("FunctionCall");
+            case Op::Jump:
+                return std::string("Jump");
+            case Op::JumpIfTrue:
+                return std::string("JumpIfTrue");
+            case Op::JumpIfFalse:
+                return std::string("JumpIfFalse");
+            case Op::Move:
+                return std::string("Move");
+            case Op::PrintBool:
+                return std::string("PrintBool");
+            case Op::PrintInt32:
+                return std::string("PrintInt32");
+            case Op::PrintNewLine:
+                return std::string("PrintNewLine");
+            case Op::Halt:
+                return std::string("Halt");
+            default:
+                TODO("String for Op code value was not defined yet");
+        }
+        return std::string();
     }
-    return QString();
 }
