@@ -1,5 +1,4 @@
 ﻿#include <CodeGen/CppCodeGenerator.h>
-#include <QStringBuilder>
 
 namespace Caracal
 {
@@ -42,8 +41,8 @@ namespace Caracal
 
     [[nodiscard]] static auto InitializeTypeToCppInclude() noexcept
     {
-        return std::unordered_map<Type, QString>{
-            { Type::String(), QStringLiteral("#include <string>") },
+        return std::unordered_map<Type, std::string>{
+            { Type::String(), std::string("#include <string>") },
         };
     }
 
@@ -113,7 +112,7 @@ namespace Caracal
         return std::string_view();
     }
 
-    [[nodiscard]] static std::optional<QString> GetCppIncludeForType(Type type) noexcept
+    [[nodiscard]] static std::optional<std::string> GetCppIncludeForType(Type type) noexcept
     {
         static const auto cppIncludes = InitializeTypeToCppInclude();
         if (const auto result = cppIncludes.find(type); result != cppIncludes.end())
@@ -122,68 +121,68 @@ namespace Caracal
         return std::nullopt;
     }
 
-    [[nodiscard]] static QString StringifyBinaryOperator(BinaryOperatorKind kind)
+    [[nodiscard]] static std::string StringifyBinaryOperator(BinaryOperatorKind kind)
     {
         switch (kind)
         {
             case BinaryOperatorKind::Addition:
-                return QStringLiteral("+");
+                return std::string("+");
             case BinaryOperatorKind::Subtraction:
-                return QStringLiteral("-");
+                return std::string("-");
             case BinaryOperatorKind::Multiplication:
-                return QStringLiteral("*");
+                return std::string("*");
             case BinaryOperatorKind::Division:
-                return QStringLiteral("/");
+                return std::string("/");
             case BinaryOperatorKind::Equal:
-                return QStringLiteral("==");
+                return std::string("==");
             case BinaryOperatorKind::NotEqual:
-                return QStringLiteral("!=");
+                return std::string("!=");
             case BinaryOperatorKind::LessThan:
-                return QStringLiteral("<");
+                return std::string("<");
             case BinaryOperatorKind::LessOrEqual:
-                return QStringLiteral("<=");
+                return std::string("<=");
             case BinaryOperatorKind::GreaterThan:
-                return QStringLiteral(">");
+                return std::string(">");
             case BinaryOperatorKind::GreaterOrEqual:
-                return QStringLiteral(">=");
+                return std::string(">=");
             case BinaryOperatorKind::LogicalAnd:
-                return QStringLiteral("&&");
+                return std::string("&&");
             case BinaryOperatorKind::LogicalOr:
-                return QStringLiteral("||");
+                return std::string("||");
             default:
                 TODO("Implement StringifyBinaryOperator for all operators");
-                return QString();
+                return std::string();
         }
     }
 
-    [[nodiscard]] static QString StringifyUnaryOperator(UnaryOperatorKind kind)
+    [[nodiscard]] static std::string StringifyUnaryOperator(UnaryOperatorKind kind)
     {
         switch (kind)
         {
             case UnaryOperatorKind::LogicalNegation:
-                return QStringLiteral("!");
+                return std::string("!");
             case UnaryOperatorKind::ValueNegation:
-                return QStringLiteral("-");
+                return std::string("-");
             case UnaryOperatorKind::ReferenceOf:
-                return QStringLiteral("&");
+                return std::string("&");
             default:
                 TODO("Implement StringifyUnaryOperator for all operators");
-                return QString();
+                return std::string();
         }
     }
 
     CppCodeGenerator::CppCodeGenerator(const ParseTree& parseTree, i32 indentation)
-        : BasePrinter(indentation)
-        , m_parseTree{ parseTree }
-        , m_cppIncludes{ }
-        , m_forwardDeclarations{ }
-        , m_currentScope(Scope::Global)
-        , m_discardCount(0)
-        , m_currentStatement(NodeKind::Unknown)
+        : m_parseTree{ parseTree }
+        , m_currentScope{ Scope::Global }
+        , m_discardCount{ 0 }
+        , m_currentStatement{ NodeKind::Unknown }
+        , m_cppIncludes{ indentation }
+        , m_forwardDeclarations{ indentation }
+        , m_builder{ indentation }
     {
     }
 
-    QString CppCodeGenerator::generate()
+    std::string CppCodeGenerator::generate()
     {
         for (const auto& statement : m_parseTree.statements())
         {
@@ -192,15 +191,15 @@ namespace Caracal
 
         if (!m_cppIncludes.isEmpty())
         {
-            m_cppIncludes.append(newLine());
+            m_cppIncludes.appendLine("");
         }
-        const auto includes = m_cppIncludes.join("");
+        const auto includes = m_cppIncludes.toString();
 
         if (!m_forwardDeclarations.isEmpty())
         {
-            m_forwardDeclarations.append(newLine());
+            m_forwardDeclarations.appendLine("");
         }
-        const auto forwardDeclarations = m_forwardDeclarations.join("");
+        const auto forwardDeclarations = m_forwardDeclarations.toString();
 
         // generate cpp method definitions
         for (const auto& [typeName, cppTypeDef] : m_cppTypeDefs)
@@ -221,7 +220,7 @@ namespace Caracal
             }
         }
 
-        return includes % forwardDeclarations % toUtf8();
+        return includes + forwardDeclarations + m_builder.toString();
     }
 
     void CppCodeGenerator::generateNode(Node* node) noexcept
@@ -397,7 +396,7 @@ namespace Caracal
 
             default:
             {
-                stream() << indentation() << QString("Missing NodeKind!!") << newLine();
+                m_builder.appendIndentedLine("Missing NodeKind!!");
                 break;
             }
         }
@@ -412,28 +411,28 @@ namespace Caracal
             // remove the first and last quotes
             lexeme = lexeme.substr(1, lexeme.length() - 2);
             const auto result = ReplaceEscapeSequences(lexeme);
-            stream() << indentation() << QString::fromStdString(result) << newLine();
+            m_builder.appendIndentedLine(result);
         }
     }
 
     void CppCodeGenerator::generateBlockNode(BlockNode* node) noexcept
     {
         const auto& statements = node->statements();
-        stream() << indentation() << "{" << newLine();
-        pushIndentation();
+        m_builder.appendIndentedLine("{");
+        m_builder.pushIndentation();
         for (const auto& statement : statements)
         {
             generateNode(statement.get());
         }
-        popIndentation();
-        stream() << indentation() << "}" << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void CppCodeGenerator::generateExpressionStatement(ExpressionStatement* node) noexcept
     {
-        stream() << indentation();
+        m_builder.appendIndented("");
         generateNode(node->expression().get());
-        stream() << ";" << newLine();
+        m_builder.appendLine(";");
     }
 
     void CppCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node) noexcept
@@ -445,9 +444,9 @@ namespace Caracal
             const auto include = GetCppIncludeForType(typeNameNode->type());
             if (include.has_value())
             {
-                m_cppIncludes.append(include.value() % newLine());
+                m_cppIncludes.appendLine(include.value());
             }
-            stream() << indentation() << "const " << QString::fromStdString(std::string(typeName));
+            m_builder.appendIndented("const ").append(typeName);
         }
         else
         {
@@ -456,16 +455,16 @@ namespace Caracal
             const auto include = GetCppIncludeForType(type);
             if (include.has_value())
             {
-                m_cppIncludes.append(include.value() % newLine());
+                m_cppIncludes.appendLine(include.value());
             }
 
             if (cppTypeName.empty())
             {
-                stream() << indentation() << "const auto";
+                m_builder.appendIndented("const auto");
             }
             else
             {
-                stream() << indentation() << "const " << QString::fromStdString(std::string(cppTypeName));
+                m_builder.appendIndented("const ").append(cppTypeName);
             }
         }
 
@@ -475,15 +474,15 @@ namespace Caracal
             const auto unaryExpression = (UnaryExpression*)node->rightExpression().get();
             if (unaryExpression->unaryOperator() == UnaryOperatorKind::ReferenceOf)
             {
-                stream() << StringifyUnaryOperator(UnaryOperatorKind::ReferenceOf);
+                m_builder.append(StringifyUnaryOperator(UnaryOperatorKind::ReferenceOf));
             }
         }
-        stream() << " ";
+        m_builder.append(" ");
 
         generateNode(node->leftExpression().get());
-        stream() << " = ";
+        m_builder.append(" = ");
         generateNode(node->rightExpression().get());
-        stream() << ";" << newLine();
+        m_builder.appendLine(";");
     }
 
     void CppCodeGenerator::generateVariableDeclaration(VariableDeclaration* node) noexcept
@@ -495,9 +494,9 @@ namespace Caracal
             const auto include = GetCppIncludeForType(typeNameNode->type());
             if (include.has_value())
             {
-                m_cppIncludes.append(include.value() % newLine());
+                m_cppIncludes.appendLine(include.value());
             }
-            stream() << indentation() << QString::fromStdString(std::string(typeName));
+            m_builder.appendIndented(typeName);
         }
         else
         {
@@ -505,9 +504,9 @@ namespace Caracal
             const auto include = GetCppIncludeForType(type);
             if (include.has_value())
             {
-                m_cppIncludes.append(include.value() % newLine());
+                m_cppIncludes.appendLine(include.value());
             }
-            stream() << indentation() << "auto";
+            m_builder.appendIndented("auto");
         }
 
         // check if right expression is a ref
@@ -516,26 +515,26 @@ namespace Caracal
             const auto unaryExpression = (UnaryExpression*)node->rightExpression().value().get();
             if (unaryExpression->unaryOperator() == UnaryOperatorKind::ReferenceOf)
             {
-                stream() << StringifyUnaryOperator(UnaryOperatorKind::ReferenceOf);
+                m_builder.append(StringifyUnaryOperator(UnaryOperatorKind::ReferenceOf));
             }
         }
-        stream() << " ";
+        m_builder.append(" ");
 
         generateNode(node->leftExpression().get());
         if (node->rightExpression().has_value())
         {
-            stream() << " = ";
+            m_builder.append(" = ");
             generateNode(node->rightExpression().value().get());
         }
-        stream() << ";" << newLine();
+        m_builder.appendLine(";");
     }
 
     void CppCodeGenerator::generateTypeFieldDeclaration(TypeFieldDeclaration* node) noexcept
     {
-        stream() << indentation();
+        m_builder.appendIndented("");
         if (node->isConstant())
         {
-            stream() << "const ";
+            m_builder.append("const ");
         }
 
         if (node->explicitType().has_value())
@@ -545,9 +544,9 @@ namespace Caracal
             const auto include = GetCppIncludeForType(typeNameNode->type());
             if (include.has_value())
             {
-                m_cppIncludes.append(include.value() % newLine());
+                m_cppIncludes.appendLine(include.value());
             }
-            stream() << QString::fromStdString(std::string(typeName)) << " ";
+            m_builder.append(typeName).append(" ");
         }
         else
         {
@@ -556,58 +555,59 @@ namespace Caracal
             const auto include = GetCppIncludeForType(type);
             if (include.has_value())
             {
-                m_cppIncludes.append(include.value() % newLine());
+                m_cppIncludes.appendLine(include.value());
             }
-            stream() << QString::fromStdString(std::string(typeName)) << " ";
+            m_builder.append(typeName).append(" ");
         }
 
-        stream() << generateTypeFieldName(node->nameExpression().get());
+        m_builder.append(generateTypeFieldName(node->nameExpression().get()));
 
         if (node->rightExpression().has_value())
         {
             if (node->rightExpression().value()->isLiteral())
             {
-                stream() << " = ";
+                m_builder.append(" = ");
                 generateNode(node->rightExpression().value().get());
             }
         }
-        stream() << ";" << newLine();
+        m_builder.appendLine(";");
     }
 
     void CppCodeGenerator::generateConstructorDeclarationSignature(std::string_view className, ParametersNode* parametersNode) noexcept
     {
         if(parametersNode == nullptr)
         {
-            stream() << indentation() << QString::fromStdString(std::string(className)) << "() = default;" << newLine();
+            m_builder.appendIndented(className).appendLine("() = default;");
             return;
         }
 
         const auto isEmpty = parametersNode->parameters().empty();
 
-        stream() << indentation() << QString::fromStdString(std::string(className)) << generateFunctionSignatureParameterPart(parametersNode);
+        m_builder.appendIndented(className).append(generateFunctionSignatureParameterPart(parametersNode));
 
         if (isEmpty)
         {
-            stream() << " = default";
+            m_builder.append(" = default");
         }
 
-        stream() << ";" << newLine();
+        m_builder.appendLine(";");
     }
 
     void CppCodeGenerator::generateConstructorDefinition(CppTypeDef* cppType) noexcept
     {
-        const auto& typeName = QString::fromStdString(std::string(cppType->name));
+        const auto& typeName = cppType->name;
         const auto& parametersNode = cppType->constructorParameters;
         if (parametersNode == nullptr)
             return;
 
         const auto parameterPart = generateFunctionSignatureParameterPart(parametersNode);
 
-        stream() << typeName << "::" << typeName << parameterPart << newLine();
+        m_builder.append(typeName).append("::").append(typeName).appendLine(parameterPart);
         
-        pushIndentation();
+        m_builder.pushIndentation();
 
-        QStringList initList;
+        StringBuilder initList;
+        bool initListIsEmpty = true;
         for (const auto& field : cppType->publicFields)
         {
             if (field->rightExpression().has_value())
@@ -627,24 +627,27 @@ namespace Caracal
                 const auto fieldName = generateTypeFieldName(field->nameExpression().get());
                 const auto parameterName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
 
-                const auto initEntry = fieldName + "{ " + QString::fromStdString(std::string(parameterName)) + " }";
-
-                initList.push_back(initEntry);
+                if(!initListIsEmpty)
+                {
+                    initList.append(", ");
+                }
+                initList.append(fieldName).append("{ ").append(parameterName).append(" }");
+                initListIsEmpty = false;
             }
         }
 
-        if(!initList.isEmpty())
+        if(!initListIsEmpty)
         {
-            stream() << indentation() << ": " << initList.join(newLine() % ", ") << newLine();
+            m_builder.appendIndented(": ").appendLine(initList.toString());
         }
 
-        popIndentation();
-        stream() << "{" << newLine() << "}" << newLine() << newLine();
+        m_builder.popIndentation();
+        m_builder.appendLine("{").appendLine("}").appendLine("");
     }
 
     void CppCodeGenerator::generateDestructorDeclarationSignature(std::string_view className) noexcept
     {
-        stream() << indentation() << "~" << QString::fromStdString(std::string(className)) << "() = default;" << newLine();
+        m_builder.appendIndented("~").append(className).appendLine("() = default;");
     }
 
     void CppCodeGenerator::generateMethodDeclarationSignature(MethodDefinitionStatement* node) noexcept
@@ -655,26 +658,26 @@ namespace Caracal
         auto returnTypesNode = node->returnTypesNode().get();
         const auto specialFunctionType = node->specialFunctionType();
 
-        stream() << indentation();
+        m_builder.appendIndented("");
         if (node->modifier() == MethodModifier::Static)
         {
-            stream() << "static ";
+            m_builder.append("static ");
         }
 
-        stream() << generateFunctionSignatureReturnPart(returnTypesNode, false);
-        stream() << QString::fromStdString(generateFunctionSignatureNamePart(methodName));
-        stream() << generateFunctionSignatureParameterPart(parametersNode);
+        m_builder.append(generateFunctionSignatureReturnPart(returnTypesNode, false));
+        m_builder.append(generateFunctionSignatureNamePart(methodName));
+        m_builder.append(generateFunctionSignatureParameterPart(parametersNode));
 
         if (specialFunctionType != SpecialFunctionType::None)
         {
             const auto& statements = node->bodyNode()->statements();
             if (statements.empty())
             {
-                stream() << " = default";
+                m_builder.append(" = default");
             }
         }
         
-        stream() << ";" << newLine();
+        m_builder.appendLine(";");
     }
 
     void CppCodeGenerator::generateMethodDefinition(const std::string_view& typeName, MethodDefinitionStatement* node) noexcept
@@ -688,82 +691,79 @@ namespace Caracal
         const auto returnPart = generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
         const auto namePart = generateFunctionSignatureNamePart(functionName);
         const auto parameterPart = generateFunctionSignatureParameterPart(parametersNode);
-        const auto signature = returnPart + QString::fromStdString(std::string(typeName)) + "::" + QString::fromStdString(namePart) + parameterPart;
+        const auto signature = returnPart + std::string(typeName) + "::" + namePart + parameterPart;
 
-        stream() << signature << newLine() << "{" << newLine();
-        pushIndentation();
+        m_builder.appendLine(signature).appendLine("{");
+        m_builder.pushIndentation();
         const auto& body = node->bodyNode();
         for (const auto& statement : body->statements())
         {
             generateNode(statement.get());
         }
-        popIndentation();
-        stream() << "}" << newLine() << newLine();
+        m_builder.popIndentation();
+        m_builder.appendLine("}").appendLine("");
     }
 
     void CppCodeGenerator::generateGlobalDiscardedExpression(Expression* expression) noexcept
     {
-        stream() << indentation() << "const auto _" << m_discardCount++ << " = ";
+        m_builder.appendIndented("const auto _").append(std::to_string(m_discardCount++)).append(" = ");
         generateNode(expression);
-        stream() << ";" << newLine();
+        m_builder.appendLine(";");
     }
 
     void CppCodeGenerator::generateLocalDiscardedExpression(Expression* expression) noexcept
     {
-        stream() << indentation() << "static_cast<void>(";
+        m_builder.appendIndented("static_cast<void>(");
         generateNode(expression);
-        stream() << ");" << newLine();
+        m_builder.appendLine(");");
     }
 
     void CppCodeGenerator::generateAssignmentStatement(AssignmentStatement* node) noexcept
     {
-        stream() << indentation();
+        m_builder.appendIndented("");
         generateNode(node->leftExpression().get());
-        stream() << " = ";
+        m_builder.append(" = ");
         generateNode(node->rightExpression().get());
-        stream() << ";" << newLine();
+        m_builder.appendLine(";");
     }
 
-    QString CppCodeGenerator::generateEnumSignature(EnumDefinitionStatement* node) noexcept
+    std::string CppCodeGenerator::generateEnumSignature(EnumDefinitionStatement* node) noexcept
     {
         const auto enumName = m_parseTree.tokens().getLexeme(node->nameExpression()->nameToken());
 
-        QString signature;
-        QTextStream sigStream(&signature);
-
-        sigStream << indentation() << "enum class " << QString::fromStdString(std::string(enumName));
+        StringBuilder signature;
+        signature.appendIndented("enum class ").append(enumName);
         if (node->baseType().has_value())
         {
             const auto baseType = node->baseType().value().get();
             const auto cppTypeName = GetCppNameForType(baseType->type());
 
-            sigStream << " : " << QString::fromStdString(std::string(cppTypeName));
+            signature.append(" : ").append(cppTypeName);
         }
         else
         {
-            sigStream << " : unsigned char"; // 1 byte default size if not specified
+            signature.append(" : unsigned char"); // 1 byte default size if not specified
         }
 
-        return signature;
+        return signature.toString();
     }
 
-    QString CppCodeGenerator::generateFunctionSignatureReturnPart(ReturnTypesNode* returnTypesNode, bool isMainFunction) noexcept
+    std::string CppCodeGenerator::generateFunctionSignatureReturnPart(ReturnTypesNode* returnTypesNode, bool isMainFunction) noexcept
     {
         const auto& returnTypes = returnTypesNode->returnTypes();
         const auto hasReturnTypes = !returnTypes.empty();
 
-        QString signature;
-        QTextStream sigStream(&signature);
+        StringBuilder signature;
 
         if (!hasReturnTypes)
         {
             if (isMainFunction)
             {
-                sigStream << "int ";
+                signature.append("int ");
             }
             else
             {
-                sigStream << "void ";
+                signature.append("void ");
             }
         }
         else
@@ -777,13 +777,13 @@ namespace Caracal
             const auto include = GetCppIncludeForType(returnType);
             if (include.has_value())
             {
-                m_cppIncludes.append(include.value() % newLine());
+                m_cppIncludes.appendLine(include.value());
             }
             const auto returnTypeName = GetCppNameForType(returnType);
-            sigStream << QString::fromStdString(std::string(returnTypeName)) << " ";
+            signature.append(returnTypeName).append(" ");
         }
 
-        return signature;
+        return signature.toString();
     }
 
     std::string CppCodeGenerator::generateFunctionSignatureNamePart(std::string_view functionName) noexcept
@@ -799,35 +799,33 @@ namespace Caracal
         }
     }
 
-    QString CppCodeGenerator::generateFunctionSignatureParameterPart(ParametersNode* parametersNode) noexcept
+    std::string CppCodeGenerator::generateFunctionSignatureParameterPart(ParametersNode* parametersNode) noexcept
     {
         const auto& parameters = parametersNode->parameters();
-        QString signature;
-        QTextStream sigStream(&signature);
-
-        sigStream << "(";
+        StringBuilder signature;
+        signature.append("(");
         for (const auto& parameter : parameters)
         {
             const auto typeName = getCppNameForType(parameter->typeName().get());
             if (parameter->typeName()->isReference())
             {
-                sigStream << QString::fromStdString(std::string(typeName)) << "& ";
+                signature.append(typeName).append("& ");
             }
             else
             {
-                sigStream << QString::fromStdString(std::string(typeName)) << " ";
+                signature.append(typeName).append(" ");
             }
             const auto& parameterNameToken = parameter->nameExpression()->nameToken();
-            sigStream << QString::fromStdString(std::string(m_parseTree.tokens().getLexeme(parameterNameToken)));
+            signature.append(std::string(m_parseTree.tokens().getLexeme(parameterNameToken)));
 
             if (&parameter != &parameters.back())
             {
-                sigStream << ", ";
+                signature.append(", ");
             }
         }
-        sigStream << ")";
+        signature.append(")");
 
-        return signature;
+        return signature.toString();
     }
 
     void CppCodeGenerator::generateTypeDefinitionStatement(TypeDefinitionStatement* node) noexcept
@@ -836,24 +834,24 @@ namespace Caracal
         auto typeName = cppTypeDef->name;
 
         const auto typeSignature = QString("class %2").arg(QString::fromStdString(std::string(typeName)));
-        m_forwardDeclarations.append(typeSignature % ";" % newLine());
+        m_forwardDeclarations.append("class ").append(typeName).appendLine(";");
 
-        stream() << indentation() << typeSignature << newLine();
-        stream() << indentation() << "{" << newLine();
-        pushIndentation();
+        m_builder.append("class ").appendLine(typeName);
+        m_builder.appendIndentedLine("{");
+        m_builder.pushIndentation();
         {
             const auto hasPublicMethods = (!cppTypeDef->publicMethods.empty() || !cppTypeDef->staticMethods.empty());
             const auto hasPrivateMethods = (!cppTypeDef->privateMethods.empty());
             const auto hasPublicFields = (!cppTypeDef->publicFields.empty());
 
-            stream() << "public:" << newLine();
+            m_builder.appendLine("public:");
 
             generateConstructorDeclarationSignature(typeName, cppTypeDef->constructorParameters);
             generateDestructorDeclarationSignature(typeName);
 
             if (hasPublicMethods)
             {
-                stream() << newLine();
+                m_builder.appendLine("");
             }
 
             for (const auto& staticMethod : cppTypeDef->staticMethods)
@@ -867,7 +865,7 @@ namespace Caracal
 
             if (hasPrivateMethods)
             {
-                stream() << newLine() << "private:" << newLine();
+                m_builder.appendLine("").appendLine("private:");
                 for (const auto& privateMethod : cppTypeDef->privateMethods)
                 {
                     generateMethodDeclarationSignature(privateMethod);
@@ -878,54 +876,55 @@ namespace Caracal
             {
                 if (hasPrivateMethods)
                 {
-                    stream() << newLine();
+                    m_builder.appendLine("");
                 }
 
-                stream() << newLine() << "public:" << newLine();
+                m_builder.appendLine("").appendLine("public:");
                 for (const auto& publicField : cppTypeDef->publicFields)
                 {
                     generateTypeFieldDeclaration(publicField);
                 }
             }
         }
-        popIndentation();
-        stream() << indentation() << "};" << newLine() << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("};").appendLine("");
     }
 
-    QString CppCodeGenerator::generateTypeFieldName(NameExpression* node) noexcept
+    std::string CppCodeGenerator::generateTypeFieldName(NameExpression* node) noexcept
     {
         const auto fieldName = m_parseTree.tokens().getLexeme(node->nameToken());
         if (fieldName.starts_with('_'))
         {
-            return "m" + QString::fromStdString(std::string(fieldName));
+            return "m" + std::string(fieldName);
         }
         else
         {
-            return "m_" + QString::fromStdString(std::string(fieldName));
+            return "m_" + std::string(fieldName);
         }
     }
 
     void CppCodeGenerator::generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept
     {
         const auto signature = generateEnumSignature(node);
-        m_forwardDeclarations.append(signature % ";" % newLine());
-        stream() << indentation() << signature << newLine();
+        m_forwardDeclarations.append(signature).appendLine(";");
+        m_builder.appendIndentedLine(signature);
+        m_builder.appendIndentedLine("{");
+        m_builder.pushIndentation();
 
-        stream() << indentation() << "{" << newLine();
-        pushIndentation();
         for (const auto& fieldNode : node->fieldNodes())
         {
-            stream() << indentation();
+            m_builder.appendIndented("");
             generateNameExpression(fieldNode->nameExpression().get());
             if (fieldNode->valueExpression().has_value())
             {
-                stream() << " = ";
+                m_builder.append(" = ");
                 generateNode(fieldNode->valueExpression().value().get());
             }
-            stream() << "," << newLine();
+            m_builder.appendLine(",");
         }
-        popIndentation();
-        stream() << indentation() << "};" << newLine() << newLine();
+        
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("};").appendLine("");
     }
 
     void CppCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept
@@ -942,20 +941,20 @@ namespace Caracal
         const auto returnPart = generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
         const auto namePart = generateFunctionSignatureNamePart(functionName);
         const auto parameterPart = generateFunctionSignatureParameterPart(parametersNode);
-        const auto signature = returnPart + QString::fromStdString(std::string(namePart)) + parameterPart;
+        const auto signature = returnPart + std::string(namePart) + parameterPart;
 
-        m_forwardDeclarations.append(signature % ";" % newLine());
-        stream() << indentation() << signature << newLine() << indentation() << "{" << newLine();
+        m_forwardDeclarations.append(signature).appendLine(";");
+        m_builder.appendIndentedLine(signature).appendIndentedLine("{");
 
-        pushIndentation();
+        m_builder.pushIndentation();
         const auto& body = node->bodyNode();
         for (const auto& statement : body->statements())
         {
             generateNode(statement.get());
         }
-        popIndentation();
+        m_builder.popIndentation();
 
-        stream() << indentation() << "}" << newLine() << newLine();
+        m_builder.appendIndentedLine("}").appendLine("");
 
         m_currentScope = oldScope; // Reset the scope after generating the function definition
     }
@@ -968,33 +967,33 @@ namespace Caracal
         // unwrap the condition if it is a grouping expression
         if (needsParentheses)
         {
-            stream() << indentation() << "if (";
+            m_builder.appendIndented("if (");
         }
         else
         {
-            stream() << indentation() << "if ";
+            m_builder.appendIndented("if ");
         }
         generateNode(node->condition().get());
         if (needsParentheses)
         {
-            stream() << ")" << newLine();
+            m_builder.appendLine(")");
         }
         else
         {
-            stream() << newLine();
+            m_builder.appendLine("");
         }
 
         const auto trueBlockNeedsBrackets = node->trueStatement()->kind() != NodeKind::BlockNode;
         if (trueBlockNeedsBrackets)
         {
-            stream() << indentation() << "{" << newLine();
-            pushIndentation();
+            m_builder.appendIndentedLine("{");
+            m_builder.pushIndentation();
         }
         generateNode(node->trueStatement().get());
         if (trueBlockNeedsBrackets)
         {
-            popIndentation();
-            stream() << indentation() << "}" << newLine();
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
         }
 
         // Check if there is an else block
@@ -1003,17 +1002,17 @@ namespace Caracal
             const auto& falseStatement = node->falseStatement().value();
             const auto falseBlockNeedsBrackets = falseStatement->kind() != NodeKind::BlockNode;
 
-            stream() << indentation() << "else" << newLine();
+            m_builder.appendIndentedLine("else");
             if (falseBlockNeedsBrackets)
             {
-                stream() << indentation() << "{" << newLine();
-                pushIndentation();
+                m_builder.appendIndentedLine("{");
+                m_builder.pushIndentation();
             }
             generateNode(falseStatement.get());
             if (falseBlockNeedsBrackets)
             {
-                popIndentation();
-                stream() << indentation() << "}" << newLine();
+                m_builder.popIndentation();
+                m_builder.appendIndentedLine("}");
             }
         }
     }
@@ -1026,62 +1025,62 @@ namespace Caracal
         // unwrap the condition if it is a grouping expression
         if (needsParentheses)
         {
-            stream() << indentation() << "while (";
+            m_builder.appendIndented("while (");
         }
         else
         {
-            stream() << indentation() << "while ";
+            m_builder.appendIndented("while ");
         }
         generateNode(node->condition().get());
         if (needsParentheses)
         {
-            stream() << ")" << newLine();
+            m_builder.appendLine(")");
         }
         else
         {
-            stream() << newLine();
+            m_builder.appendLine("");
         }
 
         const auto bodyNeedsBrackets = node->trueStatement()->kind() != NodeKind::BlockNode;
         if (bodyNeedsBrackets)
         {
-            stream() << indentation() << "{" << newLine();
-            pushIndentation();
+            m_builder.appendIndentedLine("{");
+            m_builder.pushIndentation();
         }
         generateNode(node->trueStatement().get());
         if (bodyNeedsBrackets)
         {
-            popIndentation();
-            stream() << indentation() << "}" << newLine();
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
         }
     }
 
     void CppCodeGenerator::generateBreakStatement(BreakStatement* /*node*/) noexcept
     {
-        stream() << indentation() << "break;" << newLine();
+        m_builder.appendIndentedLine("break;");
     }
 
     void CppCodeGenerator::generateSkipStatement(SkipStatement* /*node*/) noexcept
     {
-        stream() << indentation() << "continue;" << newLine();
+        m_builder.appendIndentedLine("continue;");
     }
 
     void CppCodeGenerator::generateReturnStatement(ReturnStatement* node) noexcept
     {
-        stream() << indentation() << "return";
+        m_builder.appendIndented("return");
         if (node->expression().has_value())
         {
-            stream() << " ";
+            m_builder.append(" ");
             generateNode(node->expression().value().get());
         }
-        stream() << ";" << newLine();
+        m_builder.appendLine(";");
     }
 
     void CppCodeGenerator::generateGroupingExpression(GroupingExpression* node) noexcept
     {
-        stream() << "(";
+        m_builder.append("(");
         generateNode(node->expression().get());
-        stream() << ")";
+        m_builder.append(")");
     }
 
     void CppCodeGenerator::generateUnaryExpression(UnaryExpression* node) noexcept
@@ -1089,7 +1088,7 @@ namespace Caracal
         if (node->unaryOperator() != UnaryOperatorKind::ReferenceOf)
         {
             const auto unaryOperator = StringifyUnaryOperator(node->unaryOperator());
-            stream() << unaryOperator;
+            m_builder.append(unaryOperator);
         }
         generateNode(node->expression().get());
     }
@@ -1100,7 +1099,7 @@ namespace Caracal
         if (binaryOperator == BinaryOperatorKind::MemberAccess)
         {
             generateNode(node->leftExpression().get());
-            stream() << "::";
+            m_builder.append("::");
             generateNode(node->rightExpression().get());
         }
         else
@@ -1108,20 +1107,20 @@ namespace Caracal
             const auto binaryOperatorString = StringifyBinaryOperator(node->binaryOperator());
 
             generateNode(node->leftExpression().get());
-            stream() << " " << binaryOperatorString << " ";
+            m_builder.append(" ").append(binaryOperatorString).append(" ");
             generateNode(node->rightExpression().get());
         }
     }
 
     void CppCodeGenerator::generateNameExpression(NameExpression* node) noexcept
     {
-        stream() << QString::fromStdString(std::string(m_parseTree.tokens().getLexeme(node->nameToken())));
+        m_builder.append(m_parseTree.tokens().getLexeme(node->nameToken()));
     }
 
     void CppCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node) noexcept
     {
         generateNode(node->nameExpression().get());
-        stream() << "(";
+        m_builder.append("(");
         const auto& arguments = node->argumentsNode()->arguments();
         for (const auto& argument : arguments)
         {
@@ -1129,55 +1128,55 @@ namespace Caracal
 
             if (&argument != &arguments.back())
             {
-                stream() << ", ";
+                m_builder.append(", ");
             }
         }
-        stream() << ")";
+        m_builder.append(")");
     }
 
     void CppCodeGenerator::generateMemberAccessExpression(MemberAccessExpression* node) noexcept
     {
         auto expression = node->expression().get();
-        stream() << "this->";
+        m_builder.append("this->");
         if (expression->kind() == NodeKind::FunctionCallExpression)
         {
             generateFunctionCallExpression((FunctionCallExpression*)expression);
         }
         else
         {
-            stream() << generateTypeFieldName((NameExpression*)expression);
+            m_builder.append(generateTypeFieldName((NameExpression*)expression));
         }
     }
 
     void CppCodeGenerator::generateBoolLiteral(BoolLiteral* node) noexcept
     {
-        auto value = node->value() ? QStringLiteral("true") : QStringLiteral("false");
-        stream() << value;
+        auto value = node->value() ? std::string_view("true") : std::string_view("false");
+        m_builder.append(value);
     }
 
     void CppCodeGenerator::generateNumberLiteral(NumberLiteral* node) noexcept
     {
         auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
-        stream() << QString::fromStdString(std::string(lexeme));
+        m_builder.append(lexeme);
     }
 
     void CppCodeGenerator::generateStringLiteral(StringLiteral* node) noexcept
     {
         auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
-        stream() << QString("std::string{%1}").arg(QString::fromStdString(std::string(lexeme)));
+        m_builder.append("std::string{").append(lexeme).append("}");
     }
 
     void CppCodeGenerator::generateBuiltinPrintFunction(ArgumentsNode* node) noexcept
     {
-        m_cppIncludes.append(QStringLiteral("#include <iostream>") % newLine());
+        m_cppIncludes.appendLine("#include <iostream>");
 
         if (m_currentStatement == NodeKind::ExpressionStatement)
         {
-            stream() << "std::cout << ";
+            m_builder.append("std::cout << ");
         }
         else
         {
-            stream() << "&(std::cout << ";
+            m_builder.append("&(std::cout << ");
         }
 
         const auto& arguments = node->arguments();
@@ -1188,28 +1187,28 @@ namespace Caracal
             const auto include = GetCppIncludeForType(type);
             if (include.has_value())
             {
-                m_cppIncludes.append(include.value() % newLine());
+                m_cppIncludes.appendLine(include.value());
             }
 
             generateNode(argument.get());
 
             if (&argument != &arguments.back())
             {
-                stream() << " << ";
+                m_builder.append(" << ");
             }
         }
 
         if (m_currentStatement == NodeKind::ExpressionStatement)
         {
-            stream() << " << \"\\n\"";
+            m_builder.append(" << \"\\n\"");
         }
         else
         {
-            stream() << " << \"\\n\")";
+            m_builder.append(" << \"\\n\")");
         }
     }
 
-    QString generateCpp(const ParseTree& parseTree) noexcept
+    std::string generateCpp(const ParseTree& parseTree) noexcept
     {
         CppCodeGenerator generator{ parseTree };
         return generator.generate();

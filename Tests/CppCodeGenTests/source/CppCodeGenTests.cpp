@@ -29,7 +29,7 @@ static void FileTests(
     const auto parseTree = Caracal::parse(tokens, diagnostics);
 
     const auto startTime = std::chrono::high_resolution_clock::now();
-    const auto output = Caracal::generateCpp(parseTree).toStdString();
+    const auto output = Caracal::generateCpp(parseTree);
     const auto endTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "      generateCpp(): " << CaraTest::stringify(endTime - startTime) << std::endl;

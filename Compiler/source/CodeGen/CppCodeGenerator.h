@@ -10,7 +10,6 @@
 #include <Syntax/BoolLiteral.h>
 #include <Syntax/NumberLiteral.h>
 #include <Syntax/StringLiteral.h>
-#include <QStringList>
 #include <Syntax/ConstantDeclaration.h>
 #include <Syntax/VariableDeclaration.h>
 #include <Syntax/AssignmentStatement.h>
@@ -31,17 +30,18 @@
 #include <Syntax/TypeFieldDeclaration.h>
 #include <Syntax/MethodDefinitionStatement.h>
 #include <Syntax/MemberAccessExpression.h>
+#include <Text/StringBuilder.h>
 
 namespace Caracal
 {
-    class COMPILER_API CppCodeGenerator: public BasePrinter
+    class COMPILER_API CppCodeGenerator
     {
     public:
         CppCodeGenerator(const ParseTree& parseTree, i32 indentation = 4);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(CppCodeGenerator)
 
-        [[nodiscard]] QString generate();
+        [[nodiscard]] std::string generate();
 
     private:
         enum class Scope
@@ -75,12 +75,12 @@ namespace Caracal
         void generateBlockNode(BlockNode* node) noexcept;
         void generateExpressionStatement(ExpressionStatement* node) noexcept;
         void generateAssignmentStatement(AssignmentStatement* node) noexcept;
-        QString generateEnumSignature(EnumDefinitionStatement* node) noexcept;
-        QString generateFunctionSignatureReturnPart(ReturnTypesNode* returnTypesNode, bool isMainFunction) noexcept;
+        std::string generateEnumSignature(EnumDefinitionStatement* node) noexcept;
+        std::string generateFunctionSignatureReturnPart(ReturnTypesNode* returnTypesNode, bool isMainFunction) noexcept;
         std::string generateFunctionSignatureNamePart(std::string_view functionName) noexcept;
-        QString generateFunctionSignatureParameterPart(ParametersNode* parametersNode) noexcept;
+        std::string generateFunctionSignatureParameterPart(ParametersNode* parametersNode) noexcept;
         void generateTypeDefinitionStatement(TypeDefinitionStatement* node) noexcept;
-        QString generateTypeFieldName(NameExpression* node) noexcept;
+        std::string generateTypeFieldName(NameExpression* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
         void generateEnumDefinitionStatement(EnumDefinitionStatement* node) noexcept;
         void generateIfStatement(IfStatement* node) noexcept;
@@ -104,14 +104,15 @@ namespace Caracal
         std::string_view getCppNameForType(TypeNameNode* typeName) noexcept;
 
         const ParseTree& m_parseTree;
-        QStringList m_cppIncludes;
-        QStringList m_forwardDeclarations;
         Scope m_currentScope;
         i32 m_discardCount;
         NodeKind m_currentStatement;
+        StringBuilder m_builder;
+        StringBuilder m_cppIncludes;
+        StringBuilder m_forwardDeclarations;
 
         std::unordered_map<std::string_view, std::unique_ptr<CppTypeDef>> m_cppTypeDefs;
     };
 
-    COMPILER_API QString generateCpp(const ParseTree& parseTree) noexcept;
+    COMPILER_API std::string generateCpp(const ParseTree& parseTree) noexcept;
 }

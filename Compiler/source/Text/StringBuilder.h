@@ -21,10 +21,11 @@ namespace Caracal
         StringBuilder& appendIndented(const std::string_view& text);
         StringBuilder& appendIndentedLine(const std::string_view& text);
 
-        void clear() noexcept;
         void setNewLine(const std::string_view& newLine) noexcept { m_newLine = newLine; }
         void pushIndentation() noexcept { m_indentationLevel++; }
         void popIndentation() noexcept { m_indentationLevel--; }
+        bool isEmpty() const noexcept { return m_isEmpty; }
+        void clear() noexcept;
 
     private:
         [[nodiscard]] std::ostringstream& stream() noexcept { return m_stream; }
@@ -34,5 +35,6 @@ namespace Caracal
         i32 m_indentationLevel;
         std::ostringstream m_stream;
         std::string m_newLine{ "\n" };
+        bool m_isEmpty;
     };
 }

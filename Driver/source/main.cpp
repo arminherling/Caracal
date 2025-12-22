@@ -59,8 +59,8 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    auto generatedCode = cppCode.toUtf8();
-    tempFile.write(generatedCode);
+    auto generatedCode = QString::fromStdString(cppCode);
+    tempFile.write(generatedCode.toUtf8());
     tempFile.close();
 
     auto sourceFilePath = tempFile.fileName();
