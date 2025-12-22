@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Compiler/API.h>
 #include <Syntax/Expression.h>
@@ -46,5 +46,5 @@ namespace Caracal
         BinaryOperatorKind m_binaryOperator;
     };
 
-    [[nodiscard]] COMPILER_API QString stringify(BinaryOperatorKind kind);
+    [[nodiscard]] COMPILER_API std::string stringify(BinaryOperatorKind kind);
 }

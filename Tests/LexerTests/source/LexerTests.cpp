@@ -10,15 +10,15 @@
 
 static void ExpectedTokenKind(const std::string& /*testName*/, const std::string& input, TokenKind expectedKind)
 {
-    auto startTime = std::chrono::high_resolution_clock::now();
+    const auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(input);
+    const auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
-    auto tokens = Caracal::lex(source, diagnostics);
-    auto& token = tokens.getToken(0);
+    const auto tokens = Caracal::lex(source, diagnostics);
+    const auto& token = tokens.getToken(0);
 
-    auto endTime = std::chrono::high_resolution_clock::now();
+    const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     CaraTest::areEqual(expectedKind, token.kind);
@@ -82,15 +82,15 @@ static std::vector<std::tuple<std::string, std::string, TokenKind>> Keyword_Data
 
 static void IgnoresWhitespaces(const std::string& input)
 {
-    auto startTime = std::chrono::high_resolution_clock::now();
+    const auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(input);
+    const auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
-    auto tokens = Caracal::lex(source, diagnostics);
-    auto& token = tokens.getToken(0);
+    const auto tokens = Caracal::lex(source, diagnostics);
+    const auto& token = tokens.getToken(0);
 
-    auto endTime = std::chrono::high_resolution_clock::now();
+    const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     CaraTest::areEqual(TokenKind::EndOfFile, token.kind);
@@ -112,19 +112,19 @@ static std::vector<std::tuple<std::string>> IgnoresWhitespaces_Data()
 
 static void Identifiers(const std::string& input, const std::string_view& expectedLexeme)
 {
-    auto startTime = std::chrono::high_resolution_clock::now();
+    const auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(input);
+    const auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
-    auto tokens = Caracal::lex(source, diagnostics);
-    auto& token = tokens.getToken(0);
+    const auto tokens = Caracal::lex(source, diagnostics);
+    const auto& token = tokens.getToken(0);
 
-    auto endTime = std::chrono::high_resolution_clock::now();
+    const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     CaraTest::areEqual(TokenKind::Identifier, token.kind);
-    auto lexeme = tokens.getLexeme(token);
+    const auto lexeme = tokens.getLexeme(token);
     CaraTest::areEqual(expectedLexeme, lexeme);
 }
 
@@ -148,19 +148,19 @@ static std::vector<std::tuple<std::string, std::string_view>> Identifiers_Data()
 
 static void Numbers(const std::string& input, const std::string_view& expectedLexeme)
 {
-    auto startTime = std::chrono::high_resolution_clock::now();
+    const auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(input);
+    const auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
-    auto tokens = Caracal::lex(source, diagnostics);
-    auto& token = tokens.getToken(0);
+    const auto tokens = Caracal::lex(source, diagnostics);
+    const auto& token = tokens.getToken(0);
 
-    auto endTime = std::chrono::high_resolution_clock::now();
+    const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     CaraTest::areEqual(TokenKind::Number, token.kind);
-    auto lexeme = tokens.getLexeme(token);
+    const auto lexeme = tokens.getLexeme(token);
     CaraTest::areEqual(expectedLexeme, lexeme);
 }
 
@@ -181,19 +181,19 @@ static std::vector<std::tuple<std::string, std::string_view>> Numbers_Data()
 
 static void Strings(const std::string& input, const std::string_view& expectedLexeme)
 {
-    auto startTime = std::chrono::high_resolution_clock::now();
+    const auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(input);
+    const auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
-    auto tokens = Caracal::lex(source, diagnostics);
-    auto& token = tokens.getToken(0);
+    const auto tokens = Caracal::lex(source, diagnostics);
+    const auto& token = tokens.getToken(0);
 
-    auto endTime = std::chrono::high_resolution_clock::now();
+    const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     CaraTest::areEqual(TokenKind::String, token.kind);
-    auto lexeme = tokens.getLexeme(token);
+    const auto lexeme = tokens.getLexeme(token);
     CaraTest::areEqual(expectedLexeme, lexeme);
 }
 
@@ -225,21 +225,21 @@ static std::vector<std::tuple<std::string, std::string_view>> StringsWithEscapes
 
 static void UnterminatedStrings(const std::string& input, const std::string_view& expectedLexeme)
 {
-    auto startTime = std::chrono::high_resolution_clock::now();
+    const auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(input);
+    const auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
-    auto tokens = Caracal::lex(source, diagnostics);
-    auto& token = tokens.getToken(0);
+    const auto tokens = Caracal::lex(source, diagnostics);
+    const auto& token = tokens.getToken(0);
 
     CaraTest::isTrue(!diagnostics.Diagnostics().empty());
 
-    auto endTime = std::chrono::high_resolution_clock::now();
+    const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     CaraTest::areEqual(TokenKind::Error, token.kind);
-    auto lexeme = tokens.getLexeme(token);
+    const auto lexeme = tokens.getLexeme(token);
     CaraTest::areEqual(expectedLexeme, lexeme);
 }
 
@@ -255,18 +255,18 @@ static std::vector<std::tuple<std::string, std::string_view>> UnterminatedString
 
 //static void WhiteSpaceTrivia(const std::string& input, const std::string& expectedTrivia)
 //{
-//    auto startTime = std::chrono::high_resolution_clock::now();
+//    const auto startTime = std::chrono::high_resolution_clock::now();
 
-//    auto source = std::make_shared<Caracal::SourceText>(input);
+//    const auto source = std::make_shared<Caracal::SourceText>(input);
 //    Caracal::DiagnosticsBag diagnostics;
 
-//    auto tokens = Caracal::lex(source, diagnostics);
-//    auto& token = tokens.getToken(0);
+//    const auto tokens = Caracal::lex(source, diagnostics);
+//    const auto& token = tokens.getToken(0);
 
-//    auto endTime = std::chrono::high_resolution_clock::now();
+//    const auto endTime = std::chrono::high_resolution_clock::now();
 //    std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
-//    auto lexeme = tokens.getTrivia(token);
+//    const auto lexeme = tokens.getTrivia(token);
 //    CaraTest::areEqual(expectedTrivia, lexeme);
 //}
 
@@ -286,14 +286,14 @@ static std::vector<std::tuple<std::string, std::string_view>> UnterminatedString
 
 static void WholeInput(const std::string& input, i32 tokenCount)
 {
-    auto startTime = std::chrono::high_resolution_clock::now();
+    const auto startTime = std::chrono::high_resolution_clock::now();
 
-    auto source = std::make_shared<Caracal::SourceText>(input);
+    const auto source = std::make_shared<Caracal::SourceText>(input);
     Caracal::DiagnosticsBag diagnostics;
 
-    auto tokens = Caracal::lex(source, diagnostics);
+    const auto tokens = Caracal::lex(source, diagnostics);
 
-    auto endTime = std::chrono::high_resolution_clock::now();
+    const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     CaraTest::isTrue(diagnostics.Diagnostics().empty());
@@ -318,19 +318,24 @@ static void OneMillionLinesTime()
 #ifdef _DEBUG
     CaraTest::skip();// ("";
 #endif
-    auto data = Caracal::File::ReadAllText("../../Tests/LexerTests/data/oneMilLines.txt");
+    const const auto filePath = std::filesystem::path("../../Tests/LexerTests/data/oneMilLines.txt");
+    const const auto data = Caracal::File::readText(filePath);
+    if (!data.has_value())
+    {
+        CaraTest::fail();// ("Could not read oneMilLines.txt");
+    }
 
-    auto source = std::make_shared<Caracal::SourceText>(data.toStdString());
+    const const auto source = std::make_shared<Caracal::SourceText>(data.value());
     Caracal::DiagnosticsBag diagnostics;
 
-    auto startTime = std::chrono::high_resolution_clock::now();
-    auto tokens = Caracal::lex(source, diagnostics);
+    const const auto startTime = std::chrono::high_resolution_clock::now();
+    const const auto tokens = Caracal::lex(source, diagnostics);
 
-    auto endTime = std::chrono::high_resolution_clock::now();
+    const const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 }
 
-static auto tests =
+static const auto tests =
 {
     CaraTest::addTest("SingleCharacter", ExpectedTokenKind, Symbols_Data),
     CaraTest::addTest("IgnoresWhitespaces", IgnoresWhitespaces, IgnoresWhitespaces_Data),

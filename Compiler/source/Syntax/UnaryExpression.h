@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Compiler/API.h>
 #include <Syntax/Expression.h>
@@ -33,5 +33,5 @@ namespace Caracal
         UnaryOperatorKind m_unaryOperator;
     };
 
-    [[nodiscard]] COMPILER_API QString stringify(UnaryOperatorKind kind);
+    [[nodiscard]] COMPILER_API std::string stringify(UnaryOperatorKind kind);
 }

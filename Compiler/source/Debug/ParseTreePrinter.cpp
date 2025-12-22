@@ -3,20 +3,19 @@
 
 namespace Caracal
 {
-    ParseTreePrinter::ParseTreePrinter(ParseTree& parseTree, i32 indentation)
-        : BasePrinter(indentation)
-        , m_parseTree{ parseTree }
+    ParseTreePrinter::ParseTreePrinter(const ParseTree& parseTree, i32 indentation)
+        : m_parseTree{ parseTree }
+        , m_builder{ indentation }
     {
     }
 
-    QString ParseTreePrinter::prettyPrint()
+    std::string ParseTreePrinter::prettyPrint()
     {
         for (const auto& statement : m_parseTree.statements())
         {
             prettyPrintNode(statement.get());
         }
-
-        return toUtf8();
+        return m_builder.toString();
     }
 
     void ParseTreePrinter::prettyPrintNode(Node* node)
@@ -160,7 +159,7 @@ namespace Caracal
             }
             default:
             {
-                stream() << indentation() << QString("Missing NodeKind!!") << newLine();
+                m_builder.appendIndentedLine("Missing NodeKind!!");
                 break;
             }
         }
@@ -168,164 +167,191 @@ namespace Caracal
 
     void ParseTreePrinter::prettyPrintConstantDeclaration(ConstantDeclaration* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
         
-        stream() << indentation() << QString("Left: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndentedLine("Left: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(statement->leftExpression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
 
         if (statement->explicitType().has_value())
         {
-            stream() << indentation() << QString("ExplicitType: {") << newLine();
-            pushIndentation();
+            m_builder.appendIndentedLine("ExplicitType: {");
+            m_builder.pushIndentation();
+
             prettyPrintNode(statement->explicitType().value().get());
-            popIndentation();
-            stream() << indentation() << QString("}") << newLine();
+
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
         }
 
-        stream() << indentation() << QString("Right: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndentedLine("Right: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(statement->rightExpression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
         
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintVariableDeclaration(VariableDeclaration* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
         
-        stream() << indentation() << QString("Left: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndentedLine("Left: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(statement->leftExpression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
         
         if (statement->explicitType().has_value())
         {
-            stream() << indentation() << QString("ExplicitType: {") << newLine();
-            pushIndentation();
+            m_builder.appendIndentedLine("ExplicitType: {");
+            m_builder.pushIndentation();
+
             prettyPrintNode(statement->explicitType().value().get());
-            popIndentation();
-            stream() << indentation() << QString("}") << newLine();
+
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
         }
 
         if(statement->rightExpression().has_value())
         {
-            stream() << indentation() << QString("Right: {") << newLine();
-            pushIndentation();
+            m_builder.appendIndentedLine("Right: {");
+            m_builder.pushIndentation();
+
             prettyPrintNode(statement->rightExpression().value().get());
-            popIndentation();
-            stream() << indentation() << QString("}") << newLine();
+
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
         }
         else
         {
-            stream() << indentation() << QString("Right: null") << newLine();
+            m_builder.appendIndentedLine("Right: null");
         }
      
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintTypeFieldDeclaration(TypeFieldDeclaration* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
 
-        stream() << indentation() << QString("IsConstant: %1").arg(statement->isConstant() ? "true" : "false") << newLine();
-        stream() << indentation() << QString("Left: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented("IsConstant: ").appendLine(statement->isConstant() ? "true" : "false");
+        m_builder.appendIndentedLine("Left: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(statement->nameExpression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
 
         if (statement->explicitType().has_value())
         {
-            stream() << indentation() << QString("ExplicitType: {") << newLine();
-            pushIndentation();
+            m_builder.appendIndentedLine("ExplicitType: {");
+            m_builder.pushIndentation();
+
             prettyPrintNode(statement->explicitType().value().get());
-            popIndentation();
-            stream() << indentation() << QString("}") << newLine();
+
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
         }
 
         if (statement->rightExpression().has_value())
         {
-            stream() << indentation() << QString("Right: {") << newLine();
-            pushIndentation();
+            m_builder.appendIndentedLine("Right: {");
+            m_builder.pushIndentation();
+
             prettyPrintNode(statement->rightExpression().value().get());
-            popIndentation();
-            stream() << indentation() << QString("}") << newLine();
+
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
         }
         else
         {
-            stream() << indentation() << QString("Right: null") << newLine();
+            m_builder.appendIndentedLine("Right: null");
         }
 
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}")
+            ;
     }
 
     void ParseTreePrinter::prettyPrintCppBlockStatement(CppBlockStatement* node)
     {
         const auto& lines = node->lines();
 
-        stream() << indentation() << stringify(node->kind()) << QString(": {") << newLine();
-        pushIndentation();
-        stream() << indentation() << QString("Lines (%1): {").arg(lines.size()) << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(node->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
+        m_builder.appendIndented("Lines (").append(std::to_string(lines.size())).appendLine("): {");
+        m_builder.pushIndentation();
+
         for (const auto& line : lines)
         {
             auto lexeme = m_parseTree.tokens().getLexeme(line);
-            stream() << indentation() << QString("%1").arg(QString::fromStdString(std::string(lexeme))) << newLine();
+            m_builder.appendIndentedLine(lexeme);
         }
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintExpressionStatement(ExpressionStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
     
         prettyPrintNode(statement->expression().get());
         
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
     
     void ParseTreePrinter::prettyPrintAssignmentStatement(AssignmentStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
         
-        stream() << indentation() << QString("Left: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndentedLine("Left: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(statement->leftExpression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
         
-        stream() << indentation() << QString("Right: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndentedLine("Right: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(statement->rightExpression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
         
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
 
         prettyPrintNameExpression(statement->nameExpression().get());
         if (statement->constructorParameters().has_value())
@@ -334,43 +360,47 @@ namespace Caracal
         }
         prettyPrintBlockNode(statement->bodyNode().get());
 
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
         prettyPrintNameExpression(statement->nameExpression().get());
         prettyPrintParametersNode(statement->parametersNode().get());
         prettyPrintReturnTypesNode(statement->returnTypesNode().get());
         prettyPrintBlockNode(statement->bodyNode().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
         if (statement->specialFunctionType() != SpecialFunctionType::None)
         {
-            stream() << indentation() << QString("SpecialFunctionType: %1").arg(stringify(statement->specialFunctionType())) << newLine();
+            m_builder.appendIndented("SpecialFunctionType: ").appendLine(stringify(statement->specialFunctionType()));
         }
-        stream() << indentation() << QString("Modifier: %1").arg(stringify(statement->modifier())) << newLine();
+        m_builder.appendIndented("Modifier: ").appendLine(stringify(statement->modifier()));
         prettyPrintMethodNameNode(statement->methodNameNode().get());
         prettyPrintParametersNode(statement->parametersNode().get());
         prettyPrintReturnTypesNode(statement->returnTypesNode().get());
         prettyPrintBlockNode(statement->bodyNode().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
         prettyPrintNameExpression(statement->nameExpression().get());
 
         if (statement->baseType().has_value())
@@ -379,25 +409,25 @@ namespace Caracal
         }
     
         const auto& fieldNodes = statement->fieldNodes();
-        stream() << indentation() << QString("FieldNodes(%1): {").arg(fieldNodes.size()) << newLine();
-        pushIndentation();
+        m_builder.appendIndented("FieldNodes(").append(std::to_string(fieldNodes.size())).appendLine("): {");
+        m_builder.pushIndentation();
     
         for (const auto& fieldNode : fieldNodes)
         {
             prettyPrintEnumFieldDeclaration(fieldNode.get());
         }
     
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
     
     void ParseTreePrinter::prettyPrintEnumFieldDeclaration(EnumFieldDeclaration* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
         prettyPrintNameExpression(statement->nameExpression().get());
     
         if (statement->valueExpression().has_value())
@@ -405,183 +435,210 @@ namespace Caracal
             prettyPrintNode(statement->valueExpression().value().get());
         }
     
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
     
     void ParseTreePrinter::prettyPrintIfStatement(IfStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
 
-        stream() << indentation() << QString("Condition: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndentedLine("Condition: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(statement->condition().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
 
-        stream() << indentation() << QString("True: {") << newLine();
-        pushIndentation();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+
+        m_builder.appendIndentedLine("True: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(statement->trueStatement().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
 
         if (statement->hasFalseBlock())
         {
-            stream() << indentation() << QString("False: {") << newLine();
-            pushIndentation();
+            m_builder.appendIndentedLine("False: {");
+            m_builder.pushIndentation();
+
             prettyPrintNode(statement->falseStatement().value().get());
-            popIndentation();
-            stream() << indentation() << QString("}") << newLine();
+
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
         }
 
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintWhileStatement(WhileStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
 
-        stream() << indentation() << QString("Condition: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndentedLine("Condition: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(statement->condition().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
 
-        stream() << indentation() << QString("True: {") << newLine();
-        pushIndentation();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+
+        m_builder.appendIndentedLine("True: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(statement->trueStatement().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
 
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintBreakStatement(BreakStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << newLine();
+        m_builder.appendIndentedLine(stringify(statement->kind()));
     }
 
     void ParseTreePrinter::prettyPrintSkipStatement(SkipStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << newLine();
+        m_builder.appendIndentedLine(stringify(statement->kind()));
     }
 
     void ParseTreePrinter::prettyPrintReturnStatement(ReturnStatement* statement)
     {
-        stream() << indentation() << stringify(statement->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
 
         if (statement->expression().has_value())
             prettyPrintNode(statement->expression().value().get());
 
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintUnaryExpression(UnaryExpression* unaryExpression)
     {
-        stream() << indentation() << stringify(unaryExpression->kind()) << QString(": {") << newLine();
-        pushIndentation();
-        stream() << indentation() << QString("Operation: ") << stringify(unaryExpression->unaryOperator()) << newLine();
-        stream() << indentation() << QString("Expression: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(unaryExpression->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
+        m_builder.appendIndented("Operation: ").appendLine(stringify(unaryExpression->unaryOperator()));
+        m_builder.appendIndentedLine("Expression: {");
+
+        m_builder.pushIndentation();
+        
         prettyPrintNode(unaryExpression->expression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintBinaryExpression(BinaryExpression* binaryExpression)
     {
-        stream() << indentation() << stringify(binaryExpression->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(binaryExpression->kind())).appendLine(": {");
+        m_builder.pushIndentation();
 
-        stream() << indentation() << QString("Left: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndentedLine("Left: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(binaryExpression->leftExpression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
 
-        stream() << indentation() << QString("Operation: ") << stringify(binaryExpression->binaryOperator()) << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
 
-        stream() << indentation() << QString("Right: {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented("Operation: ").appendLine(stringify(binaryExpression->binaryOperator()));
+
+        m_builder.appendIndentedLine("Right: {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(binaryExpression->rightExpression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
 
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintNameExpression(NameExpression* name)
     {
-        stream() << indentation() << stringify(name->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(name->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
         const auto& identifierToken = name->nameToken();
         const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
-        stream() << indentation() << QString("Name: %1").arg(QString::fromStdString(std::string(identifierLexeme))) << newLine();
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.appendIndented("Name: ").appendLine(identifierLexeme);
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintMethodNameNode(MethodNameNode* methodName)
     {
-        stream() << indentation() << stringify(methodName->kind()) << QString(": {") << newLine();
-        pushIndentation();
-        stream() << indentation() << QString("MethodName: ");
+        m_builder.appendIndented(stringify(methodName->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
+        m_builder.appendIndented("MethodName: ");
         if (methodName->typeNameExpression().has_value())
         {
             const auto& typeNameToken = methodName->typeNameExpression().value()->nameToken();
             const auto typeNameLexeme = m_parseTree.tokens().getLexeme(typeNameToken);
-            stream() << QString::fromStdString(std::string(typeNameLexeme)) << QString(".");
+            m_builder.append(typeNameLexeme).append(".");
         }
         const auto& methodNameToken = methodName->methodNameExpression()->nameToken();
         const auto methodNameLexeme = m_parseTree.tokens().getLexeme(methodNameToken);
-        stream() << QString::fromStdString(std::string(methodNameLexeme)) << newLine();
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.appendLine(methodNameLexeme);
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintFunctionCallExpression(FunctionCallExpression* functionCall)
     {
-        stream() << indentation() << stringify(functionCall->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(functionCall->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
         prettyPrintNameExpression(functionCall->nameExpression().get());
         prettyPrintArgumentsNode(functionCall->argumentsNode().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintMemberAccessExpression(MemberAccessExpression* expression)
     {
-        stream() << indentation() << stringify(expression->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(expression->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
         prettyPrintNode(expression->expression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintDiscardLiteral(DiscardLiteral* /*discard*/)
     {
-        stream() << indentation() << QString("Discard: _") << newLine();
+        m_builder.appendIndentedLine("Discard: _");
     }
 
     void ParseTreePrinter::prettyPrintBoolLiteral(BoolLiteral* node)
     {
         const auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
-        stream() << indentation() << stringify(node->kind()) << QString(": %1").arg(QString::fromStdString(std::string(lexeme))) << newLine();
+        m_builder.appendIndented(stringify(node->kind())).append(": ").appendLine(lexeme);
     }
 
     void ParseTreePrinter::prettyPrintNumberLiteral(NumberLiteral* number)
     {
         const auto lexeme = m_parseTree.tokens().getLexeme(number->literalToken());
-        stream() << indentation() << stringify(number->kind()) << QString(": %1").arg(QString::fromStdString(std::string(lexeme))) << newLine();
+        m_builder.appendIndented(stringify(number->kind())).append(": ").appendLine(lexeme);
         if(number->explicitType().has_value())
         {
             prettyPrintTypeNameNode(number->explicitType().value().get());
@@ -591,99 +648,99 @@ namespace Caracal
     void ParseTreePrinter::prettyPrintStringLiteral(StringLiteral* string)
     {
         const auto lexeme = m_parseTree.tokens().getLexeme(string->literalToken());
-        stream() << indentation() << stringify(string->kind()) << QString(": %1").arg(QString::fromStdString(std::string(lexeme))) << newLine();
+        m_builder.appendIndented(stringify(string->kind())).append(": ").appendLine(lexeme);
     }
     
     void ParseTreePrinter::prettyPrintArgumentsNode(ArgumentsNode* node)
     {
         const auto& arguments = node->arguments();
-        stream() << indentation() << stringify(node->kind()) << QString("(%1): {").arg(arguments.size()) << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(node->kind())).append("(").append(std::to_string(arguments.size())).appendLine("): {");
+        m_builder.pushIndentation();
     
         for (const auto& argument : arguments)
             prettyPrintNode(argument.get());
     
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
     
     void ParseTreePrinter::prettyPrintParameterNode(ParameterNode* parameter)
     {
-        stream() << indentation() << stringify(parameter->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(parameter->kind())).appendLine(": {");
+        m_builder.pushIndentation();
 
         const auto& nameToken = parameter->nameExpression()->nameToken();
         const auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
-        stream() << indentation() << QString("Name: %1").arg(QString::fromStdString(std::string(nameLexeme))) << newLine();
+        m_builder.appendIndented("Name: ").appendLine(nameLexeme);
         prettyPrintTypeNameNode(parameter->typeName().get());
 
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintParametersNode(ParametersNode* node)
     {
         const auto& parameters = node->parameters();
-        stream() << indentation() << stringify(node->kind()) << QString("(%1): {").arg(parameters.size()) << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(node->kind())).append("(").append(std::to_string(parameters.size())).appendLine("): {");
+        m_builder.pushIndentation();
 
         for (const auto& parameter : parameters)
             prettyPrintParameterNode(parameter.get());
 
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintReturnTypesNode(ReturnTypesNode* node)
     {
         const auto& returnTypes = node->returnTypes();
-        stream() << indentation() << stringify(node->kind()) << QString("(%1): {").arg(returnTypes.size()) << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(node->kind())).append("(").append(std::to_string(returnTypes.size())).appendLine("): {");
+        m_builder.pushIndentation();
 
         for (const auto& returnType : returnTypes)
             prettyPrintTypeNameNode(returnType.get());
 
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintTypeNameNode(TypeNameNode* node)
     {
-        stream() << indentation() << stringify(node->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(node->kind())).appendLine(": {");
+        m_builder.pushIndentation();
 
         const auto type = node->type();
         const auto typeName = TypeDatabase::TryFindName(type);
 
-        stream() << indentation() << QString("Type: %1").arg(QString::fromStdString(std::string(typeName))) << newLine();
+        m_builder.appendIndented("Type: ").appendLine(typeName);
         if (node->isReference())
         {
-            stream() << indentation() << QString("Ref: true") << newLine();
+            m_builder.appendIndentedLine("Ref: true");
         }
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintBlockNode(BlockNode* block)
     {
         const auto& statements = block->statements();
-        stream() << indentation() << stringify(block->kind()) << QString("(%1): {").arg(statements.size()) << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(block->kind())).append("(").append(std::to_string(statements.size())).appendLine("): {");
+        m_builder.pushIndentation();
 
         for (const auto& statement : block->statements())
             prettyPrintNode(statement.get());
 
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 
     void ParseTreePrinter::prettyPrintGroupingExpression(GroupingExpression* grouping)
     {
-        stream() << indentation() << stringify(grouping->kind()) << QString(": {") << newLine();
-        pushIndentation();
+        m_builder.appendIndented(stringify(grouping->kind())).appendLine(": {");
+        m_builder.pushIndentation();
         prettyPrintNode(grouping->expression().get());
-        popIndentation();
-        stream() << indentation() << QString("}") << newLine();
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
     }
 }
 
@@ -693,23 +750,23 @@ namespace Caracal
 //    auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
 //
 //    stream() << Indentation() << stringify(statement->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
+//    m_builder.pushIndentation();
 //    stream() << Indentation() << stringify(NodeKind::NameExpression) << QString(": %1").arg(nameLexeme) << NewLine();
 //    PrettyPrintBlockNode(statement->body());
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
+//    m_builder.popIndentation();
+//    m_builder.appendIndentedLine("}");
 //}
 //
 //void ParseTreePrinter::PrettyPrintFieldDefinitionStatement(FieldDefinitionStatement* statement)
 //{
 //    stream() << Indentation() << stringify(statement->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
+//    m_builder.pushIndentation();
 //
 //    stream() << Indentation() << QString("Field: {") << NewLine();
-//    PushIndentation();
+//    m_builder.pushIndentation();
 //    PrettyPrintNode(statement->name());
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
+//    m_builder.popIndentation();
+//    m_builder.appendIndentedLine("}");
 //
 //    if (statement->type().has_value())
 //        PrettyPrintTypeName(statement->type().value());
@@ -717,43 +774,43 @@ namespace Caracal
 //    if (statement->expression().has_value())
 //    {
 //        stream() << Indentation() << QString("Value: {") << NewLine();
-//        PushIndentation();
+//        m_builder.pushIndentation();
 //        PrettyPrintNode(statement->expression().value());
-//        PopIndentation();
-//        stream() << Indentation() << QString("}") << NewLine();
+//        m_builder.popIndentation();
+//        m_builder.appendIndentedLine("}");
 //    }
 //
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
+//    m_builder.popIndentation();
+//    m_builder.appendIndentedLine("}");
 //}
 
 //void ParseTreePrinter::PrettyPrintWhileStatement(WhileStatement* statement)
 //{
 //    stream() << Indentation() << stringify(statement->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
+//    m_builder.pushIndentation();
 //
 //    stream() << Indentation() << QString("Condition: {") << NewLine();
-//    PushIndentation();
+//    m_builder.pushIndentation();
 //    PrettyPrintNode(statement->condition());
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
+//    m_builder.popIndentation();
+//    m_builder.appendIndentedLine("}");
 //
 //    PrettyPrintBlockNode(statement->body());
 //
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
+//    m_builder.popIndentation();
+//    m_builder.appendIndentedLine("}");
 //}
 
 //void ParseTreePrinter::PrettyPrintParameterNode(ParameterNode* parameter)
 //{
 //    stream() << Indentation() << stringify(parameter->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
+//    m_builder.pushIndentation();
 //
 //    PrettyPrintNameExpression(parameter->name());
 //    PrettyPrintTypeName(parameter->type());
 //
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
+//    m_builder.popIndentation();
+//    m_builder.appendIndentedLine("}");
 //}
 
 //void ParseTreePrinter::PrettyPrintFunctionCallExpression(FunctionCallExpression* functionCall)
@@ -762,23 +819,23 @@ namespace Caracal
 //    auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
 //    stream() << Indentation() << stringify(functionCall->kind()) << QString(": {") << NewLine();
 //
-//    PushIndentation();
+//    m_builder.pushIndentation();
 //    stream() << Indentation() << stringify(NodeKind::NameExpression) << QString(": %1").arg(nameLexeme) << NewLine();
 //    PrettyPrintArgumentsNode(functionCall->arguments());
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
+//    m_builder.popIndentation();
+//    m_builder.appendIndentedLine("}");
 //}
 
 //
 //void ParseTreePrinter::PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess)
 //{
 //    stream() << Indentation() << stringify(memberAccess->kind()) << QString(": {") << NewLine();
-//    PushIndentation();
+//    m_builder.pushIndentation();
 //
 //    PrettyPrintNode(memberAccess->expression());
 //
-//    PopIndentation();
-//    stream() << Indentation() << QString("}") << NewLine();
+//    m_builder.popIndentation();
+//    m_builder.appendIndentedLine("}");
 //}
 //
 //void ParseTreePrinter::PrettyPrintError(Error* error)

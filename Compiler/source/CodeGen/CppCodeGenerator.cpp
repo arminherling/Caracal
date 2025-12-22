@@ -172,7 +172,7 @@ namespace Caracal
         }
     }
 
-    CppCodeGenerator::CppCodeGenerator(ParseTree& parseTree, i32 indentation)
+    CppCodeGenerator::CppCodeGenerator(const ParseTree& parseTree, i32 indentation)
         : BasePrinter(indentation)
         , m_parseTree{ parseTree }
         , m_cppIncludes{ }
@@ -1209,7 +1209,7 @@ namespace Caracal
         }
     }
 
-    QString generateCpp(ParseTree& parseTree) noexcept
+    QString generateCpp(const ParseTree& parseTree) noexcept
     {
         CppCodeGenerator generator{ parseTree };
         return generator.generate();

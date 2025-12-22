@@ -37,7 +37,7 @@ namespace Caracal
     class COMPILER_API CppCodeGenerator: public BasePrinter
     {
     public:
-        CppCodeGenerator(ParseTree& parseTree, i32 indentation = 4);
+        CppCodeGenerator(const ParseTree& parseTree, i32 indentation = 4);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(CppCodeGenerator)
 
@@ -103,7 +103,7 @@ namespace Caracal
         CppTypeDef* buildCppTypeDefinition(TypeDefinitionStatement* node) noexcept;
         std::string_view getCppNameForType(TypeNameNode* typeName) noexcept;
 
-        ParseTree& m_parseTree;
+        const ParseTree& m_parseTree;
         QStringList m_cppIncludes;
         QStringList m_forwardDeclarations;
         Scope m_currentScope;
@@ -113,5 +113,5 @@ namespace Caracal
         std::unordered_map<std::string_view, std::unique_ptr<CppTypeDef>> m_cppTypeDefs;
     };
 
-    COMPILER_API QString generateCpp(ParseTree& parseTree) noexcept;
+    COMPILER_API QString generateCpp(const ParseTree& parseTree) noexcept;
 }

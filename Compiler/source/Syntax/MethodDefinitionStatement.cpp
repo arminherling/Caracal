@@ -1,4 +1,4 @@
-#include "MethodDefinitionStatement.h"
+﻿#include "MethodDefinitionStatement.h"
 
 namespace Caracal
 {
@@ -21,35 +21,35 @@ namespace Caracal
     {
     }
 
-    QString stringify(MethodModifier modifier)
+    std::string stringify(MethodModifier modifier)
     {
         switch (modifier)
         {
             case MethodModifier::Public:
-                return QStringLiteral("Public");
+                return std::string("Public");
             case MethodModifier::Private:
-                return QStringLiteral("Private");
+                return std::string("Private");
             case MethodModifier::Static:
-                return QStringLiteral("Static");
+                return std::string("Static");
             default:        
                 TODO("String for MethodModifier value was not defined yet");
-                return QString();
+                return std::string();
         }
     }
 
-    QString stringify(SpecialFunctionType specialFunctionType)
+    std::string stringify(SpecialFunctionType specialFunctionType)
     {
         switch (specialFunctionType)
         {
             case SpecialFunctionType::None:
-                return QStringLiteral("None");
+                return std::string("None");
             case SpecialFunctionType::Constructor:
-                return QStringLiteral("Constructor");
+                return std::string("Constructor");
             case SpecialFunctionType::Destructor:
-                return QStringLiteral("Destructor");
+                return std::string("Destructor");
             default:        
                 TODO("String for SpecialFunctionType value was not defined yet");
-                return QString();
+                return std::string();
         }
     }
 }

@@ -1,60 +1,60 @@
-#include "NodeKind.h"
+﻿#include "NodeKind.h"
 #include <Defines.h>
 #include <unordered_map>
 
 namespace Caracal
 {
-    QString stringify(NodeKind kind)
+    std::string stringify(NodeKind kind)
     {
-        static const std::unordered_map<NodeKind, QString> kindToString{
-            { NodeKind::Unknown,                        QStringLiteral("Unknown") },
-            { NodeKind::Error,                          QStringLiteral("Error") },
+        static const std::unordered_map<NodeKind, std::string_view> kindToString{
+            { NodeKind::Unknown,                        std::string_view("Unknown") },
+            { NodeKind::Error,                          std::string_view("Error") },
 
-            { NodeKind::ConstantDeclaration,            QStringLiteral("ConstantDeclaration") },
-            { NodeKind::VariableDeclaration,            QStringLiteral("VariableDeclaration") },
-            { NodeKind::TypeFieldDeclaration,           QStringLiteral("TypeFieldDeclaration") },
-            { NodeKind::EnumFieldDeclaration,           QStringLiteral("EnumFieldDeclaration") },
+            { NodeKind::ConstantDeclaration,            std::string_view("ConstantDeclaration") },
+            { NodeKind::VariableDeclaration,            std::string_view("VariableDeclaration") },
+            { NodeKind::TypeFieldDeclaration,           std::string_view("TypeFieldDeclaration") },
+            { NodeKind::EnumFieldDeclaration,           std::string_view("EnumFieldDeclaration") },
 
-            { NodeKind::CppBlockStatement,              QStringLiteral("CppBlockStatement") },
-            { NodeKind::ExpressionStatement,            QStringLiteral("ExpressionStatement") },
-            { NodeKind::AssignmentStatement,            QStringLiteral("AssignmentStatement") },
-            { NodeKind::FunctionDefinitionStatement,    QStringLiteral("FunctionDefinitionStatement") },
-            { NodeKind::EnumDefinitionStatement,        QStringLiteral("EnumDefinitionStatement") },
-            { NodeKind::TypeDefinitionStatement,        QStringLiteral("TypeDefinitionStatement") },
-            { NodeKind::MethodDefinitionStatement,      QStringLiteral("MethodDefinitionStatement") },
-            { NodeKind::IfStatement,                    QStringLiteral("IfStatement") },
-            { NodeKind::WhileStatement,                 QStringLiteral("WhileStatement") },
-            { NodeKind::BreakStatement,                 QStringLiteral("BreakStatement") },
-            { NodeKind::SkipStatement,                  QStringLiteral("SkipStatement") },
-            { NodeKind::ReturnStatement,                QStringLiteral("ReturnStatement") },
+            { NodeKind::CppBlockStatement,              std::string_view("CppBlockStatement") },
+            { NodeKind::ExpressionStatement,            std::string_view("ExpressionStatement") },
+            { NodeKind::AssignmentStatement,            std::string_view("AssignmentStatement") },
+            { NodeKind::FunctionDefinitionStatement,    std::string_view("FunctionDefinitionStatement") },
+            { NodeKind::EnumDefinitionStatement,        std::string_view("EnumDefinitionStatement") },
+            { NodeKind::TypeDefinitionStatement,        std::string_view("TypeDefinitionStatement") },
+            { NodeKind::MethodDefinitionStatement,      std::string_view("MethodDefinitionStatement") },
+            { NodeKind::IfStatement,                    std::string_view("IfStatement") },
+            { NodeKind::WhileStatement,                 std::string_view("WhileStatement") },
+            { NodeKind::BreakStatement,                 std::string_view("BreakStatement") },
+            { NodeKind::SkipStatement,                  std::string_view("SkipStatement") },
+            { NodeKind::ReturnStatement,                std::string_view("ReturnStatement") },
 
-            { NodeKind::GroupingExpression,             QStringLiteral("GroupingExpression") },
-            { NodeKind::UnaryExpression,                QStringLiteral("UnaryExpression") },
-            { NodeKind::BinaryExpression,               QStringLiteral("BinaryExpression") },
-            { NodeKind::NameExpression,                 QStringLiteral("NameExpression") },
-            { NodeKind::FunctionCallExpression,         QStringLiteral("FunctionCallExpression") },
-            { NodeKind::MemberAccessExpression,         QStringLiteral("MemberAccessExpression") },
+            { NodeKind::GroupingExpression,             std::string_view("GroupingExpression") },
+            { NodeKind::UnaryExpression,                std::string_view("UnaryExpression") },
+            { NodeKind::BinaryExpression,               std::string_view("BinaryExpression") },
+            { NodeKind::NameExpression,                 std::string_view("NameExpression") },
+            { NodeKind::FunctionCallExpression,         std::string_view("FunctionCallExpression") },
+            { NodeKind::MemberAccessExpression,         std::string_view("MemberAccessExpression") },
 
-            { NodeKind::DiscardLiteral,                 QStringLiteral("DiscardLiteral") },
-            { NodeKind::BoolLiteral,                    QStringLiteral("BoolLiteral") },
-            { NodeKind::NumberLiteral,                  QStringLiteral("NumberLiteral") },
-            { NodeKind::StringLiteral,                  QStringLiteral("StringLiteral") },
+            { NodeKind::DiscardLiteral,                 std::string_view("DiscardLiteral") },
+            { NodeKind::BoolLiteral,                    std::string_view("BoolLiteral") },
+            { NodeKind::NumberLiteral,                  std::string_view("NumberLiteral") },
+            { NodeKind::StringLiteral,                  std::string_view("StringLiteral") },
 
-            { NodeKind::TypeNameNode,                   QStringLiteral("TypeNameNode") },
-            { NodeKind::MethodNameNode,                 QStringLiteral("MethodNameNode") },
-            { NodeKind::ParametersNode,                 QStringLiteral("ParametersNode") },
-            { NodeKind::ParameterNode,                  QStringLiteral("ParameterNode") },
-            { NodeKind::ReturnTypesNode,                QStringLiteral("ReturnTypesNode") },
-            { NodeKind::ReturnTypeNode,                 QStringLiteral("ReturnTypeNode") },
-            { NodeKind::ArgumentsNode,                  QStringLiteral("ArgumentsNode") },
-            { NodeKind::BlockNode,                      QStringLiteral("BlockNode") },
+            { NodeKind::TypeNameNode,                   std::string_view("TypeNameNode") },
+            { NodeKind::MethodNameNode,                 std::string_view("MethodNameNode") },
+            { NodeKind::ParametersNode,                 std::string_view("ParametersNode") },
+            { NodeKind::ParameterNode,                  std::string_view("ParameterNode") },
+            { NodeKind::ReturnTypesNode,                std::string_view("ReturnTypesNode") },
+            { NodeKind::ReturnTypeNode,                 std::string_view("ReturnTypeNode") },
+            { NodeKind::ArgumentsNode,                  std::string_view("ArgumentsNode") },
+            { NodeKind::BlockNode,                      std::string_view("BlockNode") },
         };
 
         const auto it = kindToString.find(kind);
         if (it != kindToString.end())
-            return it->second;
+            return std::string(it->second);
 
         TODO("String for NodeKind value was not defined yet");
-        return QString();
+        return std::string();
     }
 }

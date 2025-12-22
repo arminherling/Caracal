@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Compiler/API.h>
 #include <QString>
@@ -50,5 +50,5 @@ namespace Caracal
         BlockNode,
     };
 
-    [[nodiscard]] COMPILER_API QString stringify(NodeKind kind);
+    [[nodiscard]] COMPILER_API std::string stringify(NodeKind kind);
 }

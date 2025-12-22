@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Compiler/API.h>
 #include <Syntax/Statement.h>
@@ -57,6 +57,6 @@ namespace Caracal
         SpecialFunctionType m_specialFunctionType;
     };
 
-    [[nodiscard]] COMPILER_API QString stringify(MethodModifier modifier);
-    [[nodiscard]] COMPILER_API QString stringify(SpecialFunctionType specialFunctionType);
+    [[nodiscard]] COMPILER_API std::string stringify(MethodModifier modifier);
+    [[nodiscard]] COMPILER_API std::string stringify(SpecialFunctionType specialFunctionType);
 }

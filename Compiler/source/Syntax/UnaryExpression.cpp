@@ -1,4 +1,4 @@
-#include "UnaryExpression.h"
+﻿#include "UnaryExpression.h"
 
 namespace Caracal
 {
@@ -27,19 +27,19 @@ namespace Caracal
     {
     }
 
-    QString stringify(UnaryOperatorKind kind)
+    std::string stringify(UnaryOperatorKind kind)
     {
         switch (kind)
         {
             case UnaryOperatorKind::LogicalNegation:
-                return QStringLiteral("LogicalNegation");
+                return std::string("LogicalNegation");
             case UnaryOperatorKind::ValueNegation:
-                return QStringLiteral("ValueNegation");
+                return std::string("ValueNegation");
             case UnaryOperatorKind::ReferenceOf:
-                return QString("ReferenceOf");
+                return std::string("ReferenceOf");
             default:
                 TODO("Invalid unary operator kind");
         }
-        return QString();
+        return std::string();
     }
 }

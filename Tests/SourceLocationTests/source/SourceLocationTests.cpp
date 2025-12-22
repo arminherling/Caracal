@@ -6,9 +6,11 @@
 #include <Syntax/TokenKind.h>
 #include <Text/SourceLocation.h>
 #include <Text/SourceText.h>
-#include <QList>
 
-static void SingleSourceLocation(const std::string& /*testName*/, const Caracal::SourceTextSharedPtr& input, const Caracal::SourceLocation& expectedLocation)
+static void SingleSourceLocation(
+    const std::string& /*testName*/, 
+    const Caracal::SourceTextSharedPtr& input, 
+    const Caracal::SourceLocation& expectedLocation)
 {
     Caracal::DiagnosticsBag diagnostics;
 
@@ -24,7 +26,7 @@ static void SingleSourceLocation(const std::string& /*testName*/, const Caracal:
     CaraTest::areEqual(location.endIndex, expectedLocation.endIndex);
 }
 
-static QList<std::tuple<std::string, Caracal::SourceTextSharedPtr, Caracal::SourceLocation>> SingleSourceLocation_Data()
+static std::vector<std::tuple<std::string, Caracal::SourceTextSharedPtr, Caracal::SourceLocation>> SingleSourceLocation_Data()
 {
     auto source1 = std::make_shared<Caracal::SourceText>("+");
     auto source2 = std::make_shared<Caracal::SourceText>(" bar ");
@@ -69,7 +71,7 @@ static QList<std::tuple<std::string, Caracal::SourceTextSharedPtr, Caracal::Sour
 static void MultipleSourceLocations()
 {
     auto input = std::make_shared<Caracal::SourceText>("define sum(a int, b int) \r\n {\r\n return a + b \r\n}\r\n");
-    auto expectedList = QList<Caracal::SourceLocation>
+    auto expectedList = std::vector<Caracal::SourceLocation>
     {
         { .startIndex = 0, .endIndex = 6 },  // define
         { .startIndex = 7, .endIndex = 10 }, // sum

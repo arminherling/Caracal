@@ -1,4 +1,4 @@
-#include "BinaryExpression.h"
+﻿#include "BinaryExpression.h"
 
 namespace Caracal
 {
@@ -49,22 +49,22 @@ namespace Caracal
     {
     }
 
-    QString stringify(BinaryOperatorKind operation)
+    std::string stringify(BinaryOperatorKind operation)
     {
-        static const std::unordered_map<BinaryOperatorKind, QString> opToString{
-            { BinaryOperatorKind::MemberAccess,    QStringLiteral("MemberAccess") },
-            { BinaryOperatorKind::Addition,        QStringLiteral("Addition") },
-            { BinaryOperatorKind::Subtraction,     QStringLiteral("Subtraction") },
-            { BinaryOperatorKind::Multiplication,  QStringLiteral("Multiplication") },
-            { BinaryOperatorKind::Division,        QStringLiteral("Division") },
-            { BinaryOperatorKind::Equal,           QStringLiteral("Equal") },
-            { BinaryOperatorKind::NotEqual,        QStringLiteral("NotEqual") },
-            { BinaryOperatorKind::LessThan,        QStringLiteral("LessThan") },
-            { BinaryOperatorKind::LessOrEqual,     QStringLiteral("LessOrEqual") },
-            { BinaryOperatorKind::GreaterThan,     QStringLiteral("GreaterThan") },
-            { BinaryOperatorKind::GreaterOrEqual,  QStringLiteral("GreaterOrEqual") },
-            { BinaryOperatorKind::LogicalAnd,      QStringLiteral("LogicalAnd") },
-            { BinaryOperatorKind::LogicalOr,       QStringLiteral("LogicalOr") },
+        static const std::unordered_map<BinaryOperatorKind, std::string> opToString{
+            { BinaryOperatorKind::MemberAccess,    std::string("MemberAccess") },
+            { BinaryOperatorKind::Addition,        std::string("Addition") },
+            { BinaryOperatorKind::Subtraction,     std::string("Subtraction") },
+            { BinaryOperatorKind::Multiplication,  std::string("Multiplication") },
+            { BinaryOperatorKind::Division,        std::string("Division") },
+            { BinaryOperatorKind::Equal,           std::string("Equal") },
+            { BinaryOperatorKind::NotEqual,        std::string("NotEqual") },
+            { BinaryOperatorKind::LessThan,        std::string("LessThan") },
+            { BinaryOperatorKind::LessOrEqual,     std::string("LessOrEqual") },
+            { BinaryOperatorKind::GreaterThan,     std::string("GreaterThan") },
+            { BinaryOperatorKind::GreaterOrEqual,  std::string("GreaterOrEqual") },
+            { BinaryOperatorKind::LogicalAnd,      std::string("LogicalAnd") },
+            { BinaryOperatorKind::LogicalOr,       std::string("LogicalOr") },
         };
 
         const auto it = opToString.find(operation);
@@ -72,6 +72,6 @@ namespace Caracal
             return it->second;
 
         TODO("Invalid binary operator kind");
-        return QString();
+        return std::string();
     }
 }

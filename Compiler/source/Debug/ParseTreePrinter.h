@@ -1,7 +1,6 @@
-#pragma once
+﻿#pragma once
 
 #include <Compiler/API.h>
-#include <Debug/BasePrinter.h>
 #include <Defines.h>
 #include <Syntax/CppBlockStatement.h>
 //#include <Syntax/ArgumentsNode.h>
@@ -40,17 +39,18 @@
 #include <Syntax/TypeDefinitionStatement.h>
 #include <Syntax/TypeFieldDeclaration.h>
 #include <Syntax/MemberAccessExpression.h>
+#include <Text/StringBuilder.h>
 
 namespace Caracal 
 {
-    class COMPILER_API ParseTreePrinter : public BasePrinter
+    class COMPILER_API ParseTreePrinter
     {
     public:
-        ParseTreePrinter(ParseTree& parseTree, i32 indentation = 4);
+        ParseTreePrinter(const ParseTree& parseTree, i32 indentation = 4);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(ParseTreePrinter)
 
-        [[nodiscard]] QString prettyPrint();
+        [[nodiscard]] std::string prettyPrint();
 
     private:
         void prettyPrintNode(Node* node);
@@ -91,6 +91,7 @@ namespace Caracal
     //    void PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess);
     //    void PrettyPrintError(Error* error);
 
-        ParseTree& m_parseTree;
+        const ParseTree& m_parseTree;
+        StringBuilder m_builder;
     };
 }

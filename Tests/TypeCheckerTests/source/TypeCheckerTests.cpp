@@ -14,9 +14,9 @@ using namespace CaraTest;
 
 static void FileTests(
     const std::string& fileName, 
-    const std::string& inputFilePath, 
-    const std::string& outputFilePath, 
-    const std::string& errorFilePath)
+    const std::filesystem::path& inputFilePath, 
+    const std::filesystem::path& outputFilePath, 
+    const std::filesystem::path& errorFilePath)
 {
     CaraTest::skip();
 
@@ -67,27 +67,32 @@ static void FileTests(
     //}
 }
 
-static QList<std::tuple<std::string, std::string, std::string, std::string>> FileTests_Data()
+static std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> FileTests_Data()
 {
-    auto testDataDir = QDir(QString("../../Tests/Data"));
-    auto absolutePath = testDataDir.absolutePath();
+    const auto currentFilePath = std::filesystem::path(__FILE__);
+    const auto currentDirectory = currentFilePath.parent_path();
+    const auto testDataDir = currentDirectory / "../../Data";
+    const auto absolutePath = std::filesystem::absolute(testDataDir);
 
-    QList<std::tuple<std::string, std::string, std::string, std::string>> data{};
+    std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> data;
 
-    QDirIterator it(absolutePath, QStringList() << QString("*.aal"), QDir::Filter::Files, QDirIterator::IteratorFlag::Subdirectories);
-    while (it.hasNext())
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(absolutePath))
     {
-        auto file = QFileInfo(it.next());
-        auto directory = QDir(file.absolutePath());
-        auto fullFilePathWithoutExtension = directory.filePath(file.baseName());
+        if (entry.is_regular_file() && entry.path().extension() == ".cara")
+        {
+            const auto& filePath = entry.path();
+            const auto parentPath = filePath.parent_path();
+            const auto baseName = filePath.stem(); // file name without extension
 
-        auto inPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".aal"));
-        auto outPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".out_type"));
-        auto errorPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".error_type"));
+            const auto& inPath = filePath;
+            const auto outPath = parentPath / (baseName.string() + ".out_type");
+            const auto errorPath = parentPath / (baseName.string() + ".error_type");
 
-        auto testName = directory.dirName() + '/' + file.completeBaseName();
-        data.append(std::make_tuple(testName.toStdString(), inPath.toStdString(), outPath.toStdString(), errorPath.toStdString()));
+            const auto testName = parentPath.filename().string() + '/' + baseName.string();
+            data.emplace_back(testName, inPath, outPath, errorPath);
+        }
     }
+
     return data;
 }
 

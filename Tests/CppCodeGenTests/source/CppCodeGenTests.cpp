@@ -9,25 +9,28 @@
 
 static void FileTests(
     const std::string& /*fileName*/, 
-    const std::string& inputFilePath, 
-    const std::string& outputFilePath, 
-    const std::string& /*errorFilePath*/)
+    const std::filesystem::path& inputFilePath, 
+    const std::filesystem::path& outputFilePath, 
+    const std::filesystem::path& /*errorFilePath*/)
 {
-    if (!QFile::exists(QString::fromStdString(inputFilePath)))
+    if (!QFile::exists(inputFilePath))
         CaraTest::fail();// ("In file missing");
-    if (!QFile::exists(QString::fromStdString(outputFilePath)))
+    if (!QFile::exists(outputFilePath))
         CaraTest::skip();// ("Out file missing");
 
-    auto input = Caracal::File::ReadAllText(QString::fromStdString(inputFilePath));
-    auto source = std::make_shared<Caracal::SourceText>(input.toStdString());
+    const auto input = Caracal::File::readText(inputFilePath);
+    if (!input.has_value())
+        CaraTest::fail();// ("Could not read input file");
+
+    const auto source = std::make_shared<Caracal::SourceText>(input.value());
     Caracal::DiagnosticsBag diagnostics;
 
-    auto tokens = Caracal::lex(source, diagnostics);
-    auto parseTree = Caracal::parse(tokens, diagnostics);
+    const auto tokens = Caracal::lex(source, diagnostics);
+    const auto parseTree = Caracal::parse(tokens, diagnostics);
 
-    auto startTime = std::chrono::high_resolution_clock::now();
-    auto output = Caracal::generateCpp(parseTree).toStdString();
-    auto endTime = std::chrono::high_resolution_clock::now();
+    const auto startTime = std::chrono::high_resolution_clock::now();
+    const auto output = Caracal::generateCpp(parseTree).toStdString();
+    const auto endTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "      generateCpp(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
@@ -35,27 +38,32 @@ static void FileTests(
     CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
 }
 
-static QList<std::tuple<std::string, std::string, std::string, std::string>> FileTests_Data()
+static std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> FileTests_Data()
 {
-    auto testDataDir = QDir(QString("../../Tests/Data"));
-    auto absolutePath = testDataDir.absolutePath();
+    const auto currentFilePath = std::filesystem::path(__FILE__);
+    const auto currentDirectory = currentFilePath.parent_path();
+    const auto testDataDir = currentDirectory / "../../Data";
+    const auto absolutePath = std::filesystem::absolute(testDataDir);
 
-    QList<std::tuple<std::string, std::string, std::string, std::string>> data{};
+    std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> data;
 
-    QDirIterator it(absolutePath, QStringList() << QString("*.cara"), QDir::Filter::Files, QDirIterator::IteratorFlag::Subdirectories);
-    while (it.hasNext())
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(absolutePath))
     {
-        auto file = QFileInfo(it.next());
-        auto directory = QDir(file.absolutePath());
-        auto fullFilePathWithoutExtension = directory.filePath(file.baseName());
-
-        auto inPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".cara"));
-        auto outPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".out_cpp"));
-        auto errorPath = QDir::cleanPath(fullFilePathWithoutExtension + QString(".error_cpp"));
-
-        auto testName = directory.dirName() + '/' + file.completeBaseName();
-        data.append(std::make_tuple(testName.toStdString(), inPath.toStdString(), outPath.toStdString(), errorPath.toStdString()));
+        if (entry.is_regular_file() && entry.path().extension() == ".cara")
+        {
+            const auto& filePath = entry.path();
+            const auto parentPath = filePath.parent_path();
+            const auto baseName = filePath.stem(); // file name without extension
+            
+            const auto& inPath = filePath;
+            const auto outPath = parentPath / (baseName.string() + ".out_cpp");
+            const auto errorPath = parentPath / (baseName.string() + ".error_cpp");
+            
+            const auto testName = parentPath.filename().string() + '/' + baseName.string();
+            data.emplace_back(testName, inPath, outPath, errorPath);
+        }
     }
+
     return data;
 }
 
