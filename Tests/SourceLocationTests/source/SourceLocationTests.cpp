@@ -1,11 +1,11 @@
 ﻿#include <CaraTest.h>
 #include <iostream>
-#include <Syntax/Lexer.h>
-#include <Syntax/Token.h>
-#include <Syntax/TokenBuffer.h>
-#include <Syntax/TokenKind.h>
-#include <Text/SourceLocation.h>
-#include <Text/SourceText.h>
+#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Syntax/Token.h>
+#include <Caracal/Syntax/TokenBuffer.h>
+#include <Caracal/Syntax/TokenKind.h>
+#include <Caracal/Text/SourceLocation.h>
+#include <Caracal/Text/SourceText.h>
 
 static void SingleSourceLocation(
     const std::string& /*testName*/, 

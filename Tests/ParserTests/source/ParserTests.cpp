@@ -1,9 +1,9 @@
 ﻿#include <CaraTest.h>
-#include <Compiler/DiagnosticsBag.h>
-#include <Compiler/File.h>
-#include <Debug/ParseTreePrinter.h>
-#include <Syntax/Lexer.h>
-#include <Syntax/Parser.h>
+#include <Caracal/Debug/DiagnosticsBag.h>
+#include <Caracal/Debug/ParseTreePrinter.h>
+#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Syntax/Parser.h>
+#include <Caracal/Text/File.h>
 #include <iostream>
 
 static void FileTests(

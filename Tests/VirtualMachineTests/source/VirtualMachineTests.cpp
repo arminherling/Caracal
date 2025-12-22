@@ -1,10 +1,10 @@
 ﻿#include <CaraTest.h>
 //#include <Debug/ByteCodeDisassembler.h>
 #include <iostream>
-#include <VirtualMachine/ByteCode.h>
-#include <VirtualMachine/ByteCodeAssembler.h>
-#include <VirtualMachine/Register.h>
-#include <VirtualMachine/VM.h>
+#include <Caracal/VirtualMachine/ByteCode.h>
+#include <Caracal/VirtualMachine/ByteCodeAssembler.h>
+#include <Caracal/VirtualMachine/Register.h>
+#include <Caracal/VirtualMachine/VM.h>
 
 using namespace CaraTest;
 using namespace Caracal;

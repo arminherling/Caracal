@@ -5,7 +5,7 @@ file(GLOB HEADERS CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/source/*.h")
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Compiler)
+target_link_libraries(${PROJECT_NAME} PRIVATE Caracal)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "Caracal")
 
 if (WIN32)

@@ -1,4 +1,4 @@
-#include "DebugTools.h"
+﻿#include "DebugTools.h"
 
 #include <QTextEdit>
 #include <QDockWidget>
@@ -7,8 +7,8 @@
 #include <QStatusBar>
 #include <QHBoxLayout>
 
-#include <Text/SourceText.h>
-#include <Syntax/Lexer.h>
+#include <Caracal/Text/SourceText.h>
+#include <Caracal/Syntax/Lexer.h>
 
 #include "TokenListView.h"
 

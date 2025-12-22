@@ -10,7 +10,7 @@ add_executable(
     "${PROJECT_SOURCE_DIR}/../VirtualMachineTests/source/VirtualMachineTests.cpp"
     "source/main.cpp")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Compiler CaraTest)
+target_link_libraries(${PROJECT_NAME} PRIVATE Caracal CaraTest)
 
 if (WIN32)
     add_custom_command(

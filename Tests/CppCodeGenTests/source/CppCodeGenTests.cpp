@@ -1,10 +1,10 @@
 ﻿#include <CaraTest.h>
-#include <CodeGen/CppCodeGenerator.h>
-#include <Compiler/DiagnosticsBag.h>
-#include <Compiler/File.h>
+#include <Caracal/CodeGen/CppCodeGenerator.h>
+#include <Caracal/Debug/DiagnosticsBag.h>
+#include <Caracal/Text/File.h>
+#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Syntax/Parser.h>
 #include <iostream>
-#include <Syntax/Lexer.h>
-#include <Syntax/Parser.h>
 
 static void FileTests(
     const std::string& /*fileName*/, 

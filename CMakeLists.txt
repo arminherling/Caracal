@@ -15,7 +15,7 @@ endif()
 
 include(CaraTest)
 
-add_subdirectory(Compiler)
+add_subdirectory(Source)
 add_subdirectory(Driver)
 
 add_subdirectory(Tests/AllInOne)

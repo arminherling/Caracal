@@ -1,13 +1,13 @@
 ﻿#include <CaraTest.h>
-#include <Compiler/DiagnosticsBag.h>
-#include <Compiler/File.h>
-#include <Debug/TypedTreePrinter.h>
+#include <Caracal/Debug/DiagnosticsBag.h>
+#include <Caracal/Debug/TypedTreePrinter.h>
+#include <Caracal/Semantic/TypeChecker.h>
+#include <Caracal/Semantic/TypeCheckerOptions.h>
+#include <Caracal/Semantic/TypeDatabase.h>
+#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Syntax/Parser.h>
+#include <Caracal/Text/File.h>
 #include <iostream>
-#include <Semantic/TypeChecker.h>
-#include <Semantic/TypeCheckerOptions.h>
-#include <Semantic/TypeDatabase.h>
-#include <Syntax/Lexer.h>
-#include <Syntax/Parser.h>
 
 using namespace CaraTest;
 

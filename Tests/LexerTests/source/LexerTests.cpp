@@ -1,11 +1,11 @@
 ﻿#include <CaraTest.h>
 
-#include <Compiler/File.h>
-#include <Syntax/Lexer.h>
-#include <Syntax/Token.h>
-#include <Syntax/TokenKind.h>
-#include <Syntax/TokenBuffer.h>
-#include <Text/SourceText.h>
+#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Syntax/Token.h>
+#include <Caracal/Syntax/TokenKind.h>
+#include <Caracal/Syntax/TokenBuffer.h>
+#include <Caracal/Text/File.h>
+#include <Caracal/Text/SourceText.h>
 #include <iostream>
 
 static void ExpectedTokenKind(const std::string& /*testName*/, const std::string& input, TokenKind expectedKind)

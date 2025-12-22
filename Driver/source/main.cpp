@@ -1,11 +1,11 @@
-﻿#include <Compiler/File.h>
-#include <Debug/ParseTreePrinter.h>
-#include <CodeGen/CppCodeGenerator.h>
-#include <Syntax/Lexer.h>
-#include <Syntax/Token.h>
-#include <Syntax/TokenKind.h>
-#include <Syntax/TokenBuffer.h>
-#include <Syntax/Parser.h>
+﻿#include <Caracal/Text/File.h>
+#include <Caracal/Debug/ParseTreePrinter.h>
+#include <Caracal/CodeGen/CppCodeGenerator.h>
+#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Syntax/Token.h>
+#include <Caracal/Syntax/TokenKind.h>
+#include <Caracal/Syntax/TokenBuffer.h>
+#include <Caracal/Syntax/Parser.h>
 
 #include <memory>
 #include <filesystem>

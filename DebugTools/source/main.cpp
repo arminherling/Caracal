@@ -1,9 +1,9 @@
-#include "DebugTools.h"
+﻿#include "DebugTools.h"
 #include <QtWidgets/QApplication>
 
 #include "TokenListView.h"
-#include <Text/SourceText.h>
-#include <Syntax/Lexer.h>
+#include <Caracal/Text/SourceText.h>
+#include <Caracal/Syntax/Lexer.h>
 
 i32 main(i32 argc, char *argv[])
 {
