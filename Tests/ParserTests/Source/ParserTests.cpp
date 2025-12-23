@@ -43,28 +43,41 @@ static std::vector<std::tuple<std::string, std::filesystem::path, std::filesyste
 {
     const auto currentFilePath = std::filesystem::path(__FILE__);
     const auto currentDirectory = currentFilePath.parent_path();
-    const auto testDataDir = currentDirectory / "../../Data";
-    const auto absolutePath = std::filesystem::absolute(testDataDir);
+    const auto testDataDir = currentDirectory / "../../TestData";
+    const auto inputDir = testDataDir / "Input";
+    const auto absolutePath = std::filesystem::absolute(inputDir);
 
-    std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> data;
+    std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> data{};
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(absolutePath))
     {
         if (entry.is_regular_file() && entry.path().extension() == ".cara")
         {
-            const auto& filePath = entry.path();
-            const auto parentPath = filePath.parent_path();
-            const auto baseName = filePath.stem(); // file name without extension
-            
-            const auto& inPath = filePath;
-            const auto outPath = parentPath / (baseName.string() + ".out_parse");
-            const auto errorPath = parentPath / (baseName.string() + ".error_parse");
-            
-            const auto testName = parentPath.filename().string() + '/' + baseName.string();
-            data.emplace_back(testName, inPath, outPath, errorPath);
+            const auto& inputFilePath = entry.path();
+            const auto inputDirName = inputFilePath.parent_path().filename();
+
+            const auto outputParseDirectoryPath = testDataDir / "OutputParse";
+            if (!std::filesystem::exists(outputParseDirectoryPath))
+            {
+                std::filesystem::create_directories(outputParseDirectoryPath);
+            }
+
+            const auto fileName = inputFilePath.stem().string();
+            const auto extension = inputFilePath.extension().string();
+            const auto outputFileName = fileName + ".txt";
+            const auto outputFileNameError = fileName + "_error.txt";
+
+            const auto putputParsePath = std::filesystem::absolute(outputParseDirectoryPath / inputDirName / outputFileName);
+            const auto putputErrorPath = std::filesystem::absolute(outputParseDirectoryPath / inputDirName / outputFileNameError);
+
+            const auto testName = inputDirName.string() + "/" + fileName;
+            data.push_back(std::make_tuple(
+                testName,
+                inputFilePath,
+                putputParsePath,
+                putputErrorPath));
         }
     }
-
     return data;
 }
 

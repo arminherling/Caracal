@@ -318,8 +318,17 @@ static void OneMillionLinesTime()
 #ifdef _DEBUG
     CaraTest::skip();// ("";
 #endif
-    const auto filePath = std::filesystem::path("../../Tests/LexerTests/data/oneMilLines.txt");
-    const auto data = Caracal::File::readText(filePath);
+
+    auto currentFilePath = std::filesystem::path(__FILE__);
+    auto currentDirectory = currentFilePath.parent_path();
+    auto testDataPath = currentDirectory / "../../TestData/Input/oneMilLines.txt";
+    auto absolutePath = std::filesystem::absolute(testDataPath);
+    if (!std::filesystem::exists(absolutePath))
+    {
+        CaraTest::fail();// ("In file missing");
+    }
+
+    const auto data = Caracal::File::readText(absolutePath);
     if (!data.has_value())
     {
         CaraTest::fail();// ("Could not read oneMilLines.txt");
