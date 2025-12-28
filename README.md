@@ -1,4 +1,6 @@
-# Caracal
+﻿# Caracal
+
+<img src="Assets/caracal-logo.png"  alt="Caracal logo" height="250" />
 
 > [!NOTE]
 > Everything from syntax to semantics is currently work-in-progress and might change at any point.
@@ -7,9 +9,12 @@
 Caracal is an imperative, compiled programming language designed with a focus on simple and enjoyable syntax with sensible defaults.
 The goal is a statically typed language that feels like a dynamically typed language thanks to type inference.
 
-## Features
-- Static typing
-- Type inference
+## Goals
+- Good sensible defaults
+- Powerful generics
+- Low barrier for test integration
+- Native compilation
+- Maybe not too ugly syntax
 
 ## Roadmap
 The current focus is on getting a minimal version up and running. For that, I'm generating C++ code, later on I'm probably gonna use LLVM.
