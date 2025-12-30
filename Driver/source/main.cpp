@@ -1,11 +1,23 @@
 ﻿#include <Caracal/Text/File.h>
 #include <Caracal/Debug/ParseTreePrinter.h>
 #include <Caracal/CodeGen/CppCodeGenerator.h>
+#include <Caracal/CodeGen/LLVMCodeGenerator.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Token.h>
 #include <Caracal/Syntax/TokenKind.h>
 #include <Caracal/Syntax/TokenBuffer.h>
 #include <Caracal/Syntax/Parser.h>
+
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Program.h>
+#include <llvm/TargetParser/Host.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
+#include <llvm/MC/TargetRegistry.h>
 
 #include <memory>
 #include <filesystem>
@@ -48,22 +60,23 @@ int main(int argc, char* argv[])
     if (argc < 2)
     {
         std::cout << "Please provide a file path as a parameter.\n";
-        return -1;
+        return 1;
     }
 
     const auto parameterFilePath = std::filesystem::path(argv[1]);
     const auto absolutePath = std::filesystem::absolute(parameterFilePath);
+    const auto inputFileName = absolutePath.stem().string();
     if (!std::filesystem::exists(absolutePath))
     {
         std::cout << "The parameter is not a valid file.\n";
-        return -1;
+        return 1;
     }
 
     auto fileContent = Caracal::File::readText(absolutePath);
-    if(!fileContent.has_value())
+    if (!fileContent.has_value())
     {
         std::cout << "Failed to read the file content.\n";
-        return -1;
+        return 1;
     }
 
     auto source = std::make_shared<Caracal::SourceText>(fileContent.value());
@@ -71,70 +84,97 @@ int main(int argc, char* argv[])
 
     auto tokens = Caracal::lex(source, diagnostics);
     auto parseTree = Caracal::parse(tokens, diagnostics);
-    auto cppCode = Caracal::generateCpp(parseTree);
+    //auto cppCode = Caracal::generateCpp(parseTree);
 
     if (!diagnostics.Diagnostics().empty())
     {
         std::cout << "Errors found during parsing!";
-        return -1;
+        return 1;
     }
 
-    auto tempFilePath = createTemporaryFile(std::filesystem::temp_directory_path());
-    std::ofstream tempFile(tempFilePath);
-    if (!tempFile)
+    llvm::LLVMContext context;
+    llvm::Module module(inputFileName, context);
+
+    auto wasSuccessful = Caracal::generateLLVMModule(parseTree, module);
+    if (!wasSuccessful)
     {
-        std::cout << "Failed to create temporary file.";
-        return -1;
+        std::cout << "Module not generated!";
+        return 1;
     }
-    tempFile << cppCode;
-    tempFile.close();
 
-    // change the extension to exe
-    auto executablePath = parameterFilePath;
-    executablePath.replace_extension(".exe");
+    std::string irOutput;
+    llvm::raw_string_ostream irStream(irOutput);
+    module.print(irStream, nullptr);
+    irStream.flush();
+    llvm::outs() << "Module IR:\n" << irOutput << "\n";
 
-    // Prepare arguments
-    std::ostringstream command;
-    command << "clang++ "
-        << "-x c++ "                // Specify language flag
-        << tempFilePath.string() << " "
-        << "-std=c++17 "            // Specify C++17 standard
-        << "-O2 "                   // Standard optimization
-        << "-Wall "                 // Enable most warnings
-        << "-Wextra "               // Enable additional warnings
-        << "-o " << executablePath; // Specify output executable
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
 
-    std::cout << "Compiling...\n";
-    auto clangResult = executeCommand(command.str());
-    if (clangResult != 0)
+    std::string targetError;
+    auto defaultTargetTriple = llvm::sys::getDefaultTargetTriple();
+    auto target = llvm::TargetRegistry::lookupTarget(defaultTargetTriple, targetError);
+    auto triple = llvm::Triple(defaultTargetTriple);
+    if (!target)
     {
-        std::cout << "Compilation failed with exit code: " << clangResult << '\n';
-        return -1;
+        llvm::errs() << "Error: " << targetError << "\n";
+        return 1;
     }
-    std::cout << "Compiling successful.\n";
 
-    std::cout << "\nExecuting...\n";
-    auto executionStartTime = std::chrono::high_resolution_clock::now();
+    auto CPU = "generic";
+    auto features = "";
+    llvm::TargetOptions targetOptions;
+    auto relocModel = std::optional<llvm::Reloc::Model>();
+    auto targetMachine = target->createTargetMachine(defaultTargetTriple, CPU, features, targetOptions, relocModel);
 
-    // execute the compiled program
-    auto caracalResult = executeCommand(executablePath.string());
-    if (caracalResult != 0)
+    const auto objectFileName = inputFileName + ".o";
+    std::error_code errorCode;
+    llvm::raw_fd_ostream objectFile(objectFileName, errorCode, llvm::sys::fs::OF_None);
+    if (errorCode)
     {
-        std::cout << "Execution failed with exit code: " << caracalResult << '\n';
-        return -1;
+        llvm::errs() << "Couldnt create object file: " << errorCode.message() << "\n";
+        return 1;
     }
 
-    auto executionEndTime = std::chrono::high_resolution_clock::now();
-    auto executionDuration = executionEndTime - executionStartTime;
+    llvm::legacy::PassManager passManager;
+    if (targetMachine->addPassesToEmitFile(passManager, objectFile, nullptr, llvm::CodeGenFileType::ObjectFile))
+    {
+        llvm::errs() << "TargetMachine cant emit a file of this type\n";
+        return 1;
+    }
+    passManager.run(module);
+    objectFile.flush();
 
-    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(executionDuration);
-    executionDuration -= seconds;
-    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(executionDuration);
+    const auto lldPath = llvm::sys::findProgramByName("lld-link").get();
+    if (lldPath.empty())
+    {
+        llvm::errs() << "Error: lld-link not found in PATH.\n";
+        return 1;
+    }
 
-    std::cout << "\nExecution Time: " << seconds << " " << milliseconds << '\n';
 
-    // remove temp file
-    std::filesystem::remove(tempFilePath);
+    // TODO support linux
+    std::string linkError;
+    const auto exeFileName = inputFileName + ".exe";
+    const auto linkingResult = llvm::sys::ExecuteAndWait(
+        lldPath,
+        { "lld-link", "-flavor", "link", "/out:" + exeFileName, objectFileName, "/subsystem:console", "/entry:main" },
+        std::nullopt,
+        {},
+        0,
+        0,
+        &linkError
+    );
+
+    if (linkingResult != 0)
+    {
+        llvm::errs() << "Linking failed with error code: " << linkingResult << "\n";
+        llvm::errs() << "Error message: " << linkError << "\n";
+    }
+    else
+    {
+        llvm::outs() << "Executable generated: " << exeFileName << "\n";
+    }
 
     return 0;
 }

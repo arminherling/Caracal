@@ -13,6 +13,7 @@ if(WIN32)
     endif()
 endif()
 
+include(LLVM)
 include(CaraTest)
 
 add_subdirectory(Source)
