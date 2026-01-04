@@ -3,6 +3,7 @@
 add_executable(
     ${PROJECT_NAME} 
     "${PROJECT_SOURCE_DIR}/../CppCodeGenTests/source/CppCodeGenTests.cpp"
+    "${PROJECT_SOURCE_DIR}/../LLVMCodeGenTests/source/LLVMCodeGenTests.cpp"
     "${PROJECT_SOURCE_DIR}/../LexerTests/source/LexerTests.cpp"
     "${PROJECT_SOURCE_DIR}/../ParserTests/source/ParserTests.cpp"
     "${PROJECT_SOURCE_DIR}/../TypeCheckerTests/source/TypeCheckerTests.cpp"
@@ -10,7 +11,10 @@ add_executable(
     "${PROJECT_SOURCE_DIR}/../VirtualMachineTests/source/VirtualMachineTests.cpp"
     "source/main.cpp")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Caracal CaraTest)
+target_include_directories(${PROJECT_NAME} PRIVATE ${LLVM_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME} PRIVATE ${LLVM_DEFINITIONS})
+
+target_link_libraries(${PROJECT_NAME} PRIVATE Caracal CaraTest ${LLVM_LIBS})
 
 if (WIN32)
     add_custom_command(

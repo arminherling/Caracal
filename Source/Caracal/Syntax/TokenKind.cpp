@@ -3,7 +3,7 @@
 
 std::string stringify(TokenKind kind)
 {
-    static const std::unordered_map<TokenKind, std::string_view> kindToString{
+    const std::unordered_map<TokenKind, std::string_view> kindToString{
         { TokenKind::Unknown,           std::string_view("Unknown") },
         { TokenKind::Error,             std::string_view("Error") },
 
