@@ -1,12 +1,36 @@
 ﻿#include "LLVMCodeGenerator.h"
-#include "LLVMCodeGenerator.h"
-#include "LLVMCodeGenerator.h"
-
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/IRBuilder.h>
 
 namespace Caracal
 {
+    static std::string ReplaceEscapeSequences(std::string_view input)
+    {
+        std::string result(input);
+
+        auto replaceAll = [](std::string& str, const std::string& from, const std::string& to) {
+            size_t startPos = 0;
+            while ((startPos = str.find(from, startPos)) != std::string::npos)
+            {
+                str.replace(startPos, from.length(), to);
+                startPos += to.length(); // Weiter nach dem ersetzten Teil suchen
+            }
+        };
+
+        replaceAll(result, "\\\'", "\'");
+        replaceAll(result, "\\\"", "\"");
+        replaceAll(result, "\\a", "\a");
+        replaceAll(result, "\\b", "\b");
+        replaceAll(result, "\\f", "\f");
+        replaceAll(result, "\\n", "\n");
+        replaceAll(result, "\\r", "\r");
+        replaceAll(result, "\\t", "\t");
+        replaceAll(result, "\\v", "\v");
+        replaceAll(result, "\\\\", "\\");
+
+        return result;
+    }
+
     [[nodiscard]] static auto InitializeTypeToLLVMType(llvm::LLVMContext& context) noexcept
     {
         return std::unordered_map<Type, llvm::Type*>{
@@ -26,6 +50,22 @@ namespace Caracal
         return nullptr;
     }
 
+    [[nodiscard]] static auto InitializeBuiltinFunctions() noexcept
+    {
+        return std::unordered_map<std::string_view, std::string_view>{
+            { std::string_view("print"), std::string_view("printf") },
+        };
+    }
+
+    [[nodiscard]] static std::string_view MapFunctionNameToExternFunction(std::string_view functionName) noexcept
+    {
+        static const auto builtinFunctions = InitializeBuiltinFunctions();
+        if (const auto result = builtinFunctions.find(functionName); result != builtinFunctions.end())
+            return result->second;
+
+        return functionName;
+    }
+
     LLVMCodeGenerator::LLVMCodeGenerator(const ParseTree& parseTree, llvm::Module& module)
         : m_parseTree{ parseTree }
         , m_module{ module }
@@ -37,6 +77,8 @@ namespace Caracal
 
     bool LLVMCodeGenerator::generate()
     {
+        setupPrintfFunctionDeclaration();
+
         for (const auto& statement : m_parseTree.statements())
         {
             generateNode(statement.get());
@@ -53,6 +95,12 @@ namespace Caracal
             {
                 m_currentStatement = NodeKind::FunctionDefinitionStatement;
                 generateFunctionDefinition((FunctionDefinitionStatement*)node);
+                break;
+            }
+            case NodeKind::ExpressionStatement:
+            {
+                m_currentStatement = NodeKind::ExpressionStatement;
+                generateExpressionStatement((ExpressionStatement*)node);
                 break;
             }
             case NodeKind::ReturnStatement:
@@ -79,7 +127,6 @@ namespace Caracal
         auto parametersNode = node->parametersNode().get();
         auto returnTypesNode = node->returnTypesNode().get();
 
-
         auto llvmFunction = m_module.getFunction(functionName);
         if (llvmFunction == nullptr)
         {
@@ -92,6 +139,17 @@ namespace Caracal
         generateFunctionBody(body.get(), llvmFunction);
 
         m_currentScope = oldScope; // Reset the scope after generating the function definition
+    }
+
+    void LLVMCodeGenerator::generateExpressionStatement(ExpressionStatement* node) noexcept
+    {
+        if (m_currentBasicBlock == nullptr)
+        {
+            TODO("Expression statement outside of a basic block");
+        }
+        llvm::IRBuilder<> builder(m_currentBasicBlock);
+        const auto expression = node->expression().get();
+        auto llvmValue = generateExpression(expression);
     }
 
     void LLVMCodeGenerator::generateReturnStatement(ReturnStatement* node) noexcept
@@ -113,14 +171,54 @@ namespace Caracal
         }
     }
 
+    llvm::Value* LLVMCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node) noexcept
+    {
+        if (m_currentBasicBlock == nullptr)
+        {
+            TODO("Function call expression outside of a basic block");
+        }
+
+        llvm::IRBuilder<> builder(m_currentBasicBlock);
+        const auto nameExpression = node->nameExpression().get();
+        const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
+        auto argumentsNode = node->argumentsNode().get();
+
+        const auto maybeMappedFunctionName = MapFunctionNameToExternFunction(functionName);
+        auto llvmFunction = m_module.getFunction(maybeMappedFunctionName);
+        if (llvmFunction == nullptr)
+        {
+            TODO("Function not found in module during function call generation");
+        }
+
+        std::vector<llvm::Value*> llvmArguments;
+        const auto& arguments = argumentsNode->arguments();
+        for (const auto& argument : arguments)
+        {
+            auto llvmArgumentValue = generateExpression(argument.get());
+            llvmArguments.push_back(llvmArgumentValue);
+        }
+        
+        return builder.CreateCall(llvmFunction, llvmArguments);
+    }
+
     llvm::Value* LLVMCodeGenerator::generateExpression(Expression* node) noexcept
     {
         switch (node->kind())
         {
+            case NodeKind::FunctionCallExpression:
+            {
+                m_currentStatement = NodeKind::FunctionCallExpression;
+                return generateFunctionCallExpression((FunctionCallExpression*)node);
+            }
             case NodeKind::NumberLiteral:
             {
                 m_currentStatement = NodeKind::NumberLiteral;
                 return generateNumberLiteral((NumberLiteral*)node);
+            }
+            case NodeKind::StringLiteral:
+            {
+                m_currentStatement = NodeKind::StringLiteral;
+                return generateStringLiteral((StringLiteral*)node);
             }
             default:
             {
@@ -148,15 +246,23 @@ namespace Caracal
         return nullptr;
     }
 
+    llvm::Value* LLVMCodeGenerator::generateStringLiteral(StringLiteral* node) noexcept
+    {
+        llvm::IRBuilder<> builder(m_currentBasicBlock);
+        const auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
+        // remove first and last and replace escape sequences
+        const auto stringContent = ReplaceEscapeSequences(lexeme.substr(1, lexeme.size() - 2));
+        
+        return builder.CreateGlobalString(stringContent);
+    }
+
     llvm::FunctionType* LLVMCodeGenerator::generateFunctionType(ReturnTypesNode* returnTypesNode, ParametersNode* parametersNode) noexcept
     {
         auto& context = m_module.getContext();
-        
-        llvm::Type* llvmReturnType = nullptr;
-        
         const auto& returnTypes = returnTypesNode->returnTypes();
         const auto hasReturnTypes = !returnTypes.empty();
 
+        llvm::Type* llvmReturnType = nullptr;
         if (!hasReturnTypes)
         {
             llvmReturnType = llvm::Type::getVoidTy(context);
@@ -197,6 +303,20 @@ namespace Caracal
         }
 
         m_currentBasicBlock = nullptr;
+    }
+
+    void LLVMCodeGenerator::setupPrintfFunctionDeclaration() noexcept
+    {
+        auto& context = m_module.getContext();
+        auto bytePtrType = llvm::Type::getInt8Ty(context)->getPointerTo();
+
+        m_module.getOrInsertFunction("printf",
+            llvm::FunctionType::get(
+                llvm::Type::getInt32Ty(context),
+                bytePtrType,
+                true
+            )
+        );
     }
 
     bool generateLLVMModule(const ParseTree& parseTree, llvm::Module& module) noexcept

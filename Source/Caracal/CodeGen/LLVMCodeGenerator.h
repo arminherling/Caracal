@@ -7,6 +7,9 @@
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/NumberLiteral.h>
 #include <llvm/IR/Module.h>
+#include <Caracal/Syntax/StringLiteral.h>
+#include <Caracal/Syntax/FunctionCallExpression.h>
+#include <Caracal/Syntax/ExpressionStatement.h>
 
 namespace Caracal
 {
@@ -28,14 +31,19 @@ namespace Caracal
 
         void generateNode(Node* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
+        void generateExpressionStatement(ExpressionStatement* node) noexcept;
         void generateReturnStatement(ReturnStatement* node) noexcept;
 
         llvm::Value* generateExpression(Expression* node) noexcept;
+        llvm::Value* generateFunctionCallExpression(FunctionCallExpression* node) noexcept;
         llvm::Value* generateNumberLiteral(NumberLiteral* node) noexcept;
+        llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
 
         llvm::FunctionType* generateFunctionType(ReturnTypesNode* returnTypesNode, ParametersNode* parametersNode) noexcept;
         void generateFunctionBody(BlockNode* body, llvm::Function* llvmFunction) noexcept;
 
+        void setupPrintfFunctionDeclaration() noexcept;
+        
     private:
         const ParseTree& m_parseTree;
         llvm::Module& m_module;

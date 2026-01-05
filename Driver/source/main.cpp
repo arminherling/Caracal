@@ -113,6 +113,7 @@ int main(int argc, char* argv[])
 
     std::string targetError;
     auto defaultTargetTriple = llvm::sys::getDefaultTargetTriple();
+    llvm::outs() << "TargetTriple: "<<defaultTargetTriple << '\n';
     auto target = llvm::TargetRegistry::lookupTarget(defaultTargetTriple, targetError);
     auto triple = llvm::Triple(defaultTargetTriple);
     if (!target)
@@ -158,7 +159,7 @@ int main(int argc, char* argv[])
     const auto exeFileName = inputFileName + ".exe";
     const auto linkingResult = llvm::sys::ExecuteAndWait(
         lldPath,
-        { "lld-link", "-flavor", "link", "/out:" + exeFileName, objectFileName, "/subsystem:console", "/entry:main" },
+        { "lld-link", "-flavor", "link", "/out:" + exeFileName, objectFileName, "/subsystem:console", "/entry:main", "/defaultlib:msvcrt.lib", "/defaultlib:legacy_stdio_definitions.lib","/defaultlib:ucrt.lib" },
         std::nullopt,
         {},
         0,
@@ -170,11 +171,14 @@ int main(int argc, char* argv[])
     {
         llvm::errs() << "Linking failed with error code: " << linkingResult << "\n";
         llvm::errs() << "Error message: " << linkError << "\n";
+        return 0;
     }
     else
     {
-        llvm::outs() << "Executable generated: " << exeFileName << "\n";
+        llvm::outs() << "Executable generated: " << exeFileName << "\n\n";
     }
+
+    const auto exeResult = executeCommand(exeFileName);
 
     return 0;
 }
