@@ -127,6 +127,7 @@ int main(int argc, char* argv[])
     llvm::TargetOptions targetOptions;
     auto relocModel = std::optional<llvm::Reloc::Model>();
     auto targetMachine = target->createTargetMachine(defaultTargetTriple, CPU, features, targetOptions, relocModel);
+    module.setDataLayout(targetMachine->createDataLayout());
 
     const auto objectFileName = inputFileName + ".o";
     std::error_code errorCode;
