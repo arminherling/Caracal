@@ -4,33 +4,6 @@
 
 namespace Caracal
 {
-    static std::string ReplaceEscapeSequences(std::string_view input)
-    {
-        std::string result(input);
-
-        auto replaceAll = [](std::string& str, const std::string& from, const std::string& to) {
-            size_t startPos = 0;
-            while ((startPos = str.find(from, startPos)) != std::string::npos)
-            {
-                str.replace(startPos, from.length(), to);
-                startPos += to.length(); // Weiter nach dem ersetzten Teil suchen
-            }
-        };
-
-        replaceAll(result, "\\\'", "\'");
-        replaceAll(result, "\\\"", "\"");
-        replaceAll(result, "\\a", "\a");
-        replaceAll(result, "\\b", "\b");
-        replaceAll(result, "\\f", "\f");
-        replaceAll(result, "\\n", "\n");
-        replaceAll(result, "\\r", "\r");
-        replaceAll(result, "\\t", "\t");
-        replaceAll(result, "\\v", "\v");
-        replaceAll(result, "\\\\", "\\");
-
-        return result;
-    }
-
     [[nodiscard]] static auto InitializeTypeToLLVMType(llvm::LLVMContext& context) noexcept
     {
         return std::unordered_map<Type, llvm::Type*>{
@@ -249,10 +222,7 @@ namespace Caracal
     llvm::Value* LLVMCodeGenerator::generateStringLiteral(StringLiteral* node) noexcept
     {
         llvm::IRBuilder<> builder(m_currentBasicBlock);
-        const auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
-        // remove first and last and replace escape sequences
-        const auto stringContent = ReplaceEscapeSequences(lexeme.substr(1, lexeme.size() - 2));
-        
+        const auto& stringContent = node->escapedContent();
         return builder.CreateGlobalString(stringContent);
     }
 

@@ -10,6 +10,7 @@
 #include <Caracal/Syntax/MethodNameNode.h>
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/NumberLiteral.h>
+#include <Caracal/Syntax/StringLiteral.h>
 #include <Caracal/Syntax/ParametersNode.h>
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ReturnTypesNode.h>
@@ -71,6 +72,7 @@ namespace Caracal
         BlockNodeUPtr parseBlockNode(StatementScope scope);
         ParameterNodeUPtr parseParameterNode();
         NumberLiteralUPtr parseNumberLiteral();
+        StringLiteralUPtr parseStringLiteral();
 
         Token peek(i32 offset);
         Token currentToken() { return peek(0); }

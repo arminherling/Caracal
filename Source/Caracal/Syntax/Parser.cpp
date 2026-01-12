@@ -19,7 +19,6 @@
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/SkipStatement.h>
-#include <Caracal/Syntax/StringLiteral.h>
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
 #include <Caracal/Syntax/TypeFieldDeclaration.h>
 #include <Caracal/Syntax/UnaryExpression.h>
@@ -28,6 +27,33 @@
 
 namespace Caracal
 {
+    static std::string ReplaceEscapeSequences(std::string_view input)
+    {
+        std::string result(input);
+
+        auto replaceAll = [](std::string& str, const std::string& from, const std::string& to) {
+            size_t startPos = 0;
+            while ((startPos = str.find(from, startPos)) != std::string::npos)
+            {
+                str.replace(startPos, from.length(), to);
+                startPos += to.length(); // Weiter nach dem ersetzten Teil suchen
+            }
+            };
+
+        replaceAll(result, "\\\'", "\'");
+        replaceAll(result, "\\\"", "\"");
+        replaceAll(result, "\\a", "\a");
+        replaceAll(result, "\\b", "\b");
+        replaceAll(result, "\\f", "\f");
+        replaceAll(result, "\\n", "\n");
+        replaceAll(result, "\\r", "\r");
+        replaceAll(result, "\\t", "\t");
+        replaceAll(result, "\\v", "\v");
+        replaceAll(result, "\\\\", "\\");
+
+        return result;
+    }
+
     Parser::Parser(const TokenBuffer& tokens, DiagnosticsBag& diagnostics)
         : m_tokens{ tokens }
         , m_diagnostics{ diagnostics }
@@ -504,6 +530,17 @@ namespace Caracal
         return std::make_unique<NumberLiteral>(literal, uptick, std::move(explicitType));
     }
 
+    StringLiteralUPtr Parser::parseStringLiteral()
+    {
+        auto literal = advanceOnMatch(TokenKind::String);
+
+        const auto lexeme = m_tokens.getLexeme(literal);
+        const auto withoutQuotes = lexeme.substr(1, lexeme.size() - 2);
+        const auto escapedContent = ReplaceEscapeSequences(withoutQuotes);
+
+        return std::make_unique<StringLiteral>(literal, escapedContent);
+    }
+
     StatementUPtr Parser::parseIfStatement(StatementScope scope)
     {
         auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
@@ -626,8 +663,7 @@ namespace Caracal
             }
             case TokenKind::String:
             {
-                advanceCurrentIndex();
-                return std::make_unique<StringLiteral>(current);
+                return parseStringLiteral();
             }
             case TokenKind::OpenParenthesis:
             {
