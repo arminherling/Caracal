@@ -14,11 +14,10 @@ namespace Caracal
     class CARACAL_API TypeDatabase
     {
     public:
+        TypeDatabase() = default;
+
         [[nodiscard]] static Type TryFindBuiltin(std::string_view typeName) noexcept;
         [[nodiscard]] static std::string_view TryFindName(Type type) noexcept;
-
-    private:
-        TypeDatabase();
 
     //    [[nodiscard]] Type getTypeByName(QStringView typeName) const noexcept;
     //    [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;

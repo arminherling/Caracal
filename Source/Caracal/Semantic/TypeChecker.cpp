@@ -1,28 +1,17 @@
-﻿//#include "TypeChecker.h"
-//
-//#include <Semantic/BoolValue.h>
-//#include <Semantic/Discard.h>
-//#include <Semantic/I32Value.h>
-//#include <Semantic/TypedAssignmentStatement.h>
-//#include <Semantic/TypedBinaryExpression.h>
-//#include <Semantic/TypedConstant.h>
-//#include <Semantic/TypedEnumDefinitionStatement.h>
-//#include <Semantic/TypedEnumValueAccessExpression.h>
-//#include <Semantic/TypedExpressionStatement.h>
-//#include <Semantic/TypedFieldAccessExpression.h>
-//#include <Semantic/TypedFunctionCallExpression.h>
-//#include <Semantic/TypedMethodCallExpression.h>
-//#include <Semantic/TypedFunctionDefinitionStatement.h>
-//#include <Semantic/TypedIfStatement.h>
-//#include <Semantic/TypedNegationExpression.h>
-//#include <Semantic/TypedReferenceOfExpression.h>
-//#include <Semantic/TypedReturnStatement.h>
-//#include <Semantic/TypedTypeDefinitionStatement.h>
-//#include <Semantic/TypedVariable.h>
-//#include <Semantic/TypedWhileStatement.h>
-//#include <Semantic/U8Value.h>
-//#include <Caracal/Syntax/FieldDefinitionStatement.h>
-//
+﻿#include "TypeChecker.h"
+
+namespace Caracal
+{
+    bool typeCheck(
+        const ParseTree& parseTree,
+        const TypeCheckerOptions& options,
+        TypeDatabase& typeDatabase,
+        DiagnosticsBag& diagnostics) noexcept
+    {
+        return false;
+    }
+}
+
 //TypeChecker::TypeChecker(
 //    const ParseTree& parseTree,
 //    const TypeCheckerOptions& options,

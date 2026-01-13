@@ -1,39 +1,14 @@
-﻿//#pragma once
-//
-//#include <Caracal/Defines.h>
-//#include <Caracal/API.h>
-//#include <Compiler/DiagnosticsBag.h>
-//#include <Semantic/Parameter.h>
-//#include <Semantic/Scope.h>
-//#include <Semantic/Type.h>
-//#include <Semantic/TypeCheckerOptions.h>
-//#include <Semantic/TypeDatabase.h>
-//#include <Semantic/TypedExpression.h>
-//#include <Semantic/TypedFieldDefinitionNode.h>
-//#include <Semantic/TypedMethodDefinitionStatement.h>
-//#include <Semantic/TypedNode.h>
-//#include <Semantic/TypedStatement.h>
-//#include <Semantic/TypedTree.h>
-//#include <Caracal/Syntax/AssignmentStatement.h>
-//#include <Caracal/Syntax/BinaryExpression.h>
-//#include <Caracal/Syntax/BoolLiteral.h>
-//#include <Caracal/Syntax/DiscardLiteral.h>
-//#include <Caracal/Syntax/EnumDefinitionStatement.h>
-//#include <Caracal/Syntax/ExpressionStatement.h>
-//#include <Caracal/Syntax/FunctionCallExpression.h>
-//#include <Caracal/Syntax/FunctionDefinitionStatement.h>
-//#include <Caracal/Syntax/GroupingExpression.h>
-//#include <Caracal/Syntax/IfStatement.h>
-//#include <Caracal/Syntax/MemberAccessExpression.h>
-//#include <Caracal/Syntax/MethodDefinitionStatement.h>
-//#include <Caracal/Syntax/NameExpression.h>
-//#include <Caracal/Syntax/NumberLiteral.h>
-//#include <Caracal/Syntax/ParseTree.h>
-//#include <Caracal/Syntax/ReturnStatement.h>
-//#include <Caracal/Syntax/TypeDefinitionStatement.h>
-//#include <Caracal/Syntax/UnaryExpression.h>
-//#include <Caracal/Syntax/WhileStatement.h>
-//
+﻿#pragma once
+
+#include <Caracal/API.h>
+#include <Caracal/Defines.h>
+#include <Caracal/Debug/DiagnosticsBag.h>
+#include <Caracal/Syntax/ParseTree.h>
+#include <Caracal/Semantic/TypeCheckerOptions.h>
+#include <Caracal/Semantic/TypeDatabase.h>
+
+namespace Caracal
+{
 //class CARACAL_API TypeChecker
 //{
 //public:
@@ -93,10 +68,12 @@
 //    std::vector<std::unique_ptr<Scope>> m_scopes;
 //    TypeDatabase& m_typeDatabase;
 //    DiagnosticsBag& m_diagnostics;
-//};
-//
-//CARACAL_API TypedTree TypeCheck(
-//    const ParseTree& parseTree, 
-//    const TypeCheckerOptions& options, 
-//    TypeDatabase& typeDatabase, 
-//    DiagnosticsBag& diagnostics) noexcept;
+
+    // we modify the parse tree in place and add type information to the nodes
+    CARACAL_API bool typeCheck(
+        const ParseTree& parseTree, 
+        const TypeCheckerOptions& options, 
+        TypeDatabase& typeDatabase, 
+        DiagnosticsBag& diagnostics) noexcept;
+};
+

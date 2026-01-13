@@ -1,6 +1,6 @@
 ﻿#include <CaraTest.h>
 #include <Caracal/Debug/DiagnosticsBag.h>
-#include <Caracal/Debug/TypedTreePrinter.h>
+#include <Caracal/Debug/ParseTreePrinter.h>
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/TypeDatabase.h>
@@ -17,53 +17,42 @@ static void FileTests(
     const std::filesystem::path& outputFilePath, 
     const std::filesystem::path& errorFilePath)
 {
-    CaraTest::skip();
+    if (!std::filesystem::exists(inputFilePath))
+        CaraTest::fail();// ("In file missing");
+    if (!std::filesystem::exists(outputFilePath))
+        CaraTest::skip();// ("Out file missing");
 
-    //if (!QFile::exists(inputFilePath))
-    //    CaraTest::Fail();// ("In file missing");
-    //if (!QFile::exists(outputFilePath))
-    //    CaraTest::Skip();// ("Out file missing");
+    const auto input = Caracal::File::readText(inputFilePath);
+    if (!input.has_value())
+        CaraTest::fail();// ("Could not read input file");
 
-    //auto input = File::ReadAllText(inputFilePath);
-    //auto source = std::make_shared<SourceText>(input);
-    //DiagnosticsBag diagnostics;
+    const auto source = std::make_shared<Caracal::SourceText>(input.value());
+    Caracal::DiagnosticsBag diagnostics;
 
-    //auto tokens = Lex(source, diagnostics);
-    //auto parseTree = Parse(tokens, diagnostics);
+    const auto tokens = Caracal::lex(source, diagnostics);
+    auto parseTree = Caracal::parse(tokens, diagnostics);
 
-    //TypeDatabase typeDatabase;
-    //TypeCheckerOptions options{
-    //    .defaultIntegerType = Type::I32(),
-    //    .defaultEnumBaseType = Type::U8()
-    //};
+    Caracal::TypeDatabase typeDatabase;
+    Caracal::TypeCheckerOptions options{
+        .defaultIntegerType = Caracal::Type::I32(),
+        .defaultEnumBaseType = Caracal::Type::U8()
+    };
 
-    //auto startTime = std::chrono::high_resolution_clock::now();
-    //auto typedTree = TypeCheck(parseTree, options, typeDatabase, diagnostics);
-    //auto endTime = std::chrono::high_resolution_clock::now();
+    auto startTime = std::chrono::high_resolution_clock::now();
+    auto wasSuccessful = Caracal::typeCheck(parseTree, options, typeDatabase, diagnostics);
+    auto endTime = std::chrono::high_resolution_clock::now();
 
-    //std::cout << "      Type check(): " << stringify(endTime - startTime).toStdString() << std::endl;
+    std::cout << "      Type check(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
-    //TypedTreePrinter printer{ typedTree, typeDatabase };
-    //auto output = printer.PrettyPrint();
-    //auto expectedOutput = File::ReadAllText(outputFilePath);
+    if (!wasSuccessful) {
+        CaraTest::fail();// ("Type checking failed");
+    }
 
-    //CaraTest::areEqual(expectedOutput, output);
-    //if (!QFile::exists(errorFilePath))
-    //{
-    //    // TODO maybe split up errors and warnings
-    //    for (const auto& diagnostic : diagnostics.Diagnostics())
-    //    {
-    //        if (diagnostic.level == DiagnosticLevel::Error)
-    //        {
-    //            CaraTest::Fail();
-    //            break;
-    //        }
-    //    }
-    //}
-    //else
-    //{
-    //    CaraTest::Fail();// ("TODO compare errors with error file once we got some");
-    //}
+    Caracal::ParseTreePrinter printer{ parseTree };
+    const auto output = printer.prettyPrint();
+
+    CaraTest::isTrue(diagnostics.Diagnostics().empty());
+    CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
 }
 
 static std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> FileTests_Data()
