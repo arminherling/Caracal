@@ -25,6 +25,7 @@ FunctionDefinitionStatement: {
             }
             Right: {
                 UnaryExpression: {
+                    Type: undefined
                     Operation: ReferenceOf
                     Expression: {
                         NameExpression: {

@@ -80,11 +80,11 @@ namespace Caracal
             {
                 return typeCheckNumberLiteral((NumberLiteral*)expression);
             }
-            /*
             case NodeKind::UnaryExpression:
             {
                 return typeCheckUnaryExpressionExpression((UnaryExpression*)expression);
             }
+            /*
             case NodeKind::BinaryExpression:
             {
                 return typeCheckBinaryExpressionExpression((BinaryExpression*)expression);
@@ -123,6 +123,31 @@ namespace Caracal
             }
         }
         return Type::Undefined();
+    }
+
+    Type TypeChecker::typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression)
+    {
+        switch (unaryExpression->unaryOperator())
+        {
+            case UnaryOperatorKind::LogicalNegation:
+            case UnaryOperatorKind::ValueNegation:
+            {
+                auto expressionType = typeCheckExpression(unaryExpression->expression().get());
+
+                unaryExpression->setType(expressionType);
+                return expressionType;
+            }
+            case UnaryOperatorKind::ReferenceOf:
+            {
+                TODO("Handle reference of operator");
+                return Type::Undefined();
+            }
+            default:
+            {
+                TODO("Missing UnaryOperatorKind!!");
+                return Type::Undefined();
+            }
+        }
     }
 
     Type TypeChecker::typeCheckNumberLiteral(NumberLiteral* literal)
@@ -479,39 +504,6 @@ namespace Caracal
 //    }
 //
 //    return { typedStatements, returnType };
-//}
-//
-//TypedExpression* TypeChecker::typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression)
-//{
-//    switch (unaryExpression->unaryOperator())
-//    {
-//        case UnaryOperatornKind::Negation:
-//        {
-//            auto expression = unaryExpression->expression();
-//            auto typedExpression = typeCheckExpression(expression);
-//            //TODO if possible check that values are still in range after negation
-//            auto type = typedExpression->type();
-//            return new TypedNegationExpression(type, typedExpression, unaryExpression);
-//        }
-//        case UnaryOperatornKind::ReferenceOf:
-//        {
-//            auto expression = unaryExpression->expression();
-//            auto typedExpression = typeCheckExpression(expression);
-//            //TODO super ugly code, maybe we could group related types to make it easier to get a nullable/ref type variation
-//            auto type = typedExpression->type();
-//            auto& typeDefinition = m_typeDatabase.getTypeDefinition(type);
-//            auto refTypeName = QString("ref %1").arg(typeDefinition.name());
-//            auto refType = m_typeDatabase.getTypeByName(refTypeName);
-//
-//            return new TypedReferenceOfExpression(refType, typedExpression, unaryExpression);
-//        }
-//        default:
-//        {
-//            TODO("Missing UnaryOperatornKind!!");
-//        }
-//    }
-//
-//    return nullptr;
 //}
 //
 //TypedExpression* TypeChecker::typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression)

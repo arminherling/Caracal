@@ -1,15 +1,15 @@
 ConstantDeclaration: {
-    Type: undefined
+    Type: i32
     Left: {
         Discard: _
     }
     Right: {
         UnaryExpression: {
-            Type: undefined
+            Type: i32
             Operation: ValueNegation
             Expression: {
                 UnaryExpression: {
-                    Type: undefined
+                    Type: i32
                     Operation: ValueNegation
                     Expression: {
                         NumberLiteral: 1

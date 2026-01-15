@@ -7,6 +7,7 @@ ConstantDeclaration: {
         BinaryExpression: {
             Left: {
                 UnaryExpression: {
+                    Type: undefined
                     Operation: ValueNegation
                     Expression: {
                         NumberLiteral: 1
@@ -16,6 +17,7 @@ ConstantDeclaration: {
             Operation: Subtraction
             Right: {
                 UnaryExpression: {
+                    Type: undefined
                     Operation: ValueNegation
                     Expression: {
                         NumberLiteral: 1

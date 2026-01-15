@@ -10,8 +10,8 @@ namespace Caracal
                 return UnaryOperatorKind::LogicalNegation;
             case TokenKind::Minus:
                 return UnaryOperatorKind::ValueNegation;
-                case TokenKind::RefKeyword:
-                    return UnaryOperatorKind::ReferenceOf;
+            case TokenKind::RefKeyword:
+                return UnaryOperatorKind::ReferenceOf;
             default:
                 return UnaryOperatorKind::Invalid;
         }

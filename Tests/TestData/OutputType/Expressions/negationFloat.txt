@@ -1,14 +1,14 @@
 ConstantDeclaration: {
-    Type: undefined
+    Type: f32
     Left: {
         Discard: _
     }
     Right: {
         UnaryExpression: {
-            Type: undefined
+            Type: f32
             Operation: ValueNegation
             Expression: {
-                NumberLiteral: 1
+                NumberLiteral: 1.2
             }
         }
     }

@@ -42,6 +42,7 @@ FunctionDefinitionStatement: {
                 }
                 ArgumentsNode(1): {
                     UnaryExpression: {
+                        Type: undefined
                         Operation: ReferenceOf
                         Expression: {
                             NameExpression: {

@@ -8,6 +8,7 @@
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
 #include <Caracal/Syntax/NumberLiteral.h>
+#include <Caracal/Syntax/UnaryExpression.h>
 
 namespace Caracal
 {
@@ -27,6 +28,7 @@ namespace Caracal
             void typeCheckConstantDeclaration(ConstantDeclaration* statement);
             
             [[nodiscard]] Type typeCheckExpression(Expression* expression);
+            [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
             [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
             [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
             
@@ -46,7 +48,6 @@ namespace Caracal
         //    [[nodiscard]] QList<TypedMethodDefinitionStatement*> typeCheckTypeMethodDefinitions(Type newRefType, Type newType, BlockNode* body);
         //    [[nodiscard]] QList<Parameter*> typeCheckFunctionParameters(ParametersNode* parametersNode);
         //    [[nodiscard]] std::tuple<QList<TypedStatement*>, Type> typeCheckFunctionBodyNode(BlockNode* body);
-        //    [[nodiscard]] TypedExpression* typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
         //    [[nodiscard]] TypedExpression* typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression);
         //    [[nodiscard]] TypedExpression* typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression); 
         //    [[nodiscard]] QList<TypedExpression*> typeCheckFunctionCallArguments(ArgumentsNode* argumentsNode);

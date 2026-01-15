@@ -529,6 +529,8 @@ namespace Caracal
         m_builder.appendIndented(stringify(unaryExpression->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
+        writeIndentedTypeName(unaryExpression->type());
+
         m_builder.appendIndented("Operation: ").appendLine(stringify(unaryExpression->unaryOperator()));
         m_builder.appendIndentedLine("Expression: {");
 
