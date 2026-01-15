@@ -16,9 +16,11 @@ FunctionDefinitionStatement: {
             }
             Right: {
                 BinaryExpression: {
+                    Type: undefined
                     Left: {
                         GroupingExpression: {
                             BinaryExpression: {
+                                Type: undefined
                                 Left: {
                                     NumberLiteral: 1
                                 }
@@ -33,6 +35,7 @@ FunctionDefinitionStatement: {
                     Right: {
                         GroupingExpression: {
                             BinaryExpression: {
+                                Type: undefined
                                 Left: {
                                     NumberLiteral: 1
                                 }

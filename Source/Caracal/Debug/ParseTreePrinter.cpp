@@ -550,6 +550,8 @@ namespace Caracal
         m_builder.appendIndented(stringify(binaryExpression->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
+        writeIndentedTypeName(binaryExpression->type());
+
         m_builder.appendIndentedLine("Left: {");
         m_builder.pushIndentation();
 

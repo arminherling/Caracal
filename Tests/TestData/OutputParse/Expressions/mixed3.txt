@@ -5,9 +5,11 @@ ConstantDeclaration: {
     }
     Right: {
         BinaryExpression: {
+            Type: undefined
             Left: {
                 GroupingExpression: {
                     BinaryExpression: {
+                        Type: undefined
                         Left: {
                             NumberLiteral: 2
                         }

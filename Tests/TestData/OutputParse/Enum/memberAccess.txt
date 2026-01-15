@@ -24,6 +24,7 @@ ConstantDeclaration: {
     }
     Right: {
         BinaryExpression: {
+            Type: undefined
             Left: {
                 NameExpression: {
                     Name: Values

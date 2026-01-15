@@ -31,6 +31,7 @@ FunctionDefinitionStatement: {
                 }
                 ArgumentsNode(1): {
                     BinaryExpression: {
+                        Type: undefined
                         Left: {
                             NumberLiteral: 5
                         }

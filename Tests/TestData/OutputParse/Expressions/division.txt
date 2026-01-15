@@ -5,6 +5,7 @@ ConstantDeclaration: {
     }
     Right: {
         BinaryExpression: {
+            Type: undefined
             Left: {
                 NumberLiteral: 1
             }

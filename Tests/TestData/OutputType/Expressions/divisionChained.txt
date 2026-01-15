@@ -1,26 +1,26 @@
 ConstantDeclaration: {
-    Type: undefined
+    Type: i32
     Left: {
         Discard: _
     }
     Right: {
         BinaryExpression: {
-            Type: undefined
+            Type: i32
             Left: {
-                NumberLiteral: 1
-            }
-            Operation: Subtraction
-            Right: {
                 BinaryExpression: {
-                    Type: undefined
+                    Type: i32
                     Left: {
-                        NumberLiteral: 2
+                        NumberLiteral: 1
                     }
-                    Operation: Multiplication
+                    Operation: Division
                     Right: {
                         NumberLiteral: 2
                     }
                 }
+            }
+            Operation: Division
+            Right: {
+                NumberLiteral: 3
             }
         }
     }

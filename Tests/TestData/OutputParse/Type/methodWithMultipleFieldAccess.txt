@@ -56,6 +56,7 @@ TypeDefinitionStatement: {
             BlockNode(1): {
                 ReturnStatement: {
                     BinaryExpression: {
+                        Type: undefined
                         Left: {
                             MemberAccessExpression: {
                                 FunctionCallExpression: {

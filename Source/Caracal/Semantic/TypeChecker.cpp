@@ -84,11 +84,11 @@ namespace Caracal
             {
                 return typeCheckUnaryExpressionExpression((UnaryExpression*)expression);
             }
-            /*
             case NodeKind::BinaryExpression:
             {
                 return typeCheckBinaryExpressionExpression((BinaryExpression*)expression);
             }
+            /*
             case NodeKind::FunctionCallExpression:
             {
                 return typeCheckFunctionCallExpression((FunctionCallExpression*)expression);
@@ -148,6 +148,85 @@ namespace Caracal
                 return Type::Undefined();
             }
         }
+    }
+
+    Type TypeChecker::typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression)
+    {
+        auto leftType = typeCheckExpression(binaryExpression->leftExpression().get());
+        auto rightType = typeCheckExpression(binaryExpression->rightExpression().get());
+
+        switch (binaryExpression->binaryOperator())
+        {
+            case BinaryOperatorKind::MemberAccess:
+            {
+                //auto leftExpression = binaryExpression->leftExpression();
+                ////TODO disallow other expressions
+                //assert(leftExpression->kind() == NodeKind::NameExpression);
+                //auto scopeNameExpression = (NameExpression*)leftExpression;
+                //auto scopeName = m_parseTree.tokens().getLexeme(scopeNameExpression->identifier());
+                //auto thisType = m_typeDatabase.getTypeByName(scopeName);
+    
+                //switch (thisType.kind())
+                //{
+                //    case TypeKind::Enum:
+                //    {
+                //        auto& scopeEnumDefinition = m_typeDatabase.getEnumDefinition(thisType);
+                //        auto rightExpression = binaryExpression->rightExpression();
+                //        //TODO allow/disallow other expressions
+                //        assert(rightExpression->kind() == NodeKind::NameExpression);
+                //        auto fieldNameExpression = (NameExpression*)rightExpression;
+                //        auto fieldName = m_parseTree.tokens().getLexeme(fieldNameExpression->identifier());
+                //        auto enumField = scopeEnumDefinition.getFieldByName(fieldName);
+                //        return new TypedEnumValueAccessExpression(thisType, enumField, binaryExpression);
+                //    }
+                //}
+
+                TODO("Handle MemberAccess");
+                return Type::Undefined();
+            }
+            case BinaryOperatorKind::Addition:
+            case BinaryOperatorKind::Subtraction:
+            case BinaryOperatorKind::Multiplication:
+            case BinaryOperatorKind::Division:
+            {
+                // TODO we need to be able look up the resulting type for a binary expression, 
+                // for now we'll just make sure left and right have the same type and use that one
+                if (leftType != rightType)
+                {
+                    TODO("Type mismatch error diagnostics");
+                }
+
+                binaryExpression->setType(leftType);
+                return leftType;
+            }
+            case BinaryOperatorKind::Equal:
+            case BinaryOperatorKind::NotEqual:
+            case BinaryOperatorKind::LessThan:
+            case BinaryOperatorKind::LessOrEqual:
+            case BinaryOperatorKind::GreaterThan:
+            case BinaryOperatorKind::GreaterOrEqual:
+            case BinaryOperatorKind::LogicalAnd:
+            case BinaryOperatorKind::LogicalOr:
+            {
+                // TODO we need to be able look up the resulting type for a binary expression,
+                // for now we'll just make sure left and right have the same type and use that one
+                if (leftType != rightType)
+                {
+                    TODO("Type mismatch error diagnostics");
+                }
+
+                auto resultType = Type::Bool();
+                binaryExpression->setType(resultType);
+                return resultType;
+            }
+            default:
+            {
+                TODO("Missing BinaryOperatornKind!!");
+                return Type::Undefined();
+            }
+        }
+    
+        return Type::Undefined();
     }
 
     Type TypeChecker::typeCheckNumberLiteral(NumberLiteral* literal)
@@ -504,70 +583,6 @@ namespace Caracal
 //    }
 //
 //    return { typedStatements, returnType };
-//}
-//
-//TypedExpression* TypeChecker::typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression)
-//{
-//    switch (binaryExpression->binaryOperator())
-//    {
-//        case BinaryOperatornKind::ScopeAccess:
-//        {
-//            auto leftExpression = binaryExpression->leftExpression();
-//            //TODO disallow other expressions
-//            assert(leftExpression->kind() == NodeKind::NameExpression);
-//            auto scopeNameExpression = (NameExpression*)leftExpression;
-//            auto scopeName = m_parseTree.tokens().getLexeme(scopeNameExpression->identifier());
-//            auto thisType = m_typeDatabase.getTypeByName(scopeName);
-//
-//            switch (thisType.kind())
-//            {
-//                case TypeKind::Enum:
-//                {
-//                    auto& scopeEnumDefinition = m_typeDatabase.getEnumDefinition(thisType);
-//                    auto rightExpression = binaryExpression->rightExpression();
-//                    //TODO allow/disallow other expressions
-//                    assert(rightExpression->kind() == NodeKind::NameExpression);
-//                    auto fieldNameExpression = (NameExpression*)rightExpression;
-//                    auto fieldName = m_parseTree.tokens().getLexeme(fieldNameExpression->identifier());
-//                    auto enumField = scopeEnumDefinition.getFieldByName(fieldName);
-//                    return new TypedEnumValueAccessExpression(thisType, enumField, binaryExpression);
-//                }
-//            }
-//        }
-//        case BinaryOperatornKind::Addition:
-//        case BinaryOperatornKind::Subtraction:
-//        case BinaryOperatornKind::Multiplication:
-//        case BinaryOperatornKind::Division:
-//        {
-//            auto typedLeftExpression = typeCheckExpression(binaryExpression->leftExpression());
-//            auto typedRightExpression = typeCheckExpression(binaryExpression->rightExpression());
-//
-//            // TODO we need to be able look up the resulting type for a binary expression, 
-//            // for now we'll just make sure left and right have the same type and use that one
-//            assert(typedLeftExpression->type() == typedRightExpression->type());
-//            auto type = typedLeftExpression->type();
-//
-//            switch (binaryExpression->binaryOperator())
-//            {
-//                case BinaryOperatornKind::Addition:
-//                    return new TypedAdditionExpression(type, typedLeftExpression, typedRightExpression, binaryExpression);
-//                case BinaryOperatornKind::Subtraction:
-//                    return new TypedSubtractionExpression(type, typedLeftExpression, typedRightExpression, binaryExpression);
-//                case BinaryOperatornKind::Multiplication:
-//                    return new TypedMultiplicationExpression(type, typedLeftExpression, typedRightExpression, binaryExpression);
-//                case BinaryOperatornKind::Division:
-//                    return new TypedDivisionExpression(type, typedLeftExpression, typedRightExpression, binaryExpression);
-//                default:
-//                    TODO("Missing TypedBinaryExpression!!");
-//            }
-//        }
-//        default:
-//        {
-//            TODO("Missing BinaryOperatornKind!!");
-//        }
-//    }
-//
-//    return nullptr;
 //}
 //
 //TypedExpression* TypeChecker::typeCheckNameExpression(NameExpression* expression)

@@ -16,6 +16,7 @@ FunctionDefinitionStatement: {
             }
             Right: {
                 BinaryExpression: {
+                    Type: undefined
                     Left: {
                         BoolLiteral: false
                     }

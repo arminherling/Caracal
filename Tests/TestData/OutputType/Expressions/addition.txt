@@ -1,17 +1,17 @@
 ConstantDeclaration: {
-    Type: undefined
+    Type: i32
     Left: {
         Discard: _
     }
     Right: {
         BinaryExpression: {
-            Type: undefined
+            Type: i32
             Left: {
-                NumberLiteral: 100
+                NumberLiteral: 1
             }
             Operation: Addition
             Right: {
-                NumberLiteral: 100
+                NumberLiteral: 2
             }
         }
     }

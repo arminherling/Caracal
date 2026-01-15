@@ -6,6 +6,7 @@ ConstantDeclaration: {
     Right: {
         GroupingExpression: {
             BinaryExpression: {
+                Type: undefined
                 Left: {
                     NumberLiteral: 1
                 }

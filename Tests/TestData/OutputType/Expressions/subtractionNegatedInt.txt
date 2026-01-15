@@ -1,14 +1,14 @@
 ConstantDeclaration: {
-    Type: undefined
+    Type: i32
     Left: {
         Discard: _
     }
     Right: {
         BinaryExpression: {
-            Type: undefined
+            Type: i32
             Left: {
                 UnaryExpression: {
-                    Type: undefined
+                    Type: i32
                     Operation: ValueNegation
                     Expression: {
                         NumberLiteral: 1
@@ -18,7 +18,7 @@ ConstantDeclaration: {
             Operation: Subtraction
             Right: {
                 UnaryExpression: {
-                    Type: undefined
+                    Type: i32
                     Operation: ValueNegation
                     Expression: {
                         NumberLiteral: 1

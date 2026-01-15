@@ -5,6 +5,7 @@ ConstantDeclaration: {
     }
     Right: {
         BinaryExpression: {
+            Type: undefined
             Left: {
                 NumberLiteral: 4
             }
@@ -12,6 +13,7 @@ ConstantDeclaration: {
             Right: {
                 GroupingExpression: {
                     BinaryExpression: {
+                        Type: undefined
                         Left: {
                             NumberLiteral: 2
                         }

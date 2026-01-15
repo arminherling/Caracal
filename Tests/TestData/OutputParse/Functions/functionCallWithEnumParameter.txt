@@ -48,6 +48,7 @@ FunctionDefinitionStatement: {
                 }
                 ArgumentsNode(1): {
                     BinaryExpression: {
+                        Type: undefined
                         Left: {
                             NameExpression: {
                                 Name: Values

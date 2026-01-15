@@ -24,6 +24,7 @@ FunctionDefinitionStatement: {
     BlockNode(1): {
         ReturnStatement: {
             BinaryExpression: {
+                Type: undefined
                 Left: {
                     NameExpression: {
                         Name: a

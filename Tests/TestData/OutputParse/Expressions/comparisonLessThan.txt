@@ -32,6 +32,7 @@ FunctionDefinitionStatement: {
         IfStatement: {
             Condition: {
                 BinaryExpression: {
+                    Type: undefined
                     Left: {
                         NameExpression: {
                             Name: x
