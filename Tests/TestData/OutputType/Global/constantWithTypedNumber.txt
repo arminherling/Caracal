@@ -1,11 +1,14 @@
 ConstantDeclaration: {
-    Type: undefined
+    Type: i32
     Left: {
         NameExpression: {
             Name: a
         }
     }
     Right: {
-        NumberLiteral: 100
+        NumberLiteral: 0
+        TypeNameNode: {
+            Type: i32
+        }
     }
 }

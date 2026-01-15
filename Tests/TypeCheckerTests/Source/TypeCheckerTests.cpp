@@ -35,6 +35,7 @@ static void FileTests(
     Caracal::TypeDatabase typeDatabase;
     Caracal::TypeCheckerOptions options{
         .defaultIntegerType = Caracal::Type::I32(),
+        .defaultFloatingType = Caracal::Type::F32(),
         .defaultEnumBaseType = Caracal::Type::U8()
     };
 

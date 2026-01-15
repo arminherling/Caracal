@@ -1,144 +1,174 @@
 ﻿#include "TypeChecker.h"
+#include "TypeChecker.h"
 
 namespace Caracal
 {
     bool typeCheck(
-        const ParseTree& parseTree,
+        ParseTree& parseTree,
         const TypeCheckerOptions& options,
         TypeDatabase& typeDatabase,
         DiagnosticsBag& diagnostics) noexcept
     {
-        return false;
+        TypeChecker typeChecker{ parseTree, options, typeDatabase, diagnostics };
+        return typeChecker.typeCheck();
     }
+
+    TypeChecker::TypeChecker(
+        ParseTree& parseTree,
+        const TypeCheckerOptions& options,
+        TypeDatabase& typeDatabase,
+        DiagnosticsBag& diagnostics)
+        : m_parseTree{ parseTree }
+        , m_options{ options }
+        , m_typeDatabase{ typeDatabase }
+        , m_diagnostics{ diagnostics }
+    {
+        //m_scopes.emplace_back(std::make_unique<Scope>(nullptr, ScopeKind::Global));
+    }
+
+    bool TypeChecker::typeCheck()
+    {
+        for (const auto& globalStatement : m_parseTree.statements())
+        {
+            typeCheckStatement(globalStatement.get());
+        }
+        return true;
+    }
+
+    void TypeChecker::typeCheckStatement(Statement* statement)
+    {
+        switch (statement->kind())
+        {
+            case NodeKind::ConstantDeclaration:
+            {
+                typeCheckConstantDeclaration((ConstantDeclaration*)statement);
+                break;
+            }
+            default:
+            {
+                TODO("Missing Statement!!");
+            }
+        }
+    }
+
+    void TypeChecker::typeCheckConstantDeclaration(ConstantDeclaration* statement)
+    {
+        auto rightType = typeCheckExpression(statement->rightExpression().get());
+
+        if (statement->explicitType().has_value())
+        {
+            auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get());
+            if(rightType != explicitType)
+            {
+                TODO("Type mismatch error diagnostics");
+            }
+        }
+
+        statement->setType(rightType);
+    }
+
+    Type TypeChecker::typeCheckExpression(Expression* expression)
+    {
+        switch (expression->kind())
+        {
+            case NodeKind::StringLiteral:
+            case NodeKind::BoolLiteral:
+            {
+                return expression->type();
+            }
+            case NodeKind::NumberLiteral:
+            {
+                return typeCheckNumberLiteral((NumberLiteral*)expression);
+            }
+            /*
+            case NodeKind::UnaryExpression:
+            {
+                return typeCheckUnaryExpressionExpression((UnaryExpression*)expression);
+            }
+            case NodeKind::BinaryExpression:
+            {
+                return typeCheckBinaryExpressionExpression((BinaryExpression*)expression);
+            }
+            case NodeKind::FunctionCallExpression:
+            {
+                return typeCheckFunctionCallExpression((FunctionCallExpression*)expression);
+            }
+            case NodeKind::NameExpression:
+            {
+                return typeCheckNameExpression((NameExpression*)expression);
+            }
+            case NodeKind::GroupingExpression:
+            {
+                return typeCheckGroupingExpression((GroupingExpression*)expression);
+            }
+            case NodeKind::MemberAccessExpression:
+            {
+                return typeCheckMemberAccessExpression((MemberAccessExpression*)expression);
+            }
+            case NodeKind::DiscardLiteral:
+            {
+                return typeCheckDiscardLiteral((DiscardLiteral*)expression);
+            }
+            case NodeKind::BoolLiteral:
+            {
+                return typeCheckBoolLiteral((BoolLiteral*)expression);
+            }
+            case NodeKind::NumberLiteral:
+            {
+                return typeCheckNumberLiteral((NumberLiteral*)expression);
+            }*/
+            default:
+            {
+                TODO("Missing Expression!!");
+            }
+        }
+        return Type::Undefined();
+    }
+
+    Type TypeChecker::typeCheckNumberLiteral(NumberLiteral* literal)
+    {
+        auto numberType = Type::Undefined();
+        if(literal->explicitType().has_value())
+        {
+            numberType = typeCheckTypeNameNode(literal->explicitType().value().get());
+        }
+        else
+        {
+            const auto& literalToken = literal->literalToken();
+            const auto lexeme = m_parseTree.tokens().getLexeme(literalToken);
+            
+            if (lexeme.find('.') != std::string_view::npos)
+            {
+                numberType = m_options.defaultFloatingType;
+            }
+            else
+            {
+                numberType = m_options.defaultIntegerType;
+            }
+
+            // TODO check if the value fits into the type
+            // TODO if it doesnt fit, then we need to print diagnostics 
+        }
+        
+        literal->setType(numberType);
+        return numberType;
+    }
+
+    Type TypeChecker::typeCheckTypeNameNode(TypeNameNode* typeNameNode)
+    {
+        const auto& nameExpression = typeNameNode->name();
+        const auto& nameToken = nameExpression->nameToken();
+        const auto lexeme = m_parseTree.tokens().getLexeme(nameToken);
+     
+        auto type = TypeDatabase::TryFindBuiltin(lexeme);
+        
+        // TODO ref and nullable handling
+        return type;
+    }
+    
 }
 
-//TypeChecker::TypeChecker(
-//    const ParseTree& parseTree,
-//    const TypeCheckerOptions& options,
-//    TypeDatabase& typeDatabase,
-//    DiagnosticsBag& diagnostics)
-//    : m_parseTree{ parseTree }
-//    , m_options{ options }
-//    , m_typeDatabase{ typeDatabase }
-//    , m_diagnostics{ diagnostics }
-//{
-//    m_scopes.emplace_back(std::make_unique<Scope>(nullptr, ScopeKind::Global));
-//}
-//
-//TypedTree TypeChecker::typeCheck()
-//{
-//    QList<TypedStatement*> globalStatements;
-//
-//    for (const auto& globalStatement : m_parseTree.globalStatements())
-//    {
-//        globalStatements.append(typeCheckStatement(globalStatement));
-//    }
-//
-//    return TypedTree(m_parseTree.tokens(), globalStatements);
-//}
-//
-//TypedTree TypeCheck(
-//    const ParseTree& parseTree,
-//    const TypeCheckerOptions& options,
-//    TypeDatabase& typeDatabase,
-//    DiagnosticsBag& diagnostics) noexcept
-//{
-//    TypeChecker typeChecker{ parseTree, options, typeDatabase, diagnostics };
-//    return typeChecker.typeCheck();
-//}
-//
-//TypedStatement* TypeChecker::typeCheckStatement(Statement* statement)
-//{
-//    switch (statement->kind())
-//    {
-//        case NodeKind::AssignmentStatement:
-//        {
-//            return typeCheckAssignmentStatement((AssignmentStatement*)statement);
-//        }
-//        case NodeKind::ExpressionStatement:
-//        {
-//            return typeCheckExpressionStatement((ExpressionStatement*)statement);
-//        }
-//        case NodeKind::EnumDefinitionStatement:
-//        {
-//            return typeCheckEnumDefinitionStatement((EnumDefinitionStatement*)statement);
-//        }
-//        case NodeKind::TypeDefinitionStatement:
-//        {
-//            return typeCheckTypeDefinitionStatement((TypeDefinitionStatement*)statement);
-//        }
-//        case NodeKind::FunctionDefinitionStatement:
-//        {
-//            return typeCheckFunctionDefinitionStatement((FunctionDefinitionStatement*)statement);
-//        }
-//        case NodeKind::IfStatement:
-//        {
-//            return typeCheckIfStatement((IfStatement*)statement);
-//        }
-//        case NodeKind::WhileStatement:
-//        {
-//            return typeCheckWhileStatement((WhileStatement*)statement);
-//        }
-//        case NodeKind::ReturnStatement:
-//        {
-//            return typeCheckReturnStatement((ReturnStatement*)statement);
-//        }
-//        default:
-//        {
-//            TODO("Missing Statement!!");
-//        }
-//    }
-//    return nullptr;
-//}
-//
-//TypedExpression* TypeChecker::typeCheckExpression(Expression* expression)
-//{
-//    switch (expression->kind())
-//    {
-//        case NodeKind::UnaryExpression:
-//        {
-//            return typeCheckUnaryExpressionExpression((UnaryExpression*)expression);
-//        }
-//        case NodeKind::BinaryExpression:
-//        {
-//            return typeCheckBinaryExpressionExpression((BinaryExpression*)expression);
-//        }
-//        case NodeKind::FunctionCallExpression:
-//        {
-//            return typeCheckFunctionCallExpression((FunctionCallExpression*)expression);
-//        }
-//        case NodeKind::NameExpression:
-//        {
-//            return typeCheckNameExpression((NameExpression*)expression);
-//        }
-//        case NodeKind::GroupingExpression:
-//        {
-//            return typeCheckGroupingExpression((GroupingExpression*)expression);
-//        }
-//        case NodeKind::MemberAccessExpression:
-//        {
-//            return typeCheckMemberAccessExpression((MemberAccessExpression*)expression);
-//        }
-//        case NodeKind::DiscardLiteral:
-//        {
-//            return typeCheckDiscardLiteral((DiscardLiteral*)expression);
-//        }
-//        case NodeKind::BoolLiteral:
-//        {
-//            return typeCheckBoolLiteral((BoolLiteral*)expression);
-//        }
-//        case NodeKind::NumberLiteral:
-//        {
-//            return typeCheckNumberLiteral((NumberLiteral*)expression);
-//        }
-//        default:
-//        {
-//            TODO("Missing Expression!!");
-//        }
-//    }
-//    return nullptr;
-//}
-//
+
 //TypedStatement* TypeChecker::typeCheckAssignmentStatement(AssignmentStatement* statement)
 //{
 //    auto left = typeCheckExpression(statement->leftExpression());
@@ -617,33 +647,6 @@ namespace Caracal
 //TypedExpression* TypeChecker::typeCheckBoolLiteral(BoolLiteral* literal)
 //{
 //    return new BoolValue(literal);
-//}
-//
-//TypedExpression* TypeChecker::typeCheckNumberLiteral(NumberLiteral* literal)
-//{
-//    auto numberType = Type::Undefined();
-//    if (literal->type().has_value())
-//    {
-//        auto& typeToken = literal->type().value();
-//        auto& identifierToken = typeToken.name()->identifier();
-//        auto typeName = m_parseTree.tokens().getLexeme(identifierToken);
-//
-//        numberType = m_typeDatabase.getTypeByName(typeName);
-//    }
-//    else
-//    {
-//        numberType = m_options.defaultIntegerType;
-//    }
-//
-//    auto& numberToken = literal->token();
-//    auto valueLexeme = m_parseTree.tokens().getLexeme(numberToken);
-//
-//    auto [typedLiteral, value] = convertValueToTypedLiteral(valueLexeme, numberType, literal);
-//    if (typedLiteral != nullptr)
-//        return typedLiteral;
-//
-//    // TODO We need an error node and need to print diagnostics about unknown number type
-//    return nullptr;
 //}
 //
 //TypedExpression* TypeChecker::typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression)

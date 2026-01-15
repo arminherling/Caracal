@@ -16,6 +16,7 @@ FunctionDefinitionStatement: {
     }
 }
 ConstantDeclaration: {
+    Type: undefined
     Left: {
         Discard: _
     }

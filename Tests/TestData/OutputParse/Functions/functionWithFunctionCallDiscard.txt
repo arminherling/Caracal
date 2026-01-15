@@ -25,6 +25,7 @@ FunctionDefinitionStatement: {
     }
     BlockNode(1): {
         ConstantDeclaration: {
+            Type: undefined
             Left: {
                 Discard: _
             }

@@ -169,6 +169,8 @@ namespace Caracal
     {
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
         m_builder.pushIndentation();
+
+        writeIndentedTypeName(statement->type());
         
         m_builder.appendIndentedLine("Left: {");
         m_builder.pushIndentation();
@@ -638,6 +640,7 @@ namespace Caracal
     void ParseTreePrinter::prettyPrintNumberLiteral(NumberLiteral* number)
     {
         const auto lexeme = m_parseTree.tokens().getLexeme(number->literalToken());
+
         m_builder.appendIndented(stringify(number->kind())).append(": ").appendLine(lexeme);
         if(number->explicitType().has_value())
         {
@@ -709,10 +712,9 @@ namespace Caracal
         m_builder.appendIndented(stringify(node->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
-        const auto type = node->type();
-        const auto typeName = TypeDatabase::TryFindName(type);
+        const auto lexeme = m_parseTree.tokens().getLexeme(node->name()->nameToken());
 
-        m_builder.appendIndented("Type: ").appendLine(typeName);
+        m_builder.appendIndented("Type: ").appendLine(lexeme);
         if (node->isReference())
         {
             m_builder.appendIndentedLine("Ref: true");
@@ -741,6 +743,12 @@ namespace Caracal
         prettyPrintNode(grouping->expression().get());
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
+    }
+
+    void ParseTreePrinter::writeIndentedTypeName(Type type)
+    {
+        auto name = TypeDatabase::TryFindName(type);
+        m_builder.appendIndented("Type: ").appendLine(name);
     }
 }
 

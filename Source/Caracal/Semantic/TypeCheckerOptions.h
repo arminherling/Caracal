@@ -8,6 +8,7 @@ namespace Caracal
     struct CARACAL_API TypeCheckerOptions
     {
         Type defaultIntegerType;
+        Type defaultFloatingType;
         Type defaultEnumBaseType;
     };
 }

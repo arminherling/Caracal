@@ -1,4 +1,5 @@
 ConstantDeclaration: {
+    Type: undefined
     Left: {
         NameExpression: {
             Name: x
@@ -9,6 +10,7 @@ ConstantDeclaration: {
     }
 }
 ConstantDeclaration: {
+    Type: undefined
     Left: {
         NameExpression: {
             Name: y

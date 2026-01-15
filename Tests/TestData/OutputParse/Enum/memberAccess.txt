@@ -16,6 +16,7 @@ EnumDefinitionStatement: {
     }
 }
 ConstantDeclaration: {
+    Type: undefined
     Left: {
         NameExpression: {
             Name: s

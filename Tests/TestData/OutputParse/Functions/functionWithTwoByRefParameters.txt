@@ -22,6 +22,7 @@ FunctionDefinitionStatement: {
     }
     BlockNode(3): {
         ConstantDeclaration: {
+            Type: undefined
             Left: {
                 NameExpression: {
                     Name: temp

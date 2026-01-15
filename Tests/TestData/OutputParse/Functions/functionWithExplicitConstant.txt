@@ -8,6 +8,7 @@ FunctionDefinitionStatement: {
     }
     BlockNode(1): {
         ConstantDeclaration: {
+            Type: bool
             Left: {
                 NameExpression: {
                     Name: isMain

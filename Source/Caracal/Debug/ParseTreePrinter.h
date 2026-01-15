@@ -91,6 +91,8 @@ namespace Caracal
     //    void PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess);
     //    void PrettyPrintError(Error* error);
 
+        void writeIndentedTypeName(Type type);
+
         const ParseTree& m_parseTree;
         StringBuilder m_builder;
     };

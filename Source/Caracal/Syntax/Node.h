@@ -15,6 +15,7 @@ namespace Caracal
 
         [[nodiscard]] NodeKind kind() const noexcept { return m_kind; }
         [[nodiscard]] Type type() const noexcept { return m_type; }
+        void setType(Type type) noexcept { m_type = type; }
 
     private:
         NodeKind m_kind;

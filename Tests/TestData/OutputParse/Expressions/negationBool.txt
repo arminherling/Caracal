@@ -1,4 +1,5 @@
 ConstantDeclaration: {
+    Type: bool
     Left: {
         Discard: _
     }

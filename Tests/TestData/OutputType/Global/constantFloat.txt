@@ -1,11 +1,11 @@
 ConstantDeclaration: {
-    Type: string
+    Type: f32
     Left: {
         NameExpression: {
-            Name: world
+            Name: PI
         }
     }
     Right: {
-        StringLiteral: "Hello, World!"
+        NumberLiteral: 3.14159265358979323846264338327950288
     }
 }

@@ -760,6 +760,7 @@ namespace Caracal
         auto refToken = tryMatchKind(TokenKind::RefKeyword);
         auto nameExpression = parseNameExpression();
         auto& nameToken = nameExpression->nameToken();
+        // TODO probably move this to type checker
         auto type = TypeDatabase::TryFindBuiltin(m_tokens.getLexeme(nameToken));
 
         return std::make_unique<TypeNameNode>(refToken, std::move(nameExpression), type);

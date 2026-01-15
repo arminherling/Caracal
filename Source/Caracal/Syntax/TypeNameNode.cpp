@@ -1,4 +1,4 @@
-#include "TypeNameNode.h"
+﻿#include "TypeNameNode.h"
 
 namespace Caracal 
 {
@@ -6,7 +6,7 @@ namespace Caracal
         const std::optional<Token>& refToken,
         NameExpressionUPtr&& name,
         const Type& type)
-        : Node(NodeKind::TypeNameNode, type)
+        : Node(NodeKind::TypeNameNode, Type::Undefined())
         , m_refToken{ refToken }
         , m_nameExpression{ std::move(name) }
     {
