@@ -80,6 +80,10 @@ namespace Caracal
             {
                 return typeCheckNumberLiteral((NumberLiteral*)expression);
             }
+            case NodeKind::GroupingExpression:
+            {
+                return typeCheckGroupingExpression((GroupingExpression*)expression);
+            }
             case NodeKind::UnaryExpression:
             {
                 return typeCheckUnaryExpressionExpression((UnaryExpression*)expression);
@@ -97,10 +101,6 @@ namespace Caracal
             {
                 return typeCheckNameExpression((NameExpression*)expression);
             }
-            case NodeKind::GroupingExpression:
-            {
-                return typeCheckGroupingExpression((GroupingExpression*)expression);
-            }
             case NodeKind::MemberAccessExpression:
             {
                 return typeCheckMemberAccessExpression((MemberAccessExpression*)expression);
@@ -108,14 +108,6 @@ namespace Caracal
             case NodeKind::DiscardLiteral:
             {
                 return typeCheckDiscardLiteral((DiscardLiteral*)expression);
-            }
-            case NodeKind::BoolLiteral:
-            {
-                return typeCheckBoolLiteral((BoolLiteral*)expression);
-            }
-            case NodeKind::NumberLiteral:
-            {
-                return typeCheckNumberLiteral((NumberLiteral*)expression);
             }*/
             default:
             {
@@ -123,6 +115,14 @@ namespace Caracal
             }
         }
         return Type::Undefined();
+    }
+    
+    Type TypeChecker::typeCheckGroupingExpression(GroupingExpression* groupingExpression)
+    {
+        auto type = typeCheckExpression(groupingExpression->expression().get());
+
+        groupingExpression->setType(type);
+        return type;
     }
 
     Type TypeChecker::typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression)
@@ -132,10 +132,10 @@ namespace Caracal
             case UnaryOperatorKind::LogicalNegation:
             case UnaryOperatorKind::ValueNegation:
             {
-                auto expressionType = typeCheckExpression(unaryExpression->expression().get());
+                auto type = typeCheckExpression(unaryExpression->expression().get());
 
-                unaryExpression->setType(expressionType);
-                return expressionType;
+                unaryExpression->setType(type);
+                return type;
             }
             case UnaryOperatorKind::ReferenceOf:
             {
@@ -596,12 +596,7 @@ namespace Caracal
 //
 //    return new TypedVariable(name, expression, type);
 //}
-//
-//TypedExpression* TypeChecker::typeCheckGroupingExpression(GroupingExpression* expression)
-//{
-//    return typeCheckExpression(expression->expression());
-//}
-//
+
 //TypedExpression* TypeChecker::typeCheckMemberAccessExpression(MemberAccessExpression* expression)
 //{
 //    auto thisType = currentScope()->tryGetTypeBinding(QStringView(u"this"));

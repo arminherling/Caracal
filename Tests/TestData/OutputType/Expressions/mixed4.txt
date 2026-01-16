@@ -1,29 +1,29 @@
 ConstantDeclaration: {
-    Type: undefined
+    Type: i32
     Left: {
         Discard: _
     }
     Right: {
         BinaryExpression: {
-            Type: undefined
+            Type: i32
             Left: {
+                NumberLiteral: 4
+            }
+            Operation: Division
+            Right: {
                 GroupingExpression: {
-                    Type: undefined
+                    Type: i32
                     BinaryExpression: {
-                        Type: undefined
+                        Type: i32
                         Left: {
                             NumberLiteral: 2
                         }
-                        Operation: Addition
+                        Operation: Subtraction
                         Right: {
                             NumberLiteral: 2
                         }
                     }
                 }
-            }
-            Operation: Multiplication
-            Right: {
-                NumberLiteral: 5
             }
         }
     }

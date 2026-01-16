@@ -12,6 +12,7 @@ ConstantDeclaration: {
             Operation: Division
             Right: {
                 GroupingExpression: {
+                    Type: undefined
                     BinaryExpression: {
                         Type: undefined
                         Left: {

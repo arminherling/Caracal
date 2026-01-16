@@ -10,6 +10,7 @@ FunctionDefinitionStatement: {
         IfStatement: {
             Condition: {
                 GroupingExpression: {
+                    Type: bool
                     BoolLiteral: false
                 }
             }

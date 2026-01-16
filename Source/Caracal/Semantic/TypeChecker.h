@@ -8,6 +8,7 @@
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
 #include <Caracal/Syntax/NumberLiteral.h>
+#include <Caracal/Syntax/GroupingExpression.h>
 #include <Caracal/Syntax/UnaryExpression.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 
@@ -29,6 +30,7 @@ namespace Caracal
             void typeCheckConstantDeclaration(ConstantDeclaration* statement);
             
             [[nodiscard]] Type typeCheckExpression(Expression* expression);
+            [[nodiscard]] Type typeCheckGroupingExpression(GroupingExpression* expression);
             [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
             [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression);
             [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
@@ -53,7 +55,6 @@ namespace Caracal
         //    [[nodiscard]] TypedExpression* typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression); 
         //    [[nodiscard]] QList<TypedExpression*> typeCheckFunctionCallArguments(ArgumentsNode* argumentsNode);
         //    [[nodiscard]] TypedExpression* typeCheckNameExpression(NameExpression* expression);
-        //    [[nodiscard]] TypedExpression* typeCheckGroupingExpression(GroupingExpression* expression);
         //    [[nodiscard]] TypedExpression* typeCheckMemberAccessExpression(MemberAccessExpression* expression);
         //    [[nodiscard]] TypedExpression* typeCheckDiscardLiteral(DiscardLiteral* literal);
         //    [[nodiscard]] TypedExpression* typeCheckBoolLiteral(BoolLiteral* literal);

@@ -13,6 +13,7 @@ FunctionDefinitionStatement: {
                     Type: undefined
                     Left: {
                         GroupingExpression: {
+                            Type: undefined
                             BinaryExpression: {
                                 Type: undefined
                                 Left: {
@@ -28,6 +29,7 @@ FunctionDefinitionStatement: {
                     Operation: Equal
                     Right: {
                         GroupingExpression: {
+                            Type: undefined
                             BinaryExpression: {
                                 Type: undefined
                                 Left: {

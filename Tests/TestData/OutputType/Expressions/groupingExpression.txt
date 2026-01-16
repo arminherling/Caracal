@@ -1,13 +1,13 @@
 ConstantDeclaration: {
-    Type: undefined
+    Type: i32
     Left: {
         Discard: _
     }
     Right: {
         GroupingExpression: {
-            Type: undefined
+            Type: i32
             BinaryExpression: {
-                Type: undefined
+                Type: i32
                 Left: {
                     NumberLiteral: 1
                 }

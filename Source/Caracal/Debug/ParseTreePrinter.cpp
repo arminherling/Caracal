@@ -524,6 +524,19 @@ namespace Caracal
         m_builder.appendIndentedLine("}");
     }
 
+    void ParseTreePrinter::prettyPrintGroupingExpression(GroupingExpression* grouping)
+    {
+        m_builder.appendIndented(stringify(grouping->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
+        writeIndentedTypeName(grouping->type());
+
+        prettyPrintNode(grouping->expression().get());
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+    }
+
     void ParseTreePrinter::prettyPrintUnaryExpression(UnaryExpression* unaryExpression)
     {
         m_builder.appendIndented(stringify(unaryExpression->kind())).appendLine(": {");
@@ -736,15 +749,6 @@ namespace Caracal
         for (const auto& statement : block->statements())
             prettyPrintNode(statement.get());
 
-        m_builder.popIndentation();
-        m_builder.appendIndentedLine("}");
-    }
-
-    void ParseTreePrinter::prettyPrintGroupingExpression(GroupingExpression* grouping)
-    {
-        m_builder.appendIndented(stringify(grouping->kind())).appendLine(": {");
-        m_builder.pushIndentation();
-        prettyPrintNode(grouping->expression().get());
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
     }
