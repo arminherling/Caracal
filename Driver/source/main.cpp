@@ -7,6 +7,9 @@
 #include <Caracal/Syntax/TokenKind.h>
 #include <Caracal/Syntax/TokenBuffer.h>
 #include <Caracal/Syntax/Parser.h>
+#include <Caracal/Semantic/TypeChecker.h>
+#include <Caracal/Semantic/TypeCheckerOptions.h>
+#include <Caracal/Semantic/TypeDatabase.h>
 
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
@@ -84,7 +87,6 @@ int main(int argc, char* argv[])
 
     auto tokens = Caracal::lex(source, diagnostics);
     auto parseTree = Caracal::parse(tokens, diagnostics);
-    //auto cppCode = Caracal::generateCpp(parseTree);
 
     if (!diagnostics.Diagnostics().empty())
     {
@@ -92,10 +94,26 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    Caracal::TypeDatabase typeDatabase;
+    Caracal::TypeCheckerOptions options{
+        .defaultIntegerType = Caracal::Type::I32(),
+        .defaultFloatingType = Caracal::Type::F32(),
+        .defaultEnumBaseType = Caracal::Type::U8()
+    };
+
+    auto wasSuccessful = Caracal::typeCheck(parseTree, options, typeDatabase, diagnostics);
+    if (!wasSuccessful)
+    {
+        std::cout << "Type checking failed!";
+        return 1;
+    }
+
+    //auto cppCode = Caracal::generateCpp(parseTree);
+
     llvm::LLVMContext context;
     llvm::Module module(inputFileName, context);
 
-    auto wasSuccessful = Caracal::generateLLVMModule(parseTree, module);
+    wasSuccessful = Caracal::generateLLVMModule(parseTree, module);
     if (!wasSuccessful)
     {
         std::cout << "Module not generated!";

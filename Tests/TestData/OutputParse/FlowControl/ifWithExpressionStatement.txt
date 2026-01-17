@@ -13,10 +13,12 @@ FunctionDefinitionStatement: {
             }
             True: {
                 ReturnStatement: {
+                    Type: undefined
                 }
             }
         }
         ReturnStatement: {
+            Type: undefined
         }
     }
 }

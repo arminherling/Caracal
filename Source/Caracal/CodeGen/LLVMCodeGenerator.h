@@ -39,7 +39,7 @@ namespace Caracal
         llvm::Value* generateNumberLiteral(NumberLiteral* node) noexcept;
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
 
-        llvm::FunctionType* generateFunctionType(ReturnTypesNode* returnTypesNode, ParametersNode* parametersNode) noexcept;
+        llvm::FunctionType* generateFunctionType(Type functionReturnType, ParametersNode* parametersNode) noexcept;
         void generateFunctionBody(BlockNode* body, llvm::Function* llvmFunction) noexcept;
 
         void setupPrintfFunctionDeclaration() noexcept;

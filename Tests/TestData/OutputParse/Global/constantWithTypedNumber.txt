@@ -8,7 +8,8 @@ ConstantDeclaration: {
     Right: {
         NumberLiteral: 0
         TypeNameNode: {
-            Type: i32
+            Type: undefined
+            Name: i32
         }
     }
 }

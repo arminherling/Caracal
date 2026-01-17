@@ -6,7 +6,8 @@ TypeDefinitionStatement: {
         ParameterNode: {
             Name: value
             TypeNameNode: {
-                Type: i32
+                Type: undefined
+                Name: i32
             }
         }
     }
@@ -20,7 +21,8 @@ TypeDefinitionStatement: {
             }
             ExplicitType: {
                 TypeNameNode: {
-                    Type: i32
+                    Type: undefined
+                    Name: i32
                 }
             }
             Right: {

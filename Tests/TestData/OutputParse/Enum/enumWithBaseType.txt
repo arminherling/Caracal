@@ -3,7 +3,8 @@ EnumDefinitionStatement: {
         Name: Values
     }
     TypeNameNode: {
-        Type: i32
+        Type: undefined
+        Name: i32
     }
     FieldNodes(1): {
         EnumFieldDeclaration: {

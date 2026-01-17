@@ -6,11 +6,13 @@ FunctionDefinitionStatement: {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: f32
+            Type: undefined
+            Name: f32
         }
     }
     BlockNode(1): {
         ReturnStatement: {
+            Type: undefined
             NumberLiteral: 1.23
         }
     }

@@ -6,7 +6,8 @@ FunctionDefinitionStatement: {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: i32
+            Type: undefined
+            Name: i32
         }
     }
     BlockNode(1): {
@@ -17,6 +18,7 @@ FunctionDefinitionStatement: {
             True: {
                 BlockNode(1): {
                     ReturnStatement: {
+                        Type: undefined
                         NumberLiteral: 1
                     }
                 }
@@ -29,6 +31,7 @@ FunctionDefinitionStatement: {
                     True: {
                         BlockNode(1): {
                             ReturnStatement: {
+                                Type: undefined
                                 NumberLiteral: 2
                             }
                         }
@@ -36,6 +39,7 @@ FunctionDefinitionStatement: {
                     False: {
                         BlockNode(1): {
                             ReturnStatement: {
+                                Type: undefined
                                 NumberLiteral: 3
                             }
                         }

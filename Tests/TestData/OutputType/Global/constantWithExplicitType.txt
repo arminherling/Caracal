@@ -8,6 +8,7 @@ ConstantDeclaration: {
     ExplicitType: {
         TypeNameNode: {
             Type: bool
+            Name: bool
         }
     }
     Right: {

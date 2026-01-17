@@ -517,6 +517,8 @@ namespace Caracal
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
+        writeIndentedTypeName(statement->type());
+
         if (statement->expression().has_value())
             prettyPrintNode(statement->expression().value().get());
 
@@ -729,9 +731,10 @@ namespace Caracal
         m_builder.appendIndented(stringify(node->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
-        const auto lexeme = m_parseTree.tokens().getLexeme(node->name()->nameToken());
+        writeIndentedTypeName(node->type());
 
-        m_builder.appendIndented("Type: ").appendLine(lexeme);
+        const auto lexeme = m_parseTree.tokens().getLexeme(node->name()->nameToken());
+        m_builder.appendIndented("Name: ").appendLine(lexeme);
         if (node->isReference())
         {
             m_builder.appendIndentedLine("Ref: true");

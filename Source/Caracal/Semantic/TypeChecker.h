@@ -7,10 +7,12 @@
 #include <Caracal/Semantic/TypeDatabase.h>
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
+#include <Caracal/Syntax/FunctionDefinitionStatement.h>
 #include <Caracal/Syntax/NumberLiteral.h>
 #include <Caracal/Syntax/GroupingExpression.h>
 #include <Caracal/Syntax/UnaryExpression.h>
 #include <Caracal/Syntax/BinaryExpression.h>
+#include <Caracal/Syntax/ReturnStatement.h>
 
 namespace Caracal
 {
@@ -28,7 +30,9 @@ namespace Caracal
         private:
             void typeCheckStatement(Statement* statement);
             void typeCheckConstantDeclaration(ConstantDeclaration* statement);
-            
+            void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
+            void typeCheckReturnStatement(ReturnStatement* statement);
+
             [[nodiscard]] Type typeCheckExpression(Expression* expression);
             [[nodiscard]] Type typeCheckGroupingExpression(GroupingExpression* expression);
             [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
@@ -36,14 +40,15 @@ namespace Caracal
             [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
             [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
             
+            void typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);
+            [[nodiscard]] Type typeCheckBlockNode(BlockNode* body);
+
         //    [[nodiscard]] TypedStatement* typeCheckExpressionStatement(ExpressionStatement* statement);
         //    [[nodiscard]] TypedStatement* typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
         //    [[nodiscard]] TypedStatement* typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement);
-        //    [[nodiscard]] TypedStatement* typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
         //    [[nodiscard]] TypedMethodDefinitionStatement* typeCheckTypeMethodDefinitionStatement(Type newRefType, Type newType, MethodDefinitionStatement* statement);
         //    [[nodiscard]] TypedStatement* typeCheckIfStatement(IfStatement* statement);
         //    [[nodiscard]] TypedStatement* typeCheckWhileStatement(WhileStatement* statement);
-        //    [[nodiscard]] TypedStatement* typeCheckReturnStatement(ReturnStatement* statement);
         //    [[nodiscard]] QList<TypedFieldDefinitionNode*> typeCheckEnumFieldDefinitionNodes(
         //        Type newType, 
         //        Type baseType, 
@@ -51,7 +56,6 @@ namespace Caracal
         //    [[nodiscard]] QList<TypedFieldDefinitionNode*> typeCheckTypeFieldDefinitionNodes(Type newType, BlockNode* body);
         //    [[nodiscard]] QList<TypedMethodDefinitionStatement*> typeCheckTypeMethodDefinitions(Type newRefType, Type newType, BlockNode* body);
         //    [[nodiscard]] QList<Parameter*> typeCheckFunctionParameters(ParametersNode* parametersNode);
-        //    [[nodiscard]] std::tuple<QList<TypedStatement*>, Type> typeCheckFunctionBodyNode(BlockNode* body);
         //    [[nodiscard]] TypedExpression* typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression); 
         //    [[nodiscard]] QList<TypedExpression*> typeCheckFunctionCallArguments(ArgumentsNode* argumentsNode);
         //    [[nodiscard]] TypedExpression* typeCheckNameExpression(NameExpression* expression);

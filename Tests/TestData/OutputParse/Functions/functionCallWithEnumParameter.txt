@@ -23,7 +23,8 @@ FunctionDefinitionStatement: {
         ParameterNode: {
             Name: x
             TypeNameNode: {
-                Type: Values
+                Type: undefined
+                Name: Values
             }
         }
     }

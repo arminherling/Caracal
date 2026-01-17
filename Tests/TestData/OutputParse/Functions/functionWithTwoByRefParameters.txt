@@ -6,14 +6,16 @@ FunctionDefinitionStatement: {
         ParameterNode: {
             Name: a
             TypeNameNode: {
-                Type: i32
+                Type: undefined
+                Name: i32
                 Ref: true
             }
         }
         ParameterNode: {
             Name: b
             TypeNameNode: {
-                Type: i32
+                Type: undefined
+                Name: i32
                 Ref: true
             }
         }

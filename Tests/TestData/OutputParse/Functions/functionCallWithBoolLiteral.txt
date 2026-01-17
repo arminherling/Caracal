@@ -6,7 +6,8 @@ FunctionDefinitionStatement: {
         ParameterNode: {
             Name: x
             TypeNameNode: {
-                Type: bool
+                Type: undefined
+                Name: bool
             }
         }
     }

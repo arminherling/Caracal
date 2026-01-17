@@ -1,5 +1,4 @@
-﻿#include <Caracal/Semantic/TypeDatabase.h>
-#include <Caracal/Syntax/AssignmentStatement.h>
+﻿#include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/BreakStatement.h>
@@ -759,11 +758,8 @@ namespace Caracal
     {
         auto refToken = tryMatchKind(TokenKind::RefKeyword);
         auto nameExpression = parseNameExpression();
-        auto& nameToken = nameExpression->nameToken();
-        // TODO probably move this to type checker
-        auto type = TypeDatabase::TryFindBuiltin(m_tokens.getLexeme(nameToken));
 
-        return std::make_unique<TypeNameNode>(refToken, std::move(nameExpression), type);
+        return std::make_unique<TypeNameNode>(refToken, std::move(nameExpression));
     }
 
     MethodNameNodeUPtr Parser::parseMethodNameNode()

@@ -98,12 +98,12 @@ namespace Caracal
         const auto nameExpression = node->nameExpression().get();
         const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
         auto parametersNode = node->parametersNode().get();
-        auto returnTypesNode = node->returnTypesNode().get();
+        auto functionReturnType = node->type();
 
         auto llvmFunction = m_module.getFunction(functionName);
         if (llvmFunction == nullptr)
         {
-            auto llvmFunctionType = generateFunctionType(returnTypesNode, parametersNode);
+            auto llvmFunctionType = generateFunctionType(functionReturnType, parametersNode);
             // TODO handle linkage types
             llvmFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_module);
         }
@@ -226,11 +226,10 @@ namespace Caracal
         return builder.CreateGlobalString(stringContent);
     }
 
-    llvm::FunctionType* LLVMCodeGenerator::generateFunctionType(ReturnTypesNode* returnTypesNode, ParametersNode* parametersNode) noexcept
+    llvm::FunctionType* LLVMCodeGenerator::generateFunctionType(Type functionReturnType, ParametersNode* parametersNode) noexcept
     {
         auto& context = m_module.getContext();
-        const auto& returnTypes = returnTypesNode->returnTypes();
-        const auto hasReturnTypes = !returnTypes.empty();
+        const auto hasReturnTypes = functionReturnType != Type::Void();
 
         llvm::Type* llvmReturnType = nullptr;
         if (!hasReturnTypes)
@@ -239,13 +238,7 @@ namespace Caracal
         }
         else
         {
-            if (returnTypes.size() != 1)
-            {
-                TODO("Implement multiple return types in CppCodeGenerator::generateFunctionSignature");
-            }
-
-            const auto caraReturnType = returnTypes[0]->type();
-            llvmReturnType = GetLLVMTypeForCaraType(caraReturnType, context);
+           llvmReturnType = GetLLVMTypeForCaraType(functionReturnType, context);
         }
 
         std::vector<llvm::Type*> llvmParameterTypes;

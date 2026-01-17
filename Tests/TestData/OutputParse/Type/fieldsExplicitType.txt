@@ -12,7 +12,8 @@ TypeDefinitionStatement: {
             }
             ExplicitType: {
                 TypeNameNode: {
-                    Type: i32
+                    Type: undefined
+                    Name: i32
                 }
             }
             Right: {
@@ -28,7 +29,8 @@ TypeDefinitionStatement: {
             }
             ExplicitType: {
                 TypeNameNode: {
-                    Type: i32
+                    Type: undefined
+                    Name: i32
                 }
             }
             Right: {
@@ -44,7 +46,8 @@ TypeDefinitionStatement: {
             }
             ExplicitType: {
                 TypeNameNode: {
-                    Type: i32
+                    Type: undefined
+                    Name: i32
                 }
             }
             Right: null

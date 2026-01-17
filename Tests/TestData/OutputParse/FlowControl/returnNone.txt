@@ -8,6 +8,7 @@ FunctionDefinitionStatement: {
     }
     BlockNode(1): {
         ReturnStatement: {
+            Type: undefined
         }
     }
 }

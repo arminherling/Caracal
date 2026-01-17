@@ -6,11 +6,13 @@ FunctionDefinitionStatement: {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: bool
+            Type: undefined
+            Name: bool
         }
     }
     BlockNode(1): {
         ReturnStatement: {
+            Type: undefined
             BoolLiteral: true
         }
     }

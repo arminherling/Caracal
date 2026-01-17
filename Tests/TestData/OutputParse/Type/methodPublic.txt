@@ -12,11 +12,13 @@ TypeDefinitionStatement: {
             }
             ReturnTypesNode(1): {
                 TypeNameNode: {
-                    Type: i32
+                    Type: undefined
+                    Name: i32
                 }
             }
             BlockNode(1): {
                 ReturnStatement: {
+                    Type: undefined
                     NumberLiteral: 0
                 }
             }

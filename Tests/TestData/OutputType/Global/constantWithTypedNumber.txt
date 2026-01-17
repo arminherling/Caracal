@@ -9,6 +9,7 @@ ConstantDeclaration: {
         NumberLiteral: 0
         TypeNameNode: {
             Type: i32
+            Name: i32
         }
     }
 }

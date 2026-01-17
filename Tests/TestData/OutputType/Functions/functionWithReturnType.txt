@@ -1,19 +1,19 @@
 FunctionDefinitionStatement: {
     NameExpression: {
-        Name: func
+        Name: random
     }
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
-            Name: i32
+            Type: f32
+            Name: f32
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: undefined
-            NumberLiteral: 5
+            Type: f32
+            NumberLiteral: 1.23
         }
     }
 }

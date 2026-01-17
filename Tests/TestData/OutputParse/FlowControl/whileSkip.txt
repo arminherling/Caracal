@@ -18,6 +18,7 @@ FunctionDefinitionStatement: {
             }
         }
         ReturnStatement: {
+            Type: undefined
         }
     }
 }

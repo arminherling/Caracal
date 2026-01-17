@@ -1,5 +1,4 @@
 ﻿#include "TypeChecker.h"
-#include "TypeChecker.h"
 
 namespace Caracal
 {
@@ -44,9 +43,15 @@ namespace Caracal
                 typeCheckConstantDeclaration((ConstantDeclaration*)statement);
                 break;
             }
-            default:
+            case NodeKind::FunctionDefinitionStatement:
             {
-                TODO("Missing Statement!!");
+                typeCheckFunctionDefinitionStatement((FunctionDefinitionStatement*)statement);
+                break;
+            }
+            case NodeKind::ReturnStatement:
+            {
+                typeCheckReturnStatement((ReturnStatement*)statement);
+                break;
             }
         }
     }
@@ -65,6 +70,47 @@ namespace Caracal
         }
 
         statement->setType(rightType);
+    }
+
+    void TypeChecker::typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
+    {
+        //auto parentScope = currentScope();
+        //pushScope(ScopeKind::Function);
+    
+        //auto& nameToken = statement->name();
+        //auto functionName = m_parseTree.tokens().getLexeme(nameToken);
+        //// TODO check if function with same name and parameters exists already
+        //auto newFunctionType = m_typeDatabase.createFunction(functionName);
+        //parentScope->addFunctionBinding(functionName, newFunctionType);
+        //auto& functionDefinition = m_typeDatabase.getFunctionDefinition(newFunctionType);
+    
+        //auto parameters = typeCheckFunctionParameters(statement->parameters());
+        //functionDefinition.setParameters(parameters);
+    
+        typeCheckReturnTypesNode(statement->returnTypesNode().get());
+
+        auto returnType = typeCheckBlockNode(statement->bodyNode().get());
+        
+        // TODO check if return type matches declared return types
+        // TODO temporarily set the type until we got a function type system in place
+        statement->setType(returnType);
+
+        //functionDefinition.setReturnType(returnType);
+    
+        //popScope();
+    }
+
+    void TypeChecker::typeCheckReturnStatement(ReturnStatement* statement)
+    {
+        if(statement->expression().has_value())
+        {
+            auto type = typeCheckExpression(statement->expression().value().get());
+            statement->setType(type);
+        }
+        else
+        {
+            statement->setType(Type::Void());
+        }
     }
 
     Type TypeChecker::typeCheckExpression(Expression* expression)
@@ -267,9 +313,35 @@ namespace Caracal
         auto type = TypeDatabase::TryFindBuiltin(lexeme);
         
         // TODO ref and nullable handling
+        typeNameNode->setType(type);
         return type;
     }
     
+    void TypeChecker::typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode)
+    {
+        for(const auto& returnTypeNode : returnTypesNode->returnTypes())
+        {
+            std::ignore = typeCheckTypeNameNode(returnTypeNode.get());
+        }
+    }
+
+    Type TypeChecker::typeCheckBlockNode(BlockNode* body)
+    {
+        auto returnType = Type::Void();
+        for (const auto& statement : body->statements())
+        {
+            typeCheckStatement(statement.get());
+            if (statement->kind() == NodeKind::ReturnStatement)
+            {
+                if (returnType != Type::Void())
+                {
+                    TODO("this isnt correct when the function has multiple returns but works for now");
+                }
+                returnType = statement->type();
+            }
+        }
+        return returnType;
+    }
 }
 
 
@@ -354,29 +426,6 @@ namespace Caracal
 //    return new TypedTypeDefinitionStatement(typeName, newType, typeFields, typedMethods, statement);
 //}
 //
-//TypedStatement* TypeChecker::typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
-//{
-//    auto parentScope = currentScope();
-//    pushScope(ScopeKind::Function);
-//
-//    auto& nameToken = statement->name();
-//    auto functionName = m_parseTree.tokens().getLexeme(nameToken);
-//    // TODO check if function with same name and parameters exists already
-//    auto newFunctionType = m_typeDatabase.createFunction(functionName);
-//    parentScope->addFunctionBinding(functionName, newFunctionType);
-//    auto& functionDefinition = m_typeDatabase.getFunctionDefinition(newFunctionType);
-//
-//    auto parameters = typeCheckFunctionParameters(statement->parameters());
-//    functionDefinition.setParameters(parameters);
-//
-//    auto [typedBody, returnType] = typeCheckFunctionBodyNode(statement->body());
-//    functionDefinition.setReturnType(returnType);
-//
-//    popScope();
-//
-//    return new TypedFunctionDefinitionStatement(functionName, newFunctionType, parameters, returnType, typedBody, statement);
-//}
-//
 //TypedMethodDefinitionStatement* TypeChecker::typeCheckTypeMethodDefinitionStatement(Type newRefType, Type newType, MethodDefinitionStatement* statement)
 //{
 //    auto parentScope = currentScope();
@@ -433,19 +482,6 @@ namespace Caracal
 //
 //    return new TypedWhileStatement(typedCondition, typedBody, statement, Type::Undefined());
 //}
-//
-//TypedStatement* TypeChecker::typeCheckReturnStatement(ReturnStatement* statement)
-//{
-//    if (statement->expression().has_value())
-//    {
-//        auto typedExpression = typeCheckExpression(statement->expression().value());
-//        // TODO handle multiple return types
-//        return new TypedReturnStatement(typedExpression, statement, typedExpression->type());
-//    }
-//
-//    return new TypedReturnStatement(std::nullopt, statement, Type::Void());
-//}
-//
 //QList<TypedFieldDefinitionNode*> TypeChecker::typeCheckEnumFieldDefinitionNodes(
 //    Type newType,
 //    Type baseType,
@@ -564,25 +600,6 @@ namespace Caracal
 //        parameters.append(new Parameter(parameterName, parameterNode, parameterType));
 //    }
 //    return parameters;
-//}
-//
-//std::tuple<QList<TypedStatement*>, Type> TypeChecker::typeCheckFunctionBodyNode(BlockNode* body)
-//{
-//    QList<TypedStatement*> typedStatements;
-//    auto returnType = Type::Void();
-//    for (const auto statement : body->statements())
-//    {
-//        auto typedStatement = typeCheckStatement(statement);
-//        if (typedStatement->kind() == NodeKind::TypedReturnStatement)
-//        {
-//            assert(returnType == Type::Void());
-//            // TODO this isnt correct when the function has multiple returns but works for now
-//            returnType = typedStatement->type();
-//        }
-//        typedStatements.append(typedStatement);
-//    }
-//
-//    return { typedStatements, returnType };
 //}
 //
 //TypedExpression* TypeChecker::typeCheckNameExpression(NameExpression* expression)

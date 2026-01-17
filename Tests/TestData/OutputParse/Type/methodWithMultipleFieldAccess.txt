@@ -12,7 +12,8 @@ TypeDefinitionStatement: {
             }
             ExplicitType: {
                 TypeNameNode: {
-                    Type: i32
+                    Type: undefined
+                    Name: i32
                 }
             }
             Right: {
@@ -28,11 +29,13 @@ TypeDefinitionStatement: {
             }
             ReturnTypesNode(1): {
                 TypeNameNode: {
-                    Type: i32
+                    Type: undefined
+                    Name: i32
                 }
             }
             BlockNode(1): {
                 ReturnStatement: {
+                    Type: undefined
                     MemberAccessExpression: {
                         NameExpression: {
                             Name: one
@@ -50,11 +53,13 @@ TypeDefinitionStatement: {
             }
             ReturnTypesNode(1): {
                 TypeNameNode: {
-                    Type: i32
+                    Type: undefined
+                    Name: i32
                 }
             }
             BlockNode(1): {
                 ReturnStatement: {
+                    Type: undefined
                     BinaryExpression: {
                         Type: undefined
                         Left: {

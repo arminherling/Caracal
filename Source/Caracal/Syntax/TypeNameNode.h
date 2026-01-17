@@ -12,8 +12,7 @@ namespace Caracal
     public:
         TypeNameNode(
             const std::optional<Token>& refToken, 
-            NameExpressionUPtr&& name,
-            const Type& type);
+            NameExpressionUPtr&& name);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(TypeNameNode)
 

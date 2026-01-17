@@ -6,11 +6,13 @@ FunctionDefinitionStatement: {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: string
+            Type: undefined
+            Name: string
         }
     }
     BlockNode(1): {
         ReturnStatement: {
+            Type: undefined
             StringLiteral: "hello"
         }
     }
