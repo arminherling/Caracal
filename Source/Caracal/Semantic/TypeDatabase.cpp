@@ -117,6 +117,7 @@ namespace Caracal
     {
         return std::unordered_map<Type, std::string_view>{
             { Type::Undefined(), std::string_view("undefined") },
+            { Type::Void(), std::string_view("void") },
             { Type::Bool(), std::string_view("bool") },
             { Type::I32(), std::string_view("i32") },
             { Type::F32(), std::string_view("f32") },

@@ -1,0 +1,19 @@
+FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: func
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: string
+            Name: string
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: string
+            StringLiteral: "hello"
+        }
+    }
+}
