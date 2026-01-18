@@ -2,6 +2,7 @@ ConstantDeclaration: {
     Type: f32
     Left: {
         NameExpression: {
+            Type: f32
             Name: PI
         }
     }

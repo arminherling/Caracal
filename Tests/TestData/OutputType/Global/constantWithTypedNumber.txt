@@ -2,6 +2,7 @@ ConstantDeclaration: {
     Type: i32
     Left: {
         NameExpression: {
+            Type: i32
             Name: a
         }
     }

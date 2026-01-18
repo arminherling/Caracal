@@ -1,5 +1,6 @@
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: function
         Name: func
     }
     ParametersNode(0): {

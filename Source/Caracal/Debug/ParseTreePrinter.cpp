@@ -589,6 +589,8 @@ namespace Caracal
         m_builder.appendIndented(stringify(name->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
+        writeIndentedTypeName(name->type());
+
         const auto& identifierToken = name->nameToken();
         const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
         m_builder.appendIndented("Name: ").appendLine(identifierLexeme);

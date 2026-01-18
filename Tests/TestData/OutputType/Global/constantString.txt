@@ -2,6 +2,7 @@ ConstantDeclaration: {
     Type: string
     Left: {
         NameExpression: {
+            Type: string
             Name: world
         }
     }

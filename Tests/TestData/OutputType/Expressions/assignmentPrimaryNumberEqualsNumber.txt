@@ -1,5 +1,6 @@
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: function
         Name: func
     }
     ParametersNode(0): {
@@ -11,6 +12,7 @@ FunctionDefinitionStatement: {
             Type: bool
             Left: {
                 NameExpression: {
+                    Type: bool
                     Name: x
                 }
             }

@@ -22,8 +22,9 @@ namespace Caracal
         , m_typeDatabase{ typeDatabase }
         , m_diagnostics{ diagnostics }
         , m_currentReturnType{ Type::Void() }
+        , m_scopes{}
     {
-        //m_scopes.emplace_back(std::make_unique<Scope>(nullptr, ScopeKind::Global));
+        m_scopes.emplace_back(std::make_unique<Scope>(nullptr, ScopeKind::Global));
     }
 
     bool TypeChecker::typeCheck()
@@ -81,6 +82,24 @@ namespace Caracal
     {
         auto rightType = typeCheckExpression(statement->rightExpression().get());
 
+        auto leftExpression = statement->leftExpression().get();
+        if(leftExpression->kind() == NodeKind::NameExpression)
+        {
+            auto nameExpression = (NameExpression*)leftExpression;
+            auto nameToken = nameExpression->nameToken();
+            auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
+            auto scope = currentScope();
+            if(!scope->hasVariableBinding(nameLexeme))
+            {
+                scope->addVariableBinding(nameLexeme, rightType);
+            }
+            else
+            {
+                TODO("Add error diagnostics for duplicate constant declaration");
+            }
+            nameExpression->setType(rightType);
+        }
+
         if (statement->explicitType().has_value())
         {
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get());
@@ -97,6 +116,24 @@ namespace Caracal
     {
         auto rightType = typeCheckExpression(statement->rightExpression().get());
 
+        auto leftExpression = statement->leftExpression().get();
+        if (leftExpression->kind() == NodeKind::NameExpression)
+        {
+            auto nameExpression = (NameExpression*)leftExpression;
+            auto nameToken = nameExpression->nameToken();
+            auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
+            auto scope = currentScope();
+            if (!scope->hasVariableBinding(nameLexeme))
+            {
+                scope->addVariableBinding(nameLexeme, rightType);
+            }
+            else
+            {
+                TODO("Add error diagnostics for duplicate variable declaration");
+            }
+            nameExpression->setType(rightType);
+        }
+
         if (statement->explicitType().has_value())
         {
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get());
@@ -112,10 +149,11 @@ namespace Caracal
     void TypeChecker::typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
     {
         m_currentReturnType = Type::Void();
-        //auto parentScope = currentScope();
-        //pushScope(ScopeKind::Function);
+        auto parentScope = currentScope();
+        pushScope(ScopeKind::Function);
     
-        //auto& nameToken = statement->name();
+        auto& nameExpression = statement->nameExpression();
+        nameExpression->setType(Type::Function());
         //auto functionName = m_parseTree.tokens().getLexeme(nameToken);
         //// TODO check if function with same name and parameters exists already
         //auto newFunctionType = m_typeDatabase.createFunction(functionName);
@@ -135,7 +173,7 @@ namespace Caracal
 
         //functionDefinition.setReturnType(returnType);
     
-        //popScope();
+        popScope();
         m_currentReturnType = Type::Void();
     }
 
@@ -217,14 +255,14 @@ namespace Caracal
             {
                 return typeCheckBinaryExpressionExpression((BinaryExpression*)expression);
             }
+            case NodeKind::NameExpression:
+            {
+                return typeCheckNameExpression((NameExpression*)expression);
+            }
             /*
             case NodeKind::FunctionCallExpression:
             {
                 return typeCheckFunctionCallExpression((FunctionCallExpression*)expression);
-            }
-            case NodeKind::NameExpression:
-            {
-                return typeCheckNameExpression((NameExpression*)expression);
             }
             case NodeKind::MemberAccessExpression:
             {
@@ -354,6 +392,23 @@ namespace Caracal
         return Type::Undefined();
     }
 
+    Type TypeChecker::typeCheckNameExpression(NameExpression* expression)
+    {
+        auto& identifier = expression->nameToken();
+        auto name = m_parseTree.tokens().getLexeme(identifier);
+        auto optionalType = currentScope()->tryGetVariableBinding(name);
+        if (optionalType.has_value())
+        {
+            auto type = optionalType.value();
+            expression->setType(type);
+            return type;
+        }
+
+        TODO("Add error diagnostics for unknown name expression");
+
+        return Type::Undefined();
+    }
+
     Type TypeChecker::typeCheckNumberLiteral(NumberLiteral* literal)
     {
         auto numberType = Type::Undefined();
@@ -402,6 +457,26 @@ namespace Caracal
         {
             std::ignore = typeCheckTypeNameNode(returnTypeNode.get());
         }
+    }
+
+    void TypeChecker::pushScope(ScopeKind kind)
+    {
+        auto parent = m_scopes.back().get();
+        m_scopes.emplace_back(std::make_unique<Scope>(parent, kind));
+    }
+    
+    void TypeChecker::popScope()
+    {
+        m_scopes.pop_back();
+        if(m_scopes.size() == 0)
+        {
+            TODO("Popped too many scopes");
+        }
+    }
+    
+    Scope* TypeChecker::currentScope() const noexcept
+    {
+        return m_scopes.back().get();
     }
 }
 
@@ -636,18 +711,6 @@ namespace Caracal
 //    return parameters;
 //}
 //
-//TypedExpression* TypeChecker::typeCheckNameExpression(NameExpression* expression)
-//{
-//    auto& identifier = expression->identifier();
-//    auto name = m_parseTree.tokens().getLexeme(identifier);
-//    auto type = currentScope()->tryGetVariableBinding(name);
-//
-//    if(currentScope()->kind() == ScopeKind::Global)
-//        return new TypedConstant(name, expression, type);
-//
-//    return new TypedVariable(name, expression, type);
-//}
-
 //TypedExpression* TypeChecker::typeCheckMemberAccessExpression(MemberAccessExpression* expression)
 //{
 //    auto thisType = currentScope()->tryGetTypeBinding(QStringView(u"this"));
@@ -800,19 +863,3 @@ namespace Caracal
 //    return { nullptr, 0 };
 //}
 //
-//void TypeChecker::pushScope(ScopeKind kind)
-//{
-//    auto parent = m_scopes.back().get();
-//    m_scopes.emplace_back(std::make_unique<Scope>(parent, kind));
-//}
-//
-//void TypeChecker::popScope()
-//{
-//    m_scopes.pop_back();
-//    assert(m_scopes.size() >= 1);
-//}
-//
-//Scope* TypeChecker::currentScope() const noexcept
-//{
-//    return m_scopes.back().get();
-//}

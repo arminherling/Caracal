@@ -14,8 +14,10 @@
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
+#include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/IfStatement.h>
 #include <Caracal/Syntax/WhileStatement.h>
+#include <Caracal/Semantic/Scope.h>
 
 namespace Caracal
 {
@@ -27,6 +29,8 @@ namespace Caracal
             const TypeCheckerOptions& options,
             TypeDatabase& typeDatabase,
             DiagnosticsBag& diagnostics);
+
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(TypeChecker)
 
         bool typeCheck();
         
@@ -44,6 +48,7 @@ namespace Caracal
             [[nodiscard]] Type typeCheckGroupingExpression(GroupingExpression* expression);
             [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
             [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression);
+            [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression);
             [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
             [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
             
@@ -73,17 +78,17 @@ namespace Caracal
         //    [[nodiscard]] Type convertTypeNameToType(const TypeName& typeName);
         //    [[nodiscard]] std::tuple<TypedExpression*, i32> convertValueToTypedLiteral(QStringView literal, Type type, Node* source);
         //    [[nodiscard]] std::tuple<TypedExpression*, i32> convertValueToTypedLiteral(i32 value, Type type, Node* source);
-        //
-        //    void pushScope(ScopeKind kind);
-        //    void popScope();
-        //    [[nodiscard]] Scope* currentScope() const noexcept;
-        //
+        
+            void pushScope(ScopeKind kind);
+            void popScope();
+            [[nodiscard]] Scope* currentScope() const noexcept;
+        
             ParseTree& m_parseTree;
             TypeCheckerOptions m_options;
             TypeDatabase& m_typeDatabase;
             DiagnosticsBag& m_diagnostics;
             Type m_currentReturnType;
-            //std::vector<std::unique_ptr<Scope>> m_scopes;
+            std::vector<std::unique_ptr<Scope>> m_scopes;
     };
 
     // we modify the parse tree in place and add type information to the nodes

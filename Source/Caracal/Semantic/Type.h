@@ -23,6 +23,7 @@ namespace Caracal
         [[nodiscard]] i32 id() const noexcept { return m_id; }
         [[nodiscard]] TypeKind kind() const noexcept { return m_kind; }
 
+        [[nodiscard]] static Type Function() noexcept { return Type(-3, TypeKind::Builtin); }
         [[nodiscard]] static Type Discard() noexcept { return Type(-2, TypeKind::Builtin); }
         [[nodiscard]] static Type Undefined() noexcept { return Type(-1, TypeKind::Builtin); }
         [[nodiscard]] static Type Void() noexcept { return Type(1, TypeKind::Builtin); }

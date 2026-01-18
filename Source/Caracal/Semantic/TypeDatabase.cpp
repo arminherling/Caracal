@@ -116,6 +116,7 @@ namespace Caracal
     [[nodiscard]] static auto InitializeTypeToName() noexcept
     {
         return std::unordered_map<Type, std::string_view>{
+            { Type::Function(), std::string_view("function") },
             { Type::Undefined(), std::string_view("undefined") },
             { Type::Void(), std::string_view("void") },
             { Type::Bool(), std::string_view("bool") },
