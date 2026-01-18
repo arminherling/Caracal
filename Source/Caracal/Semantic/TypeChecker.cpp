@@ -21,6 +21,7 @@ namespace Caracal
         , m_options{ options }
         , m_typeDatabase{ typeDatabase }
         , m_diagnostics{ diagnostics }
+        , m_currentReturnType{ Type::Void() }
     {
         //m_scopes.emplace_back(std::make_unique<Scope>(nullptr, ScopeKind::Global));
     }
@@ -53,9 +54,24 @@ namespace Caracal
                 typeCheckFunctionDefinitionStatement((FunctionDefinitionStatement*)statement);
                 break;
             }
+            case NodeKind::IfStatement:
+            {
+                typeCheckIfStatement((IfStatement*)statement);
+                break;
+            }
+            case NodeKind::WhileStatement:
+            {
+                typeCheckWhileStatement((WhileStatement*)statement);
+                break;
+            }
             case NodeKind::ReturnStatement:
             {
                 typeCheckReturnStatement((ReturnStatement*)statement);
+                break;
+            }
+            case NodeKind::BlockNode:
+            {
+                typeCheckBlockNode((BlockNode*)statement);
                 break;
             }
         }
@@ -95,6 +111,7 @@ namespace Caracal
 
     void TypeChecker::typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
     {
+        m_currentReturnType = Type::Void();
         //auto parentScope = currentScope();
         //pushScope(ScopeKind::Function);
     
@@ -110,15 +127,43 @@ namespace Caracal
     
         typeCheckReturnTypesNode(statement->returnTypesNode().get());
 
-        auto returnType = typeCheckBlockNode(statement->bodyNode().get());
+        typeCheckBlockNode(statement->bodyNode().get());
         
         // TODO check if return type matches declared return types
         // TODO temporarily set the type until we got a function type system in place
-        statement->setType(returnType);
+        statement->setType(m_currentReturnType);
 
         //functionDefinition.setReturnType(returnType);
     
         //popScope();
+        m_currentReturnType = Type::Void();
+    }
+
+    void TypeChecker::typeCheckIfStatement(IfStatement* statement)
+    {
+        auto conditionType = typeCheckExpression(statement->condition().get());
+        if (conditionType != Type::Bool())
+        {
+            TODO("Add an error because only bool is allowed");
+        }
+     
+        typeCheckStatement(statement->trueStatement().get());
+    
+        if(statement->hasFalseBlock())
+        {
+            typeCheckStatement(statement->falseStatement().value().get());
+        }
+    }
+
+    void TypeChecker::typeCheckWhileStatement(WhileStatement* statement)
+    {
+        auto conditionType = typeCheckExpression(statement->condition().get());
+        if (conditionType != Type::Bool())
+        {
+            TODO("Add an error because only bool is allowed");
+        }
+
+        typeCheckStatement(statement->trueStatement().get());
     }
 
     void TypeChecker::typeCheckReturnStatement(ReturnStatement* statement)
@@ -126,11 +171,24 @@ namespace Caracal
         if(statement->expression().has_value())
         {
             auto type = typeCheckExpression(statement->expression().value().get());
+            if (m_currentReturnType != Type::Void() && m_currentReturnType != type)
+            {
+                TODO("this isnt correct when the function has multiple returns but works for now");
+            }
             statement->setType(type);
+            m_currentReturnType = type;
         }
         else
         {
             statement->setType(Type::Void());
+        }
+    }
+
+    void TypeChecker::typeCheckBlockNode(BlockNode* body)
+    {
+        for (const auto& statement : body->statements())
+        {
+            typeCheckStatement(statement.get());
         }
     }
 
@@ -345,24 +403,6 @@ namespace Caracal
             std::ignore = typeCheckTypeNameNode(returnTypeNode.get());
         }
     }
-
-    Type TypeChecker::typeCheckBlockNode(BlockNode* body)
-    {
-        auto returnType = Type::Void();
-        for (const auto& statement : body->statements())
-        {
-            typeCheckStatement(statement.get());
-            if (statement->kind() == NodeKind::ReturnStatement)
-            {
-                if (returnType != Type::Void())
-                {
-                    TODO("this isnt correct when the function has multiple returns but works for now");
-                }
-                returnType = statement->type();
-            }
-        }
-        return returnType;
-    }
 }
 
 
@@ -475,33 +515,6 @@ namespace Caracal
 //    popScope();
 //
 //    return new TypedMethodDefinitionStatement(methodName, newType, newMethodType, parameters, returnType, typedBody, statement);
-//}
-//
-//TypedStatement* TypeChecker::typeCheckIfStatement(IfStatement* statement)
-//{
-//    auto typedCondition = typeCheckExpression(statement->condition());
-//    if (typedCondition->type() != Type::Bool())
-//    {
-//        TODO("Add an error because only bool is allowed");
-//    }
-//    // TODO create a function that typechecks blocks
-//    auto [typedBody, returnType] = typeCheckFunctionBodyNode(statement->body());
-//    
-//    // TODO else block
-//    return new TypedIfStatement(typedCondition, typedBody, std::nullopt, statement, Type::Undefined());
-//}
-//
-//TypedStatement* TypeChecker::typeCheckWhileStatement(WhileStatement* statement)
-//{
-//    auto typedCondition = typeCheckExpression(statement->condition());
-//    if (typedCondition->type() != Type::Bool())
-//    {
-//        TODO("Add an error because only bool is allowed");
-//    }
-//    // TODO create a function that typechecks blocks
-//    auto [typedBody, returnType] = typeCheckFunctionBodyNode(statement->body());
-//
-//    return new TypedWhileStatement(typedCondition, typedBody, statement, Type::Undefined());
 //}
 //QList<TypedFieldDefinitionNode*> TypeChecker::typeCheckEnumFieldDefinitionNodes(
 //    Type newType,

@@ -14,6 +14,8 @@
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
+#include <Caracal/Syntax/IfStatement.h>
+#include <Caracal/Syntax/WhileStatement.h>
 
 namespace Caracal
 {
@@ -33,7 +35,10 @@ namespace Caracal
             void typeCheckConstantDeclaration(ConstantDeclaration* statement);
             void typeCheckVariableDeclaration(VariableDeclaration* statement);
             void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
+            void typeCheckIfStatement(IfStatement* statement);
+            void typeCheckWhileStatement(WhileStatement* statement);
             void typeCheckReturnStatement(ReturnStatement* statement);
+            void typeCheckBlockNode(BlockNode* body);
 
             [[nodiscard]] Type typeCheckExpression(Expression* expression);
             [[nodiscard]] Type typeCheckGroupingExpression(GroupingExpression* expression);
@@ -43,7 +48,6 @@ namespace Caracal
             [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
             
             void typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);
-            [[nodiscard]] Type typeCheckBlockNode(BlockNode* body);
 
         //    [[nodiscard]] TypedStatement* typeCheckExpressionStatement(ExpressionStatement* statement);
         //    [[nodiscard]] TypedStatement* typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
@@ -78,6 +82,7 @@ namespace Caracal
             TypeCheckerOptions m_options;
             TypeDatabase& m_typeDatabase;
             DiagnosticsBag& m_diagnostics;
+            Type m_currentReturnType;
             //std::vector<std::unique_ptr<Scope>> m_scopes;
     };
 
