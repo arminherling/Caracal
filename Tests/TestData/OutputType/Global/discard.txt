@@ -1,0 +1,18 @@
+ConstantDeclaration: {
+    Type: i32
+    Left: {
+        Discard: _
+    }
+    Right: {
+        BinaryExpression: {
+            Type: i32
+            Left: {
+                NumberLiteral: 100
+            }
+            Operation: Addition
+            Right: {
+                NumberLiteral: 100
+            }
+        }
+    }
+}

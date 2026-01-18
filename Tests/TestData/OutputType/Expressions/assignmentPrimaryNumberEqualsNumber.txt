@@ -1,0 +1,31 @@
+FunctionDefinitionStatement: {
+    NameExpression: {
+        Name: func
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        ConstantDeclaration: {
+            Type: bool
+            Left: {
+                NameExpression: {
+                    Name: x
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NumberLiteral: 1
+                    }
+                    Operation: Equal
+                    Right: {
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+    }
+}

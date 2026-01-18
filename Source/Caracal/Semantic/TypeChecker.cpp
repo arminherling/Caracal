@@ -1,4 +1,4 @@
-﻿#include "TypeChecker.h"
+﻿#include <Caracal/Semantic/TypeChecker.h>
 
 namespace Caracal
 {
@@ -43,6 +43,11 @@ namespace Caracal
                 typeCheckConstantDeclaration((ConstantDeclaration*)statement);
                 break;
             }
+            case NodeKind::VariableDeclaration:
+            {
+                typeCheckVariableDeclaration((VariableDeclaration*)statement);
+                break;
+            }
             case NodeKind::FunctionDefinitionStatement:
             {
                 typeCheckFunctionDefinitionStatement((FunctionDefinitionStatement*)statement);
@@ -64,6 +69,22 @@ namespace Caracal
         {
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get());
             if(rightType != explicitType)
+            {
+                TODO("Type mismatch error diagnostics");
+            }
+        }
+
+        statement->setType(rightType);
+    }
+
+    void TypeChecker::typeCheckVariableDeclaration(VariableDeclaration* statement)
+    {
+        auto rightType = typeCheckExpression(statement->rightExpression().get());
+
+        if (statement->explicitType().has_value())
+        {
+            auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get());
+            if (rightType != explicitType)
             {
                 TODO("Type mismatch error diagnostics");
             }

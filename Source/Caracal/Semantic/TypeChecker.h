@@ -13,6 +13,7 @@
 #include <Caracal/Syntax/UnaryExpression.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/ReturnStatement.h>
+#include <Caracal/Syntax/VariableDeclaration.h>
 
 namespace Caracal
 {
@@ -30,6 +31,7 @@ namespace Caracal
         private:
             void typeCheckStatement(Statement* statement);
             void typeCheckConstantDeclaration(ConstantDeclaration* statement);
+            void typeCheckVariableDeclaration(VariableDeclaration* statement);
             void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
             void typeCheckReturnStatement(ReturnStatement* statement);
 

@@ -79,6 +79,7 @@ namespace Caracal
         Token nextToken() { return peek(1); }
         void advanceCurrentIndex() { m_currentIndex++; }
         Token advanceOnMatch(TokenKind kind);
+        Token advanceOnMatch(TokenKind kind1, TokenKind kind2);
         std::optional<Token> tryMatchKind(TokenKind kind);
 
         TokenBuffer m_tokens;

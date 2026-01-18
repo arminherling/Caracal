@@ -8,6 +8,7 @@ FunctionDefinitionStatement: {
     }
     BlockNode(2): {
         VariableDeclaration: {
+            Type: bool
             Left: {
                 NameExpression: {
                     Name: foo

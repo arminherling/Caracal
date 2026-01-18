@@ -7,17 +7,11 @@ FunctionDefinitionStatement: {
     ReturnTypesNode(0): {
     }
     BlockNode(1): {
-        VariableDeclaration: {
+        ConstantDeclaration: {
             Type: bool
             Left: {
                 NameExpression: {
                     Name: isMain
-                }
-            }
-            ExplicitType: {
-                TypeNameNode: {
-                    Type: undefined
-                    Name: bool
                 }
             }
             Right: {

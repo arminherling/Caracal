@@ -1,4 +1,4 @@
-#include "VariableDeclaration.h"
+﻿#include "VariableDeclaration.h"
 
 namespace Caracal
 {
@@ -7,9 +7,9 @@ namespace Caracal
         const Token& colonToken,
         std::optional<TypeNameNodeUPtr>&& explicitType,
         const std::optional<Token>& equalToken,
-        std::optional<ExpressionUPtr>&& rightExpression,
+        ExpressionUPtr&& rightExpression,
         const Token& semicolonToken)
-        : Statement(NodeKind::VariableDeclaration, (rightExpression.has_value() ? rightExpression.value()->type() : Type::Undefined()))
+        : Statement(NodeKind::VariableDeclaration, rightExpression->type())
         , m_leftExpression{ std::move(leftExpression) }
         , m_colonToken{ colonToken }
         , m_explicitType{ std::move(explicitType) }

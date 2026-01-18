@@ -315,22 +315,13 @@ namespace Caracal
             explicitType = parseTypeNameNode();
         }
         
-        auto secondToken = tryMatchKind(TokenKind::Colon);
-        if(!secondToken.has_value())
-        {
-            secondToken = advanceOnMatch(TokenKind::Equal);
-        }
-
-        std::optional<ExpressionUPtr> rightExpression;
-        if (secondToken.has_value())
-        {
-            rightExpression = parseExpression(scope);
-        }
+        auto secondToken = advanceOnMatch(TokenKind::Colon, TokenKind::Equal);
+        auto rightExpression = parseExpression(scope);
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
-        if (secondToken.has_value() && secondToken.value().kind == TokenKind::Colon)
+        if (secondToken.kind == TokenKind::Colon)
         {
-            return std::make_unique<ConstantDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken.value(), std::move(rightExpression.value()), semicolon);
+            return std::make_unique<ConstantDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), semicolon);
         }
         else
         {
@@ -820,6 +811,22 @@ namespace Caracal
     {
         auto current = currentToken();
         if (current.kind == kind)
+        {
+            advanceCurrentIndex();
+            return current;
+        }
+        else
+        {
+            const auto& location = m_tokens.getSourceLocation(current);
+            m_diagnostics.AddError(DiagnosticKind::_0003_ExpectedXButGotY, location);
+            return Token::ToError(current);
+        }
+    }
+
+    Token Parser::advanceOnMatch(TokenKind kind1, TokenKind kind2)
+    {
+        auto current = currentToken();
+        if (current.kind == kind1 || current.kind == kind2)
         {
             advanceCurrentIndex();
             return current;

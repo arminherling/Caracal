@@ -207,7 +207,9 @@ namespace Caracal
     {
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
         m_builder.pushIndentation();
-        
+
+        writeIndentedTypeName(statement->type());
+
         m_builder.appendIndentedLine("Left: {");
         m_builder.pushIndentation();
 
@@ -227,21 +229,14 @@ namespace Caracal
             m_builder.appendIndentedLine("}");
         }
 
-        if(statement->rightExpression().has_value())
-        {
-            m_builder.appendIndentedLine("Right: {");
-            m_builder.pushIndentation();
+        m_builder.appendIndentedLine("Right: {");
+        m_builder.pushIndentation();
 
-            prettyPrintNode(statement->rightExpression().value().get());
+        prettyPrintNode(statement->rightExpression().get());
 
-            m_builder.popIndentation();
-            m_builder.appendIndentedLine("}");
-        }
-        else
-        {
-            m_builder.appendIndentedLine("Right: null");
-        }
-     
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
     }

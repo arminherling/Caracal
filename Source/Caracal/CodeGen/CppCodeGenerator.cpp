@@ -254,11 +254,7 @@ namespace Caracal
                 const auto isDiscard = declaration->leftExpression()->kind() == NodeKind::DiscardLiteral;
                 if (isDiscard)
                 {
-                    if (!declaration->rightExpression().has_value())
-                    {
-                        TODO("Variable declaration with discard literal and no right expression shouldnt get here");
-                    }
-                    generateLocalDiscardedExpression(declaration->rightExpression().value().get());
+                    generateLocalDiscardedExpression(declaration->rightExpression().get());
                     return;
                 }
                 else
@@ -510,22 +506,19 @@ namespace Caracal
         }
 
         // check if right expression is a ref
-        if (node->rightExpression().has_value() && node->rightExpression().value()->kind() == NodeKind::UnaryExpression)
+        if (node->rightExpression()->kind() == NodeKind::UnaryExpression)
         {
-            const auto unaryExpression = (UnaryExpression*)node->rightExpression().value().get();
+            const auto unaryExpression = (UnaryExpression*)node->rightExpression().get();
             if (unaryExpression->unaryOperator() == UnaryOperatorKind::ReferenceOf)
             {
                 m_builder.append(StringifyUnaryOperator(UnaryOperatorKind::ReferenceOf));
             }
         }
-        m_builder.append(" ");
 
+        m_builder.append(" ");
         generateNode(node->leftExpression().get());
-        if (node->rightExpression().has_value())
-        {
-            m_builder.append(" = ");
-            generateNode(node->rightExpression().value().get());
-        }
+        m_builder.append(" = ");
+        generateNode(node->rightExpression().get());
         m_builder.appendLine(";");
     }
 

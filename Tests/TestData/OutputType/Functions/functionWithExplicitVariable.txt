@@ -16,7 +16,7 @@ FunctionDefinitionStatement: {
             }
             ExplicitType: {
                 TypeNameNode: {
-                    Type: undefined
+                    Type: bool
                     Name: bool
                 }
             }
