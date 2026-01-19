@@ -50,6 +50,11 @@ namespace Caracal
                 typeCheckVariableDeclaration((VariableDeclaration*)statement);
                 break;
             }
+            case NodeKind::AssignmentStatement:
+            {
+                typeCheckAssignmentStatement((AssignmentStatement*)statement);
+                break;
+            }
             case NodeKind::FunctionDefinitionStatement:
             {
                 typeCheckFunctionDefinitionStatement((FunctionDefinitionStatement*)statement);
@@ -146,6 +151,20 @@ namespace Caracal
         statement->setType(rightType);
     }
 
+    void TypeChecker::typeCheckAssignmentStatement(AssignmentStatement* statement)
+    {
+        auto leftType = typeCheckExpression(statement->leftExpression().get());
+        auto rightType = typeCheckExpression(statement->rightExpression().get());
+
+        if(leftType == Type::Discard())
+            return;
+
+        if(leftType != rightType)
+        {
+            TODO("Add error diagnostics for type mismatch in assignment");
+        }
+    }
+    
     void TypeChecker::typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
     {
         m_currentReturnType = Type::Void();
@@ -480,32 +499,6 @@ namespace Caracal
     }
 }
 
-
-//TypedStatement* TypeChecker::typeCheckAssignmentStatement(AssignmentStatement* statement)
-//{
-//    auto left = typeCheckExpression(statement->leftExpression());
-//    auto right = typeCheckExpression(statement->rightExpression());
-//
-//    auto inferedType = inferType(right);
-//
-//    if (left->type() == Type::Undefined())
-//    {
-//        left->setType(inferedType);
-//
-//        auto globalValue = ((TypedConstant*)left);
-//        currentScope()->addVariableBinding(globalValue->name(), inferedType);
-//    }
-//
-//    auto leftType = left->type();
-//    if (leftType != Type::Discard()
-//        && leftType != inferedType)
-//    {
-//        TODO("error type mismatch!!");
-//    }
-//
-//    return new TypedAssignmentStatement(left, right, statement, inferedType);
-//}
-//
 //TypedStatement* TypeChecker::typeCheckExpressionStatement(ExpressionStatement* statement)
 //{
 //    auto expression = typeCheckExpression(statement->expression());
@@ -797,15 +790,7 @@ namespace Caracal
 //
 //    return arguments;
 //}
-//
-//Type TypeChecker::inferType(TypedNode* node)
-//{
-//    if (node == nullptr)
-//        return Type::Undefined();
-//
-//    return node->type();
-//}
-//
+
 //Type TypeChecker::convertTypeNameToType(const TypeName& typeName)
 //{
 //    auto& nameToken = typeName.name()->identifier();

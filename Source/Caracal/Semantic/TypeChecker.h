@@ -5,6 +5,7 @@
 #include <Caracal/Debug/DiagnosticsBag.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/TypeDatabase.h>
+#include <Caracal/Semantic/Scope.h>
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
@@ -17,7 +18,7 @@
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/IfStatement.h>
 #include <Caracal/Syntax/WhileStatement.h>
-#include <Caracal/Semantic/Scope.h>
+#include <Caracal/Syntax/AssignmentStatement.h>
 
 namespace Caracal
 {
@@ -38,6 +39,7 @@ namespace Caracal
             void typeCheckStatement(Statement* statement);
             void typeCheckConstantDeclaration(ConstantDeclaration* statement);
             void typeCheckVariableDeclaration(VariableDeclaration* statement);
+            void typeCheckAssignmentStatement(AssignmentStatement* statement);
             void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
             void typeCheckIfStatement(IfStatement* statement);
             void typeCheckWhileStatement(WhileStatement* statement);
