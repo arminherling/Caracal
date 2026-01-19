@@ -1,4 +1,5 @@
 FunctionDefinitionStatement: {
+    Type: () -> string
     NameExpression: {
         Type: function
         Name: func

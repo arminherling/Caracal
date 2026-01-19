@@ -43,6 +43,8 @@ TypeDefinitionStatement: {
                         Left: {
                             MemberAccessExpression: {
                                 FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
                                     NameExpression: {
                                         Type: undefined
                                         Name: one
@@ -56,6 +58,8 @@ TypeDefinitionStatement: {
                         Right: {
                             MemberAccessExpression: {
                                 FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
                                     NameExpression: {
                                         Type: undefined
                                         Name: one

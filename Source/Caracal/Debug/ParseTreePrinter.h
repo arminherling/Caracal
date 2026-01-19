@@ -40,13 +40,17 @@
 #include <Caracal/Syntax/TypeFieldDeclaration.h>
 #include <Caracal/Syntax/MemberAccessExpression.h>
 #include <Caracal/Text/StringBuilder.h>
+#include <Caracal/Semantic/TypeDatabase.h>
 
 namespace Caracal 
 {
     class CARACAL_API ParseTreePrinter
     {
     public:
-        ParseTreePrinter(const ParseTree& parseTree, i32 indentation = 4);
+        ParseTreePrinter(
+            const ParseTree& parseTree, 
+            TypeDatabase* typeDatabase, 
+            i32 indentation = 4);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(ParseTreePrinter)
 
@@ -91,9 +95,10 @@ namespace Caracal
     //    void PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess);
     //    void PrettyPrintError(Error* error);
 
-        void writeIndentedTypeName(Type type);
+        void writeIndentedTypeName(Type type, std::string_view = "Type: ");
 
         const ParseTree& m_parseTree;
+        TypeDatabase* m_typeDatabase;
         StringBuilder m_builder;
     };
 }

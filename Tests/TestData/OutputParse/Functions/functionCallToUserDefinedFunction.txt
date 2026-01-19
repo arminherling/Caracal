@@ -1,4 +1,5 @@
 FunctionDefinitionStatement: {
+    Type: undefined
     NameExpression: {
         Type: undefined
         Name: inner
@@ -11,6 +12,7 @@ FunctionDefinitionStatement: {
     }
 }
 FunctionDefinitionStatement: {
+    Type: undefined
     NameExpression: {
         Type: undefined
         Name: outer
@@ -22,6 +24,8 @@ FunctionDefinitionStatement: {
     BlockNode(1): {
         ExpressionStatement: {
             FunctionCallExpression: {
+                Type: undefined
+                Function type: undefined
                 NameExpression: {
                     Type: undefined
                     Name: inner

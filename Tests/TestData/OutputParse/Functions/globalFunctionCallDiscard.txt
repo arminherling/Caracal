@@ -1,4 +1,5 @@
 FunctionDefinitionStatement: {
+    Type: undefined
     NameExpression: {
         Type: undefined
         Name: value
@@ -25,6 +26,8 @@ ConstantDeclaration: {
     }
     Right: {
         FunctionCallExpression: {
+            Type: undefined
+            Function type: undefined
             NameExpression: {
                 Type: undefined
                 Name: value

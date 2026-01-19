@@ -5,6 +5,8 @@ ConstantDeclaration: {
     }
     Right: {
         FunctionCallExpression: {
+            Type: undefined
+            Function type: undefined
             NameExpression: {
                 Type: undefined
                 Name: print

@@ -4,6 +4,7 @@ CppBlockStatement: {
     }
 }
 FunctionDefinitionStatement: {
+    Type: undefined
     NameExpression: {
         Type: undefined
         Name: main

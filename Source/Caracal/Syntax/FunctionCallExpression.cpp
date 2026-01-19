@@ -1,4 +1,4 @@
-#include "FunctionCallExpression.h"
+﻿#include "FunctionCallExpression.h"
 
 namespace Caracal {
     FunctionCallExpression::FunctionCallExpression(
@@ -7,6 +7,7 @@ namespace Caracal {
         : Expression(NodeKind::FunctionCallExpression, Type::Undefined())
         , m_nameExpression{ std::move(nameExpression) }
         , m_argumentsNode{ std::move(argumentsNode) }
+        , m_functionType{ Type::Undefined() }
     {
     }
 }

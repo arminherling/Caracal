@@ -2,10 +2,10 @@
 
 #include <Caracal/Defines.h>
 #include <Caracal/API.h>
-//#include <Semantic/EnumDefinition.h>
 #include <Caracal/Semantic/Type.h>
-//#include <Semantic/TypeDefinition.h>
-//#include <Semantic/FunctionDefinition.h>
+//#include <Caracal/Semantic/EnumDefinition.h>
+//#include <Caracal/Semantic/TypeDefinition.h>
+#include <Caracal/Semantic/FunctionDefinition.h>
 #include <string_view>
 #include <unordered_map>
 
@@ -22,18 +22,21 @@ namespace Caracal
     //    [[nodiscard]] Type getTypeByName(QStringView typeName) const noexcept;
     //    [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;
     //    [[nodiscard]] TypeDefinition& getTypeDefinition(Type type) noexcept;
-    //    [[nodiscard]] FunctionDefinition& getFunctionDefinition(Type type) noexcept;
+        [[nodiscard]] FunctionDefinition& getFunctionDefinition(Type type) noexcept;
 
     //    [[nodiscard]] Type createEnum(QStringView name) noexcept;
     //    [[nodiscard]] Type createType(QStringView name, TypeKind kind) noexcept;
-    //    [[nodiscard]] Type createFunction(QStringView name) noexcept;
+        [[nodiscard]] FunctionDefinition& createFunction(
+            std::string_view name, 
+            const std::vector<Type>& parameters, 
+            const std::vector<Type>& returnTypes) noexcept;
 
-    //private:
+    private:
     //    std::unordered_map<QString, Type> m_names;
     //    std::unordered_map<i32, EnumDefinition> m_enumDefinitions;
     //    std::unordered_map<i32, TypeDefinition> m_typeDefinitions;
-    //    std::unordered_map<i32, FunctionDefinition> m_functionDefinitions;
-    //    i32 m_nextId;
+        std::unordered_map<i32, FunctionDefinition> m_functionDefinitions;
+        i32 m_nextId = 1000;
 
     //    void addBuiltinTypesWithVariation(Type type, const QString& name) noexcept;
     //    void addBuiltinType(Type type, const QString& name) noexcept;

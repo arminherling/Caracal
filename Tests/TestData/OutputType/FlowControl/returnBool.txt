@@ -1,4 +1,5 @@
 FunctionDefinitionStatement: {
+    Type: () -> bool
     NameExpression: {
         Type: function
         Name: func

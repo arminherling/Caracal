@@ -32,7 +32,7 @@ static void FileTests(
 
     std::cout << "      parse(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
-    Caracal::ParseTreePrinter printer{ parseTree };
+    Caracal::ParseTreePrinter printer{ parseTree, nullptr };
     const auto output = printer.prettyPrint();
 
     CaraTest::isTrue(diagnostics.Diagnostics().empty());

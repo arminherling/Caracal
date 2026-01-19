@@ -1,4 +1,5 @@
 FunctionDefinitionStatement: {
+    Type: undefined
     NameExpression: {
         Type: undefined
         Name: main
@@ -10,12 +11,16 @@ FunctionDefinitionStatement: {
     BlockNode(1): {
         ExpressionStatement: {
             FunctionCallExpression: {
+                Type: undefined
+                Function type: undefined
                 NameExpression: {
                     Type: undefined
                     Name: print
                 }
                 ArgumentsNode(1): {
                     FunctionCallExpression: {
+                        Type: undefined
+                        Function type: undefined
                         NameExpression: {
                             Type: undefined
                             Name: value
@@ -29,6 +34,7 @@ FunctionDefinitionStatement: {
     }
 }
 FunctionDefinitionStatement: {
+    Type: undefined
     NameExpression: {
         Type: undefined
         Name: value

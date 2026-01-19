@@ -1,4 +1,5 @@
-﻿#include <Caracal/Semantic/TypeChecker.h>
+﻿#include "TypeChecker.h"
+#include <Caracal/Semantic/TypeChecker.h>
 
 namespace Caracal
 {
@@ -48,6 +49,11 @@ namespace Caracal
             case NodeKind::VariableDeclaration:
             {
                 typeCheckVariableDeclaration((VariableDeclaration*)statement);
+                break;
+            }
+            case NodeKind::ExpressionStatement:
+            {
+                typeCheckExpressionStatement((ExpressionStatement*)statement);
                 break;
             }
             case NodeKind::AssignmentStatement:
@@ -151,6 +157,12 @@ namespace Caracal
         statement->setType(rightType);
     }
 
+    void TypeChecker::typeCheckExpressionStatement(ExpressionStatement* statement)
+    {
+        auto expressionType = typeCheckExpression(statement->expression().get());
+        statement->setType(expressionType);
+    }
+
     void TypeChecker::typeCheckAssignmentStatement(AssignmentStatement* statement)
     {
         auto leftType = typeCheckExpression(statement->leftExpression().get());
@@ -173,24 +185,23 @@ namespace Caracal
     
         auto& nameExpression = statement->nameExpression();
         nameExpression->setType(Type::Function());
-        //auto functionName = m_parseTree.tokens().getLexeme(nameToken);
-        //// TODO check if function with same name and parameters exists already
-        //auto newFunctionType = m_typeDatabase.createFunction(functionName);
-        //parentScope->addFunctionBinding(functionName, newFunctionType);
-        //auto& functionDefinition = m_typeDatabase.getFunctionDefinition(newFunctionType);
-    
+        auto nameToken = nameExpression->nameToken();
+        auto functionName = m_parseTree.tokens().getLexeme(nameToken);
+
+        // TODO check if function with same name and parameters exists already
+
         auto parametersTypes = typeCheckParametersNode(statement->parametersNode().get());
-        //functionDefinition.setParameters(parameters);
-    
         auto returnTypes = typeCheckReturnTypesNode(statement->returnTypesNode().get());
+
+        auto& functionDefinition = m_typeDatabase.createFunction(functionName, parametersTypes, returnTypes);
+        auto functionType = functionDefinition.type();
+        parentScope->addFunctionBinding(functionName, functionType);
 
         typeCheckBlockNode(statement->bodyNode().get());
         
         // TODO check if return type matches declared return types
-        // TODO temporarily set the type until we got a function type system in place
-        statement->setType(m_currentReturnType);
 
-        //functionDefinition.setReturnType(returnType);
+        statement->setType(functionType);
     
         popScope();
         m_currentReturnType = Type::Void();
@@ -278,11 +289,11 @@ namespace Caracal
             {
                 return typeCheckNameExpression((NameExpression*)expression);
             }
-            /*
             case NodeKind::FunctionCallExpression:
             {
                 return typeCheckFunctionCallExpression((FunctionCallExpression*)expression);
             }
+            /*
             case NodeKind::MemberAccessExpression:
             {
                 return typeCheckMemberAccessExpression((MemberAccessExpression*)expression);
@@ -427,6 +438,53 @@ namespace Caracal
 
         return Type::Undefined();
     }
+    
+    Type TypeChecker::typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression)
+    {
+        auto& name = functionCallExpression->nameExpression()->nameToken();
+        auto lexeme = m_parseTree.tokens().getLexeme(name);
+        auto functionBinding = currentScope()->tryGetFunctionBinding(lexeme);
+        if(!functionBinding.has_value())
+        {
+            TODO("Add error diagnostics for unknown function call");
+            return Type::Undefined();
+        }
+        const auto& functionBindingType = functionBinding.value();
+        const auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionBindingType);
+
+        auto argumentsNode = functionCallExpression->argumentsNode().get();
+        auto argumentTypes = typeCheckArgumentsNode(argumentsNode);
+
+        const auto& parameterTypes = functionDefinition.parameters();
+        if(parameterTypes.size() != argumentTypes.size())
+        {
+            TODO("Add error diagnostics for argument count mismatch");
+            return Type::Undefined();
+        }
+        for(size_t i = 0; i < parameterTypes.size(); ++i)
+        {
+            if(parameterTypes[i] != argumentTypes[i])
+            {
+                TODO("Add error diagnostics for argument type mismatch");
+                return Type::Undefined();
+            }
+        }
+
+        const auto& returnTypes = functionDefinition.returnTypes();
+        Type returnType = Type::Void();
+        if(returnTypes.size() == 1)
+        {
+            returnType = returnTypes[0];
+        }
+        else if(returnTypes.size() > 1)
+        {
+            TODO("Handle multiple return types");
+        }
+
+        functionCallExpression->setFunctionType(functionBindingType);
+        functionCallExpression->setType(returnType);
+        return returnType;
+    }
 
     Type TypeChecker::typeCheckNumberLiteral(NumberLiteral* literal)
     {
@@ -507,6 +565,17 @@ namespace Caracal
         return types;
     }
 
+    std::vector<Type> TypeChecker::typeCheckArgumentsNode(ArgumentsNode* argumentsNode)
+    {
+        std::vector<Type> types{};
+        for (const auto& argument : argumentsNode->arguments())
+        {
+            auto argumentType = typeCheckExpression(argument.get());
+            types.push_back(argumentType);
+        }
+        return types;
+    }
+
     void TypeChecker::pushScope(ScopeKind kind)
     {
         auto parent = m_scopes.back().get();
@@ -528,12 +597,6 @@ namespace Caracal
     }
 }
 
-//TypedStatement* TypeChecker::typeCheckExpressionStatement(ExpressionStatement* statement)
-//{
-//    auto expression = typeCheckExpression(statement->expression());
-//    return new TypedExpressionStatement(expression, statement, expression->type());
-//}
-//
 //TypedStatement* TypeChecker::typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement)
 //{
 //    auto& optionalBaseTypeName = statement->baseType();
@@ -786,28 +849,7 @@ namespace Caracal
 //{
 //    return new BoolValue(literal);
 //}
-//
-//TypedExpression* TypeChecker::typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression)
-//{
-//    auto& name = functionCallExpression->name();
-//    auto lexeme = m_parseTree.tokens().getLexeme(name);
-//    auto functionType = currentScope()->tryGetFunctionBinding(lexeme);
-//
-//    // TODO type check arguments and find the correct function call
-//    // TODO check if function was defined before and what type it returns, assume undefined for now
-//    // TODO print diagnostic if the function wasnt defined before
-//    if (functionType != Type::Undefined())
-//    {
-//        auto arguments = typeCheckFunctionCallArguments(functionCallExpression->arguments());
-//
-//        auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
-//        auto returnType = functionDefinition.returnType();
-//        return new TypedFunctionCallExpression(lexeme, functionType, arguments, functionCallExpression, returnType);
-//    }
-//
-//    return new TypedFunctionCallExpression(lexeme, Type::Undefined(), QList<TypedExpression*>(), functionCallExpression, Type::Undefined());
-//}
-//
+
 //QList<TypedExpression*> TypeChecker::typeCheckFunctionCallArguments(ArgumentsNode* argumentsNode)
 //{
 //    QList<TypedExpression*> arguments;

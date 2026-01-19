@@ -3,8 +3,12 @@
 
 namespace Caracal
 {
-    ParseTreePrinter::ParseTreePrinter(const ParseTree& parseTree, i32 indentation)
+    ParseTreePrinter::ParseTreePrinter(
+        const ParseTree& parseTree, 
+        TypeDatabase* typeDatabase, 
+        i32 indentation)
         : m_parseTree{ parseTree }
+        , m_typeDatabase{ typeDatabase }
         , m_builder{ indentation }
     {
     }
@@ -366,6 +370,8 @@ namespace Caracal
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
+        writeIndentedTypeName(statement->type());
+
         prettyPrintNameExpression(statement->nameExpression().get());
         prettyPrintParametersNode(statement->parametersNode().get());
         prettyPrintReturnTypesNode(statement->returnTypesNode().get());
@@ -624,6 +630,9 @@ namespace Caracal
         m_builder.appendIndented(stringify(functionCall->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
+        writeIndentedTypeName(functionCall->type());
+        writeIndentedTypeName(functionCall->functionType(), "Function type: ");
+
         prettyPrintNameExpression(functionCall->nameExpression().get());
         prettyPrintArgumentsNode(functionCall->argumentsNode().get());
 
@@ -753,9 +762,50 @@ namespace Caracal
         m_builder.appendIndentedLine("}");
     }
 
-    void ParseTreePrinter::writeIndentedTypeName(Type type)
+    void ParseTreePrinter::writeIndentedTypeName(Type type, std::string_view prefix)
     {
+        if(type.kind() == TypeKind::Function)
+        {
+            if(m_typeDatabase == nullptr)
+            {
+                m_builder.appendIndentedLine(prefix).append("Function");
+                return;
+            }
+
+            const auto& functionDefinition = m_typeDatabase->getFunctionDefinition(type);
+            const auto& parameters = functionDefinition.parameters();
+            const auto& returnTypes = functionDefinition.returnTypes();
+
+            m_builder.appendIndented(prefix);
+            m_builder.append("(");
+            
+            for (size_t i = 0; i < parameters.size(); i++)
+            {
+                auto paramType = parameters[i];
+                m_builder.append(TypeDatabase::TryFindName(paramType));
+                if (i < parameters.size() - 1)
+                    m_builder.append(", ");
+            }
+
+            m_builder.append(") -> ");
+            if(returnTypes.empty())
+            {
+                m_builder.appendLine("void");
+                return;
+            }
+
+            for (size_t i = 0; i < returnTypes.size(); i++)
+            {
+                auto returnType = returnTypes[i];
+                m_builder.append(TypeDatabase::TryFindName(returnType));
+                if (i < returnTypes.size() - 1)
+                    m_builder.append(", ");
+            }
+            m_builder.appendLine("");
+            return;
+        }
+
         auto name = TypeDatabase::TryFindName(type);
-        m_builder.appendIndented("Type: ").appendLine(name);
+        m_builder.appendIndented(prefix).appendLine(name);
     }
 }

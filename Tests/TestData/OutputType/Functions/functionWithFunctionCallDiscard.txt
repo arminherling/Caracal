@@ -1,28 +1,28 @@
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> i32
     NameExpression: {
-        Type: undefined
+        Type: function
         Name: value
     }
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
+            Type: i32
             Lexeme: i32
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: undefined
+            Type: i32
             NumberLiteral: 42
         }
     }
 }
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> void
     NameExpression: {
-        Type: undefined
+        Type: function
         Name: main
     }
     ParametersNode(0): {
@@ -31,14 +31,14 @@ FunctionDefinitionStatement: {
     }
     BlockNode(1): {
         ConstantDeclaration: {
-            Type: undefined
+            Type: i32
             Left: {
                 Discard: _
             }
             Right: {
                 FunctionCallExpression: {
-                    Type: undefined
-                    Function type: undefined
+                    Type: i32
+                    Function type: () -> i32
                     NameExpression: {
                         Type: undefined
                         Name: value

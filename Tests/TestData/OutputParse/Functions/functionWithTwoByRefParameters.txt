@@ -1,4 +1,5 @@
 FunctionDefinitionStatement: {
+    Type: undefined
     NameExpression: {
         Type: undefined
         Name: swap

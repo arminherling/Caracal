@@ -19,6 +19,8 @@
 #include <Caracal/Syntax/IfStatement.h>
 #include <Caracal/Syntax/WhileStatement.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
+#include <Caracal/Syntax/FunctionCallExpression.h>
+#include <Caracal/Syntax/ExpressionStatement.h>
 
 namespace Caracal
 {
@@ -40,6 +42,7 @@ namespace Caracal
             void typeCheckConstantDeclaration(ConstantDeclaration* statement);
             void typeCheckVariableDeclaration(VariableDeclaration* statement);
 
+            void typeCheckExpressionStatement(ExpressionStatement* statement);
             void typeCheckAssignmentStatement(AssignmentStatement* statement);
             void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
             void typeCheckIfStatement(IfStatement* statement);
@@ -51,12 +54,15 @@ namespace Caracal
             [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
             [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression);
             [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression);
+            [[nodiscard]] Type typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression);
 
             [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
 
             [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
             [[nodiscard]] std::vector<Type> typeCheckParametersNode(ParametersNode* parametersNode);
             [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);
+            [[nodiscard]] std::vector<Type> typeCheckArgumentsNode(ArgumentsNode* argumentsNode);
+
             void typeCheckBlockNode(BlockNode* body);
 
         //    [[nodiscard]] TypedStatement* typeCheckExpressionStatement(ExpressionStatement* statement);

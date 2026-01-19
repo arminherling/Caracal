@@ -29,16 +29,16 @@ namespace Caracal
 
         //void addTypeBinding(std::string_view identifier, Type node);
         void addVariableBinding(std::string_view identifier, Type node);
-        //void addFunctionBinding(std::string_view identifier, Type node);
+        void addFunctionBinding(std::string_view identifier, Type node);
         //[[nodiscard]] std::optional<Type> tryGetTypeBinding(std::string_view identifier) const noexcept;
         [[nodiscard]] std::optional<Type> tryGetVariableBinding(std::string_view identifier) const noexcept;
-        //[[nodiscard]] std::optional<Type> tryGetFunctionBinding(std::string_view identifier) const noexcept;
+        [[nodiscard]] std::optional<Type> tryGetFunctionBinding(std::string_view identifier) const noexcept;
 
     private:
         Scope* m_parent;
         ScopeKind m_kind;
         //std::unordered_map<std::string_view, Type> m_typeBindings;
         std::unordered_map<std::string_view, Type> m_variableBindings;
-        //std::unordered_map<std::string_view, Type> m_functionBindings;
+        std::unordered_map<std::string_view, Type> m_functionBindings;
     };
 }

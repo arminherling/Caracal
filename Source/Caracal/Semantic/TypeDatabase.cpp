@@ -40,18 +40,6 @@
 //    else
 //        return invalidType;
 //}
-//
-//FunctionDefinition& TypeDatabase::getFunctionDefinition(Type type) noexcept
-//{
-//    static auto invalidFunction = FunctionDefinition{ Type::Undefined(), QString("???") };
-//
-//    auto id = type.id();
-//    if (m_functionDefinitions.contains(id))
-//        return m_functionDefinitions.at(id);
-//    else
-//        return invalidFunction;
-//}
-//
 //Type TypeDatabase::createEnum(QStringView name) noexcept
 //{
 //    auto enumName = name.toString();
@@ -69,14 +57,7 @@
 //    m_typeDefinitions.emplace(type.id(), TypeDefinition{type, typeName});
 //    return type;
 //}
-//
-//Type TypeDatabase::createFunction(QStringView name) noexcept
-//{
-//    auto functionName = name.toString();
-//    auto functionType = Type{ m_nextId++, TypeKind::Function };
-//    m_functionDefinitions.emplace(functionType.id(), FunctionDefinition{functionType, functionName});
-//    return functionType;
-//}
+
 //
 //void TypeDatabase::addBuiltinTypesWithVariation(Type type, const QString& name) noexcept
 //{
@@ -142,5 +123,29 @@ namespace Caracal
             return result->second;
      
         return std::string_view("???");
+    }
+  
+    FunctionDefinition& TypeDatabase::getFunctionDefinition(Type type) noexcept
+    {
+        static auto invalidFunction = FunctionDefinition{ Type::Undefined(), std::string("???") };
+
+        auto id = type.id();
+        if (m_functionDefinitions.contains(id))
+            return m_functionDefinitions.at(id);
+        else
+            return invalidFunction;
+    }
+
+    FunctionDefinition& TypeDatabase::createFunction(
+        std::string_view name,
+        const std::vector<Type>& parameters,
+        const std::vector<Type>& returnTypes) noexcept
+    {
+        auto functionName = std::string(name);
+        auto functionId = m_nextId++;
+        auto functionType = Type{ functionId, TypeKind::Function };
+        m_functionDefinitions.try_emplace(functionId, FunctionDefinition{functionType, functionName, parameters, returnTypes});
+
+        return m_functionDefinitions.at(functionId);
     }
 }

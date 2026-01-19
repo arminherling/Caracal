@@ -49,7 +49,7 @@ static void FileTests(
         CaraTest::fail();// ("Type checking failed");
     }
 
-    Caracal::ParseTreePrinter printer{ parseTree };
+    Caracal::ParseTreePrinter printer{ parseTree, &typeDatabase };
     const auto output = printer.prettyPrint();
 
     CaraTest::isTrue(diagnostics.Diagnostics().empty());

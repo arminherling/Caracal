@@ -1,4 +1,5 @@
 FunctionDefinitionStatement: {
+    Type: undefined
     NameExpression: {
         Type: undefined
         Name: inner
@@ -19,6 +20,7 @@ FunctionDefinitionStatement: {
     }
 }
 FunctionDefinitionStatement: {
+    Type: undefined
     NameExpression: {
         Type: undefined
         Name: outer
@@ -41,6 +43,8 @@ FunctionDefinitionStatement: {
         }
         ExpressionStatement: {
             FunctionCallExpression: {
+                Type: undefined
+                Function type: undefined
                 NameExpression: {
                     Type: undefined
                     Name: inner
