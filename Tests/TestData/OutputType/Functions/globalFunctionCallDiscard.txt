@@ -1,0 +1,39 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    NameExpression: {
+        Type: function
+        Name: value
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 42
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: i32
+    Left: {
+        Discard: _
+    }
+    Right: {
+        FunctionCallExpression: {
+            Type: i32
+            Function type: () -> i32
+            NameExpression: {
+                Type: undefined
+                Name: value
+            }
+            ArgumentsNode(0): {
+            }
+        }
+    }
+}

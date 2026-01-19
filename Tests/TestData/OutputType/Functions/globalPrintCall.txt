@@ -1,0 +1,19 @@
+ConstantDeclaration: {
+    Type: void
+    Left: {
+        Discard: _
+    }
+    Right: {
+        FunctionCallExpression: {
+            Type: void
+            Function type: (string) -> void
+            NameExpression: {
+                Type: undefined
+                Name: print
+            }
+            ArgumentsNode(1): {
+                StringLiteral: "hello, world!"
+            }
+        }
+    }
+}

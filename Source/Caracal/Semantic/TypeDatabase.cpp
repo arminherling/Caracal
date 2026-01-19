@@ -107,6 +107,12 @@ namespace Caracal
         };
     }
 
+    TypeDatabase::TypeDatabase()
+    {
+        // TODO remove this once we got a prelude
+        m_functionDefinitions.try_emplace(1000, FunctionDefinition{ Type{ 1000, TypeKind::Function }, "print", {Type::String()} });
+    }
+
     Type TypeDatabase::TryFindBuiltin(std::string_view typeName) noexcept
     {
         static const auto tokenSizes = InitializeBuiltinTypes();
@@ -121,10 +127,21 @@ namespace Caracal
         static const auto tokenSizes = InitializeTypeToName();
         if (const auto result = tokenSizes.find(type); result != tokenSizes.end())
             return result->second;
-     
+
         return std::string_view("???");
     }
-  
+
+    Type TypeDatabase::tryGetFunctionTypeByName(std::string_view typeName) const noexcept
+    {
+        for (const auto& [id, functionDef] : m_functionDefinitions)
+        {
+            if (functionDef.name() == typeName)
+                return functionDef.type();
+        }
+
+        return Type::Undefined();
+    }
+
     FunctionDefinition& TypeDatabase::getFunctionDefinition(Type type) noexcept
     {
         static auto invalidFunction = FunctionDefinition{ Type::Undefined(), std::string("???") };
@@ -144,7 +161,7 @@ namespace Caracal
         auto functionName = std::string(name);
         auto functionId = m_nextId++;
         auto functionType = Type{ functionId, TypeKind::Function };
-        m_functionDefinitions.try_emplace(functionId, FunctionDefinition{functionType, functionName, parameters, returnTypes});
+        m_functionDefinitions.try_emplace(functionId, FunctionDefinition{ functionType, functionName, parameters, returnTypes });
 
         return m_functionDefinitions.at(functionId);
     }

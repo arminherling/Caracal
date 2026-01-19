@@ -1,0 +1,26 @@
+FunctionDefinitionStatement: {
+    Type: () -> void
+    NameExpression: {
+        Type: function
+        Name: main
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                Type: void
+                Function type: (string) -> void
+                NameExpression: {
+                    Type: undefined
+                    Name: print
+                }
+                ArgumentsNode(1): {
+                    StringLiteral: "hello, world!"
+                }
+            }
+        }
+    }
+}

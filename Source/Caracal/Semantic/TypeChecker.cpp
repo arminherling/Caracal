@@ -195,7 +195,6 @@ namespace Caracal
 
         auto& functionDefinition = m_typeDatabase.createFunction(functionName, parametersTypes, returnTypes);
         auto functionType = functionDefinition.type();
-        parentScope->addFunctionBinding(functionName, functionType);
 
         typeCheckBlockNode(statement->bodyNode().get());
         
@@ -443,14 +442,13 @@ namespace Caracal
     {
         auto& name = functionCallExpression->nameExpression()->nameToken();
         auto lexeme = m_parseTree.tokens().getLexeme(name);
-        auto functionBinding = currentScope()->tryGetFunctionBinding(lexeme);
-        if(!functionBinding.has_value())
+        auto functionType = m_typeDatabase.tryGetFunctionTypeByName(lexeme);
+        if(functionType == Type::Undefined())
         {
             TODO("Add error diagnostics for unknown function call");
             return Type::Undefined();
         }
-        const auto& functionBindingType = functionBinding.value();
-        const auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionBindingType);
+        const auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
 
         auto argumentsNode = functionCallExpression->argumentsNode().get();
         auto argumentTypes = typeCheckArgumentsNode(argumentsNode);
@@ -481,7 +479,7 @@ namespace Caracal
             TODO("Handle multiple return types");
         }
 
-        functionCallExpression->setFunctionType(functionBindingType);
+        functionCallExpression->setFunctionType(functionType);
         functionCallExpression->setType(returnType);
         return returnType;
     }
