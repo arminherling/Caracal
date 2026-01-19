@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <Caracal/Defines.h>
 #include <Caracal/Semantic/Type.h>
 #include <vector>
 #include <string>

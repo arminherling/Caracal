@@ -5,10 +5,10 @@
 //#include <Semantic/TypedExpression.h>
 //#include <QStringView>
 //
-//class CARACAL_API Field
+//class CARACAL_API FieldDefinition
 //{
 //public:
-//    Field(Type type, QStringView name, TypedExpression* expression);
+//    FieldDefinition(Type type, QStringView name, TypedExpression* expression);
 //
 //    [[nodiscard]] Type type() const noexcept { return m_type; }
 //    [[nodiscard]] QStringView name() const noexcept { return m_name; }
@@ -20,5 +20,5 @@
 //    TypedExpression* m_expression;
 //};
 //
-//CARACAL_API bool operator==(Field lhs, Field rhs) noexcept;
-//CARACAL_API bool operator!=(Field lhs, Field rhs) noexcept;
+//CARACAL_API bool operator==(FieldDefinition lhs, FieldDefinition rhs) noexcept;
+//CARACAL_API bool operator!=(FieldDefinition lhs, FieldDefinition rhs) noexcept;
