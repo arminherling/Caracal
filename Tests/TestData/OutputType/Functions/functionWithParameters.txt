@@ -1,0 +1,49 @@
+FunctionDefinitionStatement: {
+    NameExpression: {
+        Type: function
+        Name: sum
+    }
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: i32
+                Name: i32
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: i32
+                Name: i32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Name: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: i32
+                        Name: a
+                    }
+                }
+                Operation: Addition
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}

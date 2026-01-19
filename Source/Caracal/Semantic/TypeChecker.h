@@ -44,8 +44,6 @@ namespace Caracal
             void typeCheckIfStatement(IfStatement* statement);
             void typeCheckWhileStatement(WhileStatement* statement);
             void typeCheckReturnStatement(ReturnStatement* statement);
-            void typeCheckBlockNode(BlockNode* body);
-
             [[nodiscard]] Type typeCheckExpression(Expression* expression);
             [[nodiscard]] Type typeCheckGroupingExpression(GroupingExpression* expression);
             [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
@@ -53,8 +51,9 @@ namespace Caracal
             [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression);
             [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
             [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
-            
-            void typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);
+            [[nodiscard]] std::vector<Type> typeCheckParametersNode(ParametersNode* parametersNode);
+            [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);
+            void typeCheckBlockNode(BlockNode* body);
 
         //    [[nodiscard]] TypedStatement* typeCheckExpressionStatement(ExpressionStatement* statement);
         //    [[nodiscard]] TypedStatement* typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);

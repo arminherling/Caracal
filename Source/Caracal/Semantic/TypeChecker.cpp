@@ -179,10 +179,10 @@ namespace Caracal
         //parentScope->addFunctionBinding(functionName, newFunctionType);
         //auto& functionDefinition = m_typeDatabase.getFunctionDefinition(newFunctionType);
     
-        //auto parameters = typeCheckFunctionParameters(statement->parameters());
+        auto parametersTypes = typeCheckParametersNode(statement->parametersNode().get());
         //functionDefinition.setParameters(parameters);
     
-        typeCheckReturnTypesNode(statement->returnTypesNode().get());
+        auto returnTypes = typeCheckReturnTypesNode(statement->returnTypesNode().get());
 
         typeCheckBlockNode(statement->bodyNode().get());
         
@@ -470,12 +470,41 @@ namespace Caracal
         return type;
     }
     
-    void TypeChecker::typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode)
+    std::vector<Type> TypeChecker::typeCheckParametersNode(ParametersNode* parametersNode)
     {
+        std::vector<Type> types{};
+        for(const auto& parameterNode : parametersNode->parameters())
+        {
+            auto parameterType = typeCheckTypeNameNode(parameterNode->typeName().get());
+            types.push_back(parameterType);
+
+            // register parameter in current scope
+            auto& nameExpression = parameterNode->nameExpression();
+            auto nameToken = nameExpression->nameToken();
+            auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
+            auto scope = currentScope();
+            if (!scope->hasVariableBinding(nameLexeme))
+            {
+                scope->addVariableBinding(nameLexeme, parameterType);
+            }
+            else
+            {
+                TODO("Add error diagnostics for duplicate parameter declaration");
+            }
+            nameExpression->setType(parameterType);
+        }
+        return types;
+    }
+
+    std::vector<Type> TypeChecker::typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode)
+    {
+        std::vector<Type> types{};
         for(const auto& returnTypeNode : returnTypesNode->returnTypes())
         {
-            std::ignore = typeCheckTypeNameNode(returnTypeNode.get());
+            auto returnType = typeCheckTypeNameNode(returnTypeNode.get());
+            types.push_back(returnType);
         }
+        return types;
     }
 
     void TypeChecker::pushScope(ScopeKind kind)
