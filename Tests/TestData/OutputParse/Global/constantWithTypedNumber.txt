@@ -2,6 +2,7 @@ ConstantDeclaration: {
     Type: undefined
     Left: {
         NameExpression: {
+            Type: undefined
             Name: a
         }
     }
@@ -9,7 +10,7 @@ ConstantDeclaration: {
         NumberLiteral: 0
         TypeNameNode: {
             Type: undefined
-            Name: i32
+            Lexeme: i32
         }
     }
 }

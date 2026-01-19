@@ -8,7 +8,7 @@ FunctionDefinitionStatement: {
     ReturnTypesNode(1): {
         TypeNameNode: {
             Type: i32
-            Name: i32
+            Lexeme: i32
         }
     }
     BlockNode(2): {

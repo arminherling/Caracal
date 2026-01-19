@@ -1,5 +1,6 @@
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: square
     }
     ParametersNode(1): {
@@ -7,7 +8,7 @@ FunctionDefinitionStatement: {
             Name: x
             TypeNameNode: {
                 Type: undefined
-                Name: i32
+                Lexeme: i32
             }
         }
     }
@@ -20,12 +21,14 @@ FunctionDefinitionStatement: {
                 Type: undefined
                 Left: {
                     NameExpression: {
+                        Type: undefined
                         Name: x
                     }
                 }
                 Operation: Multiplication
                 Right: {
                     NameExpression: {
+                        Type: undefined
                         Name: x
                     }
                 }

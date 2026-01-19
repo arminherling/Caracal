@@ -1,5 +1,6 @@
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: inner
     }
     ParametersNode(1): {
@@ -7,7 +8,7 @@ FunctionDefinitionStatement: {
             Name: x
             TypeNameNode: {
                 Type: undefined
-                Name: i32
+                Lexeme: i32
                 Ref: true
             }
         }
@@ -19,6 +20,7 @@ FunctionDefinitionStatement: {
 }
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: outer
     }
     ParametersNode(0): {
@@ -29,6 +31,7 @@ FunctionDefinitionStatement: {
         AssignmentStatement: {
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: x
                 }
             }
@@ -39,6 +42,7 @@ FunctionDefinitionStatement: {
         ExpressionStatement: {
             FunctionCallExpression: {
                 NameExpression: {
+                    Type: undefined
                     Name: inner
                 }
                 ArgumentsNode(1): {
@@ -47,6 +51,7 @@ FunctionDefinitionStatement: {
                         Operation: ReferenceOf
                         Expression: {
                             NameExpression: {
+                                Type: undefined
                                 Name: x
                             }
                         }

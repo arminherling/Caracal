@@ -1,5 +1,6 @@
 TypeDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: Fields
     }
     BlockNode(3): {
@@ -7,13 +8,14 @@ TypeDefinitionStatement: {
             IsConstant: true
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: x
                 }
             }
             ExplicitType: {
                 TypeNameNode: {
                     Type: undefined
-                    Name: i32
+                    Lexeme: i32
                 }
             }
             Right: {
@@ -24,13 +26,14 @@ TypeDefinitionStatement: {
             IsConstant: false
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: y
                 }
             }
             ExplicitType: {
                 TypeNameNode: {
                     Type: undefined
-                    Name: i32
+                    Lexeme: i32
                 }
             }
             Right: {
@@ -41,13 +44,14 @@ TypeDefinitionStatement: {
             IsConstant: false
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: z
                 }
             }
             ExplicitType: {
                 TypeNameNode: {
                     Type: undefined
-                    Name: i32
+                    Lexeme: i32
                 }
             }
             Right: null

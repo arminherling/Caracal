@@ -2,6 +2,7 @@ ConstantDeclaration: {
     Type: undefined
     Left: {
         NameExpression: {
+            Type: undefined
             Name: PI
         }
     }

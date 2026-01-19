@@ -731,7 +731,7 @@ namespace Caracal
         writeIndentedTypeName(node->type());
 
         const auto lexeme = m_parseTree.tokens().getLexeme(node->name()->nameToken());
-        m_builder.appendIndented("Name: ").appendLine(lexeme);
+        m_builder.appendIndented("Lexeme: ").appendLine(lexeme);
         if (node->isReference())
         {
             m_builder.appendIndentedLine("Ref: true");

@@ -1,5 +1,6 @@
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: main
     }
     ParametersNode(0): {
@@ -10,6 +11,7 @@ FunctionDefinitionStatement: {
         ExpressionStatement: {
             FunctionCallExpression: {
                 NameExpression: {
+                    Type: undefined
                     Name: print
                 }
                 ArgumentsNode(1): {

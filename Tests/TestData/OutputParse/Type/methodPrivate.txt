@@ -1,5 +1,6 @@
 TypeDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: Zero
     }
     BlockNode(1): {
@@ -13,7 +14,7 @@ TypeDefinitionStatement: {
             ReturnTypesNode(1): {
                 TypeNameNode: {
                     Type: undefined
-                    Name: i32
+                    Lexeme: i32
                 }
             }
             BlockNode(1): {

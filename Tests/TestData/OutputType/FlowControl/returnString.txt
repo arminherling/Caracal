@@ -8,7 +8,7 @@ FunctionDefinitionStatement: {
     ReturnTypesNode(1): {
         TypeNameNode: {
             Type: string
-            Name: string
+            Lexeme: string
         }
     }
     BlockNode(1): {

@@ -1,5 +1,6 @@
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: main
     }
     ParametersNode(0): {
@@ -10,11 +11,13 @@ FunctionDefinitionStatement: {
         ExpressionStatement: {
             FunctionCallExpression: {
                 NameExpression: {
+                    Type: undefined
                     Name: print
                 }
                 ArgumentsNode(1): {
                     FunctionCallExpression: {
                         NameExpression: {
+                            Type: undefined
                             Name: value
                         }
                         ArgumentsNode(0): {
@@ -27,6 +30,7 @@ FunctionDefinitionStatement: {
 }
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: value
     }
     ParametersNode(0): {
@@ -34,7 +38,7 @@ FunctionDefinitionStatement: {
     ReturnTypesNode(1): {
         TypeNameNode: {
             Type: undefined
-            Name: i32
+            Lexeme: i32
         }
     }
     BlockNode(1): {

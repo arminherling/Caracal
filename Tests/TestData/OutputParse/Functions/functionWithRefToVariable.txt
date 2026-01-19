@@ -1,5 +1,6 @@
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: main
     }
     ParametersNode(0): {
@@ -11,6 +12,7 @@ FunctionDefinitionStatement: {
             Type: bool
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: a
                 }
             }
@@ -22,6 +24,7 @@ FunctionDefinitionStatement: {
             Type: undefined
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: b
                 }
             }
@@ -31,6 +34,7 @@ FunctionDefinitionStatement: {
                     Operation: ReferenceOf
                     Expression: {
                         NameExpression: {
+                            Type: undefined
                             Name: a
                         }
                     }

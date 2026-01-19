@@ -9,7 +9,7 @@ ConstantDeclaration: {
     ExplicitType: {
         TypeNameNode: {
             Type: bool
-            Name: bool
+            Lexeme: bool
         }
     }
     Right: {

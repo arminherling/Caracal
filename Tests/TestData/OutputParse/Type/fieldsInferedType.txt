@@ -1,5 +1,6 @@
 TypeDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: Fields
     }
     BlockNode(2): {
@@ -7,6 +8,7 @@ TypeDefinitionStatement: {
             IsConstant: true
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: a
                 }
             }
@@ -18,6 +20,7 @@ TypeDefinitionStatement: {
             IsConstant: false
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: b
                 }
             }

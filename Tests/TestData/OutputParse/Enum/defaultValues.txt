@@ -1,20 +1,24 @@
 EnumDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: Values
     }
     FieldNodes(3): {
         EnumFieldDeclaration: {
             NameExpression: {
+                Type: undefined
                 Name: First
             }
         }
         EnumFieldDeclaration: {
             NameExpression: {
+                Type: undefined
                 Name: Second
             }
         }
         EnumFieldDeclaration: {
             NameExpression: {
+                Type: undefined
                 Name: Third
             }
         }

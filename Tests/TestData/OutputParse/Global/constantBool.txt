@@ -2,6 +2,7 @@ ConstantDeclaration: {
     Type: bool
     Left: {
         NameExpression: {
+            Type: undefined
             Name: a
         }
     }

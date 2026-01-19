@@ -1,5 +1,6 @@
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: swap
     }
     ParametersNode(2): {
@@ -7,7 +8,7 @@ FunctionDefinitionStatement: {
             Name: a
             TypeNameNode: {
                 Type: undefined
-                Name: i32
+                Lexeme: i32
                 Ref: true
             }
         }
@@ -15,7 +16,7 @@ FunctionDefinitionStatement: {
             Name: b
             TypeNameNode: {
                 Type: undefined
-                Name: i32
+                Lexeme: i32
                 Ref: true
             }
         }
@@ -27,11 +28,13 @@ FunctionDefinitionStatement: {
             Type: undefined
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: temp
                 }
             }
             Right: {
                 NameExpression: {
+                    Type: undefined
                     Name: a
                 }
             }
@@ -39,11 +42,13 @@ FunctionDefinitionStatement: {
         AssignmentStatement: {
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: a
                 }
             }
             Right: {
                 NameExpression: {
+                    Type: undefined
                     Name: b
                 }
             }
@@ -51,11 +56,13 @@ FunctionDefinitionStatement: {
         AssignmentStatement: {
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: b
                 }
             }
             Right: {
                 NameExpression: {
+                    Type: undefined
                     Name: temp
                 }
             }

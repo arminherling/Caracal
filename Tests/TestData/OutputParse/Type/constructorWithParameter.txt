@@ -1,5 +1,6 @@
 TypeDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: Number
     }
     ParametersNode(1): {
@@ -7,7 +8,7 @@ TypeDefinitionStatement: {
             Name: para
             TypeNameNode: {
                 Type: undefined
-                Name: i32
+                Lexeme: i32
             }
         }
     }
@@ -16,17 +17,19 @@ TypeDefinitionStatement: {
             IsConstant: false
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: value
                 }
             }
             ExplicitType: {
                 TypeNameNode: {
                     Type: undefined
-                    Name: i32
+                    Lexeme: i32
                 }
             }
             Right: {
                 NameExpression: {
+                    Type: undefined
                     Name: para
                 }
             }

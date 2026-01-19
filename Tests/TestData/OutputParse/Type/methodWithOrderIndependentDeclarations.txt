@@ -1,5 +1,6 @@
 TypeDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: Two
     }
     BlockNode(3): {
@@ -7,13 +8,14 @@ TypeDefinitionStatement: {
             IsConstant: true
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: one
                 }
             }
             ExplicitType: {
                 TypeNameNode: {
                     Type: undefined
-                    Name: i32
+                    Lexeme: i32
                 }
             }
             Right: {
@@ -30,7 +32,7 @@ TypeDefinitionStatement: {
             ReturnTypesNode(1): {
                 TypeNameNode: {
                     Type: undefined
-                    Name: i32
+                    Lexeme: i32
                 }
             }
             BlockNode(1): {
@@ -42,6 +44,7 @@ TypeDefinitionStatement: {
                             MemberAccessExpression: {
                                 FunctionCallExpression: {
                                     NameExpression: {
+                                        Type: undefined
                                         Name: one
                                     }
                                     ArgumentsNode(0): {
@@ -54,6 +57,7 @@ TypeDefinitionStatement: {
                             MemberAccessExpression: {
                                 FunctionCallExpression: {
                                     NameExpression: {
+                                        Type: undefined
                                         Name: one
                                     }
                                     ArgumentsNode(0): {
@@ -75,7 +79,7 @@ TypeDefinitionStatement: {
             ReturnTypesNode(1): {
                 TypeNameNode: {
                     Type: undefined
-                    Name: i32
+                    Lexeme: i32
                 }
             }
             BlockNode(1): {
@@ -83,6 +87,7 @@ TypeDefinitionStatement: {
                     Type: undefined
                     MemberAccessExpression: {
                         NameExpression: {
+                            Type: undefined
                             Name: one
                         }
                     }

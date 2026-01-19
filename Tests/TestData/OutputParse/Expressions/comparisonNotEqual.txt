@@ -1,5 +1,6 @@
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: func
     }
     ParametersNode(0): {
@@ -11,6 +12,7 @@ FunctionDefinitionStatement: {
             Type: undefined
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: x
                 }
             }
@@ -22,6 +24,7 @@ FunctionDefinitionStatement: {
             Type: undefined
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: y
                 }
             }
@@ -35,12 +38,14 @@ FunctionDefinitionStatement: {
                     Type: undefined
                     Left: {
                         NameExpression: {
+                            Type: undefined
                             Name: x
                         }
                     }
                     Operation: NotEqual
                     Right: {
                         NameExpression: {
+                            Type: undefined
                             Name: y
                         }
                     }

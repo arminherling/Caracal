@@ -1,15 +1,18 @@
 EnumDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: Values
     }
     FieldNodes(2): {
         EnumFieldDeclaration: {
             NameExpression: {
+                Type: undefined
                 Name: First
             }
         }
         EnumFieldDeclaration: {
             NameExpression: {
+                Type: undefined
                 Name: Second
             }
         }
@@ -19,6 +22,7 @@ ConstantDeclaration: {
     Type: undefined
     Left: {
         NameExpression: {
+            Type: undefined
             Name: s
         }
     }
@@ -27,12 +31,14 @@ ConstantDeclaration: {
             Type: undefined
             Left: {
                 NameExpression: {
+                    Type: undefined
                     Name: Values
                 }
             }
             Operation: MemberAccess
             Right: {
                 NameExpression: {
+                    Type: undefined
                     Name: Second
                 }
             }

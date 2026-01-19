@@ -6,6 +6,7 @@ ConstantDeclaration: {
     Right: {
         FunctionCallExpression: {
             NameExpression: {
+                Type: undefined
                 Name: print
             }
             ArgumentsNode(1): {

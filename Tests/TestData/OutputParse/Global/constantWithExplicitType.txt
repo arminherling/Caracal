@@ -2,13 +2,14 @@ ConstantDeclaration: {
     Type: bool
     Left: {
         NameExpression: {
+            Type: undefined
             Name: a
         }
     }
     ExplicitType: {
         TypeNameNode: {
             Type: undefined
-            Name: bool
+            Lexeme: bool
         }
     }
     Right: {

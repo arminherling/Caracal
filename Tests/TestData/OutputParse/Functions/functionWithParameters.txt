@@ -1,5 +1,6 @@
 FunctionDefinitionStatement: {
     NameExpression: {
+        Type: undefined
         Name: sum
     }
     ParametersNode(2): {
@@ -7,21 +8,21 @@ FunctionDefinitionStatement: {
             Name: a
             TypeNameNode: {
                 Type: undefined
-                Name: i32
+                Lexeme: i32
             }
         }
         ParameterNode: {
             Name: b
             TypeNameNode: {
                 Type: undefined
-                Name: i32
+                Lexeme: i32
             }
         }
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
             Type: undefined
-            Name: i32
+            Lexeme: i32
         }
     }
     BlockNode(1): {
@@ -31,12 +32,14 @@ FunctionDefinitionStatement: {
                 Type: undefined
                 Left: {
                     NameExpression: {
+                        Type: undefined
                         Name: a
                     }
                 }
                 Operation: Addition
                 Right: {
                     NameExpression: {
+                        Type: undefined
                         Name: b
                     }
                 }

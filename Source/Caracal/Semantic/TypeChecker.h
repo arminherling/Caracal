@@ -39,17 +39,21 @@ namespace Caracal
             void typeCheckStatement(Statement* statement);
             void typeCheckConstantDeclaration(ConstantDeclaration* statement);
             void typeCheckVariableDeclaration(VariableDeclaration* statement);
+
             void typeCheckAssignmentStatement(AssignmentStatement* statement);
             void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
             void typeCheckIfStatement(IfStatement* statement);
             void typeCheckWhileStatement(WhileStatement* statement);
             void typeCheckReturnStatement(ReturnStatement* statement);
+            
             [[nodiscard]] Type typeCheckExpression(Expression* expression);
             [[nodiscard]] Type typeCheckGroupingExpression(GroupingExpression* expression);
             [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
             [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression);
             [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression);
+
             [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
+
             [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
             [[nodiscard]] std::vector<Type> typeCheckParametersNode(ParametersNode* parametersNode);
             [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);
