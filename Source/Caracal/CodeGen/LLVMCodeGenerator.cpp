@@ -39,8 +39,12 @@ namespace Caracal
         return functionName;
     }
 
-    LLVMCodeGenerator::LLVMCodeGenerator(const ParseTree& parseTree, llvm::Module& module)
+    LLVMCodeGenerator::LLVMCodeGenerator(
+        const ParseTree& parseTree, 
+        TypeDatabase& typeDatabase,
+        llvm::Module& module)
         : m_parseTree{ parseTree }
+        , m_typeDatabase{ typeDatabase }
         , m_module{ module }
         , m_currentScope{ Scope::Global }
         , m_currentStatement{ NodeKind::Unknown }
@@ -95,15 +99,14 @@ namespace Caracal
         const auto oldScope = m_currentScope;
         m_currentScope = Scope::Function;
 
-        const auto nameExpression = node->nameExpression().get();
-        const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
-        auto parametersNode = node->parametersNode().get();
-        auto functionReturnType = node->type();
+        auto functionType = node->type();
+        auto functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
+        auto functionName = functionDefinition.name();
 
         auto llvmFunction = m_module.getFunction(functionName);
         if (llvmFunction == nullptr)
         {
-            auto llvmFunctionType = generateFunctionType(functionReturnType, parametersNode);
+            auto llvmFunctionType = generateFunctionType(functionDefinition);
             // TODO handle linkage types
             llvmFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_module);
         }
@@ -226,10 +229,11 @@ namespace Caracal
         return builder.CreateGlobalString(stringContent);
     }
 
-    llvm::FunctionType* LLVMCodeGenerator::generateFunctionType(Type functionReturnType, ParametersNode* parametersNode) noexcept
+    llvm::FunctionType* LLVMCodeGenerator::generateFunctionType(FunctionDefinition& functionDefinition) noexcept
     {
         auto& context = m_module.getContext();
-        const auto hasReturnTypes = functionReturnType != Type::Void();
+        const auto& returnTypes = functionDefinition.returnTypes();
+        const auto hasReturnTypes = !returnTypes.empty();
 
         llvm::Type* llvmReturnType = nullptr;
         if (!hasReturnTypes)
@@ -238,15 +242,18 @@ namespace Caracal
         }
         else
         {
-           llvmReturnType = GetLLVMTypeForCaraType(functionReturnType, context);
+            if(returnTypes.size() > 1)
+            {
+                TODO("Handle multiple return types in function type generation");
+            }
+            llvmReturnType = GetLLVMTypeForCaraType(returnTypes[0], context);
         }
 
         std::vector<llvm::Type*> llvmParameterTypes;
-        const auto& parameters = parametersNode->parameters();
-        for(const auto& parameter : parameters)
+        const auto& parameters = functionDefinition.parameters();
+        for(const auto& parameterType : parameters)
         {
-            const auto caraParameterType = parameter->typeName()->type();
-            auto llvmParameterType = GetLLVMTypeForCaraType(caraParameterType, context);
+            auto llvmParameterType = GetLLVMTypeForCaraType(parameterType, context);
             llvmParameterTypes.push_back(llvmParameterType);
         }
 
@@ -282,9 +289,9 @@ namespace Caracal
         );
     }
 
-    bool generateLLVMModule(const ParseTree& parseTree, llvm::Module& module) noexcept
+    bool generateLLVMModule(const ParseTree& parseTree, TypeDatabase& typeDatabase, llvm::Module& module) noexcept
     {
-        LLVMCodeGenerator generator{ parseTree, module };
+        LLVMCodeGenerator generator{ parseTree, typeDatabase, module };
         return generator.generate();
     }
 }

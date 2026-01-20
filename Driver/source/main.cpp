@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    Caracal::TypeDatabase typeDatabase;
+    Caracal::TypeDatabase typeDatabase{};
     Caracal::TypeCheckerOptions options{
         .defaultIntegerType = Caracal::Type::I32(),
         .defaultFloatingType = Caracal::Type::F32(),
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
     llvm::LLVMContext context;
     llvm::Module module(inputFileName, context);
 
-    wasSuccessful = Caracal::generateLLVMModule(parseTree, module);
+    wasSuccessful = Caracal::generateLLVMModule(parseTree, typeDatabase, module);
     if (!wasSuccessful)
     {
         std::cout << "Module not generated!";

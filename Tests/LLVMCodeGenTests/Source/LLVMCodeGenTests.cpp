@@ -7,6 +7,8 @@
 #include <iostream>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <Caracal/Semantic/TypeCheckerOptions.h>
+#include <Caracal/Semantic/TypeChecker.h>
 
 static void FileTests(
     const std::string& /*fileName*/, 
@@ -27,13 +29,28 @@ static void FileTests(
     Caracal::DiagnosticsBag diagnostics;
 
     const auto tokens = Caracal::lex(source, diagnostics);
-    const auto parseTree = Caracal::parse(tokens, diagnostics);
+    auto parseTree = Caracal::parse(tokens, diagnostics);
+    CaraTest::isTrue(diagnostics.Diagnostics().empty());
+
+    Caracal::TypeDatabase typeDatabase{};
+    Caracal::TypeCheckerOptions options{
+        .defaultIntegerType = Caracal::Type::I32(),
+        .defaultFloatingType = Caracal::Type::F32(),
+        .defaultEnumBaseType = Caracal::Type::U8()
+    };
+
+    auto wasSuccessful = Caracal::typeCheck(parseTree, options, typeDatabase, diagnostics);
+    if (!wasSuccessful)
+    {
+        std::cout << "Type checking failed!";
+        CaraTest::fail();
+    }
 
     llvm::LLVMContext context;
     llvm::Module module("file_test", context);
 
     const auto startTime = std::chrono::high_resolution_clock::now();
-    const auto wasSuccessful = Caracal::generateLLVMModule(parseTree, module);
+    wasSuccessful = Caracal::generateLLVMModule(parseTree,typeDatabase, module);
     const auto endTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "      generateLLVMModule(): " << CaraTest::stringify(endTime - startTime) << std::endl;

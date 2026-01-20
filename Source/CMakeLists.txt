@@ -14,6 +14,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${LLVM_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${LLVM_DEFINITIONS})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LLVM_LIBS})
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "CaracalCore")
 
 include(GenerateExportHeader)
 generate_export_header(${PROJECT_NAME}

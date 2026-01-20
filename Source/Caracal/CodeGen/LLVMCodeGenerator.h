@@ -6,17 +6,21 @@
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/NumberLiteral.h>
-#include <llvm/IR/Module.h>
 #include <Caracal/Syntax/StringLiteral.h>
 #include <Caracal/Syntax/FunctionCallExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
+#include <Caracal/Semantic/TypeDatabase.h>
+#include <llvm/IR/Module.h>
 
 namespace Caracal
 {
     class CARACAL_API LLVMCodeGenerator
     {
     public:
-        LLVMCodeGenerator(const ParseTree& parseTree, llvm::Module& module);
+        LLVMCodeGenerator(
+            const ParseTree& parseTree, 
+            TypeDatabase& typeDatabase, 
+            llvm::Module& module);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(LLVMCodeGenerator)
 
@@ -39,18 +43,19 @@ namespace Caracal
         llvm::Value* generateNumberLiteral(NumberLiteral* node) noexcept;
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
 
-        llvm::FunctionType* generateFunctionType(Type functionReturnType, ParametersNode* parametersNode) noexcept;
+        llvm::FunctionType* generateFunctionType(FunctionDefinition& functionDefinition) noexcept;
         void generateFunctionBody(BlockNode* body, llvm::Function* llvmFunction) noexcept;
 
         void setupPrintfFunctionDeclaration() noexcept;
         
     private:
         const ParseTree& m_parseTree;
+        TypeDatabase& m_typeDatabase;
         llvm::Module& m_module;
         Scope m_currentScope;
         NodeKind m_currentStatement;
         llvm::BasicBlock* m_currentBasicBlock;
     };
 
-    CARACAL_API bool generateLLVMModule(const ParseTree& parseTree, llvm::Module& module) noexcept;
+    CARACAL_API bool generateLLVMModule(const ParseTree& parseTree, TypeDatabase& typeDatabase, llvm::Module& module) noexcept;
 }
