@@ -7,7 +7,7 @@ namespace Caracal
     [[nodiscard]] static auto InitializeTypeToLLVMType(llvm::LLVMContext& context) noexcept
     {
         return std::unordered_map<Type, llvm::Type*>{
-            //{ Type::Bool(), std::string_view("bool") },
+            { Type::Bool(), llvm::Type::getInt1Ty(context) },
             { Type::I32(), llvm::Type::getInt32Ty(context) },
             { Type::F32(), llvm::Type::getFloatTy(context) },
             //{ Type::String(), std::string_view("std::string") },
@@ -47,7 +47,6 @@ namespace Caracal
         , m_typeDatabase{ typeDatabase }
         , m_module{ module }
         , m_currentScope{ Scope::Global }
-        , m_currentStatement{ NodeKind::Unknown }
         , m_currentBasicBlock{ nullptr }
     {
     }
@@ -68,21 +67,23 @@ namespace Caracal
     {
         switch (node->kind())
         {
+            case NodeKind::ConstantDeclaration:
+            {
+                generateConstantDeclaration((ConstantDeclaration*)node);
+                break;
+            }
             case NodeKind::FunctionDefinitionStatement:
             {
-                m_currentStatement = NodeKind::FunctionDefinitionStatement;
                 generateFunctionDefinition((FunctionDefinitionStatement*)node);
                 break;
             }
             case NodeKind::ExpressionStatement:
             {
-                m_currentStatement = NodeKind::ExpressionStatement;
                 generateExpressionStatement((ExpressionStatement*)node);
                 break;
             }
             case NodeKind::ReturnStatement:
             {
-                m_currentStatement = NodeKind::ReturnStatement;
                 generateReturnStatement((ReturnStatement*)node);
                 break;
             }
@@ -92,6 +93,26 @@ namespace Caracal
                 break;
             }
         }
+    }
+
+    void LLVMCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node) noexcept
+    {
+        if (m_currentScope != Scope::Global)
+        {
+            TODO("Constant declaration only supported at global scope for now");
+        }
+        const auto leftExpression = node->leftExpression().get();
+        if (leftExpression->kind() != NodeKind::NameExpression)
+        {
+            TODO("Left expression of constant declaration must be a name expression");
+        }
+        const auto nameExpression = (NameExpression*)leftExpression;
+        const auto nameToken = nameExpression->nameToken();
+        const auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
+        
+        auto llvmValue = generateExpression(node->rightExpression().get());
+        auto llvmConstant = llvm::dyn_cast<llvm::Constant>(llvmValue);
+        createGlobalValue(std::string(nameLexeme), llvmConstant, true);
     }
 
     void LLVMCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept
@@ -147,6 +168,34 @@ namespace Caracal
         }
     }
 
+    llvm::Value* LLVMCodeGenerator::generateExpression(Expression* node) noexcept
+    {
+        switch (node->kind())
+        {
+            case NodeKind::FunctionCallExpression:
+            {
+                return generateFunctionCallExpression((FunctionCallExpression*)node);
+            }
+            case NodeKind::BoolLiteral:
+            {
+                return generateBoolLiteral((BoolLiteral*)node);
+            }
+            case NodeKind::NumberLiteral:
+            {
+                return generateNumberLiteral((NumberLiteral*)node);
+            }
+            case NodeKind::StringLiteral:
+            {
+                return generateStringLiteral((StringLiteral*)node);
+            }
+            default:
+            {
+                TODO("Missing NodeKind!!");
+                break;
+            }
+        }
+    }
+
     llvm::Value* LLVMCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node) noexcept
     {
         if (m_currentBasicBlock == nullptr)
@@ -177,30 +226,16 @@ namespace Caracal
         return builder.CreateCall(llvmFunction, llvmArguments);
     }
 
-    llvm::Value* LLVMCodeGenerator::generateExpression(Expression* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateBoolLiteral(BoolLiteral* node) noexcept
     {
-        switch (node->kind())
+        auto& context = m_module.getContext();
+        if (node->value())
         {
-            case NodeKind::FunctionCallExpression:
-            {
-                m_currentStatement = NodeKind::FunctionCallExpression;
-                return generateFunctionCallExpression((FunctionCallExpression*)node);
-            }
-            case NodeKind::NumberLiteral:
-            {
-                m_currentStatement = NodeKind::NumberLiteral;
-                return generateNumberLiteral((NumberLiteral*)node);
-            }
-            case NodeKind::StringLiteral:
-            {
-                m_currentStatement = NodeKind::StringLiteral;
-                return generateStringLiteral((StringLiteral*)node);
-            }
-            default:
-            {
-                TODO("Missing NodeKind!!");
-                break;
-            }
+            return llvm::ConstantInt::getTrue(context);
+        }
+        else
+        {
+            return llvm::ConstantInt::getFalse(context);
         }
     }
 
@@ -287,6 +322,18 @@ namespace Caracal
                 true
             )
         );
+    }
+
+    llvm::GlobalValue* LLVMCodeGenerator::createGlobalValue(
+        const std::string& name, 
+        llvm::Constant* constant, 
+        bool isConst) noexcept
+    {
+        auto value = m_module.getOrInsertGlobal(name, constant->getType());
+        value->setAlignment(llvm::MaybeAlign(4));
+        value->setConstant(isConst);
+        value->setInitializer(constant);
+        return value;
     }
 
     bool generateLLVMModule(const ParseTree& parseTree, TypeDatabase& typeDatabase, llvm::Module& module) noexcept
