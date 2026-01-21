@@ -258,9 +258,10 @@ namespace Caracal
 
     llvm::Value* LLVMCodeGenerator::generateStringLiteral(StringLiteral* node) noexcept
     {
-        llvm::IRBuilder<> builder(m_currentBasicBlock);
+        auto& context = m_module.getContext();
+        llvm::IRBuilder<> builder(context);
         const auto& stringContent = node->escapedContent();
-        return builder.CreateGlobalString(stringContent);
+        return builder.CreateGlobalString(stringContent, "", 0, &m_module);
     }
 
     llvm::FunctionType* LLVMCodeGenerator::generateFunctionType(FunctionDefinition& functionDefinition) noexcept
