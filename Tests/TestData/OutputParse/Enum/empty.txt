@@ -1,8 +1,5 @@
 EnumDefinitionStatement: {
-    NameExpression: {
-        Type: undefined
-        Name: Empty
-    }
+    Name: Empty
     FieldNodes(0): {
     }
 }

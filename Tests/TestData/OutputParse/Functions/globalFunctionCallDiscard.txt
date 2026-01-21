@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: undefined
-    NameExpression: {
-        Type: undefined
-        Name: value
-    }
+    Name: value
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {

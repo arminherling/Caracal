@@ -107,12 +107,11 @@ namespace Caracal
             TODO("Left expression of constant declaration must be a name expression");
         }
         const auto nameExpression = (NameExpression*)leftExpression;
-        const auto nameToken = nameExpression->nameToken();
-        const auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
+        const auto& name = nameExpression->name();
         
         auto llvmValue = generateExpression(node->rightExpression().get());
         auto llvmConstant = llvm::dyn_cast<llvm::Constant>(llvmValue);
-        createGlobalValue(std::string(nameLexeme), llvmConstant, true);
+        createGlobalValue(name, llvmConstant, true);
     }
 
     void LLVMCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept

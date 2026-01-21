@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: () -> i32
-    NameExpression: {
-        Type: function
-        Name: func
-    }
+    Name: func
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {

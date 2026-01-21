@@ -13,18 +13,21 @@ namespace Caracal
     {
     public:
         ParameterNode(
-            NameExpressionUPtr&& nameExpression,
+            const Token& nameToken,
+            std::string_view name,
             const Token& colonToken,
             TypeNameNodeUPtr&& typeName);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(ParameterNode)
 
-        [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }
+        [[nodiscard]] const Token& nameToken() const noexcept { return m_nameToken; }
+        [[nodiscard]] const std::string& name() const noexcept { return m_name; }
         [[nodiscard]] const Token& colonToken() const noexcept { return m_colonToken; }
         [[nodiscard]] const TypeNameNodeUPtr& typeName() const noexcept { return m_typeName; }
 
     private:
-        NameExpressionUPtr m_nameExpression;
+        Token m_nameToken;
+        std::string m_name;
         Token m_colonToken;
         TypeNameNodeUPtr m_typeName;
     };

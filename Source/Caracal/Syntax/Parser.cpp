@@ -296,12 +296,13 @@ namespace Caracal
     StatementUPtr Parser::parseFunctionDefinitionStatement()
     {
         auto keyword = advanceOnMatch(TokenKind::DefKeyword);
-        auto nameExpression = parseNameExpression();
+        auto nameToken = advanceOnMatch(TokenKind::Identifier);
+        auto name = m_tokens.getLexeme(nameToken);
         auto parameters = parseParametersNode();
         auto returnTypes = parseReturnTypesNode();
         auto body = parseFunctionBody();
 
-        return std::make_unique<FunctionDefinitionStatement>(keyword, std::move(nameExpression), std::move(parameters), std::move(returnTypes), std::move(body));
+        return std::make_unique<FunctionDefinitionStatement>(keyword, nameToken, name, std::move(parameters), std::move(returnTypes), std::move(body));
     }
 
     StatementUPtr Parser::parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression, StatementScope scope)
@@ -341,8 +342,9 @@ namespace Caracal
     StatementUPtr Parser::parseEnumDefinitionStatement()
     {
         auto keyword = advanceOnMatch(TokenKind::EnumKeyword);
-        auto nameExpression = parseNameExpression();
-    
+        auto nameToken = advanceOnMatch(TokenKind::Identifier);
+        auto name = m_tokens.getLexeme(nameToken);
+
         auto current = currentToken();
         std::optional<Token> colonToken;
         std::optional<TypeNameNodeUPtr> baseType;
@@ -355,8 +357,8 @@ namespace Caracal
         auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
         auto enumFields = parseEnumFields();
         auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
-    
-        return std::make_unique<EnumDefinitionStatement>(keyword, std::move(nameExpression), colonToken, std::move(baseType), openBracket, std::move(enumFields), closeBracket);
+
+        return std::make_unique<EnumDefinitionStatement>(keyword, nameToken, name, colonToken, std::move(baseType), openBracket, std::move(enumFields), closeBracket);
     }
 
     std::vector<EnumFieldDeclarationUPtr> Parser::parseEnumFields()
@@ -367,17 +369,18 @@ namespace Caracal
         {
             if (current.kind == TokenKind::Identifier)
             {
-                auto nameExpression = parseNameExpression();
+                auto nameToken = advanceOnMatch(TokenKind::Identifier);
+                auto name = m_tokens.getLexeme(nameToken);
                 if (currentToken().kind == TokenKind::Colon && nextToken().kind == TokenKind::Colon)
                 {
                     auto colon1 = advanceOnMatch(TokenKind::Colon);
                     auto colon2 = advanceOnMatch(TokenKind::Colon);
                     auto valueExpression = parseExpression(StatementScope::Enum);
-                    fields.push_back(std::make_unique<EnumFieldDeclaration>(std::move(nameExpression), colon1, colon2, std::move(valueExpression)));
+                    fields.push_back(std::make_unique<EnumFieldDeclaration>(nameToken, name, colon1, colon2, std::move(valueExpression)));
                 }
                 else
                 {
-                    fields.push_back(std::make_unique<EnumFieldDeclaration>(std::move(nameExpression)));
+                    fields.push_back(std::make_unique<EnumFieldDeclaration>(nameToken, name));
                 }
             }
             else
@@ -393,7 +396,8 @@ namespace Caracal
     StatementUPtr Parser::parseTypeDefinitionStatement()
     {
         auto keyword = advanceOnMatch(TokenKind::TypeKeyword);
-        auto nameExpression = parseNameExpression();
+        auto nameToken = advanceOnMatch(TokenKind::Identifier);
+        auto name = m_tokens.getLexeme(nameToken);
         
         std::optional<ParametersNodeUPtr> maybeParameters;
         if (currentToken().kind == TokenKind::OpenParenthesis)
@@ -403,7 +407,7 @@ namespace Caracal
 
         auto body = parseTypeBody();
 
-        return std::make_unique<TypeDefinitionStatement>(keyword, std::move(nameExpression), std::move(maybeParameters), std::move(body));
+        return std::make_unique<TypeDefinitionStatement>(keyword, nameToken, name, std::move(maybeParameters), std::move(body));
     }
 
     StatementUPtr Parser::parseTypeFieldDeclaration(ExpressionUPtr&& leftExpression)
@@ -445,16 +449,14 @@ namespace Caracal
         auto returnTypes = parseReturnTypesNode();
         auto body = parseMethodBody();
 
-        if(methodNameNode->typeNameExpression().has_value())
+        if(methodNameNode->hasTypeName())
         {
             // Methods defined as "def Type.function()" are considered static
             modifier = MethodModifier::Static;
         }
 
-        auto methodNameExpression = methodNameNode->methodNameExpression().get();
-        const auto& nameToken = methodNameExpression->nameToken();
-        const auto nameLexeme = m_tokens.getLexeme(nameToken);
-        const auto isPrivate = nameLexeme.starts_with('_');
+        const auto& methodName = methodNameNode->methodName();
+        const auto isPrivate = methodName.starts_with('_');
         if(modifier == MethodModifier::Public && isPrivate)
         {
             modifier = MethodModifier::Private;
@@ -500,11 +502,12 @@ namespace Caracal
 
     ParameterNodeUPtr Parser::parseParameterNode()
     {
-        auto name = parseNameExpression();
+        auto nameToken = advanceOnMatch(TokenKind::Identifier);
+        auto name = m_tokens.getLexeme(nameToken);
         auto colon = advanceOnMatch(TokenKind::Colon);
         auto typeName = parseTypeNameNode();
 
-        return std::make_unique<ParameterNode>(std::move(name), colon, std::move(typeName));
+        return std::make_unique<ParameterNode>(nameToken, name, colon, std::move(typeName));
     }
 
     NumberLiteralUPtr Parser::parseNumberLiteral()
@@ -697,8 +700,9 @@ namespace Caracal
 
     NameExpressionUPtr Parser::parseNameExpression()
     {
-        auto name = advanceOnMatch(TokenKind::Identifier);
-        return std::make_unique<NameExpression>(name);
+        auto nameToken = advanceOnMatch(TokenKind::Identifier);
+        const auto name = m_tokens.getLexeme(nameToken);
+        return std::make_unique<NameExpression>(nameToken, name);
     }
 
     ExpressionUPtr Parser::parseFunctionCallOrNameExpression(StatementScope scope)
@@ -748,22 +752,24 @@ namespace Caracal
     TypeNameNodeUPtr Parser::parseTypeNameNode()
     {
         auto refToken = tryMatchKind(TokenKind::RefKeyword);
-        auto nameExpression = parseNameExpression();
-
-        return std::make_unique<TypeNameNode>(refToken, std::move(nameExpression));
+        auto nameToken = advanceOnMatch(TokenKind::Identifier);
+        auto name = m_tokens.getLexeme(nameToken);
+        return std::make_unique<TypeNameNode>(refToken, nameToken, name);
     }
 
     MethodNameNodeUPtr Parser::parseMethodNameNode()
     {
-        auto firstNameExpression = parseNameExpression();
+        auto firstNameToken = advanceOnMatch(TokenKind::Identifier);
+        auto firstName = m_tokens.getLexeme(firstNameToken);
         auto dotToken = tryMatchKind(TokenKind::Dot);
         if (dotToken.has_value())
         {
-            auto secondNameExpression = parseNameExpression();
-            return std::make_unique<MethodNameNode>(std::move(firstNameExpression), dotToken.value(), std::move(secondNameExpression));
+            auto secondNameToken = advanceOnMatch(TokenKind::Identifier);
+            auto secondName = m_tokens.getLexeme(secondNameToken);
+            return std::make_unique<MethodNameNode>(firstNameToken, firstName, dotToken.value(), secondNameToken, secondName);
         }
 
-        return std::make_unique<MethodNameNode>(std::move(firstNameExpression));
+        return std::make_unique<MethodNameNode>(firstNameToken, firstName);
     }
 
     ParametersNodeUPtr Parser::parseParametersNode()

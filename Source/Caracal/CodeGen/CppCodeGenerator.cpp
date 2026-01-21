@@ -48,8 +48,7 @@ namespace Caracal
 
     CppCodeGenerator::CppTypeDef* CppCodeGenerator::buildCppTypeDefinition(TypeDefinitionStatement* node) noexcept
     {
-        const auto& nameExpression = node->nameExpression();
-        const auto typeName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
+        const auto& typeName = node->name();
 
         auto cppTypeDef = std::make_unique<CppTypeDef>();
         cppTypeDef->name = typeName;
@@ -100,7 +99,7 @@ namespace Caracal
         if (const auto result = cppTypeNames.find(typeName->type()); result != cppTypeNames.end())
             return result->second;
 
-        return m_parseTree.tokens().getLexeme(typeName->name()->nameToken());
+        return m_parseTree.tokens().getLexeme(typeName->nameToken());
     }
 
     [[nodiscard]] static std::string_view GetCppNameForType(Type type) noexcept
@@ -645,8 +644,7 @@ namespace Caracal
 
     void CppCodeGenerator::generateMethodDeclarationSignature(MethodDefinitionStatement* node) noexcept
     {
-        auto nameExpression = node->methodNameNode()->methodNameExpression().get();
-        const auto methodName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
+        const auto& methodName = node->methodNameNode()->methodName();
         auto parametersNode = node->parametersNode().get();
         auto returnTypesNode = node->returnTypesNode().get();
         const auto specialFunctionType = node->specialFunctionType();
@@ -675,14 +673,12 @@ namespace Caracal
 
     void CppCodeGenerator::generateMethodDefinition(const std::string_view& typeName, MethodDefinitionStatement* node) noexcept
     {
-        auto nameExpression = node->methodNameNode()->methodNameExpression().get();
-        const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
-        const auto isMainFunction = functionName == std::string_view("main");
+        const auto& methodName = node->methodNameNode()->methodName();
         auto parametersNode = node->parametersNode().get();
         auto returnTypesNode = node->returnTypesNode().get();
         
-        const auto returnPart = generateFunctionSignatureReturnPart(returnTypesNode, isMainFunction);
-        const auto namePart = generateFunctionSignatureNamePart(functionName);
+        const auto returnPart = generateFunctionSignatureReturnPart(returnTypesNode, false);
+        const auto namePart = generateFunctionSignatureNamePart(methodName);
         const auto parameterPart = generateFunctionSignatureParameterPart(parametersNode);
         const auto signature = returnPart + std::string(typeName) + "::" + namePart + parameterPart;
 
@@ -722,7 +718,7 @@ namespace Caracal
 
     std::string CppCodeGenerator::generateEnumSignature(EnumDefinitionStatement* node) noexcept
     {
-        const auto enumName = m_parseTree.tokens().getLexeme(node->nameExpression()->nameToken());
+        const auto enumName = node->name();
 
         StringBuilder signature;
         signature.appendIndented("enum class ").append(enumName);
@@ -808,8 +804,8 @@ namespace Caracal
             {
                 signature.append(typeName).append(" ");
             }
-            const auto& parameterNameToken = parameter->nameExpression()->nameToken();
-            signature.append(std::string(m_parseTree.tokens().getLexeme(parameterNameToken)));
+            const auto& parameterName = parameter->name();
+            signature.append(parameterName);
 
             if (&parameter != &parameters.back())
             {
@@ -905,8 +901,7 @@ namespace Caracal
 
         for (const auto& fieldNode : node->fieldNodes())
         {
-            m_builder.appendIndented("");
-            generateNameExpression(fieldNode->nameExpression().get());
+            m_builder.appendIndented(fieldNode->name());
             if (fieldNode->valueExpression().has_value())
             {
                 m_builder.append(" = ");
@@ -924,8 +919,7 @@ namespace Caracal
         const auto oldScope = m_currentScope;
         m_currentScope = Scope::Function;
 
-        auto nameExpression = node->nameExpression().get();
-        const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
+        const auto functionName = node->name();
         const auto isMainFunction = functionName == std::string_view("main");
         auto parametersNode = node->parametersNode().get();
         auto returnTypesNode = node->returnTypesNode().get();

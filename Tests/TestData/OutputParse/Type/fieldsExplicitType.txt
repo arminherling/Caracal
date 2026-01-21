@@ -1,8 +1,5 @@
 TypeDefinitionStatement: {
-    NameExpression: {
-        Type: undefined
-        Name: Fields
-    }
+    Name: Fields
     BlockNode(3): {
         TypeFieldDeclaration: {
             IsConstant: true

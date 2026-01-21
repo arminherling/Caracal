@@ -5,10 +5,7 @@ CppBlockStatement: {
 }
 FunctionDefinitionStatement: {
     Type: undefined
-    NameExpression: {
-        Type: undefined
-        Name: main
-    }
+    Name: main
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {

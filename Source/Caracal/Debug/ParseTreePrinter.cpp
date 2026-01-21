@@ -354,7 +354,7 @@ namespace Caracal
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
-        prettyPrintNameExpression(statement->nameExpression().get());
+        m_builder.appendIndented("Name: ").appendLine(statement->name());
         if (statement->constructorParameters().has_value())
         {
             prettyPrintParametersNode(statement->constructorParameters().value().get());
@@ -372,7 +372,7 @@ namespace Caracal
 
         writeIndentedTypeName(statement->type());
 
-        prettyPrintNameExpression(statement->nameExpression().get());
+        m_builder.appendIndented("Name: ").appendLine(statement->name());
         prettyPrintParametersNode(statement->parametersNode().get());
         prettyPrintReturnTypesNode(statement->returnTypesNode().get());
         prettyPrintBlockNode(statement->bodyNode().get());
@@ -404,7 +404,7 @@ namespace Caracal
     {
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
         m_builder.pushIndentation();
-        prettyPrintNameExpression(statement->nameExpression().get());
+        m_builder.appendIndented("Name: ").appendLine(statement->name());
 
         if (statement->baseType().has_value())
         {
@@ -431,7 +431,7 @@ namespace Caracal
     {
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
         m_builder.pushIndentation();
-        prettyPrintNameExpression(statement->nameExpression().get());
+        m_builder.appendIndented("Name: ").appendLine(statement->name());
     
         if (statement->valueExpression().has_value())
         {
@@ -597,29 +597,25 @@ namespace Caracal
 
         writeIndentedTypeName(name->type());
 
-        const auto& identifierToken = name->nameToken();
-        const auto identifierLexeme = m_parseTree.tokens().getLexeme(identifierToken);
-        m_builder.appendIndented("Name: ").appendLine(identifierLexeme);
+        m_builder.appendIndented("Name: ").appendLine(name->name());
 
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
     }
 
-    void ParseTreePrinter::prettyPrintMethodNameNode(MethodNameNode* methodName)
+    void ParseTreePrinter::prettyPrintMethodNameNode(MethodNameNode* node)
     {
-        m_builder.appendIndented(stringify(methodName->kind())).appendLine(": {");
+        m_builder.appendIndented(stringify(node->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
         m_builder.appendIndented("MethodName: ");
-        if (methodName->typeNameExpression().has_value())
+        if (node->hasTypeName())
         {
-            const auto& typeNameToken = methodName->typeNameExpression().value()->nameToken();
-            const auto typeNameLexeme = m_parseTree.tokens().getLexeme(typeNameToken);
-            m_builder.append(typeNameLexeme).append(".");
+            const auto& typeName = node->typeName().value();
+            m_builder.append(typeName).append(".");
         }
-        const auto& methodNameToken = methodName->methodNameExpression()->nameToken();
-        const auto methodNameLexeme = m_parseTree.tokens().getLexeme(methodNameToken);
-        m_builder.appendLine(methodNameLexeme);
+        const auto& methodName = node->methodName();
+        m_builder.appendLine(methodName);
 
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
@@ -697,9 +693,8 @@ namespace Caracal
         m_builder.appendIndented(stringify(parameter->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
-        const auto& nameToken = parameter->nameExpression()->nameToken();
-        const auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
-        m_builder.appendIndented("Name: ").appendLine(nameLexeme);
+        const auto& name = parameter->name();
+        m_builder.appendIndented("Name: ").appendLine(name);
         prettyPrintTypeNameNode(parameter->typeName().get());
 
         m_builder.popIndentation();
@@ -739,8 +734,7 @@ namespace Caracal
 
         writeIndentedTypeName(node->type());
 
-        const auto lexeme = m_parseTree.tokens().getLexeme(node->name()->nameToken());
-        m_builder.appendIndented("Lexeme: ").appendLine(lexeme);
+        m_builder.appendIndented("Lexeme: ").appendLine(node->name());
         if (node->isReference())
         {
             m_builder.appendIndentedLine("Ref: true");

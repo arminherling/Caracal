@@ -1,18 +1,12 @@
 EnumDefinitionStatement: {
-    NameExpression: {
-        Type: undefined
-        Name: Values
-    }
+    Name: Values
     TypeNameNode: {
         Type: undefined
         Lexeme: i32
     }
     FieldNodes(1): {
         EnumFieldDeclaration: {
-            NameExpression: {
-                Type: undefined
-                Name: Value
-            }
+            Name: Value
         }
     }
 }

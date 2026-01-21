@@ -14,20 +14,23 @@ namespace Caracal
     public:
         TypeDefinitionStatement(
             const Token& typeKeyword, 
-            NameExpressionUPtr&& nameExpression,
+            const Token& nameToken,
+            std::string_view name,
             std::optional<ParametersNodeUPtr>&& constructorParameters,
             BlockNodeUPtr&& bodyNode);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(TypeDefinitionStatement)
 
         [[nodiscard]] const Token& typeKeyword() const noexcept { return m_typeKeyword; }
-        [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }
+        [[nodiscard]] const Token& nameToken() const noexcept { return m_nameToken; }
+        [[nodiscard]] std::string_view name() const noexcept { return m_name; }
         [[nodiscard]] const std::optional<ParametersNodeUPtr>& constructorParameters() const noexcept { return m_constructorParameters; }
         [[nodiscard]] const BlockNodeUPtr& bodyNode() const noexcept { return m_bodyNode; }
 
     private:
         Token m_typeKeyword;
-        NameExpressionUPtr m_nameExpression;
+        Token m_nameToken;
+        std::string m_name;
         std::optional<ParametersNodeUPtr> m_constructorParameters;
         BlockNodeUPtr m_bodyNode;
     };

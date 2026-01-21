@@ -97,12 +97,11 @@ namespace Caracal
         if(leftExpression->kind() == NodeKind::NameExpression)
         {
             auto nameExpression = (NameExpression*)leftExpression;
-            auto nameToken = nameExpression->nameToken();
-            auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
+            const auto& name = nameExpression->name();
             auto scope = currentScope();
-            if(!scope->hasVariableBinding(nameLexeme))
+            if(!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(nameLexeme, rightType);
+                scope->addVariableBinding(name, rightType);
             }
             else
             {
@@ -183,13 +182,9 @@ namespace Caracal
         auto parentScope = currentScope();
         pushScope(ScopeKind::Function);
     
-        auto& nameExpression = statement->nameExpression();
-        nameExpression->setType(Type::Function());
-        auto nameToken = nameExpression->nameToken();
-        auto functionName = m_parseTree.tokens().getLexeme(nameToken);
-
         // TODO check if function with same name and parameters exists already
 
+        auto functionName = statement->name();
         auto parametersTypes = typeCheckParametersNode(statement->parametersNode().get());
         auto returnTypes = typeCheckReturnTypesNode(statement->returnTypesNode().get());
 
@@ -423,8 +418,7 @@ namespace Caracal
 
     Type TypeChecker::typeCheckNameExpression(NameExpression* expression)
     {
-        auto& identifier = expression->nameToken();
-        auto name = m_parseTree.tokens().getLexeme(identifier);
+        const auto& name = expression->name();
         auto optionalType = currentScope()->tryGetVariableBinding(name);
         if (optionalType.has_value())
         {
@@ -440,7 +434,7 @@ namespace Caracal
     
     Type TypeChecker::typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression)
     {
-        auto& name = functionCallExpression->nameExpression()->nameToken();
+        const auto& name = functionCallExpression->nameExpression()->nameToken();
         auto lexeme = m_parseTree.tokens().getLexeme(name);
         auto functionType = m_typeDatabase.tryGetFunctionTypeByName(lexeme);
         if(functionType == Type::Undefined())
@@ -515,11 +509,8 @@ namespace Caracal
 
     Type TypeChecker::typeCheckTypeNameNode(TypeNameNode* typeNameNode)
     {
-        const auto& nameExpression = typeNameNode->name();
-        const auto& nameToken = nameExpression->nameToken();
-        const auto lexeme = m_parseTree.tokens().getLexeme(nameToken);
-     
-        auto type = TypeDatabase::TryFindBuiltin(lexeme);
+        const auto& name = typeNameNode->name();
+        auto type = TypeDatabase::TryFindBuiltin(name);
         
         // TODO ref and nullable handling
         typeNameNode->setType(type);
@@ -535,19 +526,17 @@ namespace Caracal
             types.push_back(parameterType);
 
             // register parameter in current scope
-            auto& nameExpression = parameterNode->nameExpression();
-            auto nameToken = nameExpression->nameToken();
-            auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
+            const auto& name = parameterNode->name();
             auto scope = currentScope();
-            if (!scope->hasVariableBinding(nameLexeme))
+            if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(nameLexeme, parameterType);
+                scope->addVariableBinding(name, parameterType);
             }
             else
             {
                 TODO("Add error diagnostics for duplicate parameter declaration");
             }
-            nameExpression->setType(parameterType);
+            parameterNode->setType(parameterType);
         }
         return types;
     }

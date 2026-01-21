@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: (i32) -> void
-    NameExpression: {
-        Type: function
-        Name: inner
-    }
+    Name: inner
     ParametersNode(1): {
         ParameterNode: {
             Name: x
@@ -20,10 +17,7 @@ FunctionDefinitionStatement: {
 }
 FunctionDefinitionStatement: {
     Type: () -> void
-    NameExpression: {
-        Type: function
-        Name: outer
-    }
+    Name: outer
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {

@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: () -> void
-    NameExpression: {
-        Type: function
-        Name: inner
-    }
+    Name: inner
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {
@@ -13,10 +10,7 @@ FunctionDefinitionStatement: {
 }
 FunctionDefinitionStatement: {
     Type: () -> void
-    NameExpression: {
-        Type: function
-        Name: outer
-    }
+    Name: outer
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {

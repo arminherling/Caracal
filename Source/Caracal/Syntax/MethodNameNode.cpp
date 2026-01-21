@@ -3,20 +3,26 @@
 namespace Caracal 
 {
     MethodNameNode::MethodNameNode(
-        NameExpressionUPtr&& methodNameExpression)
+        const Token& methodNameToken,
+        std::string_view methodName)
         : Node(NodeKind::MethodNameNode, Type::Undefined())
-        , m_methodNameExpression(std::move(methodNameExpression))
+        , m_methodNameToken(methodNameToken)
+        , m_methodName(methodName)
     {
     }
 
     MethodNameNode::MethodNameNode(
-        NameExpressionUPtr&& typeNameExpression, 
-        const Token& dotToken, 
-        NameExpressionUPtr&& methodNameExpression)
+        const Token& typeNameToken,
+        std::string_view typeName,
+        const Token& dotToken,
+        const Token& methodNameToken,
+        std::string_view methodName)
         : Node(NodeKind::MethodNameNode, Type::Undefined())
-        , m_typeNameExpression(std::move(typeNameExpression))
+        , m_typeNameToken(typeNameToken)
+        , m_typeName(typeName)
         , m_dotToken(dotToken)
-        , m_methodNameExpression(std::move(methodNameExpression))
+        , m_methodNameToken(methodNameToken)
+        , m_methodName(methodName)
     {
     }
 }

@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: (i32) -> void
-    NameExpression: {
-        Type: function
-        Name: square
-    }
+    Name: square
     ParametersNode(1): {
         ParameterNode: {
             Name: x

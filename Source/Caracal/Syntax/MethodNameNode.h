@@ -11,22 +11,30 @@ namespace Caracal
     {
     public:
         MethodNameNode(
-            NameExpressionUPtr&& methodNameExpression);
+            const Token& methodNameToken,
+            std::string_view methodName);
         MethodNameNode(
-            NameExpressionUPtr&& typeNameExpression,
+            const Token& typeNameToken,
+            std::string_view typeName,
             const Token& dotToken,
-            NameExpressionUPtr&& methodNameExpression);
+            const Token& methodNameToken,
+            std::string_view methodName);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(MethodNameNode)
-        
-        [[nodiscard]] const std::optional<NameExpressionUPtr>& typeNameExpression() const noexcept { return m_typeNameExpression; }
+
+        [[nodiscard]] const std::optional<Token>& typeNameToken() const noexcept { return m_typeNameToken; }
+        [[nodiscard]] const std::optional<std::string>& typeName() const noexcept { return m_typeName; }
         [[nodiscard]] const std::optional<Token>& dotToken() const noexcept { return m_dotToken; }
-        [[nodiscard]] const NameExpressionUPtr& methodNameExpression() const noexcept { return m_methodNameExpression; }
+        [[nodiscard]] const Token& methodNameToken() const noexcept { return m_methodNameToken; }
+        [[nodiscard]] const std::string& methodName() const noexcept { return m_methodName; }
+        [[nodiscard]] bool hasTypeName() const noexcept { return m_typeName.has_value(); }
 
     private:
-        std::optional<NameExpressionUPtr> m_typeNameExpression;
+        std::optional<Token> m_typeNameToken;
+        std::optional<std::string> m_typeName;
         std::optional<Token> m_dotToken;
-        NameExpressionUPtr m_methodNameExpression;
+        Token m_methodNameToken;
+        std::string m_methodName;
     };
 
     using MethodNameNodeUPtr = std::unique_ptr<MethodNameNode>;

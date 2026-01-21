@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: undefined
-    NameExpression: {
-        Type: undefined
-        Name: swap
-    }
+    Name: swap
     ParametersNode(2): {
         ParameterNode: {
             Name: a

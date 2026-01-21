@@ -1,8 +1,5 @@
 TypeDefinitionStatement: {
-    NameExpression: {
-        Type: undefined
-        Name: Zero
-    }
+    Name: Zero
     BlockNode(1): {
         MethodDefinitionStatement: {
             Modifier: Static

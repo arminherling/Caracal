@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: undefined
-    NameExpression: {
-        Type: undefined
-        Name: inner
-    }
+    Name: inner
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {
@@ -13,10 +10,7 @@ FunctionDefinitionStatement: {
 }
 FunctionDefinitionStatement: {
     Type: undefined
-    NameExpression: {
-        Type: undefined
-        Name: outer
-    }
+    Name: outer
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {

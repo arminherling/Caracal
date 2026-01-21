@@ -13,7 +13,8 @@ namespace Caracal
     public:
         EnumDefinitionStatement(
             const Token& enumKeyword,
-            NameExpressionUPtr&& nameExpression,
+            const Token& nameToken,
+            std::string_view name,
             const std::optional<Token>& colonToken,
             std::optional<TypeNameNodeUPtr>&& baseType,
             const Token& openBracket,
@@ -23,7 +24,8 @@ namespace Caracal
         CARACAL_DELETE_COPY_DEFAULT_MOVE(EnumDefinitionStatement)
 
         [[nodiscard]] const Token& enumKeyword() const noexcept { return m_enumKeyword; }
-        [[nodiscard]] const NameExpressionUPtr& nameExpression() const noexcept { return m_nameExpression; }
+        [[nodiscard]] const Token& nameToken() const noexcept { return m_nameToken; }
+        [[nodiscard]] const std::string& name() const noexcept { return m_name; }
         [[nodiscard]] const std::optional<Token>& colonToken() const noexcept { return m_colonToken; }
         [[nodiscard]] const std::optional<TypeNameNodeUPtr>& baseType() const noexcept { return m_baseType; }
         [[nodiscard]] const Token& openBracket() const noexcept { return m_openBracket; }
@@ -32,7 +34,8 @@ namespace Caracal
 
     private:
         Token m_enumKeyword;
-        NameExpressionUPtr m_nameExpression;
+        Token m_nameToken;
+        std::string m_name;
         std::optional<Token> m_colonToken;
         std::optional<TypeNameNodeUPtr> m_baseType;
         Token m_openBracket;

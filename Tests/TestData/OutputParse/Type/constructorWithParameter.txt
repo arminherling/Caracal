@@ -1,8 +1,5 @@
 TypeDefinitionStatement: {
-    NameExpression: {
-        Type: undefined
-        Name: Number
-    }
+    Name: Number
     ParametersNode(1): {
         ParameterNode: {
             Name: para

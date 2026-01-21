@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: () -> f32
-    NameExpression: {
-        Type: function
-        Name: random
-    }
+    Name: random
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {

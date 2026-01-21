@@ -85,7 +85,7 @@ namespace Caracal
         void prettyPrintUnaryExpression(UnaryExpression* unaryExpression);
         void prettyPrintBinaryExpression(BinaryExpression* binaryExpression);
         void prettyPrintNameExpression(NameExpression* name);
-        void prettyPrintMethodNameNode(MethodNameNode* methodName);
+        void prettyPrintMethodNameNode(MethodNameNode* node);
         void prettyPrintFunctionCallExpression(FunctionCallExpression* functionCall);
         void prettyPrintMemberAccessExpression(MemberAccessExpression* expression);
         void prettyPrintDiscardLiteral(DiscardLiteral* discard);

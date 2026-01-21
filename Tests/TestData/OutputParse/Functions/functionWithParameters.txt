@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: undefined
-    NameExpression: {
-        Type: undefined
-        Name: sum
-    }
+    Name: sum
     ParametersNode(2): {
         ParameterNode: {
             Name: a

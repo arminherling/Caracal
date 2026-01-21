@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: () -> i32
-    NameExpression: {
-        Type: function
-        Name: value
-    }
+    Name: value
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
@@ -21,10 +18,7 @@ FunctionDefinitionStatement: {
 }
 FunctionDefinitionStatement: {
     Type: () -> void
-    NameExpression: {
-        Type: function
-        Name: main
-    }
+    Name: main
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {

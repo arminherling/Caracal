@@ -1,29 +1,17 @@
 EnumDefinitionStatement: {
-    NameExpression: {
-        Type: undefined
-        Name: Values
-    }
+    Name: Values
     FieldNodes(2): {
         EnumFieldDeclaration: {
-            NameExpression: {
-                Type: undefined
-                Name: First
-            }
+            Name: First
         }
         EnumFieldDeclaration: {
-            NameExpression: {
-                Type: undefined
-                Name: Second
-            }
+            Name: Second
         }
     }
 }
 FunctionDefinitionStatement: {
     Type: undefined
-    NameExpression: {
-        Type: undefined
-        Name: inner
-    }
+    Name: inner
     ParametersNode(1): {
         ParameterNode: {
             Name: x
@@ -40,10 +28,7 @@ FunctionDefinitionStatement: {
 }
 FunctionDefinitionStatement: {
     Type: undefined
-    NameExpression: {
-        Type: undefined
-        Name: outer
-    }
+    Name: outer
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {

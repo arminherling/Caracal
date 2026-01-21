@@ -1,9 +1,6 @@
 FunctionDefinitionStatement: {
     Type: undefined
-    NameExpression: {
-        Type: undefined
-        Name: square
-    }
+    Name: square
     ParametersNode(1): {
         ParameterNode: {
             Name: x
