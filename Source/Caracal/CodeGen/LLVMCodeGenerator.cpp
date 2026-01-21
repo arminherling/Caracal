@@ -1,6 +1,7 @@
 ﻿#include "LLVMCodeGenerator.h"
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/ADT/APFloat.h>
 
 namespace Caracal
 {
@@ -175,6 +176,10 @@ namespace Caracal
             {
                 return generateFunctionCallExpression((FunctionCallExpression*)node);
             }
+            case NodeKind::NameExpression:
+            {
+                return generateNameExpression((NameExpression*)node);
+            }
             case NodeKind::BoolLiteral:
             {
                 return generateBoolLiteral((BoolLiteral*)node);
@@ -225,6 +230,17 @@ namespace Caracal
         return builder.CreateCall(llvmFunction, llvmArguments);
     }
 
+    llvm::Value* LLVMCodeGenerator::generateNameExpression(NameExpression* node) noexcept
+    {
+        const auto& name = node->name();
+        auto llvmValue = m_module.getNamedGlobal(name)->getInitializer();
+        if (llvmValue == nullptr)
+        {
+            TODO("Name expression not found in module during name expression generation");
+        }
+        return llvmValue;
+    }
+
     llvm::Value* LLVMCodeGenerator::generateBoolLiteral(BoolLiteral* node) noexcept
     {
         auto& context = m_module.getContext();
@@ -246,9 +262,16 @@ namespace Caracal
 
         if (literalType == Type::I32())
         {
-            auto llvmReturnType = GetLLVMTypeForCaraType(literalType, context);
-            auto caraValue = std::stoi(lexeme.data());
-            auto returnValue = llvm::ConstantInt::get(llvmReturnType, caraValue);
+            auto llvmType = GetLLVMTypeForCaraType(literalType, context);
+            auto value = std::stoi(lexeme.data());
+            auto returnValue = llvm::ConstantInt::get(llvmType, value);
+            return returnValue;
+        }
+        else if (literalType == Type::F32())
+        {
+            auto llvmType = GetLLVMTypeForCaraType(literalType, context);
+            auto value = std::stof(lexeme.data());
+            auto returnValue = llvm::ConstantFP::get(llvmType, value);
             return returnValue;
         }
          

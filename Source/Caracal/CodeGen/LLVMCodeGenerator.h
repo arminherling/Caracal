@@ -10,6 +10,7 @@
 #include <Caracal/Syntax/NumberLiteral.h>
 #include <Caracal/Syntax/StringLiteral.h>
 #include <Caracal/Syntax/FunctionCallExpression.h>
+#include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
 #include <Caracal/Semantic/TypeDatabase.h>
 #include <llvm/IR/Module.h>
@@ -43,6 +44,7 @@ namespace Caracal
 
         llvm::Value* generateExpression(Expression* node) noexcept;
         llvm::Value* generateFunctionCallExpression(FunctionCallExpression* node) noexcept;
+        llvm::Value* generateNameExpression(NameExpression* node) noexcept; 
         llvm::Value* generateBoolLiteral(BoolLiteral* node) noexcept;
         llvm::Value* generateNumberLiteral(NumberLiteral* node) noexcept;
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;

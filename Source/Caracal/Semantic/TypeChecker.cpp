@@ -1,5 +1,4 @@
 ﻿#include "TypeChecker.h"
-#include <Caracal/Semantic/TypeChecker.h>
 
 namespace Caracal
 {

@@ -110,8 +110,30 @@ int main(int argc, char* argv[])
 
     //auto cppCode = Caracal::generateCpp(parseTree);
 
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+
     llvm::LLVMContext context;
     llvm::Module module(inputFileName, context);
+
+    auto defaultTargetTriple = llvm::sys::getDefaultTargetTriple();
+    llvm::outs() << "TargetTriple: "<<defaultTargetTriple << '\n';
+    std::string targetError;
+    auto target = llvm::TargetRegistry::lookupTarget(defaultTargetTriple, targetError);
+    auto triple = llvm::Triple(defaultTargetTriple);
+    if (!target)
+    {
+        llvm::errs() << "Error: " << targetError << "\n";
+        return 1;
+    }
+
+    auto CPU = "generic";
+    auto features = "";
+    llvm::TargetOptions targetOptions{};
+    auto relocModel = std::optional<llvm::Reloc::Model>();
+    auto targetMachine = target->createTargetMachine(triple, CPU, features, targetOptions, relocModel);
+    module.setDataLayout(targetMachine->createDataLayout());
+    module.setTargetTriple(triple);
 
     wasSuccessful = Caracal::generateLLVMModule(parseTree, typeDatabase, module);
     if (!wasSuccessful)
@@ -125,27 +147,6 @@ int main(int argc, char* argv[])
     module.print(irStream, nullptr);
     irStream.flush();
     llvm::outs() << "Module IR:\n" << irOutput << "\n";
-
-    llvm::InitializeNativeTarget();
-    llvm::InitializeNativeTargetAsmPrinter();
-
-    std::string targetError;
-    auto defaultTargetTriple = llvm::sys::getDefaultTargetTriple();
-    llvm::outs() << "TargetTriple: "<<defaultTargetTriple << '\n';
-    auto target = llvm::TargetRegistry::lookupTarget(defaultTargetTriple, targetError);
-    auto triple = llvm::Triple(defaultTargetTriple);
-    if (!target)
-    {
-        llvm::errs() << "Error: " << targetError << "\n";
-        return 1;
-    }
-
-    auto CPU = "generic";
-    auto features = "";
-    llvm::TargetOptions targetOptions;
-    auto relocModel = std::optional<llvm::Reloc::Model>();
-    auto targetMachine = target->createTargetMachine(defaultTargetTriple, CPU, features, targetOptions, relocModel);
-    module.setDataLayout(targetMachine->createDataLayout());
 
     const auto objectFileName = inputFileName + ".o";
     std::error_code errorCode;
