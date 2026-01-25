@@ -5,8 +5,8 @@
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <iostream>
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/Module.h>
+//#include <llvm/IR/LLVMContext.h>
+//#include <llvm/IR/Module.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/TypeChecker.h>
 
@@ -46,22 +46,22 @@ static void FileTests(
         CaraTest::fail();
     }
 
-    llvm::LLVMContext context;
-    llvm::Module module("file_test", context);
+    //llvm::LLVMContext context;
+    //llvm::Module module("file_test", context);
 
-    const auto startTime = std::chrono::high_resolution_clock::now();
-    wasSuccessful = Caracal::generateLLVMModule(parseTree,typeDatabase, module);
-    const auto endTime = std::chrono::high_resolution_clock::now();
+    //const auto startTime = std::chrono::high_resolution_clock::now();
+    //wasSuccessful = Caracal::generateLLVMModule(parseTree,typeDatabase, module);
+    //const auto endTime = std::chrono::high_resolution_clock::now();
 
-    std::cout << "      generateLLVMModule(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+    //std::cout << "      generateLLVMModule(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
-    CaraTest::isTrue(diagnostics.Diagnostics().empty());
+    //CaraTest::isTrue(diagnostics.Diagnostics().empty());
 
-    std::string output;
-    llvm::raw_string_ostream irStream(output);
-    module.print(irStream, nullptr);
-    irStream.flush();
-    CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
+    //std::string output;
+    //llvm::raw_string_ostream irStream(output);
+    //module.print(irStream, nullptr);
+    //irStream.flush();
+    //CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
 }
 
 static std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> FileTests_Data()

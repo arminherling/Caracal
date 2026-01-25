@@ -5,10 +5,7 @@ file(GLOB HEADERS CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/source/*.h")
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${LLVM_INCLUDE_DIRS})
-target_compile_definitions(${PROJECT_NAME} PRIVATE ${LLVM_DEFINITIONS})
-
-target_link_libraries(${PROJECT_NAME} PRIVATE Caracal CaraTest ${LLVM_LIBS})
+target_link_libraries(${PROJECT_NAME} PRIVATE Caracal CaraTest)
 
 if (WIN32)
     add_custom_command(

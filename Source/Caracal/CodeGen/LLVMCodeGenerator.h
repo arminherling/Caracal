@@ -13,11 +13,21 @@
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
 #include <Caracal/Semantic/TypeDatabase.h>
-#include <llvm/IR/Module.h>
+
+// forward declare so that we keep the headers clean and dont need to link llvm in the tests
+namespace llvm {
+    class Module;
+    class Value;
+    class Function;
+    class FunctionType;
+    class BasicBlock;
+    class Constant;
+    class GlobalValue;
+}
 
 namespace Caracal
 {
-    class CARACAL_API LLVMCodeGenerator
+    class LLVMCodeGenerator
     {
     public:
         LLVMCodeGenerator(
@@ -63,5 +73,5 @@ namespace Caracal
         llvm::BasicBlock* m_currentBasicBlock;
     };
 
-    CARACAL_API bool generateLLVMModule(const ParseTree& parseTree, TypeDatabase& typeDatabase, llvm::Module& module) noexcept;
+    bool generateLLVMModule(const ParseTree& parseTree, TypeDatabase& typeDatabase, llvm::Module& module) noexcept;
 }

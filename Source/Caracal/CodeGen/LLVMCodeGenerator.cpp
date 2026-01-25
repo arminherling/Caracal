@@ -1,4 +1,6 @@
 ﻿#include "LLVMCodeGenerator.h"
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/ADT/APFloat.h>
@@ -271,7 +273,7 @@ namespace Caracal
         {
             auto llvmType = GetLLVMTypeForCaraType(literalType, context);
             auto value = std::stof(lexeme.data());
-            auto returnValue = llvm::ConstantFP::get(llvmType, value);
+            auto returnValue = llvm::ConstantFP::get(context, llvm::APFloat(value));
             return returnValue;
         }
          
