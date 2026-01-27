@@ -50,8 +50,10 @@ namespace Caracal
         , m_typeDatabase{ typeDatabase }
         , m_module{ module }
         , m_currentScope{ Scope::Global }
+        , m_currentFunction{ nullptr }
         , m_currentBasicBlock{ nullptr }
     {
+        m_scopes.emplace_back(std::make_unique<LLVMScope>(nullptr));
     }
 
     bool LLVMCodeGenerator::generate()
@@ -100,10 +102,6 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node) noexcept
     {
-        if (m_currentScope != Scope::Global)
-        {
-            TODO("Constant declaration only supported at global scope for now");
-        }
         const auto leftExpression = node->leftExpression().get();
         if (leftExpression->kind() != NodeKind::NameExpression)
         {
@@ -113,30 +111,45 @@ namespace Caracal
         const auto& name = nameExpression->name();
         
         auto llvmValue = generateExpression(node->rightExpression().get());
-        auto llvmConstant = llvm::dyn_cast<llvm::Constant>(llvmValue);
-        createGlobalValue(name, llvmConstant, true);
+        
+        if (m_currentScope == Scope::Global)
+        {
+            const auto llvmConstant = llvm::dyn_cast<llvm::Constant>(llvmValue);
+            createGlobalValue(name, llvmConstant, true);
+        }
+        else
+        {
+            const auto llvmType = llvmValue->getType();
+            const auto localValue = createLocalValue(name, llvmType);
+            
+            llvm::IRBuilder<> builder(m_currentBasicBlock);
+            builder.CreateStore(llvmValue, localValue);
+        }
     }
 
     void LLVMCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept
     {
         const auto oldScope = m_currentScope;
         m_currentScope = Scope::Function;
+        pushScope();
 
         auto functionType = node->type();
         auto functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
         auto functionName = functionDefinition.name();
 
-        auto llvmFunction = m_module.getFunction(functionName);
-        if (llvmFunction == nullptr)
+        m_currentFunction = m_module.getFunction(functionName);
+        if (m_currentFunction == nullptr)
         {
             auto llvmFunctionType = generateFunctionType(functionDefinition);
             // TODO handle linkage types
-            llvmFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_module);
+            m_currentFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_module);
         }
 
         const auto& body = node->bodyNode();
-        generateFunctionBody(body.get(), llvmFunction);
+        generateFunctionBody(body.get(), m_currentFunction);
 
+        popScope();
+        m_currentFunction = nullptr;
         m_currentScope = oldScope; // Reset the scope after generating the function definition
     }
 
@@ -221,11 +234,17 @@ namespace Caracal
             TODO("Function not found in module during function call generation");
         }
 
+        const auto functionIsVariadic = llvmFunction->isVarArg();
         std::vector<llvm::Value*> llvmArguments;
         const auto& arguments = argumentsNode->arguments();
         for (const auto& argument : arguments)
         {
             auto llvmArgumentValue = generateExpression(argument.get());
+            // we need to promote float to double for variadic functions like printf
+            if (functionIsVariadic && llvmArgumentValue->getType()->isFloatTy())
+            {
+                llvmArgumentValue = builder.CreateFPExt(llvmArgumentValue, llvm::Type::getDoubleTy(m_module.getContext()));
+            }
             llvmArguments.push_back(llvmArgumentValue);
         }
         
@@ -235,12 +254,20 @@ namespace Caracal
     llvm::Value* LLVMCodeGenerator::generateNameExpression(NameExpression* node) noexcept
     {
         const auto& name = node->name();
-        auto llvmValue = m_module.getNamedGlobal(name)->getInitializer();
-        if (llvmValue == nullptr)
+        auto value = currentScope()->getVariableBinding(name);
+
+        if(auto localValue = llvm::dyn_cast<llvm::AllocaInst>(value))
         {
-            TODO("Name expression not found in module during name expression generation");
+            llvm::IRBuilder<> builder(m_currentBasicBlock);
+            return builder.CreateLoad(localValue->getAllocatedType(), localValue, name);
         }
-        return llvmValue;
+        else if(auto globalValue = llvm::dyn_cast<llvm::GlobalVariable>(value))
+        {
+            llvm::IRBuilder<> builder(m_currentBasicBlock);
+            return builder.CreateLoad(globalValue->getValueType(), globalValue, name);
+        }
+
+        return nullptr;
     }
 
     llvm::Value* LLVMCodeGenerator::generateBoolLiteral(BoolLiteral* node) noexcept
@@ -358,7 +385,39 @@ namespace Caracal
         value->setAlignment(llvm::MaybeAlign(4));
         value->setConstant(isConst);
         value->setInitializer(constant);
+        currentScope()->addVariableBinding(name, value);
+
         return value;
+    }
+
+    llvm::Value* LLVMCodeGenerator::createLocalValue(const std::string& name, llvm::Type* type) noexcept
+    {
+        llvm::IRBuilder<> builder(&m_currentFunction->getEntryBlock());
+
+        auto value = builder.CreateAlloca(type, 0, name);
+        currentScope()->addVariableBinding(name, value);
+
+        return value;
+    }
+
+    void LLVMCodeGenerator::pushScope()
+    {
+        auto parent = m_scopes.back().get();
+        m_scopes.emplace_back(std::make_unique<LLVMScope>(parent));
+    }
+
+    void LLVMCodeGenerator::popScope()
+    {
+        m_scopes.pop_back();
+        if (m_scopes.size() == 0)
+        {
+            TODO("Popped too many scopes");
+        }
+    }
+
+    LLVMScope* LLVMCodeGenerator::currentScope() const noexcept
+    {
+        return m_scopes.back().get();
     }
 
     bool generateLLVMModule(const ParseTree& parseTree, TypeDatabase& typeDatabase, llvm::Module& module) noexcept

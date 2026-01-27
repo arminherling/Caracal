@@ -446,18 +446,22 @@ namespace Caracal
         auto argumentsNode = functionCallExpression->argumentsNode().get();
         auto argumentTypes = typeCheckArgumentsNode(argumentsNode);
 
-        const auto& parameterTypes = functionDefinition.parameters();
-        if(parameterTypes.size() != argumentTypes.size())
+        // temporary ignore printf style functions with variable arguments
+        if(functionDefinition.name() != "print")
         {
-            TODO("Add error diagnostics for argument count mismatch");
-            return Type::Undefined();
-        }
-        for(size_t i = 0; i < parameterTypes.size(); ++i)
-        {
-            if(parameterTypes[i] != argumentTypes[i])
+            const auto& parameterTypes = functionDefinition.parameters();
+            if(parameterTypes.size() != argumentTypes.size())
             {
-                TODO("Add error diagnostics for argument type mismatch");
+                TODO("Add error diagnostics for argument count mismatch");
                 return Type::Undefined();
+            }
+            for(size_t i = 0; i < parameterTypes.size(); ++i)
+            {
+                if(parameterTypes[i] != argumentTypes[i])
+                {
+                    TODO("Add error diagnostics for argument type mismatch");
+                    return Type::Undefined();
+                }
             }
         }
 

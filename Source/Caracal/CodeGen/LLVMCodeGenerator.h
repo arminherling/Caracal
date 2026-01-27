@@ -13,6 +13,7 @@
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
 #include <Caracal/Semantic/TypeDatabase.h>
+#include <Caracal/CodeGen/LLVMScope.h>
 
 // forward declare so that we keep the headers clean and dont need to link llvm in the tests
 namespace llvm {
@@ -23,6 +24,7 @@ namespace llvm {
     class BasicBlock;
     class Constant;
     class GlobalValue;
+    class Type;
 }
 
 namespace Caracal
@@ -64,13 +66,20 @@ namespace Caracal
 
         void setupPrintfFunctionDeclaration() noexcept;
         llvm::GlobalValue* createGlobalValue(const std::string& name, llvm::Constant* constant, bool isConst) noexcept;
+        llvm::Value* createLocalValue(const std::string& name, llvm::Type* type) noexcept;
+
+        void pushScope();
+        void popScope();
+        [[nodiscard]] LLVMScope* currentScope() const noexcept;
 
     private:
         const ParseTree& m_parseTree;
         TypeDatabase& m_typeDatabase;
         llvm::Module& m_module;
         Scope m_currentScope;
+        llvm::Function* m_currentFunction;
         llvm::BasicBlock* m_currentBasicBlock;
+        std::vector<std::unique_ptr<LLVMScope>> m_scopes;
     };
 
     bool generateLLVMModule(const ParseTree& parseTree, TypeDatabase& typeDatabase, llvm::Module& module) noexcept;
