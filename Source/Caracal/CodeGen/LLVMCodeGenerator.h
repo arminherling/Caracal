@@ -3,6 +3,8 @@
 #include <Caracal/API.h>
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
+#include <Caracal/Syntax/VariableDeclaration.h>
+#include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Expression.h>
@@ -42,16 +44,12 @@ namespace Caracal
         [[nodiscard]] bool generate();
     
     private:
-        enum class Scope
-        {
-            Global,
-            Function
-        };
-
         void generateNode(Node* node) noexcept;
         void generateConstantDeclaration(ConstantDeclaration* node) noexcept;
-        void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
+        void generateVariableDeclaration(VariableDeclaration* node) noexcept;
         void generateExpressionStatement(ExpressionStatement* node) noexcept;
+        void generateAssignmentStatement(AssignmentStatement* node) noexcept;
+        void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
         void generateReturnStatement(ReturnStatement* node) noexcept;
 
         llvm::Value* generateExpression(Expression* node) noexcept;
@@ -76,7 +74,6 @@ namespace Caracal
         const ParseTree& m_parseTree;
         TypeDatabase& m_typeDatabase;
         llvm::Module& m_module;
-        Scope m_currentScope;
         llvm::Function* m_currentFunction;
         llvm::BasicBlock* m_currentBasicBlock;
         std::vector<std::unique_ptr<LLVMScope>> m_scopes;

@@ -322,7 +322,8 @@ namespace Caracal
 
         if (secondToken.kind == TokenKind::Colon)
         {
-            return std::make_unique<ConstantDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), semicolon);
+            auto isGlobalConstant = scope == StatementScope::Global;
+            return std::make_unique<ConstantDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), semicolon, isGlobalConstant);
         }
         else
         {

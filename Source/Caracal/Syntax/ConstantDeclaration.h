@@ -17,7 +17,8 @@ namespace Caracal
             std::optional<TypeNameNodeUPtr>&& explicitType,
             const Token& secondColonToken,
             ExpressionUPtr&& rightExpression,
-            const Token& semicolonToken);
+            const Token& semicolonToken,
+            bool isGlobalConstant);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(ConstantDeclaration)
 
@@ -27,6 +28,7 @@ namespace Caracal
         [[nodiscard]] const Token& secondColonToken() const noexcept { return m_secondColonToken; }
         [[nodiscard]] const ExpressionUPtr& rightExpression() const noexcept { return m_rightExpression; }
         [[nodiscard]] const Token& semicolonToken() const noexcept { return m_semicolonToken; }
+        [[nodiscard]] bool isGlobalConstant() const noexcept { return m_isGlobalConstant; }
 
     private:
         ExpressionUPtr m_leftExpression;
@@ -35,5 +37,6 @@ namespace Caracal
         Token m_secondColonToken;
         ExpressionUPtr m_rightExpression;
         Token m_semicolonToken;
+        bool m_isGlobalConstant;
     };
 }

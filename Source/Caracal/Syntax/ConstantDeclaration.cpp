@@ -1,4 +1,4 @@
-#include "ConstantDeclaration.h"
+﻿#include "ConstantDeclaration.h"
 
 namespace Caracal
 {
@@ -8,7 +8,8 @@ namespace Caracal
         std::optional<TypeNameNodeUPtr>&& explicitType,
         const Token& secondColonToken,
         ExpressionUPtr&& rightExpression,
-        const Token& semicolonToken)
+        const Token& semicolonToken,
+        bool isGlobalConstant)
         : Statement(NodeKind::ConstantDeclaration, rightExpression->type())
         , m_leftExpression{ std::move(leftExpression) }
         , m_firstColonToken{ firstColonToken }
@@ -16,6 +17,7 @@ namespace Caracal
         , m_secondColonToken{ secondColonToken }
         , m_rightExpression{ std::move(rightExpression) }
         , m_semicolonToken{ semicolonToken }
+        , m_isGlobalConstant{ isGlobalConstant }
     {
     }
 }

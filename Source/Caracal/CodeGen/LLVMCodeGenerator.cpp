@@ -49,7 +49,6 @@ namespace Caracal
         : m_parseTree{ parseTree }
         , m_typeDatabase{ typeDatabase }
         , m_module{ module }
-        , m_currentScope{ Scope::Global }
         , m_currentFunction{ nullptr }
         , m_currentBasicBlock{ nullptr }
     {
@@ -75,6 +74,16 @@ namespace Caracal
             case NodeKind::ConstantDeclaration:
             {
                 generateConstantDeclaration((ConstantDeclaration*)node);
+                break;
+            }
+            case NodeKind::VariableDeclaration:
+            {
+                generateVariableDeclaration((VariableDeclaration*)node);
+                break;
+            }
+            case NodeKind::AssignmentStatement:
+            {
+                generateAssignmentStatement((AssignmentStatement*)node);
                 break;
             }
             case NodeKind::FunctionDefinitionStatement:
@@ -111,8 +120,9 @@ namespace Caracal
         const auto& name = nameExpression->name();
         
         auto llvmValue = generateExpression(node->rightExpression().get());
-        
-        if (m_currentScope == Scope::Global)
+        auto isGlobalConstant = node->isGlobalConstant();
+
+        if (isGlobalConstant)
         {
             const auto llvmConstant = llvm::dyn_cast<llvm::Constant>(llvmValue);
             createGlobalValue(name, llvmConstant, true);
@@ -127,10 +137,57 @@ namespace Caracal
         }
     }
 
+    void LLVMCodeGenerator::generateVariableDeclaration(VariableDeclaration* node) noexcept
+    {
+        const auto leftExpression = node->leftExpression().get();
+        if (leftExpression->kind() != NodeKind::NameExpression)
+        {
+            TODO("Left expression of variable declaration must be a name expression");
+        }
+        const auto nameExpression = (NameExpression*)leftExpression;
+        const auto& name = nameExpression->name();
+
+        auto llvmValue = generateExpression(node->rightExpression().get());
+
+        const auto llvmType = llvmValue->getType();
+        const auto localValue = createLocalValue(name, llvmType);
+
+        llvm::IRBuilder<> builder(m_currentBasicBlock);
+        builder.CreateStore(llvmValue, localValue);
+        
+    }
+
+    void LLVMCodeGenerator::generateExpressionStatement(ExpressionStatement* node) noexcept
+    {
+        if (m_currentBasicBlock == nullptr)
+        {
+            TODO("Expression statement outside of a basic block");
+        }
+        llvm::IRBuilder<> builder(m_currentBasicBlock);
+        const auto expression = node->expression().get();
+        auto llvmValue = generateExpression(expression);
+    }
+
+    void LLVMCodeGenerator::generateAssignmentStatement(AssignmentStatement* node) noexcept
+    {
+        const auto leftExpression = node->leftExpression().get();
+        const auto rightExpression = node->rightExpression().get();
+        auto llvmLeftValue = generateExpression(leftExpression);
+        auto llvmRightValue = generateExpression(rightExpression);
+
+        if(auto localValue = llvm::dyn_cast<llvm::LoadInst>(llvmLeftValue))
+        {
+            llvm::IRBuilder<> builder(m_currentBasicBlock);
+            builder.CreateStore(llvmRightValue, localValue->getPointerOperand());
+        }
+        else 
+        {
+            TODO("Left expression of assignment statement must be a load instruction");
+        }
+    }
+
     void LLVMCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept
     {
-        const auto oldScope = m_currentScope;
-        m_currentScope = Scope::Function;
         pushScope();
 
         auto functionType = node->type();
@@ -150,18 +207,6 @@ namespace Caracal
 
         popScope();
         m_currentFunction = nullptr;
-        m_currentScope = oldScope; // Reset the scope after generating the function definition
-    }
-
-    void LLVMCodeGenerator::generateExpressionStatement(ExpressionStatement* node) noexcept
-    {
-        if (m_currentBasicBlock == nullptr)
-        {
-            TODO("Expression statement outside of a basic block");
-        }
-        llvm::IRBuilder<> builder(m_currentBasicBlock);
-        const auto expression = node->expression().get();
-        auto llvmValue = generateExpression(expression);
     }
 
     void LLVMCodeGenerator::generateReturnStatement(ReturnStatement* node) noexcept
