@@ -1,0 +1,65 @@
+﻿name: AllInOne
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        cpp_compiler: [g++, clang++, cl]
+        exclude:
+          - os: ubuntu-latest
+            cpp_compiler: cl
+          - os: windows-latest
+            cpp_compiler: g++
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Setup C++ Compiler and Tools
+      uses: aminya/setup-cpp@v1
+      with:
+        compiler: ${{ matrix.cpp_compiler }}
+        cmake: true
+        ninja: true
+
+    - name: Install LLVM and Clang
+      uses: KyleMayes/install-llvm-action@v2
+      with:
+        version: "21.1.8"
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -G Ninja
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Run Test (Windows)
+      if: runner.os == 'Windows'
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ./Tests/AllInOne/AllInOne.exe
+
+    - name: Run Test (Linux)
+      if: runner.os == 'Linux'
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ./Tests/AllInOne/AllInOne
