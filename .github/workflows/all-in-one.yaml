@@ -25,6 +25,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.6.0'
+        #arch: ${{ (matrix.os == 'windows-latest' && matrix.cpp_compiler == 'g++') && 'win64_mingw' || '' }}
+
     - name: Set reusable strings
       id: strings
       shell: bash
