@@ -6,6 +6,8 @@
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
+#include <Caracal/Syntax/IfStatement.h>
+#include <Caracal/Syntax/WhileStatement.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/BoolLiteral.h>
@@ -28,8 +30,8 @@ namespace llvm {
     class Constant;
     class GlobalValue;
     class Type;
+    class IRBuilderBase;
 }
-
 namespace Caracal
 {
     class LLVMCodeGenerator
@@ -51,6 +53,10 @@ namespace Caracal
         void generateExpressionStatement(ExpressionStatement* node) noexcept;
         void generateAssignmentStatement(AssignmentStatement* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
+        void generateIfStatement(IfStatement* node) noexcept;
+        void generateWhileStatement(WhileStatement* node) noexcept;
+        void generateBreakStatement() noexcept;
+        void generateSkipStatement() noexcept;
         void generateReturnStatement(ReturnStatement* node) noexcept;
 
         llvm::Value* generateExpression(Expression* node) noexcept;
@@ -62,7 +68,7 @@ namespace Caracal
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
 
         llvm::FunctionType* generateFunctionType(FunctionDefinition& functionDefinition) noexcept;
-        void generateFunctionBody(BlockNode* body, llvm::Function* llvmFunction) noexcept;
+        void generateBlockNode(BlockNode* body) noexcept;
 
         void setupPrintfFunctionDeclaration() noexcept;
         llvm::GlobalValue* createGlobalValue(const std::string& name, llvm::Constant* constant, bool isConst) noexcept;
@@ -77,7 +83,9 @@ namespace Caracal
         TypeDatabase& m_typeDatabase;
         llvm::Module& m_module;
         llvm::Function* m_currentFunction;
-        llvm::BasicBlock* m_currentBasicBlock;
+        llvm::BasicBlock* m_currentConditionBlock;
+        llvm::BasicBlock* m_currentEndBlock;
+        std::unique_ptr<llvm::IRBuilderBase> m_irBuilder;
         std::vector<std::unique_ptr<LLVMScope>> m_scopes;
     };
 

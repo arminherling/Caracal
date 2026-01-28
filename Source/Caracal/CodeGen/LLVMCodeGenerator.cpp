@@ -1,4 +1,6 @@
 ﻿#include "LLVMCodeGenerator.h"
+#include "LLVMCodeGenerator.h"
+#include "LLVMCodeGenerator.h"
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Verifier.h>
@@ -50,7 +52,9 @@ namespace Caracal
         , m_typeDatabase{ typeDatabase }
         , m_module{ module }
         , m_currentFunction{ nullptr }
-        , m_currentBasicBlock{ nullptr }
+        , m_currentConditionBlock{ nullptr }
+        , m_currentEndBlock{ nullptr }
+        , m_irBuilder{ std::make_unique<llvm::IRBuilder<>>(module.getContext()) }
     {
         m_scopes.emplace_back(std::make_unique<LLVMScope>(nullptr));
     }
@@ -91,6 +95,26 @@ namespace Caracal
                 generateFunctionDefinition((FunctionDefinitionStatement*)node);
                 break;
             }
+            case NodeKind::IfStatement:
+            {
+                generateIfStatement((IfStatement*)node);
+                break;
+            }
+            case NodeKind::WhileStatement:
+            {
+                generateWhileStatement((WhileStatement*)node);
+                break;
+            }
+            case NodeKind::BreakStatement:
+            {
+                generateBreakStatement();
+                break;
+            }
+            case NodeKind::SkipStatement:
+            {
+                generateSkipStatement();
+                break;
+            }
             case NodeKind::ExpressionStatement:
             {
                 generateExpressionStatement((ExpressionStatement*)node);
@@ -99,6 +123,11 @@ namespace Caracal
             case NodeKind::ReturnStatement:
             {
                 generateReturnStatement((ReturnStatement*)node);
+                break;
+            }
+            case NodeKind::BlockNode:
+            {
+                generateBlockNode((BlockNode*)node);
                 break;
             }
             default:
@@ -132,8 +161,7 @@ namespace Caracal
             const auto llvmType = llvmValue->getType();
             const auto localValue = createLocalValue(name, llvmType);
             
-            llvm::IRBuilder<> builder(m_currentBasicBlock);
-            builder.CreateStore(llvmValue, localValue);
+            m_irBuilder->CreateStore(llvmValue, localValue);
         }
     }
 
@@ -152,18 +180,11 @@ namespace Caracal
         const auto llvmType = llvmValue->getType();
         const auto localValue = createLocalValue(name, llvmType);
 
-        llvm::IRBuilder<> builder(m_currentBasicBlock);
-        builder.CreateStore(llvmValue, localValue);
-        
+        m_irBuilder->CreateStore(llvmValue, localValue);
     }
 
     void LLVMCodeGenerator::generateExpressionStatement(ExpressionStatement* node) noexcept
     {
-        if (m_currentBasicBlock == nullptr)
-        {
-            TODO("Expression statement outside of a basic block");
-        }
-        llvm::IRBuilder<> builder(m_currentBasicBlock);
         const auto expression = node->expression().get();
         auto llvmValue = generateExpression(expression);
     }
@@ -177,8 +198,7 @@ namespace Caracal
 
         if(auto localValue = llvm::dyn_cast<llvm::LoadInst>(llvmLeftValue))
         {
-            llvm::IRBuilder<> builder(m_currentBasicBlock);
-            builder.CreateStore(llvmRightValue, localValue->getPointerOperand());
+            m_irBuilder->CreateStore(llvmRightValue, localValue->getPointerOperand());
         }
         else 
         {
@@ -202,29 +222,125 @@ namespace Caracal
             m_currentFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_module);
         }
 
+        auto& context = m_module.getContext();
+        auto entry = llvm::BasicBlock::Create(context, "entry", m_currentFunction);
+        m_irBuilder->SetInsertPoint(entry);
+
         const auto& body = node->bodyNode();
-        generateFunctionBody(body.get(), m_currentFunction);
+        generateBlockNode(body.get());
 
         popScope();
         m_currentFunction = nullptr;
     }
 
-    void LLVMCodeGenerator::generateReturnStatement(ReturnStatement* node) noexcept
+    void LLVMCodeGenerator::generateIfStatement(IfStatement* node) noexcept
     {
-        if (m_currentBasicBlock == nullptr)
-        {
-            TODO("Return statement outside of a basic block");
-        }
+        const auto hasFalseBlock = node->hasFalseBlock();
+        const auto condition = node->condition().get();
+        auto llvmCondition = generateExpression(condition);
 
-        llvm::IRBuilder<> builder(m_currentBasicBlock);
-        if (node->expression().has_value())
+        auto trueBlock = llvm::BasicBlock::Create(m_module.getContext(), "if_true", m_currentFunction);
+        llvm::BasicBlock* falseBlock = nullptr;
+        if (hasFalseBlock)
         {
-            auto llvmReturnValue = generateExpression(node->expression().value().get());
-            builder.CreateRet(llvmReturnValue);
+            falseBlock = llvm::BasicBlock::Create(m_module.getContext(), "if_false");
+        }
+        auto afterBlock = llvm::BasicBlock::Create(m_module.getContext(), "if_end");
+
+        if(hasFalseBlock)
+        {
+            m_irBuilder->CreateCondBr(llvmCondition, trueBlock, falseBlock);
         }
         else
         {
-            builder.CreateRetVoid();
+            m_irBuilder->CreateCondBr(llvmCondition, trueBlock, afterBlock);
+        }
+
+        m_irBuilder->SetInsertPoint(trueBlock);
+        generateNode(node->trueStatement().get());
+        if (!m_irBuilder->GetInsertBlock()->getTerminator())
+        {
+            m_irBuilder->CreateBr(afterBlock);
+        }
+
+        trueBlock = m_irBuilder->GetInsertBlock();
+
+        if(hasFalseBlock)
+        {
+            m_currentFunction->insert(m_currentFunction->end(), falseBlock);
+            m_irBuilder->SetInsertPoint(falseBlock);
+            generateNode(node->falseStatement().value().get());
+            if (!m_irBuilder->GetInsertBlock()->getTerminator())
+            {
+                m_irBuilder->CreateBr(afterBlock);
+            }
+
+            falseBlock = m_irBuilder->GetInsertBlock();
+        }
+
+        m_currentFunction->insert(m_currentFunction->end(), afterBlock);
+        m_irBuilder->SetInsertPoint(afterBlock);
+    }
+
+    void LLVMCodeGenerator::generateWhileStatement(WhileStatement* node) noexcept
+    {
+        const auto condition = node->condition().get();
+        auto conditionBlock = llvm::BasicBlock::Create(m_module.getContext(), "while_condition", m_currentFunction);
+        
+        m_irBuilder->CreateBr(conditionBlock);
+        m_irBuilder->SetInsertPoint(conditionBlock);
+        auto llvmCondition = generateExpression(condition);
+        auto oldConditionBlock = m_currentConditionBlock;
+        m_currentConditionBlock = conditionBlock;
+
+        auto loopBlock = llvm::BasicBlock::Create(m_module.getContext(), "while_loop");
+        auto afterBlock = llvm::BasicBlock::Create(m_module.getContext(), "while_end");
+        auto oldAfterBlock = m_currentEndBlock;
+        m_currentEndBlock = afterBlock;
+
+        m_irBuilder->CreateCondBr(llvmCondition, loopBlock, afterBlock);
+
+        m_currentFunction->insert(m_currentFunction->end(), loopBlock);
+        m_irBuilder->SetInsertPoint(loopBlock);
+        generateNode(node->trueStatement().get());
+        m_irBuilder->CreateBr(conditionBlock);
+
+        // restore blocks
+        m_currentConditionBlock = oldConditionBlock;
+        m_currentEndBlock = oldAfterBlock;
+
+        m_currentFunction->insert(m_currentFunction->end(), afterBlock);
+        m_irBuilder->SetInsertPoint(afterBlock);
+    }
+
+    void LLVMCodeGenerator::generateBreakStatement() noexcept
+    {
+        if (m_currentEndBlock == nullptr)
+        {
+            TODO("Break statement not within a loop");
+        }
+        m_irBuilder->CreateBr(m_currentEndBlock);
+    }
+
+    void LLVMCodeGenerator::generateSkipStatement() noexcept
+    {
+        if (m_currentConditionBlock == nullptr)
+        {
+            TODO("Skip statement not within a loop");
+        }
+        m_irBuilder->CreateBr(m_currentConditionBlock);
+    }
+
+    void LLVMCodeGenerator::generateReturnStatement(ReturnStatement* node) noexcept
+    {
+        if (node->expression().has_value())
+        {
+            auto llvmReturnValue = generateExpression(node->expression().value().get());
+            m_irBuilder->CreateRet(llvmReturnValue);
+        }
+        else
+        {
+            m_irBuilder->CreateRetVoid();
         }
     }
 
@@ -274,14 +390,13 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (resultType->isIntegerTy())
                 {
-                    return builder.CreateAdd(lhs, rhs, "addtmp");
+                    return m_irBuilder->CreateAdd(lhs, rhs, "addtmp");
                 }
                 else if (resultType->isFloatingPointTy())
                 {
-                    return builder.CreateFAdd(lhs, rhs, "addtmp");
+                    return m_irBuilder->CreateFAdd(lhs, rhs, "addtmp");
                 }
                 else
                 {
@@ -294,14 +409,13 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (resultType->isIntegerTy())
                 {
-                    return builder.CreateSub(lhs, rhs, "subtmp");
+                    return m_irBuilder->CreateSub(lhs, rhs, "subtmp");
                 }
                 else if (resultType->isFloatingPointTy())
                 {
-                    return builder.CreateFSub(lhs, rhs, "subtmp");
+                    return m_irBuilder->CreateFSub(lhs, rhs, "subtmp");
                 }
                 else
                 {
@@ -314,14 +428,13 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (resultType->isIntegerTy())
                 {
-                    return builder.CreateMul(lhs, rhs, "multmp");
+                    return m_irBuilder->CreateMul(lhs, rhs, "multmp");
                 }
                 else if (resultType->isFloatingPointTy())
                 {
-                    return builder.CreateFMul(lhs, rhs, "multmp");
+                    return m_irBuilder->CreateFMul(lhs, rhs, "multmp");
                 }
                 else
                 {
@@ -334,14 +447,13 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (resultType->isIntegerTy())
                 {
-                    return builder.CreateSDiv(lhs, rhs, "divtmp");
+                    return m_irBuilder->CreateSDiv(lhs, rhs, "divtmp");
                 }
                 else if (resultType->isFloatingPointTy())
                 {
-                    return builder.CreateFDiv(lhs, rhs, "divtmp");
+                    return m_irBuilder->CreateFDiv(lhs, rhs, "divtmp");
                 }
                 else
                 {
@@ -353,14 +465,13 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (lhs->getType()->isIntegerTy())
                 {
-                    return builder.CreateICmpEQ(lhs, rhs, "eqtmp");
+                    return m_irBuilder->CreateICmpEQ(lhs, rhs, "eqtmp");
                 }
                 else if (lhs->getType()->isFloatingPointTy())
                 {
-                    return builder.CreateFCmpUEQ(lhs, rhs, "eqtmp");
+                    return m_irBuilder->CreateFCmpUEQ(lhs, rhs, "eqtmp");
                 }
                 else
                 {
@@ -372,14 +483,13 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (lhs->getType()->isIntegerTy())
                 {
-                    return builder.CreateICmpNE(lhs, rhs, "netmp");
+                    return m_irBuilder->CreateICmpNE(lhs, rhs, "netmp");
                 }
                 else if (lhs->getType()->isFloatingPointTy())
                 {
-                    return builder.CreateFCmpUNE(lhs, rhs, "netmp");
+                    return m_irBuilder->CreateFCmpUNE(lhs, rhs, "netmp");
                 }
                 else
                 {
@@ -391,14 +501,13 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (lhs->getType()->isIntegerTy())
                 {
-                    return builder.CreateICmpSLT(lhs, rhs, "lttmp");
+                    return m_irBuilder->CreateICmpSLT(lhs, rhs, "lttmp");
                 }
                 else if (lhs->getType()->isFloatingPointTy())
                 {
-                    return builder.CreateFCmpULT(lhs, rhs, "lttmp");
+                    return m_irBuilder->CreateFCmpULT(lhs, rhs, "lttmp");
                 }
                 else
                 {
@@ -410,14 +519,13 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (lhs->getType()->isIntegerTy())
                 {
-                    return builder.CreateICmpSLE(lhs, rhs, "letmp");
+                    return m_irBuilder->CreateICmpSLE(lhs, rhs, "letmp");
                 }
                 else if (lhs->getType()->isFloatingPointTy())
                 {
-                    return builder.CreateFCmpULE(lhs, rhs, "letmp");
+                    return m_irBuilder->CreateFCmpULE(lhs, rhs, "letmp");
                 }
                 else
                 {
@@ -429,14 +537,13 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (lhs->getType()->isIntegerTy())
                 {
-                    return builder.CreateICmpSGT(lhs, rhs, "gttmp");
+                    return m_irBuilder->CreateICmpSGT(lhs, rhs, "gttmp");
                 }
                 else if (lhs->getType()->isFloatingPointTy())
                 {
-                    return builder.CreateFCmpUGT(lhs, rhs, "gttmp");
+                    return m_irBuilder->CreateFCmpUGT(lhs, rhs, "gttmp");
                 }
                 else
                 {
@@ -448,14 +555,13 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (lhs->getType()->isIntegerTy())
                 {
-                    return builder.CreateICmpSGE(lhs, rhs, "getmp");
+                    return m_irBuilder->CreateICmpSGE(lhs, rhs, "getmp");
                 }
                 else if (lhs->getType()->isFloatingPointTy())
                 {
-                    return builder.CreateFCmpUGE(lhs, rhs, "getmp");
+                    return m_irBuilder->CreateFCmpUGE(lhs, rhs, "getmp");
                 }
                 else
                 {
@@ -467,10 +573,9 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (lhs->getType()->isIntegerTy())
                 {
-                    return builder.CreateLogicalAnd(lhs, rhs, "andtmp");
+                    return m_irBuilder->CreateLogicalAnd(lhs, rhs, "andtmp");
                 }
                 else
                 {
@@ -482,10 +587,9 @@ namespace Caracal
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
-                llvm::IRBuilder<> builder(m_currentBasicBlock);
                 if (lhs->getType()->isIntegerTy())
                 {
-                    return builder.CreateLogicalOr(lhs, rhs, "ortmp");
+                    return m_irBuilder->CreateLogicalOr(lhs, rhs, "ortmp");
                 }
                 else
                 {
@@ -504,13 +608,11 @@ namespace Caracal
 
         if(auto localValue = llvm::dyn_cast<llvm::AllocaInst>(value))
         {
-            llvm::IRBuilder<> builder(m_currentBasicBlock);
-            return builder.CreateLoad(localValue->getAllocatedType(), localValue, name);
+            return m_irBuilder->CreateLoad(localValue->getAllocatedType(), localValue, name);
         }
         else if(auto globalValue = llvm::dyn_cast<llvm::GlobalVariable>(value))
         {
-            llvm::IRBuilder<> builder(m_currentBasicBlock);
-            return builder.CreateLoad(globalValue->getValueType(), globalValue, name);
+            return m_irBuilder->CreateLoad(globalValue->getValueType(), globalValue, name);
         }
 
         return nullptr;
@@ -518,12 +620,6 @@ namespace Caracal
 
     llvm::Value* LLVMCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node) noexcept
     {
-        if (m_currentBasicBlock == nullptr)
-        {
-            TODO("Function call expression outside of a basic block");
-        }
-
-        llvm::IRBuilder<> builder(m_currentBasicBlock);
         const auto nameExpression = node->nameExpression().get();
         const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
         auto argumentsNode = node->argumentsNode().get();
@@ -546,18 +642,18 @@ namespace Caracal
                 // we need to promote bool to int32 for variadic functions like printf
                 if (llvmArgumentValue->getType()->isIntegerTy(1))
                 {
-                    llvmArgumentValue = builder.CreateZExt(llvmArgumentValue, llvm::Type::getInt32Ty(m_module.getContext()));
+                    llvmArgumentValue = m_irBuilder->CreateZExt(llvmArgumentValue, llvm::Type::getInt32Ty(m_module.getContext()));
                 }
                 // we need to promote float to double for variadic functions like printf
                 else if (llvmArgumentValue->getType()->isFloatTy())
                 {
-                    llvmArgumentValue = builder.CreateFPExt(llvmArgumentValue, llvm::Type::getDoubleTy(m_module.getContext()));
+                    llvmArgumentValue = m_irBuilder->CreateFPExt(llvmArgumentValue, llvm::Type::getDoubleTy(m_module.getContext()));
                 }
             }
             llvmArguments.push_back(llvmArgumentValue);
         }
 
-        return builder.CreateCall(llvmFunction, llvmArguments);
+        return m_irBuilder->CreateCall(llvmFunction, llvmArguments);
     }
 
     llvm::Value* LLVMCodeGenerator::generateBoolLiteral(BoolLiteral* node) noexcept
@@ -601,9 +697,8 @@ namespace Caracal
     llvm::Value* LLVMCodeGenerator::generateStringLiteral(StringLiteral* node) noexcept
     {
         auto& context = m_module.getContext();
-        llvm::IRBuilder<> builder(context);
         const auto& stringContent = node->escapedContent();
-        return builder.CreateGlobalString(stringContent, "", 0, &m_module);
+        return m_irBuilder->CreateGlobalString(stringContent, "", 0, &m_module);
     }
 
     llvm::FunctionType* LLVMCodeGenerator::generateFunctionType(FunctionDefinition& functionDefinition) noexcept
@@ -638,18 +733,13 @@ namespace Caracal
         return llvmFunctionType;
     }
 
-    void LLVMCodeGenerator::generateFunctionBody(BlockNode* body, llvm::Function* llvmFunction) noexcept
+    void LLVMCodeGenerator::generateBlockNode(BlockNode* body) noexcept
     {
-        auto& context = m_module.getContext();
-        m_currentBasicBlock = llvm::BasicBlock::Create(context, "entry", llvmFunction);
-
         const auto& statements = body->statements();
         for (const auto& statement : statements)
         {
             generateNode(statement.get());
         }
-
-        m_currentBasicBlock = nullptr;
     }
 
     void LLVMCodeGenerator::setupPrintfFunctionDeclaration() noexcept
