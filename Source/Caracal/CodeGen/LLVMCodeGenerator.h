@@ -11,6 +11,7 @@
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/NumberLiteral.h>
 #include <Caracal/Syntax/StringLiteral.h>
+#include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/FunctionCallExpression.h>
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
@@ -53,8 +54,9 @@ namespace Caracal
         void generateReturnStatement(ReturnStatement* node) noexcept;
 
         llvm::Value* generateExpression(Expression* node) noexcept;
-        llvm::Value* generateFunctionCallExpression(FunctionCallExpression* node) noexcept;
+        llvm::Value* generateBinaryExpression(BinaryExpression* node) noexcept;
         llvm::Value* generateNameExpression(NameExpression* node) noexcept; 
+        llvm::Value* generateFunctionCallExpression(FunctionCallExpression* node) noexcept;
         llvm::Value* generateBoolLiteral(BoolLiteral* node) noexcept;
         llvm::Value* generateNumberLiteral(NumberLiteral* node) noexcept;
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;

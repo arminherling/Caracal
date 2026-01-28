@@ -236,6 +236,10 @@ namespace Caracal
             {
                 return generateFunctionCallExpression((FunctionCallExpression*)node);
             }
+            case NodeKind::BinaryExpression:
+            {
+                return generateBinaryExpression((BinaryExpression*)node);
+            }
             case NodeKind::NameExpression:
             {
                 return generateNameExpression((NameExpression*)node);
@@ -258,6 +262,258 @@ namespace Caracal
                 break;
             }
         }
+    }
+
+    llvm::Value* LLVMCodeGenerator::generateBinaryExpression(BinaryExpression* node) noexcept
+    {
+        switch (node->binaryOperator())
+        {
+            case BinaryOperatorKind::Addition:
+            {
+                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_module.getContext());
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (resultType->isIntegerTy())
+                {
+                    return builder.CreateAdd(lhs, rhs, "addtmp");
+                }
+                else if (resultType->isFloatingPointTy())
+                {
+                    return builder.CreateFAdd(lhs, rhs, "addtmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for addition operator");
+                }
+            }
+            case BinaryOperatorKind::Subtraction:
+            {
+                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_module.getContext());
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (resultType->isIntegerTy())
+                {
+                    return builder.CreateSub(lhs, rhs, "subtmp");
+                }
+                else if (resultType->isFloatingPointTy())
+                {
+                    return builder.CreateFSub(lhs, rhs, "subtmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for subtraction operator");
+                }
+            }
+            case BinaryOperatorKind::Multiplication:
+            {
+                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_module.getContext());
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (resultType->isIntegerTy())
+                {
+                    return builder.CreateMul(lhs, rhs, "multmp");
+                }
+                else if (resultType->isFloatingPointTy())
+                {
+                    return builder.CreateFMul(lhs, rhs, "multmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for multiplication operator");
+                }
+            }
+            case BinaryOperatorKind::Division:
+            {
+                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_module.getContext());
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (resultType->isIntegerTy())
+                {
+                    return builder.CreateSDiv(lhs, rhs, "divtmp");
+                }
+                else if (resultType->isFloatingPointTy())
+                {
+                    return builder.CreateFDiv(lhs, rhs, "divtmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for division operator");
+                }
+            }
+            case BinaryOperatorKind::Equal:
+            {
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (lhs->getType()->isIntegerTy())
+                {
+                    return builder.CreateICmpEQ(lhs, rhs, "eqtmp");
+                }
+                else if (lhs->getType()->isFloatingPointTy())
+                {
+                    return builder.CreateFCmpUEQ(lhs, rhs, "eqtmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for equality operator");
+                }
+            }
+            case BinaryOperatorKind::NotEqual:
+            {
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (lhs->getType()->isIntegerTy())
+                {
+                    return builder.CreateICmpNE(lhs, rhs, "netmp");
+                }
+                else if (lhs->getType()->isFloatingPointTy())
+                {
+                    return builder.CreateFCmpUNE(lhs, rhs, "netmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for inequality operator");
+                }
+            }
+            case BinaryOperatorKind::LessThan:
+            {
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (lhs->getType()->isIntegerTy())
+                {
+                    return builder.CreateICmpSLT(lhs, rhs, "lttmp");
+                }
+                else if (lhs->getType()->isFloatingPointTy())
+                {
+                    return builder.CreateFCmpULT(lhs, rhs, "lttmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for less than operator");
+                }
+            }
+            case BinaryOperatorKind::LessOrEqual:
+            {
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (lhs->getType()->isIntegerTy())
+                {
+                    return builder.CreateICmpSLE(lhs, rhs, "letmp");
+                }
+                else if (lhs->getType()->isFloatingPointTy())
+                {
+                    return builder.CreateFCmpULE(lhs, rhs, "letmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for less or equal operator");
+                }
+            }
+            case BinaryOperatorKind::GreaterThan:
+            {
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (lhs->getType()->isIntegerTy())
+                {
+                    return builder.CreateICmpSGT(lhs, rhs, "gttmp");
+                }
+                else if (lhs->getType()->isFloatingPointTy())
+                {
+                    return builder.CreateFCmpUGT(lhs, rhs, "gttmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for greater than operator");
+                }
+            }
+            case BinaryOperatorKind::GreaterOrEqual:
+            {
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (lhs->getType()->isIntegerTy())
+                {
+                    return builder.CreateICmpSGE(lhs, rhs, "getmp");
+                }
+                else if (lhs->getType()->isFloatingPointTy())
+                {
+                    return builder.CreateFCmpUGE(lhs, rhs, "getmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for greater or equal operator");
+                }
+            }
+            case BinaryOperatorKind::LogicalAnd:
+            {
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (lhs->getType()->isIntegerTy())
+                {
+                    return builder.CreateLogicalAnd(lhs, rhs, "andtmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for logical and operator");
+                }
+            }
+            case BinaryOperatorKind::LogicalOr:
+            {
+                const auto lhs = generateExpression(node->leftExpression().get());
+                const auto rhs = generateExpression(node->rightExpression().get());
+
+                llvm::IRBuilder<> builder(m_currentBasicBlock);
+                if (lhs->getType()->isIntegerTy())
+                {
+                    return builder.CreateLogicalOr(lhs, rhs, "ortmp");
+                }
+                else
+                {
+                    TODO("Unsupported type for logical or operator");
+                }
+            }
+            default:
+                TODO("Unsupported binary operator");
+        }
+    }
+
+    llvm::Value* LLVMCodeGenerator::generateNameExpression(NameExpression* node) noexcept
+    {
+        const auto& name = node->name();
+        auto value = currentScope()->getVariableBinding(name);
+
+        if(auto localValue = llvm::dyn_cast<llvm::AllocaInst>(value))
+        {
+            llvm::IRBuilder<> builder(m_currentBasicBlock);
+            return builder.CreateLoad(localValue->getAllocatedType(), localValue, name);
+        }
+        else if(auto globalValue = llvm::dyn_cast<llvm::GlobalVariable>(value))
+        {
+            llvm::IRBuilder<> builder(m_currentBasicBlock);
+            return builder.CreateLoad(globalValue->getValueType(), globalValue, name);
+        }
+
+        return nullptr;
     }
 
     llvm::Value* LLVMCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node) noexcept
@@ -285,34 +541,23 @@ namespace Caracal
         for (const auto& argument : arguments)
         {
             auto llvmArgumentValue = generateExpression(argument.get());
-            // we need to promote float to double for variadic functions like printf
-            if (functionIsVariadic && llvmArgumentValue->getType()->isFloatTy())
+            if (functionIsVariadic)
             {
-                llvmArgumentValue = builder.CreateFPExt(llvmArgumentValue, llvm::Type::getDoubleTy(m_module.getContext()));
+                // we need to promote bool to int32 for variadic functions like printf
+                if (llvmArgumentValue->getType()->isIntegerTy(1))
+                {
+                    llvmArgumentValue = builder.CreateZExt(llvmArgumentValue, llvm::Type::getInt32Ty(m_module.getContext()));
+                }
+                // we need to promote float to double for variadic functions like printf
+                else if (llvmArgumentValue->getType()->isFloatTy())
+                {
+                    llvmArgumentValue = builder.CreateFPExt(llvmArgumentValue, llvm::Type::getDoubleTy(m_module.getContext()));
+                }
             }
             llvmArguments.push_back(llvmArgumentValue);
         }
-        
+
         return builder.CreateCall(llvmFunction, llvmArguments);
-    }
-
-    llvm::Value* LLVMCodeGenerator::generateNameExpression(NameExpression* node) noexcept
-    {
-        const auto& name = node->name();
-        auto value = currentScope()->getVariableBinding(name);
-
-        if(auto localValue = llvm::dyn_cast<llvm::AllocaInst>(value))
-        {
-            llvm::IRBuilder<> builder(m_currentBasicBlock);
-            return builder.CreateLoad(localValue->getAllocatedType(), localValue, name);
-        }
-        else if(auto globalValue = llvm::dyn_cast<llvm::GlobalVariable>(value))
-        {
-            llvm::IRBuilder<> builder(m_currentBasicBlock);
-            return builder.CreateLoad(globalValue->getValueType(), globalValue, name);
-        }
-
-        return nullptr;
     }
 
     llvm::Value* LLVMCodeGenerator::generateBoolLiteral(BoolLiteral* node) noexcept
