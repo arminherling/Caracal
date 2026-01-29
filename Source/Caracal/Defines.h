@@ -8,7 +8,13 @@
     ClassName(ClassName&&) = default;                       \
     ClassName& operator=(ClassName&&) = default;
 
-#define TODO(X) __debugbreak();
+#if defined(_MSC_VER)
+#define TODO(X)  __debugbreak();
+#elif defined(__GNUC__) || defined(__clang__)
+#define TODO(X)  __builtin_trap();
+#else
+#define TODO(X) static_assert(false, "Debug break not supported for this compiler");
+#endif
 
 using i8 = int8_t;
 using i32 = int32_t;
