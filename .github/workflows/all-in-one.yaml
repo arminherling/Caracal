@@ -46,9 +46,12 @@ jobs:
 
     - name: Install LLVM (MSVC)
       if: matrix.cpp_compiler == 'cl'
+      shell: pwsh
       run: |
         choco install llvm --version=21.1.8 -y
-        echo "LLVM_DIR=C:/Program Files/LLVM/lib/cmake/llvm" >> $env:GITHUB_ENV
+        $llvmPath = "C:\Program Files\LLVM\lib\cmake\llvm"
+        echo "LLVM_DIR=$llvmPath" >> $env:GITHUB_ENV
+        echo "CMAKE_PREFIX_PATH=$llvmPath" >> $env:GITHUB_ENV
 
     - name: Install LLVM (Non-MSVC)
       if: matrix.cpp_compiler != 'cl'
