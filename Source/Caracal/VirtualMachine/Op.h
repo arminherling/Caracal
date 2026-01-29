@@ -35,5 +35,5 @@ namespace Caracal
         Halt
     };
 
-    CARACAL_API [[nodiscard]] std::string stringify(Op op);
+    [[nodiscard]] CARACAL_API std::string stringify(Op op);
 }
