@@ -303,7 +303,10 @@ namespace Caracal
         m_currentFunction->insert(m_currentFunction->end(), loopBlock);
         m_irBuilder->SetInsertPoint(loopBlock);
         generateNode(node->trueStatement().get());
-        m_irBuilder->CreateBr(conditionBlock);
+        if (!m_irBuilder->GetInsertBlock()->getTerminator())
+        {
+            m_irBuilder->CreateBr(conditionBlock);
+        }
 
         // restore blocks
         m_currentConditionBlock = oldConditionBlock;
@@ -772,7 +775,8 @@ namespace Caracal
 
     llvm::Value* LLVMCodeGenerator::createLocalValue(const std::string& name, llvm::Type* type) noexcept
     {
-        llvm::IRBuilder<> builder(&m_currentFunction->getEntryBlock());
+        llvm::IRBuilder<> builder(&m_currentFunction->getEntryBlock(), 
+                              m_currentFunction->getEntryBlock().getFirstInsertionPt());
 
         auto value = builder.CreateAlloca(type, 0, name);
         currentScope()->addVariableBinding(name, value);
