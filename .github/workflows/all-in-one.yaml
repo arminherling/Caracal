@@ -44,7 +44,14 @@ jobs:
         cmake: true
         ninja: true
 
-    - name: Install LLVM and Clang
+    - name: Install LLVM (MSVC)
+      if: matrix.cpp_compiler == 'cl'
+      run: |
+        choco install llvm --version=21.1.8 -y
+        echo "LLVM_DIR=C:/Program Files/LLVM/lib/cmake/llvm" >> $env:GITHUB_ENV
+
+    - name: Install LLVM (Non-MSVC)
+      if: matrix.cpp_compiler != 'cl'
       uses: KyleMayes/install-llvm-action@v2
       with:
         version: "21.1.8"
