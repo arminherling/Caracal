@@ -2,14 +2,14 @@
 
 add_executable(
     ${PROJECT_NAME} 
-    "${PROJECT_SOURCE_DIR}/../CppCodeGenTests/source/CppCodeGenTests.cpp"
-    "${PROJECT_SOURCE_DIR}/../LLVMCodeGenTests/source/LLVMCodeGenTests.cpp"
-    "${PROJECT_SOURCE_DIR}/../LexerTests/source/LexerTests.cpp"
-    "${PROJECT_SOURCE_DIR}/../ParserTests/source/ParserTests.cpp"
-    "${PROJECT_SOURCE_DIR}/../TypeCheckerTests/source/TypeCheckerTests.cpp"
-    "${PROJECT_SOURCE_DIR}/../SourceLocationTests/source/SourceLocationTests.cpp"
-    "${PROJECT_SOURCE_DIR}/../VirtualMachineTests/source/VirtualMachineTests.cpp"
-    "source/main.cpp")
+    "${PROJECT_SOURCE_DIR}/../CppCodeGenTests/Source/CppCodeGenTests.cpp"
+    "${PROJECT_SOURCE_DIR}/../LLVMCodeGenTests/Source/LLVMCodeGenTests.cpp"
+    "${PROJECT_SOURCE_DIR}/../LexerTests/Source/LexerTests.cpp"
+    "${PROJECT_SOURCE_DIR}/../ParserTests/Source/ParserTests.cpp"
+    "${PROJECT_SOURCE_DIR}/../TypeCheckerTests/Source/TypeCheckerTests.cpp"
+    "${PROJECT_SOURCE_DIR}/../SourceLocationTests/Source/SourceLocationTests.cpp"
+    "${PROJECT_SOURCE_DIR}/../VirtualMachineTests/Source/VirtualMachineTests.cpp"
+    "Source/main.cpp")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Caracal CaraTest)
 
