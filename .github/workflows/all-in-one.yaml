@@ -44,6 +44,10 @@ jobs:
         cmake: true
         ninja: true
 
+    - name: Setup MSVC Developer Environment
+      if: matrix.cpp_compiler == 'cl'
+      uses: ilammy/msvc-dev-cmd@v1
+
     - name: Install LLVM (MSVC)
       if: matrix.cpp_compiler == 'cl'
       shell: pwsh
@@ -65,6 +69,7 @@ jobs:
         -G Ninja
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DLLVM_DIR="$env:LLVM_DIR"
         -S ${{ github.workspace }}
 
     - name: Build
