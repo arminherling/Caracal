@@ -47,15 +47,32 @@ jobs:
     - name: Setup MSVC Developer Environment
       if: matrix.cpp_compiler == 'cl'
       uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64
 
     - name: Install LLVM (MSVC)
       if: matrix.cpp_compiler == 'cl'
       shell: pwsh
       run: |
-        choco install llvm --version=21.1.8 -y
-        $llvmPath = "C:\Program Files\LLVM\lib\cmake\llvm"
-        echo "LLVM_DIR=$llvmPath" >> $env:GITHUB_ENV
-        echo "CMAKE_PREFIX_PATH=$llvmPath" >> $env:GITHUB_ENV
+        # Download official LLVM Windows installer
+        $llvmVersion = "21.1.8"
+        $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-win64.exe"
+        $installerPath = "$env:TEMP\llvm-installer.exe"
+        
+        Write-Host "Downloading LLVM from $llvmUrl"
+        Invoke-WebRequest -Uri $llvmUrl -OutFile $installerPath
+        
+        Write-Host "Installing LLVM..."
+        Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait -NoNewWindow
+        
+        # Verify installation
+        $llvmPath = "C:\Program Files\LLVM"
+        if (Test-Path "$llvmPath\lib\cmake\llvm\LLVMConfig.cmake") {
+          Write-Host "LLVM installed successfully at $llvmPath"
+        } else {
+          Write-Error "LLVM installation failed - LLVMConfig.cmake not found"
+          exit 1
+        }
 
     - name: Install LLVM (Non-MSVC)
       if: matrix.cpp_compiler != 'cl'
@@ -63,13 +80,24 @@ jobs:
       with:
         version: "21.1.8"
 
-    - name: Configure CMake
+    - name: Configure CMake (MSVC)
+      if: matrix.cpp_compiler == 'cl'
+      shell: pwsh
+      run: |
+        cmake -B "${{ steps.strings.outputs.build-output-dir }}" `
+          -G Ninja `
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+          -DLLVM_DIR="C:\Program Files\LLVM\lib\cmake\llvm" `
+          -S "${{ github.workspace }}"
+
+    - name: Configure CMake (Non-MSVC)
+      if: matrix.cpp_compiler != 'cl'
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -G Ninja
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DLLVM_DIR="$env:LLVM_DIR"
         -S ${{ github.workspace }}
 
     - name: Build
