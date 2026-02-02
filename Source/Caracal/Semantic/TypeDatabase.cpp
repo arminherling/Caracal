@@ -110,7 +110,7 @@ namespace Caracal
     TypeDatabase::TypeDatabase()
     {
         // TODO remove this once we got a prelude
-        m_functionDefinitions.try_emplace(1000, FunctionDefinition{ Type{ 1000, TypeKind::Function }, "print", {Type::String()} });
+        m_functionDefinitions.try_emplace(1000, FunctionDefinition{ Type{ 1000, TypeKind::Function }, "print", {Parameter{"msg", Type::String()}} });
     }
 
     Type TypeDatabase::TryFindBuiltin(std::string_view typeName) noexcept
@@ -155,7 +155,7 @@ namespace Caracal
 
     FunctionDefinition& TypeDatabase::createFunction(
         std::string_view name,
-        const std::vector<Type>& parameters,
+        const std::vector<Parameter>& parameters,
         const std::vector<Type>& returnTypes) noexcept
     {
         auto functionName = std::string(name);

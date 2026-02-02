@@ -6,6 +6,7 @@
 //#include <Caracal/Semantic/EnumDefinition.h>
 //#include <Caracal/Semantic/TypeDefinition.h>
 #include <Caracal/Semantic/FunctionDefinition.h>
+#include <Caracal/Semantic/Parameter.h>
 #include <string_view>
 #include <unordered_map>
 
@@ -28,7 +29,7 @@ namespace Caracal
     //    [[nodiscard]] Type createType(QStringView name, TypeKind kind) noexcept;
         [[nodiscard]] FunctionDefinition& createFunction(
             std::string_view name, 
-            const std::vector<Type>& parameters, 
+            const std::vector<Parameter>& parameters, 
             const std::vector<Type>& returnTypes) noexcept;
 
     private:

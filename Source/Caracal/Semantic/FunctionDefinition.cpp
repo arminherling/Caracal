@@ -5,7 +5,7 @@ namespace Caracal
     FunctionDefinition::FunctionDefinition(
         Type type,
         const std::string& name,
-        const std::vector<Type>& parameters,
+        const std::vector<Parameter>& parameters,
         const std::vector<Type>& returnTypes)
         : m_type{ type }
         , m_name{ name }

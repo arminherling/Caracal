@@ -457,7 +457,7 @@ namespace Caracal
             }
             for(size_t i = 0; i < parameterTypes.size(); ++i)
             {
-                if(parameterTypes[i] != argumentTypes[i])
+                if(parameterTypes[i].type() != argumentTypes[i])
                 {
                     TODO("Add error diagnostics for argument type mismatch");
                     return Type::Undefined();
@@ -520,13 +520,13 @@ namespace Caracal
         return type;
     }
     
-    std::vector<Type> TypeChecker::typeCheckParametersNode(ParametersNode* parametersNode)
+    std::vector<Parameter> TypeChecker::typeCheckParametersNode(ParametersNode* parametersNode)
     {
-        std::vector<Type> types{};
+        std::vector<Parameter> parameters{};
         for(const auto& parameterNode : parametersNode->parameters())
         {
             auto parameterType = typeCheckTypeNameNode(parameterNode->typeName().get());
-            types.push_back(parameterType);
+            parameters.push_back(Parameter{ parameterNode->name(), parameterType});
 
             // register parameter in current scope
             const auto& name = parameterNode->name();
@@ -541,7 +541,7 @@ namespace Caracal
             }
             parameterNode->setType(parameterType);
         }
-        return types;
+        return parameters;
     }
 
     std::vector<Type> TypeChecker::typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode)

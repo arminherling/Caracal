@@ -5,6 +5,7 @@
 #include <Caracal/Debug/DiagnosticsBag.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/TypeDatabase.h>
+#include <Caracal/Semantic/Parameter.h>
 #include <Caracal/Semantic/Scope.h>
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
@@ -59,7 +60,7 @@ namespace Caracal
             [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
 
             [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
-            [[nodiscard]] std::vector<Type> typeCheckParametersNode(ParametersNode* parametersNode);
+            [[nodiscard]] std::vector<Parameter> typeCheckParametersNode(ParametersNode* parametersNode);
             [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);
             [[nodiscard]] std::vector<Type> typeCheckArgumentsNode(ArgumentsNode* argumentsNode);
 

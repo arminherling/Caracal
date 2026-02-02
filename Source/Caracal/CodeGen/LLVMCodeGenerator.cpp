@@ -208,8 +208,6 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept
     {
-        pushScope();
-
         auto functionType = node->type();
         auto functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
         auto functionName = functionDefinition.name();
@@ -222,9 +220,21 @@ namespace Caracal
             m_currentFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_module);
         }
 
+        pushScope();
+
         auto& context = m_module.getContext();
         auto entry = llvm::BasicBlock::Create(context, "entry", m_currentFunction);
         m_irBuilder->SetInsertPoint(entry);
+
+        const auto& functionParameters = functionDefinition.parameters();
+        auto functionArguments = m_currentFunction->args();
+        for (auto& argument: functionArguments)
+        {
+            const auto& parameter = functionParameters.at(argument.getArgNo());
+            argument.setName(parameter.name());
+
+            currentScope()->addVariableBinding(parameter.name(), &argument);
+        }
 
         const auto& body = node->bodyNode();
         generateBlockNode(body.get());
@@ -617,6 +627,10 @@ namespace Caracal
         {
             return m_irBuilder->CreateLoad(globalValue->getValueType(), globalValue, name);
         }
+        else if(auto argumentValue = llvm::dyn_cast<llvm::Argument>(value))
+        {
+            return argumentValue;
+        }
 
         return nullptr;
     }
@@ -726,9 +740,9 @@ namespace Caracal
 
         std::vector<llvm::Type*> llvmParameterTypes;
         const auto& parameters = functionDefinition.parameters();
-        for(const auto& parameterType : parameters)
+        for(const auto& parameter : parameters)
         {
-            auto llvmParameterType = GetLLVMTypeForCaraType(parameterType, context);
+            auto llvmParameterType = GetLLVMTypeForCaraType(parameter.type(), context);
             llvmParameterTypes.push_back(llvmParameterType);
         }
 

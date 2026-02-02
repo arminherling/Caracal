@@ -775,8 +775,8 @@ namespace Caracal
             
             for (size_t i = 0; i < parameters.size(); i++)
             {
-                auto paramType = parameters[i];
-                m_builder.append(TypeDatabase::TryFindName(paramType));
+                auto parameter = parameters[i];
+                m_builder.append(TypeDatabase::TryFindName(parameter.type()));
                 if (i < parameters.size() - 1)
                     m_builder.append(", ");
             }
