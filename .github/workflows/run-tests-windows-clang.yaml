@@ -51,6 +51,8 @@ jobs:
         Write-Host "Added to PATH: $llvmBinDir"
 
     - name: Configure CMake
+      env:
+        CMAKE_LIBRARY_PATH: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/DIA SDK/lib/amd64"
       shell: pwsh
       run: |
         cmake -B "${{ github.workspace }}/build" `
