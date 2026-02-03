@@ -32,7 +32,7 @@ jobs:
         choco install llvm --version=21.1.8 -y
         Write-Host "=== Chocolatey Log Contents ==="
         Get-Content "C:\ProgramData\chocolatey\logs\chocolatey.log" -Tail 100
-        $llvmPath = where.exe llvm-config 2>$null | Split-Path -Parent | Split-Path -Parent
+        $llvmPath = "C:\ProgramData\chocolatey\lib\llvm"
         Write-Host "LLVM installed at: $llvmPath"
         $llvmCMakePath = "$llvmPath\lib\cmake\llvm"
         Write-Host "LLVM CMake path: $llvmCMakePath"
