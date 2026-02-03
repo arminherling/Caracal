@@ -25,20 +25,36 @@ jobs:
         arch: amd64
         vsversion: '2022'
     
-    - name: Install LLVM
-      id: llvm-install
-      uses: KyleMayes/install-llvm-action@v2
-      with:
-        version: "21.1.8"
-    
+    - name: Download and Install LLVM
+      shell: pwsh
+      run: |
+        $version = "21.1.8"
+        $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$version/clang+llvm-$version-x86_64-pc-windows-msvc.tar.xz"
+        $llvmArchive = "${{ github.workspace }}/llvm.tar.xz"
+        $llvmExtractPath = "C:/llvm"
+        
+        Write-Host "Downloading LLVM..."
+        Invoke-WebRequest -Uri $llvmUrl -OutFile $llvmArchive
+        
+        Write-Host "Extracting LLVM..."
+        New-Item -ItemType Directory -Force -Path $llvmExtractPath
+        tar -xf $llvmArchive -C $llvmExtractPath --strip-components=1
+        
+        Write-Host "Setting LLVM_DIR environment variable..."
+        $llvmCMakeDir = "$llvmExtractPath/lib/cmake/llvm"
+        echo "LLVM_DIR=$llvmCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        
+        Write-Host "LLVM installed to: $llvmExtractPath"
+        Write-Host "LLVM_DIR set to: $llvmCMakeDir"
+
     - name: Debug LLVM Installation
       shell: pwsh
       run: |
-        Write-Host "LLVM Path: $LLVM_PATH"
+        Write-Host "LLVM Path: $LLVM_DIR"
         Write-Host "Listing LLVM directory contents:"
-        Get-ChildItem -Path "C:\Program Files\LLVM" -Recurse -Depth 2
+        Get-ChildItem -Path "$LLVM_DIR" -Recurse -Depth 2
         Write-Host "`nChecking for CMake config files:"
-        Get-ChildItem -Path "C:\Program Files\LLVM" -Recurse -Filter "*LLVMConfig.cmake"
+        Get-ChildItem -Path "$LLVM_DIR" -Recurse -Filter "*LLVMConfig.cmake"
 
     - name: Configure CMake
       shell: pwsh
@@ -48,7 +64,7 @@ jobs:
           -DCMAKE_C_COMPILER=cl `
           -DCMAKE_CXX_COMPILER=cl `
           -DCMAKE_BUILD_TYPE=Release `
-          -DLLVM_DIR="$LLVM_PATH" `
+          -DLLVM_DIR="$env:LLVM_DIR" `
           -S "${{ github.workspace }}"
 
     - name: Build
