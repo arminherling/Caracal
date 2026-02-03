@@ -73,7 +73,8 @@ jobs:
 
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config Release
-
+      
     - name: Run Test
       working-directory: ${{ github.workspace }}/build
-      run: ./Tests/AllInOne/AllInOne.exe
+      shell: pwsh
+      run: .\Tests\AllInOne\AllInOne.exe
