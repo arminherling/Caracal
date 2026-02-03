@@ -23,7 +23,7 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: amd64
-        vsversion: '2022'
+        vsversion: '2019'
         
     - name: Download and Install LLVM
       shell: pwsh
@@ -59,7 +59,6 @@ jobs:
           -DCMAKE_CXX_COMPILER=clang++ `
           -DCMAKE_BUILD_TYPE=Release `
           -DLLVM_DIR="$env:LLVM_DIR" `
-          -DLLVM_WINSYSROOT="C:/Program Files/Microsoft Visual Studio/2022/Enterprise" `
           -S "${{ github.workspace }}"
 
     - name: Build
