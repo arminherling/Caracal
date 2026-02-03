@@ -34,32 +34,55 @@ jobs:
         New-Item -ItemType Directory -Force -Path "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional" | Out-Null
         Copy-Item -Path "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/DIA SDK" -Destination "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/DIA SDK" -Recurse -Force
         Write-Host "DIA SDK copied successfully"
-    
-    - name: Download and Install LLVM
+        
+    - name: Build LLVM and Clang from source
       shell: pwsh
       run: |
         $llvmVersion = "21.1.8"
-        $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/clang+llvm-$llvmVersion-x86_64-pc-windows-msvc.tar.xz"
-        $llvmArchive = "${{ github.workspace }}/llvm.tar.xz"
-        $llvmExtractPath = "C:/llvm"
+        $llvmInstallPath = "C:/llvm"
+        $llvmBuildPath = "${{ github.workspace }}/llvm-build"
         
-        Write-Host "Downloading LLVM $llvmVersion..."
-        Invoke-WebRequest -Uri $llvmUrl -OutFile $llvmArchive
+        Write-Host "Cloning LLVM $llvmVersion..."
+        git clone --depth 1 --branch llvmorg-$llvmVersion https://github.com/llvm/llvm-project.git llvm-project
         
-        Write-Host "Extracting LLVM..."
-        New-Item -ItemType Directory -Force -Path $llvmExtractPath
-        tar -xf $llvmArchive -C $llvmExtractPath --strip-components=1
+        Write-Host "Configuring LLVM and Clang with minimal components..."
+        cmake -B $llvmBuildPath `
+          -S llvm-project/llvm `
+          -G Ninja `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DCMAKE_INSTALL_PREFIX=$llvmInstallPath `
+          -DLLVM_ENABLE_RPMALLOC=OFF `
+          -DLLVM_ENABLE_PROJECTS="clang" `
+          -DLLVM_TARGETS_TO_BUILD="X86" `
+          -DLLVM_INCLUDE_EXAMPLES=OFF `
+          -DLLVM_INCLUDE_TESTS=OFF `
+          -DLLVM_INCLUDE_BENCHMARKS=OFF `
+          -DLLVM_INCLUDE_DOCS=OFF `
+          -DLLVM_ENABLE_BINDINGS=OFF `
+          -DLLVM_ENABLE_OCAMLDOC=OFF `
+          -DLLVM_ENABLE_Z3_SOLVER=OFF `
+          -DLLVM_BUILD_TOOLS=OFF `
+          -DLLVM_BUILD_UTILS=OFF `
+          -DCLANG_INCLUDE_TESTS=OFF `
+          -DCLANG_INCLUDE_DOCS=OFF `
+          -DCLANG_BUILD_EXAMPLES=OFF
+        
+        Write-Host "Building LLVM and Clang (this may take a while)..."
+        cmake --build $llvmBuildPath --config Release
+        
+        Write-Host "Installing LLVM and Clang..."
+        cmake --install $llvmBuildPath --config Release
         
         Write-Host "Setting environment variables..."
-        $llvmCMakeDir = "$llvmExtractPath/lib/cmake/llvm"
-        $llvmBinDir = "$llvmExtractPath/bin"
+        $llvmCMakeDir = "$llvmInstallPath/lib/cmake/llvm"
+        $clangCMakeDir = "$llvmInstallPath/lib/cmake/clang"
+        $llvmBinDir = "$llvmInstallPath/bin"
         echo "LLVM_DIR=$llvmCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "Clang_DIR=$clangCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo "$llvmBinDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         
-        Write-Host "LLVM $llvmVersion installed to: $llvmExtractPath"
-        Write-Host "LLVM_DIR set to: $llvmCMakeDir"
-        Write-Host "Added to PATH: $llvmBinDir"
-
+        Write-Host "LLVM and Clang $llvmVersion built and installed to: $llvmInstallPath"
+        
     - name: Configure CMake
       shell: pwsh
       run: |
