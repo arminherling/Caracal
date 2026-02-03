@@ -24,15 +24,17 @@ jobs:
       with:
         arch: amd64
         vsversion: '2022'
-
+        
     # Handling LLVM bullshit, can be removed when the PR is merged
     # https://github.com/llvm/llvm-project/pull/160354
     - name: Copy DIA SDK
+      shell: pwsh
       run: |
-        set -x
-        mkdir -p "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional" || true
-        cp -rv "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/DIA SDK" "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/DIA SDK"
-  
+        Write-Host "Creating directory and copying DIA SDK..."
+        New-Item -ItemType Directory -Force -Path "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional" | Out-Null
+        Copy-Item -Path "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/DIA SDK" -Destination "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/DIA SDK" -Recurse -Force
+        Write-Host "DIA SDK copied successfully"
+    
     - name: Download and Install LLVM
       shell: pwsh
       run: |
