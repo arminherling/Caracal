@@ -58,7 +58,6 @@ jobs:
         choco install llvm --version=21.1.8 -y
         $llvmPath = "C:\Program Files\LLVM\lib\cmake\llvm"
         echo "LLVM_DIR=$llvmPath" >> "$GITHUB_OUTPUT"
-        echo "CMAKE_PREFIX_PATH=$llvmPath" >> "$GITHUB_OUTPUT"
 
     - name: Install LLVM (Non-MSVC)
       id: llvm-install-non-msvc
@@ -75,7 +74,7 @@ jobs:
           -G Ninja `
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
-          -DCMAKE_PREFIX_PATH="${{ steps.llvm-install-msvc.outputs.CMAKE_PREFIX_PATH }}" `
+          -DLLVM_DIR="${{ steps.llvm-install-msvc.outputs.LLVM_DIR }}" `
           -S "${{ github.workspace }}"
 
     - name: Configure CMake (Non-MSVC)
@@ -85,7 +84,7 @@ jobs:
         -G Ninja `
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
-        -DCMAKE_PREFIX_PATH="${{ steps.llvm-install-non-msvc.outputs.CMAKE_PREFIX_PATH }}" `
+        -DLLVM_DIR="${{ steps.llvm-install-non-msvc.outputs.LLVM_DIR }}" `
         -S ${{ github.workspace }}
 
     - name: Build
