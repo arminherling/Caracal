@@ -26,25 +26,18 @@ jobs:
         vsversion: '2022'
     
     - name: Install LLVM
-      id: llvm-install
-      shell: pwsh
-      run: |
-        choco install llvm --version=21.1.8 -y
-        Write-Host "=== Chocolatey Log Contents ==="
-        Get-Content "C:\ProgramData\chocolatey\logs\chocolatey.log" -Tail 100
-        $llvmPath = "C:\ProgramData\chocolatey\lib\llvm"
-        $llvmCMakePath = "$llvmPath\lib\cmake\llvm"
-        echo "LLVM_DIR=$llvmCMakePath" >> $env:GITHUB_OUTPUT
+      id: llvm-install-non-msvc
+      uses: KyleMayes/install-llvm-action@v2
+      with:
+        version: "21.1.8"
         
     - name: Configure CMake
       shell: pwsh
       run: |
-        $llvmDir = "${{ steps.llvm-install.outputs.LLVM_DIR }}"
         cmake -B "${{ github.workspace }}/build" `
           -G Ninja `
           -DCMAKE_CXX_COMPILER=cl `
           -DCMAKE_BUILD_TYPE=Release `
-          -DLLVM_DIR="$llvmDir" `
           -S "${{ github.workspace }}"
 
     - name: Build
