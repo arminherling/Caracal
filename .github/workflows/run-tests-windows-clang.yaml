@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
     - uses: actions/checkout@v4
@@ -19,12 +19,6 @@ jobs:
         version: '6.6.0'
         #arch: ${{ (matrix.os == 'windows-latest' && matrix.cpp_compiler == 'g++') && 'win64_mingw' || '' }}
 
-    - name: Setup MSVC Developer Environment
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: amd64
-        vsversion: '2019'
-        
     - name: Download and Install LLVM
       shell: pwsh
       run: |
