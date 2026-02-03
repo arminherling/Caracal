@@ -26,11 +26,11 @@ jobs:
         vsversion: '2022'
     
     - name: Install LLVM
-      id: llvm-install-non-msvc
+      id: llvm-install
       uses: KyleMayes/install-llvm-action@v2
       with:
         version: "21.1.8"
-        
+    
     - name: Configure CMake
       shell: pwsh
       run: |
@@ -39,7 +39,7 @@ jobs:
           -DCMAKE_C_COMPILER=cl `
           -DCMAKE_CXX_COMPILER=cl `
           -DCMAKE_BUILD_TYPE=Release `
-          -DLLVM_DIR="C:\Program Files\LLVM" `
+          -DLLVM_DIR="${{ steps.llvm-install.outputs.llvm-path }}/lib/cmake/llvm" `
           -S "${{ github.workspace }}"
 
     - name: Build
