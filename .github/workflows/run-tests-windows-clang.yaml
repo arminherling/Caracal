@@ -74,6 +74,21 @@ jobs:
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config Release
       
+    - name: List build directory contents
+      run: |
+        Write-Host "=== Build Directory Structure ==="
+        Get-ChildItem -Path . -Recurse -File | Where-Object { $_.Extension -eq ".exe" } | ForEach-Object { Write-Host $_.FullName }
+        Write-Host "`n=== Full Tests Directory ==="
+        if (Test-Path .\build\Tests) {
+          Get-ChildItem -Path .\build\Tests -Recurse
+        } else {
+          Write-Host ".\build\Tests does not exist"
+        }
+        Write-Host "`n=== All .exe files in build ==="
+        if (Test-Path .\build) {
+          Get-ChildItem -Path .\build -Filter *.exe -Recurse -ErrorAction SilentlyContinue | Select-Object FullName
+        }
+        
     - name: Run Test
       working-directory: ${{ github.workspace }}/build
       shell: pwsh
