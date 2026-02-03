@@ -39,7 +39,7 @@ jobs:
           -DCMAKE_C_COMPILER=cl `
           -DCMAKE_CXX_COMPILER=cl `
           -DCMAKE_BUILD_TYPE=Release `
-          -DLLVM_DIR="${{ steps.llvm-install.outputs.LLVM_PATH }}/lib/cmake/llvm" `
+          -DLLVM_DIR="$env:LLVM_ROOT/lib/cmake/llvm" `
           -S "${{ github.workspace }}"
 
     - name: Build
