@@ -31,6 +31,15 @@ jobs:
       with:
         version: "21.1.8"
     
+    - name: Debug LLVM Installation
+      shell: pwsh
+      run: |
+        Write-Host "LLVM Path: ${{ steps.llvm-install.outputs.llvm-path }}"
+        Write-Host "Listing LLVM directory contents:"
+        Get-ChildItem -Path "${{ steps.llvm-install.outputs.llvm-path }}" -Recurse -Depth 2
+        Write-Host "`nChecking for CMake config files:"
+        Get-ChildItem -Path "${{ steps.llvm-install.outputs.llvm-path }}" -Recurse -Filter "*LLVMConfig.cmake"
+
     - name: Configure CMake
       shell: pwsh
       run: |
