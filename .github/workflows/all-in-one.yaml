@@ -71,21 +71,21 @@ jobs:
       if: matrix.cpp_compiler == 'cl'
       shell: pwsh
       run: |
-        cmake -B "${{ steps.strings.outputs.build-output-dir }}"
-          -G Ninja
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DCMAKE_PREFIX_PATH="${{ steps.llvm-install-msvc.outputs.CMAKE_PREFIX_PATH }}"
+        cmake -B "${{ steps.strings.outputs.build-output-dir }}" `
+          -G Ninja `
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+          -DCMAKE_PREFIX_PATH="${{ steps.llvm-install-msvc.outputs.CMAKE_PREFIX_PATH }}" `
           -S "${{ github.workspace }}"
 
     - name: Configure CMake (Non-MSVC)
       if: matrix.cpp_compiler != 'cl'
       run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -G Ninja
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_PREFIX_PATH="${{ steps.llvm-install-non-msvc.outputs.CMAKE_PREFIX_PATH }}"
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} `
+        -G Ninja `
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+        -DCMAKE_PREFIX_PATH="${{ steps.llvm-install-non-msvc.outputs.CMAKE_PREFIX_PATH }}" `
         -S ${{ github.workspace }}
 
     - name: Build
