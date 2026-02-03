@@ -45,7 +45,6 @@ jobs:
         ninja: true
 
     - name: Setup MSVC Developer Environment
-      if: matrix.cpp_compiler == 'cl'
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: amd64
