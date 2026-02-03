@@ -75,6 +75,7 @@ jobs:
         $llvmDir = "${{ steps.llvm-install-msvc.outputs.LLVM_DIR }}\lib\cmake\llvm"
         cmake -B "${{ steps.strings.outputs.build-output-dir }}" `
           -G Ninja `
+          -DCMAKE_C_COMPILER=${{ matrix.cpp_compiler }} `
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
           -DLLVM_DIR="$llvmDir" `
@@ -85,6 +86,7 @@ jobs:
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }} `
         -G Ninja `
+        -DCMAKE_C_COMPILER=${{ matrix.cpp_compiler }} `
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
         -DLLVM_DIR="${{ steps.llvm-install-non-msvc.outputs.LLVM_DIR }}" `
