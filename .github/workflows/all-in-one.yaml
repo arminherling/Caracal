@@ -72,7 +72,7 @@ jobs:
       if: matrix.cpp_compiler == 'cl'
       shell: pwsh
       run: |
-        $llvmDir = "${{ steps.llvm-install-msvc.outputs.LLVM_DIR }}\lib\cmake\llvm"
+        $llvmDir = "${{ steps.llvm-install-msvc.outputs.LLVM_DIR }}"
         cmake -B "${{ steps.strings.outputs.build-output-dir }}" `
           -G Ninja `
           -DCMAKE_C_COMPILER=${{ matrix.cpp_compiler }} `
