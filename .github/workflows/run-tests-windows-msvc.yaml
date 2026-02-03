@@ -1,4 +1,4 @@
-﻿name: AllInOne
+﻿name: Windows-MSVC-Tests
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
       with:
         arch: amd64
         vsversion: '2022'
-
+    
     - name: Install LLVM
       id: llvm-install
       shell: pwsh
@@ -32,7 +32,7 @@ jobs:
         choco install llvm --version=21.1.8 -y
         $llvmPath = "C:\Program Files\LLVM"
         $llvmCMakePath = "$llvmPath\lib\cmake\llvm"
-        echo "LLVM_DIR=$llvmCMakePath" >> "$GITHUB_OUTPUT"
+        Add-Content -Path $env:GITHUB_OUTPUT -Value "LLVM_DIR=$llvmCMakePath"
 
     - name: Configure CMake
       shell: pwsh
