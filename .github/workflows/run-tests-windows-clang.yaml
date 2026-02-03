@@ -1,0 +1,50 @@
+﻿name: Windows-Clang-Tests
+
+on:
+  push:
+    branches: [ "cicd" ]
+  pull_request:
+    branches: [ "cicd" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.6.0'
+        #arch: ${{ (matrix.os == 'windows-latest' && matrix.cpp_compiler == 'g++') && 'win64_mingw' || '' }}
+
+    - name: Setup MSVC Developer Environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64
+        vsversion: '2022'
+    
+    - name: Install LLVM and clang
+      id: llvm-install
+      uses: KyleMayes/install-llvm-action@v2
+      with:
+        version: "21.1.8"
+    
+    - name: Configure CMake
+      shell: pwsh
+      run: |
+        cmake -B "${{ github.workspace }}/build" `
+          -G Ninja `
+          -DCMAKE_C_COMPILER=clang `
+          -DCMAKE_CXX_COMPILER=clang++ `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DLLVM_DIR="${{ steps.llvm-install.outputs.LLVM_PATH }}/lib/cmake/llvm" `
+          -S "${{ github.workspace }}"
+
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --config Release
+
+    - name: Run Test
+      working-directory: ${{ github.workspace }}/build
+      run: ./Tests/AllInOne/AllInOne.exe
