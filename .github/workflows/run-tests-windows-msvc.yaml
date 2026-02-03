@@ -36,6 +36,7 @@ jobs:
       run: |
         cmake -B "${{ github.workspace }}/build" `
           -G Ninja `
+          -DCMAKE_C_COMPILER=cl `
           -DCMAKE_CXX_COMPILER=cl `
           -DCMAKE_BUILD_TYPE=Release `
           -S "${{ github.workspace }}"
