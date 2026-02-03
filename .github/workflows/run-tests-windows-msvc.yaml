@@ -30,8 +30,10 @@ jobs:
       shell: pwsh
       run: |
         choco install llvm --version=21.1.8 -y
-        $llvmPath = "C:\Program Files\LLVM"
+        $llvmPath = where.exe llvm-config 2>$null | Split-Path -Parent | Split-Path -Parent
+        Write-Host "LLVM installed at: $llvmPath"
         $llvmCMakePath = "$llvmPath\lib\cmake\llvm"
+        Write-Host "LLVM CMake path: $llvmCMakePath"
         Add-Content -Path $env:GITHUB_OUTPUT -Value "LLVM_DIR=$llvmCMakePath"
 
     - name: Configure CMake
