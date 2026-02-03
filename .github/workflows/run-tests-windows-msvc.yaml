@@ -34,7 +34,7 @@ jobs:
     - name: Debug LLVM Installation
       shell: pwsh
       run: |
-        Write-Host "LLVM Path: ${{ steps.llvm-install.outputs.LLVM_PATH }}"
+        Write-Host "LLVM Path: $LLVM_PATH"
         Write-Host "Listing LLVM directory contents:"
         Get-ChildItem -Path "C:\Program Files\LLVM" -Recurse -Depth 2
         Write-Host "`nChecking for CMake config files:"
@@ -48,7 +48,7 @@ jobs:
           -DCMAKE_C_COMPILER=cl `
           -DCMAKE_CXX_COMPILER=cl `
           -DCMAKE_BUILD_TYPE=Release `
-          -DLLVM_DIR="$env:LLVM_ROOT/lib/cmake/llvm" `
+          -DLLVM_DIR="$LLVM_PATH" `
           -S "${{ github.workspace }}"
 
     - name: Build
