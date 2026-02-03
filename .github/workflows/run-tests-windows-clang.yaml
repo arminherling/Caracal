@@ -1,4 +1,4 @@
-﻿name: Windows-Clang-Tests
+name: Windows-Clang-Tests
 
 on:
   push:
@@ -24,13 +24,32 @@ jobs:
       with:
         arch: amd64
         vsversion: '2022'
-    
-    - name: Install LLVM and clang
-      id: llvm-install
-      uses: KyleMayes/install-llvm-action@v2
-      with:
-        version: "21.1.8"
-    
+        
+    - name: Download and Install LLVM
+      shell: pwsh
+      run: |
+        $llvmVersion = "21.1.8"
+        $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/clang+llvm-$llvmVersion-x86_64-pc-windows-msvc.tar.xz"
+        $llvmArchive = "${{ github.workspace }}/llvm.tar.xz"
+        $llvmExtractPath = "C:/llvm"
+        
+        Write-Host "Downloading LLVM $llvmVersion..."
+        Invoke-WebRequest -Uri $llvmUrl -OutFile $llvmArchive
+        
+        Write-Host "Extracting LLVM..."
+        New-Item -ItemType Directory -Force -Path $llvmExtractPath
+        tar -xf $llvmArchive -C $llvmExtractPath --strip-components=1
+        
+        Write-Host "Setting environment variables..."
+        $llvmCMakeDir = "$llvmExtractPath/lib/cmake/llvm"
+        $llvmBinDir = "$llvmExtractPath/bin"
+        echo "LLVM_DIR=$llvmCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "$llvmBinDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        
+        Write-Host "LLVM $llvmVersion installed to: $llvmExtractPath"
+        Write-Host "LLVM_DIR set to: $llvmCMakeDir"
+        Write-Host "Added to PATH: $llvmBinDir"
+
     - name: Configure CMake
       shell: pwsh
       run: |
@@ -39,7 +58,7 @@ jobs:
           -DCMAKE_C_COMPILER=clang `
           -DCMAKE_CXX_COMPILER=clang++ `
           -DCMAKE_BUILD_TYPE=Release `
-          -DLLVM_DIR="${{ steps.llvm-install.outputs.LLVM_PATH }}/lib/cmake/llvm" `
+          -DLLVM_DIR="$env:LLVM_DIR" `
           -S "${{ github.workspace }}"
 
     - name: Build
