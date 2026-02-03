@@ -51,6 +51,7 @@ jobs:
         vsversion: '2022'
 
     - name: Install LLVM (MSVC)
+      id: llvm-install-msvc
       if: matrix.cpp_compiler == 'cl'
       shell: pwsh
       run: |
@@ -60,6 +61,7 @@ jobs:
         echo "CMAKE_PREFIX_PATH=$llvmPath" >> "$GITHUB_OUTPUT"
 
     - name: Install LLVM (Non-MSVC)
+      id: llvm-install-non-msvc
       if: matrix.cpp_compiler != 'cl'
       uses: KyleMayes/install-llvm-action@v2
       with:
@@ -69,11 +71,11 @@ jobs:
       if: matrix.cpp_compiler == 'cl'
       shell: pwsh
       run: |
-        cmake -B "${{ steps.strings.outputs.build-output-dir }}" `
-          -G Ninja `
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
-          -DLLVM_DIR="${{ steps.strings.outputs.LLVM_DIR }}" `
+        cmake -B "${{ steps.strings.outputs.build-output-dir }}"
+          -G Ninja
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_PREFIX_PATH="${{ steps.llvm-install-msvc.outputs.CMAKE_PREFIX_PATH }}"
           -S "${{ github.workspace }}"
 
     - name: Configure CMake (Non-MSVC)
@@ -83,6 +85,7 @@ jobs:
         -G Ninja
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_PREFIX_PATH="${{ steps.llvm-install-non-msvc.outputs.CMAKE_PREFIX_PATH }}"
         -S ${{ github.workspace }}
 
     - name: Build
