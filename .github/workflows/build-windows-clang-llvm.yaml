@@ -46,7 +46,7 @@ jobs:
           -S llvm-project/llvm `
           -G Ninja `
           -DCMAKE_BUILD_TYPE=Release `
-          -DCMAKE_INSTALL_PREFIX=$llvmInstallPath `
+          -DCMAKE_INSTALL_PREFIX=C:/llvm `
           -DLLVM_ENABLE_RPMALLOC=OFF `
           -DLLVM_ENABLE_PROJECTS="clang" `
           -DLLVM_TARGETS_TO_BUILD="X86" `
