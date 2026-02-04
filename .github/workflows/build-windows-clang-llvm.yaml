@@ -38,8 +38,8 @@ jobs:
         $llvmInstallPath = "${{ github.workspace }}/llvm"
         $llvmBuildPath = "${{ github.workspace }}/llvm-build"
         
-        Write-Host "Cloning LLVM $llvmVersion..."
-        git clone --depth 1 --branch llvmorg-$llvmVersion https://github.com/llvm/llvm-project.git llvm-project
+        Write-Host "Cloning LLVM ${llvmVersion}..."
+        git clone --depth 1 --branch llvmorg-${llvmVersion} https://github.com/llvm/llvm-project.git llvm-project
         
         Write-Host "Configuring LLVM and Clang with minimal components..."
         cmake -B $llvmBuildPath `
@@ -69,7 +69,7 @@ jobs:
         Write-Host "Installing LLVM and Clang..."
         cmake --install $llvmBuildPath --config Release
         
-        Write-Host "Contents of $llvmInstallPath:"
+        Write-Host "Contents of ${llvmInstallPath}:"
         Get-ChildItem -Path "$llvmInstallPath" -Recurse -Name
         
         Write-Host "Setting environment variables..."
@@ -80,7 +80,7 @@ jobs:
         echo "Clang_DIR=$clangCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo "$llvmBinDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         
-        Write-Host "LLVM and Clang $llvmVersion built and installed to: $llvmInstallPath"
+        Write-Host "LLVM and Clang ${llvmVersion} built and installed to: ${llvmInstallPath}"
         
     - name: Create LLVM archive
       shell: pwsh
