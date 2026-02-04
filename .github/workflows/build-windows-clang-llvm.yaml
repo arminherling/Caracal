@@ -41,6 +41,13 @@ jobs:
         Write-Host "Cloning LLVM $llvmVersion..."
         git clone --depth 1 --branch llvmorg-$llvmVersion https://github.com/llvm/llvm-project.git llvm-project
         
+        if (Test-Path "C:/llvm") {
+            Write-Host "C:/llvm directory already exists"
+        } else {
+            Write-Host "Creating C:/llvm directory..."
+            New-Item -ItemType Directory -Force -Path "C:/llvm" | Out-Null
+        }
+        
         Write-Host "Configuring LLVM and Clang with minimal components..."
         cmake -B $llvmBuildPath `
           -S llvm-project/llvm `
@@ -68,6 +75,9 @@ jobs:
         
         Write-Host "Installing LLVM and Clang..."
         cmake --install $llvmBuildPath --config Release
+        
+        Write-Host "Contents of C:/llvm:"
+        Get-ChildItem -Path "C:/llvm" -Recurse -Name
         
         Write-Host "Setting environment variables..."
         $llvmCMakeDir = "$llvmInstallPath/lib/cmake/llvm"
