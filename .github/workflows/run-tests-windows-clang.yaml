@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "cicd" ]
 
+env:
+  LLVM_CLANG_VERSION: '21.1.8'
+
 jobs:
   build:
     runs-on: windows-latest
@@ -17,106 +20,62 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         version: '6.6.0'
-        #arch: ${{ (matrix.os == 'windows-latest' && matrix.cpp_compiler == 'g++') && 'win64_mingw' || '' }}
     
     - name: Setup MSVC Developer Environment
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: amd64
         vsversion: '2022'
-        
-    # Handling LLVM bullshit, can be removed when the PR is merged
-    # https://github.com/llvm/llvm-project/pull/160354
-    - name: Copy DIA SDK
-      shell: pwsh
-      run: |
-        Write-Host "Creating directory and copying DIA SDK..."
-        New-Item -ItemType Directory -Force -Path "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional" | Out-Null
-        Copy-Item -Path "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/DIA SDK" -Destination "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/DIA SDK" -Recurse -Force
-        Write-Host "DIA SDK copied successfully"
     
-    - name: Build LLVM and Clang from source
+    - name: Cache LLVM-Clang
+      id: cache-llvm-clang
+      uses: actions/cache@v4
+      with:
+        path: C:/llvm
+        key: windows-clang-llvm-${{ env.LLVM_CLANG_VERSION }}-x64-v1
+        
+    - name: Download LLVM-Clang from Release
+      if: steps.cache-llvm-clang.outputs.cache-hit != 'true'
       shell: pwsh
       run: |
-        $llvmVersion = "21.1.8"
+        Write-Host "Downloading LLVM-Clang $env:LLVM_CLANG_VERSION from release..."
+        $assetUrl = "https://github.com/${{ github.repository }}/releases/download/windows-clang-llvm-$env:LLVM_CLANG_VERSION/windows-clang-llvm-$env:LLVM_CLANG_VERSION-x64.zip"
+        $outputPath = "${{ github.workspace }}/llvm-clang.zip"
+        
+        try {
+          Invoke-WebRequest -Uri $assetUrl -OutFile $outputPath -ErrorAction Stop
+          Write-Host "Download completed successfully"
+        } catch {
+          Write-Host "Error downloading LLVM-Clang: $_"
+          Write-Host "Please run the 'Build and Cache LLVM-Clang' workflow first to create the release"
+          exit 1
+        }
+        
+        Write-Host "Extracting LLVM-Clang to C:/llvm..."
+        Expand-Archive -Path $outputPath -DestinationPath "C:/llvm" -Force
+        Write-Host "LLVM-Clang extracted successfully"
+        
+    - name: Verify and Setup LLVM-Clang
+      shell: pwsh
+      run: |
         $llvmInstallPath = "C:/llvm"
-        $llvmBuildPath = "${{ github.workspace }}/llvm-build"
         
-        Write-Host "Cloning LLVM $llvmVersion..."
-        git clone --depth 1 --branch llvmorg-$llvmVersion https://github.com/llvm/llvm-project.git llvm-project
-        
-        Write-Host "Configuring LLVM and Clang with minimal components..."
-        cmake -B $llvmBuildPath `
-          -S llvm-project/llvm `
-          -G Ninja `
-          -DCMAKE_BUILD_TYPE=Release `
-          -DCMAKE_INSTALL_PREFIX="$llvmInstallPath" `
-          -DLLVM_ENABLE_RPMALLOC=OFF `
-          -DLLVM_ENABLE_PROJECTS="clang" `
-          -DLLVM_TARGETS_TO_BUILD="X86" `
-          -DLLVM_INCLUDE_EXAMPLES=OFF `
-          -DLLVM_INCLUDE_TESTS=OFF `
-          -DLLVM_INCLUDE_BENCHMARKS=OFF `
-          -DLLVM_INCLUDE_DOCS=OFF `
-          -DLLVM_ENABLE_BINDINGS=OFF `
-          -DLLVM_ENABLE_OCAMLDOC=OFF `
-          -DLLVM_ENABLE_Z3_SOLVER=OFF `
-          -DLLVM_BUILD_TOOLS=OFF `
-          -DLLVM_BUILD_UTILS=OFF `
-          -DCLANG_INCLUDE_TESTS=OFF `
-          -DCLANG_INCLUDE_DOCS=OFF `
-          -DCLANG_BUILD_EXAMPLES=OFF
-        
-        Write-Host "Building LLVM and Clang (this may take a while)..."
-        cmake --build $llvmBuildPath --config Release
-        
-        Write-Host "Installing LLVM and Clang..."
-        cmake --install $llvmBuildPath --config Release
-        
-        Write-Host "Verifying installation..."
-        Write-Host "=== Checking LLVM installation directory ==="
-        if (Test-Path $llvmInstallPath) {
-          Write-Host "✓ LLVM install path exists: $llvmInstallPath"
-          Get-ChildItem -Path $llvmInstallPath -Directory | ForEach-Object { Write-Host "  - $($_.Name)" }
-        } else {
-          Write-Host "✗ ERROR: LLVM install path not found: $llvmInstallPath"
+        Write-Host "=== Verifying LLVM-Clang installation ==="
+        if (-not (Test-Path $llvmInstallPath)) {
+          Write-Host "✗ ERROR: LLVM-Clang not found at $llvmInstallPath"
           exit 1
         }
         
         $llvmCMakeDir = "$llvmInstallPath/lib/cmake/llvm"
         $clangCMakeDir = "$llvmInstallPath/lib/cmake/clang"
-        
-        Write-Host "`n=== Checking LLVM CMake directory ==="
-        if (Test-Path $llvmCMakeDir) {
-          Write-Host "✓ LLVM CMake directory exists: $llvmCMakeDir"
-          Get-ChildItem -Path $llvmCMakeDir -Filter "*.cmake" | ForEach-Object { Write-Host "  - $($_.Name)" }
-        } else {
-          Write-Host "✗ ERROR: LLVM CMake directory not found: $llvmCMakeDir"
-          Write-Host "Searching for actual CMake files..."
-          Get-ChildItem -Path $llvmInstallPath -Filter "LLVMConfig.cmake" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  Found at: $($_.FullName)" }
-          exit 1
-        }
-        
-        Write-Host "`n=== Checking Clang CMake directory ==="
-        if (Test-Path $clangCMakeDir) {
-          Write-Host "✓ Clang CMake directory exists: $clangCMakeDir"
-          Get-ChildItem -Path $clangCMakeDir -Filter "*.cmake" | ForEach-Object { Write-Host "  - $($_.Name)" }
-        } else {
-          Write-Host "✗ ERROR: Clang CMake directory not found: $clangCMakeDir"
-          exit 1
-        }
-        
-        Write-Host "`n=== Setting environment variables ==="
         $llvmBinDir = "$llvmInstallPath/bin"
+        
+        Write-Host "✓ LLVM-Clang installation found"
+        Write-Host "✓ Setting environment variables"
+        
         echo "LLVM_DIR=$llvmCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo "Clang_DIR=$clangCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo "$llvmBinDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        
-        Write-Host "✓ LLVM_DIR set to: $llvmCMakeDir"
-        Write-Host "✓ Clang_DIR set to: $clangCMakeDir"
-        Write-Host "✓ Added to PATH: $llvmBinDir"
-        
-        Write-Host "`nLLVM and Clang $llvmVersion built and installed successfully to: $llvmInstallPath"
             
     - name: Configure CMake
       shell: pwsh
