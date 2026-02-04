@@ -1,0 +1,99 @@
+name: Build and Cache LLVM-Clang
+
+on:
+  workflow_dispatch:
+    inputs:
+      llvm_version:
+        description: 'LLVM version to build'
+        required: true
+        default: '21.1.8'
+
+jobs:
+  build-llvm-clang:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Setup MSVC Developer Environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64
+        vsversion: '2022'
+        
+    # Handling LLVM bullshit, can be removed when the PR is merged
+    # https://github.com/llvm/llvm-project/pull/160354
+    - name: Copy DIA SDK
+      shell: pwsh
+      run: |
+        Write-Host "Creating directory and copying DIA SDK..."
+        New-Item -ItemType Directory -Force -Path "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional" | Out-Null
+        Copy-Item -Path "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/DIA SDK" -Destination "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/DIA SDK" -Recurse -Force
+        Write-Host "DIA SDK copied successfully"
+    
+    - name: Build LLVM and Clang from source
+      shell: pwsh
+      run: |
+        $llvmVersion = "${{ github.event.inputs.llvm_version }}"
+        $llvmInstallPath = "C:/llvm"
+        $llvmBuildPath = "${{ github.workspace }}/llvm"
+        
+        Write-Host "Cloning LLVM $llvmVersion..."
+        git clone --depth 1 --branch llvmorg-$llvmVersion https://github.com/llvm/llvm-project.git llvm-project
+        
+        Write-Host "Configuring LLVM and Clang with minimal components..."
+        cmake -B $llvmBuildPath `
+          -S llvm-project/llvm `
+          -G Ninja `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DCMAKE_INSTALL_PREFIX="$llvmInstallPath" `
+          -DLLVM_ENABLE_RPMALLOC=OFF `
+          -DLLVM_ENABLE_PROJECTS="clang" `
+          -DLLVM_TARGETS_TO_BUILD="X86" `
+          -DLLVM_INCLUDE_EXAMPLES=OFF `
+          -DLLVM_INCLUDE_TESTS=OFF `
+          -DLLVM_INCLUDE_BENCHMARKS=OFF `
+          -DLLVM_INCLUDE_DOCS=OFF `
+          -DLLVM_ENABLE_BINDINGS=OFF `
+          -DLLVM_ENABLE_OCAMLDOC=OFF `
+          -DLLVM_ENABLE_Z3_SOLVER=OFF `
+          -DLLVM_BUILD_TOOLS=OFF `
+          -DLLVM_BUILD_UTILS=OFF `
+          -DCLANG_INCLUDE_TESTS=OFF `
+          -DCLANG_INCLUDE_DOCS=OFF `
+          -DCLANG_BUILD_EXAMPLES=OFF
+        
+        Write-Host "Building LLVM and Clang (this may take a while)..."
+        cmake --build $llvmBuildPath --config Release
+        
+        Write-Host "Installing LLVM and Clang..."
+        cmake --install $llvmBuildPath --config Release
+        
+        Write-Host "LLVM and Clang $llvmVersion built and installed successfully to: $llvmInstallPath"
+    
+    - name: Create LLVM archive
+      shell: pwsh
+      run: |
+        Write-Host "Creating LLVM archive..."
+        Compress-Archive -Path "C:/llvm/*" -DestinationPath "${{ github.workspace }}/windows-clang-llvm-${{ github.event.inputs.llvm_version }}-x64.zip"
+        
+        $zipFile = Get-Item "${{ github.workspace }}/windows-clang-llvm-${{ github.event.inputs.llvm_version }}-x64.zip"
+        $sizeInMB = [math]::Round($zipFile.Length / 1MB, 2)
+        Write-Host "Archive created successfully - Size: $sizeInMB MB"
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: windows-clang-llvm-${{ github.event.inputs.llvm_version }}
+        name: Windows-Clang-LLVM ${{ github.event.inputs.llvm_version }}
+        body: |
+          Pre-built LLVM-Clang ${{ github.event.inputs.llvm_version }} for Windows x64
+          
+          Built with:
+          - X86 target
+          - Clang compiler
+          
+          To use in workflows, download and extract to C:/llvm
+        files: windows-clang-llvm-${{ github.event.inputs.llvm_version }}-x64.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
