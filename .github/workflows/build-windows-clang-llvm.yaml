@@ -16,6 +16,8 @@ permissions:
 jobs:
   build-llvm-clang:
     runs-on: windows-latest
+    env:
+      LLVM_VERSION: ${{ github.event.inputs.llvm_version || '21.1.8' }}
     
     steps:
     - name: Setup MSVC Developer Environment
@@ -37,7 +39,7 @@ jobs:
     - name: Build LLVM and Clang from source
       shell: pwsh
       run: |
-        $llvmVersion = "21.1.8"
+        $llvmVersion = "${{ env.LLVM_VERSION }}"
         $llvmInstallPath = "${{ github.workspace }}/llvm"
         $llvmBuildPath = "${{ github.workspace }}/llvm-build"
         
@@ -89,26 +91,26 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "Creating LLVM archive..."
-        Compress-Archive -Path "$llvmInstallPath/*" -DestinationPath "${{ github.workspace }}/windows-clang-llvm-${{ github.event.inputs.llvm_version }}-x64.zip"
-        
-        $zipFile = Get-Item "${{ github.workspace }}/windows-clang-llvm-${{ github.event.inputs.llvm_version }}-x64.zip"
+        Compress-Archive -Path "$llvmInstallPath/*" -DestinationPath "${{ github.workspace }}/windows-clang-llvm-${{ env.LLVM_VERSION }}-x64.zip"
+
+        $zipFile = Get-Item "${{ github.workspace }}/windows-clang-llvm-${{ env.LLVM_VERSION }}-x64.zip"
         $sizeInMB = [math]::Round($zipFile.Length / 1MB, 2)
         Write-Host "Archive created successfully - Size: $sizeInMB MB"
         
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: windows-clang-llvm-${{ github.event.inputs.llvm_version }}
-        name: Windows-Clang-LLVM ${{ github.event.inputs.llvm_version }}
+        tag_name: windows-clang-llvm-${{ env.LLVM_VERSION }}
+        name: Windows-Clang-LLVM ${{ env.LLVM_VERSION }}
         body: |
-          Pre-built LLVM-Clang ${{ github.event.inputs.llvm_version }} for Windows x64
+          Pre-built LLVM-Clang ${{ env.LLVM_VERSION }} for Windows x64
           
           Built with:
           - X86 target
           - Clang compiler
           
           To use in workflows, download and extract to ${{ github.workspace }}/llvm
-        files: windows-clang-llvm-${{ github.event.inputs.llvm_version }}-x64.zip
+        files: windows-clang-llvm-${{ env.LLVM_VERSION }}-x64.zip
         draft: false
         prerelease: false
       env:
