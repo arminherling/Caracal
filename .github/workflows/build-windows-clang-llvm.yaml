@@ -10,6 +10,9 @@ on:
   push:
     branches: [cicd]  # Remove this after testing
 
+permissions:
+  contents: write
+
 jobs:
   build-llvm-clang:
     runs-on: windows-latest
