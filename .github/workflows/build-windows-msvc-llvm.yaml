@@ -1,4 +1,4 @@
-name: Build and Cache LLVM-Clang
+name: Build and Cache LLVM-MSVC
 
 on:
   workflow_dispatch:
@@ -14,19 +14,12 @@ permissions:
   contents: write
 
 jobs:
-  build-llvm-clang:
+  build-llvm-msvc:
     runs-on: windows-latest
     env:
       LLVM_VERSION: ${{ github.event.inputs.llvm_version || '21.1.8' }}
     
     steps:
-    - name: Setup C++ Compiler and Tools
-      uses: aminya/setup-cpp@v1
-      with:
-        compiler: clang++
-        cmake: true
-        ninja: true
-    
     - name: Setup MSVC Developer Environment
       uses: ilammy/msvc-dev-cmd@v1
       with:
@@ -58,8 +51,8 @@ jobs:
           -S llvm-project/llvm `
           -G Ninja `
           -DCMAKE_BUILD_TYPE=Release `
-          -DCMAKE_C_COMPILER=clang `
-          -DCMAKE_CXX_COMPILER=clang++ `
+          -DCMAKE_C_COMPILER=cl `
+          -DCMAKE_CXX_COMPILER=cl `
           -DCMAKE_INSTALL_PREFIX="$llvmInstallPath" `
           -DLLVM_ENABLE_RPMALLOC=OFF `
           -DLLVM_ENABLE_PROJECTS="clang" `
@@ -100,24 +93,24 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "Creating LLVM archive..."
-        Compress-Archive -Path "$llvmInstallPath/*" -DestinationPath "${{ github.workspace }}/windows-clang-llvm-${{ env.LLVM_VERSION }}-x64.zip"
+        Compress-Archive -Path "$llvmInstallPath/*" -DestinationPath "${{ github.workspace }}/windows-msvc-llvm-${{ env.LLVM_VERSION }}-x64.zip"
 
-        $zipFile = Get-Item "${{ github.workspace }}/windows-clang-llvm-${{ env.LLVM_VERSION }}-x64.zip"
+        $zipFile = Get-Item "${{ github.workspace }}/windows-msvc-llvm-${{ env.LLVM_VERSION }}-x64.zip"
         $sizeInMB = [math]::Round($zipFile.Length / 1MB, 2)
         Write-Host "Archive created successfully - Size: $sizeInMB MB"
         
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: windows-clang-llvm-${{ env.LLVM_VERSION }}
-        name: Windows-Clang-LLVM ${{ env.LLVM_VERSION }}
+        tag_name: windows-msvc-llvm-${{ env.LLVM_VERSION }}
+        name: Windows-MSVC-LLVM ${{ env.LLVM_VERSION }}
         body: |
-          Pre-built LLVM-Clang ${{ env.LLVM_VERSION }} for Windows x64
+          Pre-built LLVM-MSVC ${{ env.LLVM_VERSION }} for Windows x64
           
           Built with:
           - X86 target
-          - Clang compiler
-        files: windows-clang-llvm-${{ env.LLVM_VERSION }}-x64.zip
+          - MSVC compiler
+        files: windows-msvc-llvm-${{ env.LLVM_VERSION }}-x64.zip
         draft: false
         prerelease: false
       env:
