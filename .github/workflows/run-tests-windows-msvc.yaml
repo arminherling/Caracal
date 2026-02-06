@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      LLVM_VERSION: '21.1.8'
 
     steps:
     - uses: actions/checkout@v4
@@ -17,45 +19,55 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         version: '6.6.0'
-        #arch: ${{ (matrix.os == 'windows-latest' && matrix.cpp_compiler == 'g++') && 'win64_mingw' || '' }}
-
+    
     - name: Setup MSVC Developer Environment
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: amd64
         vsversion: '2022'
     
-    - name: Download and Install LLVM
+    - name: Download LLVM-MSVC from Release
       shell: pwsh
       run: |
-        $version = "21.1.8"
-        $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$version/clang+llvm-$version-x86_64-pc-windows-msvc.tar.xz"
-        $llvmArchive = "${{ github.workspace }}/llvm.tar.xz"
-        $llvmExtractPath = "C:/llvm"
+        Write-Host "Downloading LLVM-MSVC ${{ env.LLVM_VERSION }} from release..."
+        $assetUrl = "https://github.com/${{ github.repository }}/releases/download/windows-msvc-llvm-${{ env.LLVM_VERSION }}/windows-msvc-llvm-${{ env.LLVM_VERSION }}-x64.zip"
+        $outputPath = "${{ github.workspace }}/llvm-msvc.zip"
         
-        Write-Host "Downloading LLVM..."
-        Invoke-WebRequest -Uri $llvmUrl -OutFile $llvmArchive
+        try {
+          Invoke-WebRequest -Uri $assetUrl -OutFile $outputPath -ErrorAction Stop
+          Write-Host "Download completed successfully"
+        } catch {
+          Write-Host "Error downloading LLVM-MSVC: $_"
+          Write-Host "Please run the 'Build and Cache LLVM-MSVC' workflow first to create the release"
+          exit 1
+        }
         
-        Write-Host "Extracting LLVM..."
-        New-Item -ItemType Directory -Force -Path $llvmExtractPath
-        tar -xf $llvmArchive -C $llvmExtractPath --strip-components=1
+        Write-Host "Extracting LLVM-MSVC to ${{ github.workspace }}/llvm..."
+        Expand-Archive -Path $outputPath -DestinationPath "${{ github.workspace }}/llvm" -Force
+        Write-Host "LLVM-MSVC extracted successfully"
         
-        Write-Host "Setting LLVM_DIR environment variable..."
-        $llvmCMakeDir = "$llvmExtractPath/lib/cmake/llvm"
+    - name: Verify and Setup LLVM-MSVC
+      shell: pwsh
+      run: |
+        $llvmInstallPath = "${{ github.workspace }}/llvm"
+        
+        Write-Host "=== Verifying LLVM-MSVC installation ==="
+        if (-not (Test-Path $llvmInstallPath)) {
+          Write-Host "✗ ERROR: LLVM-MSVC not found at $llvmInstallPath"
+          exit 1
+        }
+        
+        $llvmCMakeDir = "$llvmInstallPath/lib/cmake/llvm"
+        $clangCMakeDir = "$llvmInstallPath/lib/cmake/clang"
+        $llvmBinDir = "$llvmInstallPath/bin"
+        
+        Write-Host "✓ LLVM-MSVC installation found"
+        Write-Host "✓ Setting environment variables"
+        
         echo "LLVM_DIR=$llvmCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        
-        Write-Host "LLVM installed to: $llvmExtractPath"
-        Write-Host "LLVM_DIR set to: $llvmCMakeDir"
-
-    - name: Debug LLVM Installation
-      shell: pwsh
-      run: |
-        Write-Host "LLVM Path: $LLVM_DIR"
-        Write-Host "Listing LLVM directory contents:"
-        Get-ChildItem -Path "$LLVM_DIR" -Recurse -Depth 2
-        Write-Host "`nChecking for CMake config files:"
-        Get-ChildItem -Path "$LLVM_DIR" -Recurse -Filter "*LLVMConfig.cmake"
-
+        echo "Clang_DIR=$clangCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "$llvmBinDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+            
     - name: Configure CMake
       shell: pwsh
       run: |
@@ -69,7 +81,23 @@ jobs:
 
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config Release
-
+      
+    - name: List build directory contents
+      run: |
+        Write-Host "=== Build Directory Structure ==="
+        Get-ChildItem -Path . -Recurse -File | Where-Object { $_.Extension -eq ".exe" } | ForEach-Object { Write-Host $_.FullName }
+        Write-Host "`n=== Full Tests Directory ==="
+        if (Test-Path .\build\Tests) {
+          Get-ChildItem -Path .\build\Tests -Recurse
+        } else {
+          Write-Host ".\build\Tests does not exist"
+        }
+        Write-Host "`n=== All .exe files in build ==="
+        if (Test-Path .\build) {
+          Get-ChildItem -Path .\build -Filter *.exe -Recurse -ErrorAction SilentlyContinue | Select-Object FullName
+        }
+        
     - name: Run Test
       working-directory: ${{ github.workspace }}/build
-      run: ./Tests/AllInOne/AllInOne.exe
+      shell: pwsh
+      run: .\AllInOne.exe

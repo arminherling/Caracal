@@ -6,12 +6,12 @@ on:
   pull_request:
     branches: [ "cicd" ]
 
-env:
-  LLVM_CLANG_VERSION: '21.1.8'
-
 jobs:
   build:
+    if: false # Disable this workflow until the LLVM-Clang workflow is working
     runs-on: windows-latest
+    env:
+      LLVM_VERSION: '21.1.8'
 
     steps:
     - uses: actions/checkout@v4
@@ -27,19 +27,11 @@ jobs:
         arch: amd64
         vsversion: '2022'
     
-    - name: Cache LLVM-Clang
-      id: cache-llvm-clang
-      uses: actions/cache@v4
-      with:
-        path: C:/llvm
-        key: windows-clang-llvm-${{ env.LLVM_CLANG_VERSION }}-x64-v1
-        
     - name: Download LLVM-Clang from Release
-      if: steps.cache-llvm-clang.outputs.cache-hit != 'true'
       shell: pwsh
       run: |
-        Write-Host "Downloading LLVM-Clang $env:LLVM_CLANG_VERSION from release..."
-        $assetUrl = "https://github.com/${{ github.repository }}/releases/download/windows-clang-llvm-$env:LLVM_CLANG_VERSION/windows-clang-llvm-$env:LLVM_CLANG_VERSION-x64.zip"
+        Write-Host "Downloading LLVM-Clang ${{ env.LLVM_VERSION }} from release..."
+        $assetUrl = "https://github.com/${{ github.repository }}/releases/download/windows-clang-llvm-${{ env.LLVM_VERSION }}/windows-clang-llvm-${{ env.LLVM_VERSION }}-x64.zip"
         $outputPath = "${{ github.workspace }}/llvm-clang.zip"
         
         try {
@@ -51,14 +43,14 @@ jobs:
           exit 1
         }
         
-        Write-Host "Extracting LLVM-Clang to C:/llvm..."
-        Expand-Archive -Path $outputPath -DestinationPath "C:/llvm" -Force
+        Write-Host "Extracting LLVM-Clang to ${{ github.workspace }}/llvm..."
+        Expand-Archive -Path $outputPath -DestinationPath "${{ github.workspace }}/llvm" -Force
         Write-Host "LLVM-Clang extracted successfully"
         
     - name: Verify and Setup LLVM-Clang
       shell: pwsh
       run: |
-        $llvmInstallPath = "C:/llvm"
+        $llvmInstallPath = "${{ github.workspace }}/llvm"
         
         Write-Host "=== Verifying LLVM-Clang installation ==="
         if (-not (Test-Path $llvmInstallPath)) {

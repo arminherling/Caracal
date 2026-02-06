@@ -7,14 +7,16 @@ on:
         description: 'LLVM version to build'
         required: true
         default: '21.1.8'
-  push:
-    branches: [cicd]  # Remove this after testing
+  # Retry building LLVM with CLang when the following issue is solved: https://github.com/llvm/llvm-project/issues/152083
+  #push:
+  #  branches: [cicd]  # Remove this after testing
 
 permissions:
   contents: write
 
 jobs:
   build-llvm-clang:
+    if: false # Disable this workflow until the LLVM-Clang build is working
     runs-on: windows-latest
     env:
       LLVM_VERSION: ${{ github.event.inputs.llvm_version || '21.1.8' }}
