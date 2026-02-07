@@ -1,0 +1,102 @@
+name: Ubuntu-Clang-Tests
+
+on:
+  push:
+    branches: [ "cicd" ]
+  pull_request:
+    branches: [ "cicd" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      LLVM_VERSION: '21.1.8'
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.6.0'
+    
+    - name: Download LLVM-Clang from Release
+      shell: pwsh
+      run: |
+        Write-Host "Downloading LLVM-Clang ${{ env.LLVM_VERSION }} from release..."
+        $assetUrl = "https://github.com/${{ github.repository }}/releases/download/ubuntu-clang-llvm-${{ env.LLVM_VERSION }}/ubuntu-clang-llvm-${{ env.LLVM_VERSION }}-x64.zip"
+        $outputPath = "${{ github.workspace }}/llvm-clang.zip"
+        
+        try {
+          Invoke-WebRequest -Uri $assetUrl -OutFile $outputPath -ErrorAction Stop
+          Write-Host "Download completed successfully"
+        } catch {
+          Write-Host "Error downloading LLVM-Clang: $_"
+          Write-Host "Please run the 'Build and Cache LLVM-Clang' workflow first to create the release"
+          exit 1
+        }
+        
+        Write-Host "Extracting LLVM-Clang to ${{ github.workspace }}/llvm..."
+        Expand-Archive -Path $outputPath -DestinationPath "${{ github.workspace }}/llvm" -Force
+        Write-Host "LLVM-Clang extracted successfully"
+        
+    - name: Verify and Setup LLVM-Clang
+      shell: pwsh
+      run: |
+        $llvmInstallPath = "${{ github.workspace }}/llvm"
+        
+        Write-Host "=== Verifying LLVM-Clang installation ==="
+        if (-not (Test-Path $llvmInstallPath)) {
+          Write-Host "✗ ERROR: LLVM-Clang not found at $llvmInstallPath"
+          exit 1
+        }
+        
+        $llvmCMakeDir = "$llvmInstallPath/lib/cmake/llvm"
+        $clangCMakeDir = "$llvmInstallPath/lib/cmake/clang"
+        $llvmBinDir = "$llvmInstallPath/bin"
+        
+        Write-Host "✓ LLVM-Clang installation found"
+        Write-Host "✓ Setting environment variables"
+        
+        echo "LLVM_DIR=$llvmCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "Clang_DIR=$clangCMakeDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "$llvmBinDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+            
+    - name: Configure CMake
+      shell: pwsh
+      run: |
+        cmake -B "${{ github.workspace }}/build" `
+          -G Ninja `
+          -DCMAKE_C_COMPILER=clang `
+          -DCMAKE_CXX_COMPILER=clang++ `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DLLVM_DIR="$env:LLVM_DIR" `
+          -S "${{ github.workspace }}"
+
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --config Release
+      
+    - name: List build directory contents
+      shell: pwsh
+      run: |
+        Write-Host "=== Build Directory Structure ==="
+        Get-ChildItem -Path . -Recurse -File | Where-Object { 
+          $_.UnixFileMode -band [System.IO.UnixFileMode]::UserExecute
+        } | ForEach-Object { Write-Host $_.FullName }
+        Write-Host "`n=== Full Tests Directory ==="
+        if (Test-Path ./build/Tests) {
+          Get-ChildItem -Path ./build/Tests -Recurse
+        } else {
+          Write-Host "./build/Tests does not exist"
+        }
+        Write-Host "`n=== All executables in build ==="
+        if (Test-Path ./build) {
+          Get-ChildItem -Path ./build -File -Recurse -ErrorAction SilentlyContinue | Where-Object {
+            $_.UnixFileMode -band [System.IO.UnixFileMode]::UserExecute
+          } | Select-Object FullName
+        }
+        
+    - name: Run Test
+      working-directory: ${{ github.workspace }}/build
+      shell: pwsh
+      run: ./AllInOne

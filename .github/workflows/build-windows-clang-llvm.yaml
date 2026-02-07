@@ -1,4 +1,4 @@
-name: Build and Cache LLVM-Clang
+name: Build and Cache Windows-Clang-LLVM
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: Build and Cache LLVM-MSVC
+name: Build and Cache Windows-MSVC-LLVM
 
 on:
   workflow_dispatch:
