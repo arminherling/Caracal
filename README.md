@@ -1,4 +1,4 @@
-﻿[![Windows-MSVC-Tests](https://github.com/arminherling/Caracal/actions/workflows/run-tests-windows-msvc.yaml/badge.svg)](https://github.com/arminherling/Caracal/actions/workflows/run-tests-windows-msvc.yaml)
+﻿[![Windows-MSVC-Tests](https://github.com/arminherling/Caracal/actions/workflows/run-tests-windows-msvc.yaml/badge.svg)](https://github.com/arminherling/Caracal/actions/workflows/run-tests-windows-msvc.yaml) [![Windows-Clang-Tests](https://github.com/arminherling/Caracal/actions/workflows/run-tests-windows-clang.yaml/badge.svg)](https://github.com/arminherling/Caracal/actions/workflows/run-tests-windows-clang.yaml)
 # Caracal
 
 <img src="Assets/caracal-logo.png"  alt="Caracal logo" height="250" />
