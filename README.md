@@ -1,4 +1,5 @@
-﻿# Caracal
+﻿[![Windows-MSVC-Tests](https://github.com/arminherling/Caracal/actions/workflows/run-tests-windows-msvc.yaml/badge.svg)](https://github.com/arminherling/Caracal/actions/workflows/run-tests-windows-msvc.yaml) [![Windows-Clang-Tests](https://github.com/arminherling/Caracal/actions/workflows/run-tests-windows-clang.yaml/badge.svg)](https://github.com/arminherling/Caracal/actions/workflows/run-tests-windows-clang.yaml) [![Ubuntu-Clang-Tests](https://github.com/arminherling/Caracal/actions/workflows/run-tests-ubuntu-clang.yaml/badge.svg)](https://github.com/arminherling/Caracal/actions/workflows/run-tests-ubuntu-clang.yaml)
+# Caracal
 
 <img src="Assets/caracal-logo.png"  alt="Caracal logo" height="250" />
 
@@ -17,22 +18,23 @@ The goal is a statically typed language that feels like a dynamically typed lang
 - Maybe not too ugly syntax
 
 ## Roadmap
-The current focus is on getting a minimal version up and running. For that, I'm generating C++ code, later on I'm probably gonna use LLVM.
+The current focus is on getting a minimal version up and running. For that, I'm generating LLVM IR.
 
 - Lexer: mostly done
 - Parser: basic syntax can be parsed but is missing advanced features
-- Typechecker: none yet
+- Typechecker: some done
 - Optimizer: none yet
 - Codegen: some code is already executable
 
 ## Examples
+Some examples can be found under /Tests/TestData/Input here: [Link](Tests/TestData/Input)
 
 ### Constants
 
 The global scope can't contain variables, any identifier defined here is a constant and can't be changed at runtime.
 
 ```rb
-year :: 2024;
+year :: 2026;
 currentOS :: OS.Windows;
 ```
 
@@ -97,15 +99,15 @@ variant V : Vector1D | Vector2D | Vector3D
     {
         case Vector1D d
         {
-            return 1
+            return 1;
         }
         case Vector2D d
         {
-            return 2
+            return 2;
         }
         case Vector3D d
         {
-            return 3
+            return 3;
         }
     }
 }
@@ -116,7 +118,7 @@ extend variant V : Vector4D
     {
         case Vector4d d
         {
-            return 4
+            return 4;
         }
     }
 }
