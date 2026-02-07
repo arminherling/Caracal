@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-    if: false # Disable this workflow until the LLVM-Clang workflow is working
     runs-on: windows-latest
     env:
       LLVM_VERSION: '21.1.8'
@@ -31,7 +30,7 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "Downloading LLVM-Clang ${{ env.LLVM_VERSION }} from release..."
-        $assetUrl = "https://github.com/${{ github.repository }}/releases/download/windows-clang-llvm-${{ env.LLVM_VERSION }}/windows-clang-llvm-${{ env.LLVM_VERSION }}-x64.zip"
+        $assetUrl = "https://github.com/${{ github.repository }}/releases/download/windows-msvc-llvm-${{ env.LLVM_VERSION }}/windows-msvc-llvm-${{ env.LLVM_VERSION }}-x64.zip"
         $outputPath = "${{ github.workspace }}/llvm-clang.zip"
         
         try {
