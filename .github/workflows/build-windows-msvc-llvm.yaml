@@ -7,8 +7,6 @@ on:
         description: 'LLVM version to build'
         required: true
         default: '21.1.8'
-  push:
-    branches: [cicd]  # Remove this after testing
 
 permissions:
   contents: write
