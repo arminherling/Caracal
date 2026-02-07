@@ -97,6 +97,6 @@ jobs:
         }
         
     - name: Run Test
-      working-directory: ${{ github.workspace }}/build
+      working-directory: ${{ github.workspace }}/build/Tests/AllInOne
       shell: pwsh
       run: ./AllInOne
