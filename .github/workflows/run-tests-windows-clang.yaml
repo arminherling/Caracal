@@ -1,4 +1,4 @@
-name: Windows-Clang-Tests
+﻿name: Windows-Clang-Tests
 
 on:
   push:
@@ -14,11 +14,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: '6.6.0'
     
     - name: Setup MSVC Developer Environment
       uses: ilammy/msvc-dev-cmd@v1

@@ -1,5 +1,5 @@
 ﻿include(FetchContent)
 FetchContent_Declare(CaraTest
     GIT_REPOSITORY https://github.com/arminherling/CaraTest.git
-    GIT_TAG 16427da1735206178a89cf7bf9b49948a7846aac)
+    GIT_TAG e066e51086c23e1f8a8b42499cf973f6e001131d)
 FetchContent_MakeAvailable(CaraTest)

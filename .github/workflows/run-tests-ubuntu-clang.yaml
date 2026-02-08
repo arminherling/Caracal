@@ -1,4 +1,4 @@
-name: Ubuntu-Clang-Tests
+﻿name: Ubuntu-Clang-Tests
 
 on:
   push:
@@ -14,11 +14,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: '6.6.0'
     
     - name: Download LLVM-Clang from Release
       shell: pwsh
