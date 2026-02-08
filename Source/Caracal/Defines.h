@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <cstdint>
 
@@ -7,6 +7,12 @@
     ClassName& operator=(const ClassName&) = delete;        \
     ClassName(ClassName&&) = default;                       \
     ClassName& operator=(ClassName&&) = default;
+
+#define CARACAL_DELETE_COPY_DELETE_MOVE(ClassName)          \
+    ClassName(const ClassName&) = delete;                   \
+    ClassName& operator=(const ClassName&) = delete;        \
+    ClassName(ClassName&&) = delete;                        \
+    ClassName& operator=(ClassName&&) = delete;
 
 #if defined(_MSC_VER)
 #define TODO(X)  __debugbreak();

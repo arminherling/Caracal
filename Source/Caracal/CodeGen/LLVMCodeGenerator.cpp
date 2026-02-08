@@ -385,7 +385,7 @@ namespace Caracal
             default:
             {
                 TODO("Missing NodeKind!!");
-                break;
+                return nullptr;
             }
         }
     }
@@ -606,8 +606,11 @@ namespace Caracal
                     TODO("Unsupported type for logical or operator");
                 }
             }
-            default:
+            default: 
+            {
                 TODO("Unsupported binary operator");
+                return nullptr;
+            }
         }
     }
 

@@ -34,7 +34,7 @@ namespace Caracal
             TypeDatabase& typeDatabase,
             DiagnosticsBag& diagnostics);
 
-        CARACAL_DELETE_COPY_DEFAULT_MOVE(TypeChecker)
+        CARACAL_DELETE_COPY_DELETE_MOVE(TypeChecker)
 
         bool typeCheck();
         
