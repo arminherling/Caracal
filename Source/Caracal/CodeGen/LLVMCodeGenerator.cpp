@@ -1,6 +1,4 @@
 ﻿#include "LLVMCodeGenerator.h"
-#include "LLVMCodeGenerator.h"
-#include "LLVMCodeGenerator.h"
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Verifier.h>
@@ -15,7 +13,6 @@ namespace Caracal
             { Type::Bool(), llvm::Type::getInt1Ty(context) },
             { Type::I32(), llvm::Type::getInt32Ty(context) },
             { Type::F32(), llvm::Type::getFloatTy(context) },
-            //{ Type::String(), std::string_view("std::string") },
         };
     }
 

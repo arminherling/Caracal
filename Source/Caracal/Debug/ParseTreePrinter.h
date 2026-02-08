@@ -2,21 +2,16 @@
 
 #include <Caracal/API.h>
 #include <Caracal/Defines.h>
-//#include <Caracal/Syntax/ArgumentsNode.h>
-//#include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BlockNode.h>
 #include <Caracal/Syntax/EnumDefinitionStatement.h>
 #include <Caracal/Syntax/EnumFieldDeclaration.h>
-//#include <Caracal/Syntax/Error.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
-//#include <Caracal/Syntax/FieldDefinitionStatement.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
 #include <Caracal/Syntax/GroupingExpression.h>
 #include <Caracal/Syntax/IfStatement.h>
-//#include <Caracal/Syntax/MemberAccessExpression.h>
 #include <Caracal/Syntax/MethodDefinitionStatement.h>
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/MethodNameNode.h>
@@ -28,8 +23,6 @@
 #include <Caracal/Syntax/StringLiteral.h>
 #include <Caracal/Syntax/NumberLiteral.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
-//#include <Caracal/Syntax/TypeDefinitionStatement.h>
-//#include <Caracal/Syntax/TypeName.h>
 #include <Caracal/Syntax/UnaryExpression.h>
 #include <Caracal/Syntax/FunctionCallExpression.h>
 #include <Caracal/Syntax/WhileStatement.h>

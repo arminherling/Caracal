@@ -7,7 +7,6 @@ add_executable(
     "${PROJECT_SOURCE_DIR}/../ParserTests/Source/ParserTests.cpp"
     "${PROJECT_SOURCE_DIR}/../TypeCheckerTests/Source/TypeCheckerTests.cpp"
     "${PROJECT_SOURCE_DIR}/../SourceLocationTests/Source/SourceLocationTests.cpp"
-    "${PROJECT_SOURCE_DIR}/../VirtualMachineTests/Source/VirtualMachineTests.cpp"
     "Source/main.cpp")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Caracal CaraTest)
