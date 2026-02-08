@@ -1,4 +1,0 @@
-#include <iostream>
-#include <string>
-
-const auto _0 = &(std::cout << std::string{"hello, world!"} << "\n");

@@ -49,7 +49,6 @@ namespace Caracal
             { std::string_view("and"),      TokenKind::AndKeyword },
             { std::string_view("or"),       TokenKind::OrKeyword },
             { std::string_view("ref"),      TokenKind::RefKeyword },
-            { std::string_view("cpp"),      TokenKind::CppKeyword },
         };
     }
 

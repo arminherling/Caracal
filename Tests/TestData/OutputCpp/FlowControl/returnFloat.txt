@@ -1,7 +1,0 @@
-float func();
-
-float func()
-{
-    return 1.23;
-}
-

@@ -1,8 +1,0 @@
-int main();
-
-int main()
-{
-    auto foo = true;
-    foo = false;
-}
-

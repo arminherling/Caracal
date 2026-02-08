@@ -1,4 +1,4 @@
-{
+﻿{
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 	"name": "Caracal",
 	"fileTypes": [
@@ -24,10 +24,6 @@
 	"repository": {
 		"keywords": {
 			"patterns": [
-				{
-					"name": "keyword.control.cpp.caracal",
-					"match": "\\bcpp\\b"
-				},
 				{
 					"name": "keyword.control.ref.caracal",
 					"match": "\\bref\\b"

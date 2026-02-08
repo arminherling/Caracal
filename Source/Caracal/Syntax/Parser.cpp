@@ -3,7 +3,6 @@
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/BreakStatement.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
-#include <Caracal/Syntax/CppBlockStatement.h>
 #include <Caracal/Syntax/DiscardLiteral.h>
 #include <Caracal/Syntax/EnumDefinitionStatement.h>
 #include <Caracal/Syntax/ErrorExpression.h>
@@ -152,15 +151,6 @@ namespace Caracal
                 TODO("Type definition in other scopes");
                 break;
             }
-            case TokenKind::CppKeyword:
-            {
-                if (scope == StatementScope::Global || scope == StatementScope::Function || scope == StatementScope::Method)
-                {
-                    return parseCppBlock();
-                }
-                TODO("Cpp block in other scopes");
-                break;
-            }
             case TokenKind::IfKeyword:
             {
                 if (scope == StatementScope::Function || scope == StatementScope::Method)
@@ -267,25 +257,6 @@ namespace Caracal
         return std::make_unique<ExpressionStatement>(std::move(errorExpression), Token::ToError(current));
     }
 
-    StatementUPtr Parser::parseCppBlock()
-    {
-        const auto cppKeyword = advanceOnMatch(TokenKind::CppKeyword);
-        const auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
-
-        std::vector<Token> lines;
-        auto current = currentToken();
-        while (current.kind == TokenKind::String)
-        {
-            lines.push_back(current);
-            advanceCurrentIndex();
-            current = currentToken();
-        }
-
-        const auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
-
-        return std::make_unique<CppBlockStatement>(cppKeyword, openBracket, lines, closeBracket);
-    }
-    
     StatementUPtr Parser::parseExpressionStatement(ExpressionUPtr&& expression)
     {
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);

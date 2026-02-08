@@ -1,7 +1,0 @@
-bool func();
-
-bool func()
-{
-    return true;
-}
-

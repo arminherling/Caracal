@@ -1,1 +1,0 @@
-const auto a = 100;

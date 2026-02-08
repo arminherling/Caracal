@@ -1,7 +1,0 @@
-float random();
-
-float random()
-{
-    return 1.23;
-}
-

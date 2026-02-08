@@ -2,7 +2,6 @@
 
 add_executable(
     ${PROJECT_NAME} 
-    "${PROJECT_SOURCE_DIR}/../CppCodeGenTests/Source/CppCodeGenTests.cpp"
     "${PROJECT_SOURCE_DIR}/../LLVMCodeGenTests/Source/LLVMCodeGenTests.cpp"
     "${PROJECT_SOURCE_DIR}/../LexerTests/Source/LexerTests.cpp"
     "${PROJECT_SOURCE_DIR}/../ParserTests/Source/ParserTests.cpp"

@@ -1,9 +1,0 @@
-#include <string>
-
-std::string func();
-
-std::string func()
-{
-    return std::string{"hello"};
-}
-

@@ -1,7 +1,0 @@
-enum class Values : int;
-
-enum class Values : int
-{
-    Value,
-};
-

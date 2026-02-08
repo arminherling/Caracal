@@ -1,9 +1,0 @@
-enum class Values : unsigned char;
-
-enum class Values : unsigned char
-{
-    First,
-    Second,
-};
-
-const auto s = Values::Second;

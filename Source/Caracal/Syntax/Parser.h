@@ -38,7 +38,6 @@ namespace Caracal
 
         std::vector<StatementUPtr> parseStatements(StatementScope scope);
         StatementUPtr parseStatement(StatementScope scope);
-        StatementUPtr parseCppBlock();
         StatementUPtr parseExpressionStatement(ExpressionUPtr&& expression);
         StatementUPtr parseFunctionDefinitionStatement();
         StatementUPtr parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression, StatementScope scope);

@@ -76,7 +76,6 @@ static std::vector<std::tuple<std::string, std::string, TokenKind>> Keyword_Data
         std::make_tuple("And", "and", TokenKind::AndKeyword),
         std::make_tuple("Or", "or", TokenKind::OrKeyword),
         std::make_tuple("Ref", "ref", TokenKind::RefKeyword),
-        std::make_tuple("C++", "cpp", TokenKind::CppKeyword),
     };
 }
 

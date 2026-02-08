@@ -53,7 +53,6 @@ enum class CARACAL_API TokenKind
     AndKeyword,
     OrKeyword,
     RefKeyword,
-    CppKeyword,
 
     EndOfFile
 };

@@ -1,9 +1,0 @@
-class Empty;
-
-class Empty
-{
-public:
-    Empty() = default;
-    ~Empty() = default;
-};
-

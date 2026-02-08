@@ -41,11 +41,6 @@ namespace Caracal
                 prettyPrintTypeFieldDeclaration((TypeFieldDeclaration*)node);
                 break;
             }
-            case NodeKind::CppBlockStatement:
-            {
-                prettyPrintCppBlockStatement((CppBlockStatement*)node);
-                break;
-            }
             case NodeKind::ExpressionStatement:
             {
                 prettyPrintExpressionStatement((ExpressionStatement*)node);
@@ -284,30 +279,6 @@ namespace Caracal
         {
             m_builder.appendIndentedLine("Right: null");
         }
-
-        m_builder.popIndentation();
-        m_builder.appendIndentedLine("}")
-            ;
-    }
-
-    void ParseTreePrinter::prettyPrintCppBlockStatement(CppBlockStatement* node)
-    {
-        const auto& lines = node->lines();
-
-        m_builder.appendIndented(stringify(node->kind())).appendLine(": {");
-        m_builder.pushIndentation();
-
-        m_builder.appendIndented("Lines (").append(std::to_string(lines.size())).appendLine("): {");
-        m_builder.pushIndentation();
-
-        for (const auto& line : lines)
-        {
-            auto lexeme = m_parseTree.tokens().getLexeme(line);
-            m_builder.appendIndentedLine(lexeme);
-        }
-
-        m_builder.popIndentation();
-        m_builder.appendIndentedLine("}");
 
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");

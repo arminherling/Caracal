@@ -2,7 +2,6 @@
 
 #include <Caracal/API.h>
 #include <Caracal/Defines.h>
-#include <Caracal/Syntax/CppBlockStatement.h>
 //#include <Caracal/Syntax/ArgumentsNode.h>
 //#include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/BinaryExpression.h>
@@ -58,7 +57,6 @@ namespace Caracal
 
     private:
         void prettyPrintNode(Node* node);
-        void prettyPrintCppBlockStatement(CppBlockStatement* node);
         void prettyPrintExpressionStatement(ExpressionStatement* statement);
         void prettyPrintConstantDeclaration(ConstantDeclaration* statement);
         void prettyPrintVariableDeclaration(VariableDeclaration* statement);

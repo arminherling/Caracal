@@ -1,8 +1,0 @@
-int main();
-
-int main()
-{
-    const bool a = true;
-    const auto& b = a;
-}
-
