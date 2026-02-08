@@ -85,6 +85,10 @@ namespace Caracal
                 typeCheckBlockNode((BlockNode*)statement);
                 break;
             }
+            default:
+            {
+                break;
+            }
         }
     }
 

@@ -120,7 +120,7 @@ namespace Caracal
         tokenBuffer.addToken({ .kind = tokenKind, .locationIndex = locationIndex, .triviaIndex = triviaIndex });
     };
 
-    [[nodiscard]] static void AddKindAndLexeme(TokenBuffer& tokenBuffer, std::string_view source, i32 currentIndex, i32& triviaStartIndex, TokenKind tokenKind, i32 startIndex) noexcept
+    static void AddKindAndLexeme(TokenBuffer& tokenBuffer, std::string_view source, i32 currentIndex, i32& triviaStartIndex, TokenKind tokenKind, i32 startIndex) noexcept
     {
         const auto length = currentIndex - startIndex;
         const auto identifierIndex = tokenBuffer.addLexeme(source.substr(startIndex, length));

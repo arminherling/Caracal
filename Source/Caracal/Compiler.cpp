@@ -149,6 +149,7 @@ namespace Caracal
         }
 
         const auto exeResult = executeCommand(exeFileName);
+        return exeResult;
     }
 
     std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, TypeDatabase& typeDatabase)

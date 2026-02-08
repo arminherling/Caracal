@@ -13,7 +13,7 @@ namespace Caracal
             { Type::Bool(), llvm::Type::getInt1Ty(context) },
             { Type::I32(), llvm::Type::getInt32Ty(context) },
             { Type::F32(), llvm::Type::getFloatTy(context) },
-            { Type::String(), llvm::Type::getInt8Ty(context)->getPointerTo() },
+            { Type::String(), llvm::PointerType::get(llvm::Type::getInt8Ty(context), 0) },
         };
     }
 

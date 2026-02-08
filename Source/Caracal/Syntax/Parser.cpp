@@ -262,6 +262,10 @@ namespace Caracal
                 TODO("Identifier in other scopes");
                 break;
             }
+            default:
+            {
+                break;
+            }
         }
 
         TODO("Unexpected token in parseStatement");
