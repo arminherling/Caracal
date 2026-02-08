@@ -5,7 +5,7 @@
 
 namespace Caracal
 {
-    enum class CARACAL_API NodeKind
+    enum class NodeKind
     {
         Unknown,
         Error,

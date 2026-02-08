@@ -44,8 +44,6 @@ namespace Caracal
             TypeDatabase* typeDatabase, 
             i32 indentation = 4);
 
-        CARACAL_DELETE_COPY_DEFAULT_MOVE(ParseTreePrinter)
-
         [[nodiscard]] std::string prettyPrint();
 
     private:

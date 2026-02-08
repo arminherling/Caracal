@@ -5,7 +5,7 @@
 
 #include <string>
 
-enum class CARACAL_API TokenKind
+enum class TokenKind
 {
     Unknown,
     Error,

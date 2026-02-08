@@ -42,8 +42,6 @@ namespace Caracal
             TypeDatabase& typeDatabase, 
             llvm::Module& module);
 
-        CARACAL_DELETE_COPY_DEFAULT_MOVE(LLVMCodeGenerator)
-
         [[nodiscard]] bool generate();
     
     private:
