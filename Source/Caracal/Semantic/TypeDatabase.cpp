@@ -87,16 +87,18 @@ namespace Caracal
     [[nodiscard]] static auto InitializeBuiltinTypes() noexcept
     {
         return std::unordered_map<std::string_view, Type>{
+            { std::string_view("..."), Type::CVariadic() },
             { std::string_view("bool"), Type::Bool()},
-            { std::string_view("i32") , Type::I32() },
-            { std::string_view("f32") ,Type::F32() },
-            { std::string_view("string") ,Type::String() },
+            { std::string_view("i32"), Type::I32() },
+            { std::string_view("f32"), Type::F32() },
+            { std::string_view("string"), Type::String() },
         };
     }
 
     [[nodiscard]] static auto InitializeTypeToName() noexcept
     {
         return std::unordered_map<Type, std::string_view>{
+            { Type::CVariadic(), std::string_view("C Variadic") },
             { Type::Function(), std::string_view("function") },
             { Type::Undefined(), std::string_view("undefined") },
             { Type::Void(), std::string_view("void") },
@@ -110,7 +112,7 @@ namespace Caracal
     TypeDatabase::TypeDatabase()
     {
         // TODO remove this once we got a prelude
-        m_functionDefinitions.try_emplace(1000, FunctionDefinition{ Type{ 1000, TypeKind::Function }, "print", {Parameter{"msg", Type::String()}} });
+        m_functionDefinitions.try_emplace(1000, FunctionDefinition{ Type{ 1000, TypeKind::Function }, "print", false, {Parameter{"msg", Type::String()}} });
     }
 
     Type TypeDatabase::TryFindBuiltin(std::string_view typeName) noexcept
@@ -144,7 +146,7 @@ namespace Caracal
 
     FunctionDefinition& TypeDatabase::getFunctionDefinition(Type type) noexcept
     {
-        static auto invalidFunction = FunctionDefinition{ Type::Undefined(), std::string("???") };
+        static auto invalidFunction = FunctionDefinition{ Type::Undefined(), std::string("???"), false };
 
         auto id = type.id();
         if (m_functionDefinitions.contains(id))
@@ -161,7 +163,8 @@ namespace Caracal
         auto functionName = std::string(name);
         auto functionId = m_nextId++;
         auto functionType = Type{ functionId, TypeKind::Function };
-        m_functionDefinitions.try_emplace(functionId, FunctionDefinition{ functionType, functionName, parameters, returnTypes });
+        auto isVariadic = !parameters.empty() && parameters.back().type() == Type::CVariadic();
+        m_functionDefinitions.try_emplace(functionId, FunctionDefinition{ functionType, functionName, isVariadic, parameters, returnTypes });
 
         return m_functionDefinitions.at(functionId);
     }

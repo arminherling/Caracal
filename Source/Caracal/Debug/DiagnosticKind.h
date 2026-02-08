@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace Caracal
 {
@@ -10,5 +10,6 @@ namespace Caracal
         _0003_ExpectedXButGotY,
         _0004_ExtraTokensRemaining,
         _0005_ExpectedEnumField,
+        _0006_UnexpectedAnnotation
     };
 }

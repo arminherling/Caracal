@@ -344,6 +344,12 @@ namespace Caracal
         writeIndentedTypeName(statement->type());
 
         m_builder.appendIndented("Name: ").appendLine(statement->name());
+
+        if(statement->annotationNode().has_value())
+        {
+            prettyPrintAnnotationNode(statement->annotationNode().value().get());
+        }
+
         prettyPrintParametersNode(statement->parametersNode().get());
         prettyPrintReturnTypesNode(statement->returnTypesNode().get());
         prettyPrintBlockNode(statement->bodyNode().get());
@@ -645,7 +651,19 @@ namespace Caracal
         const auto lexeme = m_parseTree.tokens().getLexeme(string->literalToken());
         m_builder.appendIndented(stringify(string->kind())).append(": ").appendLine(lexeme);
     }
-    
+
+    void ParseTreePrinter::prettyPrintAnnotationNode(AnnotationNode* annotation)
+    {
+        m_builder.appendIndented(stringify(annotation->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
+        m_builder.appendIndented("Name: ").appendLine(annotation->name());
+        prettyPrintArgumentsNode(annotation->argumentsNode().get());
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+    }
+
     void ParseTreePrinter::prettyPrintArgumentsNode(ArgumentsNode* node)
     {
         const auto& arguments = node->arguments();

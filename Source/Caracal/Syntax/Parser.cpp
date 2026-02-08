@@ -79,6 +79,22 @@ namespace Caracal
         {
             switch (current.kind)
             {
+                case TokenKind::Hash: 
+                {
+                    if(scope == StatementScope::Global)
+                    {
+                        if(m_currentAnnotation.has_value())
+                        {
+                            const auto& location = m_tokens.getSourceLocation(current);
+                            m_diagnostics.AddError(DiagnosticKind::_0006_UnexpectedAnnotation, location);
+                            advanceCurrentIndex();
+                            break;
+                        }
+                        buildAnnotationNode(scope);
+                        break;
+                    }
+                    TODO("Annotations in other scopes");
+                }
                 case TokenKind::CloseBracket:
                 {
                     if (scope == StatementScope::Global)
@@ -111,15 +127,6 @@ namespace Caracal
         const auto current = currentToken();
         switch (current.kind)
         {
-            case TokenKind::OpenBracket:
-            {
-                if (scope == StatementScope::Function || scope == StatementScope::Method)
-                {
-                    return parseBlockNode(scope);
-                }
-                TODO("Block node in other scopes");
-                break;
-            }
             case TokenKind::DefKeyword:
             {
                 if (scope == StatementScope::Global)
@@ -195,6 +202,15 @@ namespace Caracal
                     return parseReturnStatement(scope);
                 }
                 TODO("Return statement in other scopes");
+                break;
+            }
+            case TokenKind::OpenBracket:
+            {
+                if (scope == StatementScope::Function || scope == StatementScope::Method)
+                {
+                    return parseBlockNode(scope);
+                }
+                TODO("Block node in other scopes");
                 break;
             }
             case TokenKind::Dot:
@@ -273,7 +289,10 @@ namespace Caracal
         auto returnTypes = parseReturnTypesNode();
         auto body = parseFunctionBody();
 
-        return std::make_unique<FunctionDefinitionStatement>(keyword, nameToken, name, std::move(parameters), std::move(returnTypes), std::move(body));
+        auto optionalAnnotation = std::move(m_currentAnnotation);
+        m_currentAnnotation = std::nullopt;
+
+        return std::make_unique<FunctionDefinitionStatement>(keyword, nameToken, name, std::move(parameters), std::move(returnTypes), std::move(body), std::move(optionalAnnotation));
     }
 
     StatementUPtr Parser::parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression, StatementScope scope)
@@ -474,12 +493,24 @@ namespace Caracal
 
     ParameterNodeUPtr Parser::parseParameterNode()
     {
-        auto nameToken = advanceOnMatch(TokenKind::Identifier);
-        auto name = m_tokens.getLexeme(nameToken);
-        auto colon = advanceOnMatch(TokenKind::Colon);
-        auto typeName = parseTypeNameNode();
+        if (currentToken().kind == TokenKind::Identifier)
+        {
+            auto nameToken = advanceOnMatch(TokenKind::Identifier);
+            auto name = m_tokens.getLexeme(nameToken);
+            auto colon = advanceOnMatch(TokenKind::Colon);
+            auto typeName = parseTypeNameNode();
 
-        return std::make_unique<ParameterNode>(nameToken, name, colon, std::move(typeName));
+            return std::make_unique<ParameterNode>(nameToken, name, colon, std::move(typeName));
+        }
+        else
+        {
+            auto firstDot = advanceOnMatch(TokenKind::Dot);
+            auto secondDot = advanceOnMatch(TokenKind::Dot);
+            auto thirdDot = advanceOnMatch(TokenKind::Dot);
+            auto fakeTypeName = std::make_unique<TypeNameNode>(std::nullopt, thirdDot, "...");
+
+            return std::make_unique<ParameterNode>(firstDot, "varargs", secondDot, std::move(fakeTypeName));
+        }
     }
 
     NumberLiteralUPtr Parser::parseNumberLiteral()
@@ -783,6 +814,16 @@ namespace Caracal
         }
 
         return std::make_unique<ReturnTypesNode>(std::move(returnTypes));
+    }
+
+    void Parser::buildAnnotationNode(StatementScope scope)
+    {
+        auto hashToken = advanceOnMatch(TokenKind::Hash);
+        auto nameToken = advanceOnMatch(TokenKind::Identifier);
+        auto name = m_tokens.getLexeme(nameToken);
+
+        auto arguments = parseArgumentsNode(scope);
+        m_currentAnnotation = std::make_unique<AnnotationNode>(hashToken, nameToken, name, std::move(arguments));
     }
 
     Token Parser::advanceOnMatch(TokenKind kind)

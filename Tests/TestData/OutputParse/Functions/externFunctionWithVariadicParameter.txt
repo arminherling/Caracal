@@ -1,0 +1,34 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: printf
+    AnnotationNode: {
+        Name: extern
+        ArgumentsNode(1): {
+            StringLiteral: "C"
+        }
+    }
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: message
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: string
+            }
+        }
+        ParameterNode: {
+            Name: varargs
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: ...
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(0): {
+    }
+}

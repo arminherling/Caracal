@@ -16,6 +16,7 @@
 #include <Caracal/Syntax/ReturnTypesNode.h>
 #include <Caracal/Syntax/TokenBuffer.h>
 #include <Caracal/Syntax/TypeNameNode.h>
+#include <Caracal/Syntax/AnnotationNode.h>
 
 namespace Caracal
 {
@@ -72,6 +73,7 @@ namespace Caracal
         ParameterNodeUPtr parseParameterNode();
         NumberLiteralUPtr parseNumberLiteral();
         StringLiteralUPtr parseStringLiteral();
+        void buildAnnotationNode(StatementScope scope);
 
         Token peek(i32 offset);
         Token currentToken() { return peek(0); }
@@ -84,6 +86,8 @@ namespace Caracal
         TokenBuffer m_tokens;
         DiagnosticsBag& m_diagnostics;
         i32 m_currentIndex;
+
+        std::optional<AnnotationNodeUPtr> m_currentAnnotation;
     };
 
     CARACAL_API ParseTree parse(const TokenBuffer& tokens, DiagnosticsBag& diagnostics) noexcept;

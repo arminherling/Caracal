@@ -8,7 +8,8 @@ namespace Caracal
         std::string_view name,
         ParametersNodeUPtr&& parametersNode,
         ReturnTypesNodeUPtr&& returnTypesNode,
-        BlockNodeUPtr&& bodyNode)
+        BlockNodeUPtr&& bodyNode,
+        std::optional<AnnotationNodeUPtr>&& annotationNode)
         : Statement(NodeKind::FunctionDefinitionStatement, Type::Undefined())
         , m_keywordToken{ keywordToken }
         , m_nameToken{ nameToken }
@@ -16,6 +17,7 @@ namespace Caracal
         , m_parametersNode{ std::move(parametersNode) }
         , m_returnTypesNode{ std::move(returnTypesNode) }
         , m_bodyNode{ std::move(bodyNode) }
+        , m_annotationNode{ std::move(annotationNode) }
     {
     }
 }

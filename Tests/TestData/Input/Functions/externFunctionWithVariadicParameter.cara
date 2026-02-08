@@ -1,0 +1,2 @@
+﻿#extern("C")
+def printf(message: string, ...) i32 {}

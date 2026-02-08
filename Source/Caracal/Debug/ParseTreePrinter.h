@@ -31,6 +31,7 @@
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
 #include <Caracal/Syntax/TypeFieldDeclaration.h>
 #include <Caracal/Syntax/MemberAccessExpression.h>
+#include <Caracal/Syntax/AnnotationNode.h>
 #include <Caracal/Text/StringBuilder.h>
 #include <Caracal/Semantic/TypeDatabase.h>
 
@@ -66,6 +67,7 @@ namespace Caracal
         void prettyPrintBreakStatement(BreakStatement* statement);
         void prettyPrintSkipStatement(SkipStatement* statement);
         void prettyPrintReturnStatement(ReturnStatement* statement);
+        void prettyPrintAnnotationNode(AnnotationNode* annotation);
         void prettyPrintArgumentsNode(ArgumentsNode* arguments);
         void prettyPrintParameterNode(ParameterNode* parameter);
         void prettyPrintParametersNode(ParametersNode* parameters);

@@ -446,22 +446,34 @@ namespace Caracal
         auto argumentsNode = functionCallExpression->argumentsNode().get();
         auto argumentTypes = typeCheckArgumentsNode(argumentsNode);
 
-        // temporary ignore printf style functions with variable arguments
-        if(functionDefinition.name() != "print")
+        const auto& parameterTypes = functionDefinition.parameters();
+        auto isVariadic = functionDefinition.isVariadic();
+        auto parameterCount = (isVariadic ? parameterTypes.size() - 1 : parameterTypes.size());
+        if (isVariadic)
         {
-            const auto& parameterTypes = functionDefinition.parameters();
-            if(parameterTypes.size() != argumentTypes.size())
+            // we can either have same size or one less argument
+            if (parameterTypes.size() != argumentTypes.size() 
+                && parameterTypes.size() - 1 != argumentTypes.size())
+            {
+                TODO("Add error diagnostics for argument count mismatch in variadic function call");
+                return Type::Undefined();
+            }
+        }
+        else
+        {
+            if (parameterTypes.size() != argumentTypes.size())
             {
                 TODO("Add error diagnostics for argument count mismatch");
                 return Type::Undefined();
             }
-            for(size_t i = 0; i < parameterTypes.size(); ++i)
+        }
+
+        for (size_t i = 0; i < parameterCount; ++i)
+        {
+            if (parameterTypes[i].type() != argumentTypes[i])
             {
-                if(parameterTypes[i].type() != argumentTypes[i])
-                {
-                    TODO("Add error diagnostics for argument type mismatch");
-                    return Type::Undefined();
-                }
+                TODO("Add error diagnostics for argument type mismatch");
+                return Type::Undefined();
             }
         }
 

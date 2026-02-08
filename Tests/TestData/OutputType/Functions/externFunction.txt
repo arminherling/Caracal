@@ -1,0 +1,27 @@
+FunctionDefinitionStatement: {
+    Type: (string) -> i32
+    Name: puts
+    AnnotationNode: {
+        Name: extern
+        ArgumentsNode(1): {
+            StringLiteral: "C"
+        }
+    }
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: message
+            TypeNameNode: {
+                Type: string
+                Lexeme: string
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(0): {
+    }
+}

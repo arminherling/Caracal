@@ -20,6 +20,7 @@ enum class TokenKind
     Semicolon,
     Underscore,
     Uptick,
+    Hash,
 
     Equal,
     EqualEqual,

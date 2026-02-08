@@ -13,6 +13,7 @@ namespace Caracal
             { Type::Bool(), llvm::Type::getInt1Ty(context) },
             { Type::I32(), llvm::Type::getInt32Ty(context) },
             { Type::F32(), llvm::Type::getFloatTy(context) },
+            { Type::String(), llvm::Type::getInt8Ty(context)->getPointerTo() },
         };
     }
 
@@ -58,8 +59,6 @@ namespace Caracal
 
     bool LLVMCodeGenerator::generate()
     {
-        setupPrintfFunctionDeclaration();
-
         for (const auto& statement : m_parseTree.statements())
         {
             generateNode(statement.get());
@@ -89,7 +88,16 @@ namespace Caracal
             }
             case NodeKind::FunctionDefinitionStatement:
             {
-                generateFunctionDefinition((FunctionDefinitionStatement*)node);
+                auto functionDefinitionNode = (FunctionDefinitionStatement*)node;
+                if(functionDefinitionNode->isExtern())
+                {
+                    declareExternFunction(functionDefinitionNode);
+                }
+                else
+                {
+                    generateFunctionDefinition(functionDefinitionNode);
+                }
+
                 break;
             }
             case NodeKind::IfStatement:
@@ -206,8 +214,8 @@ namespace Caracal
     void LLVMCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept
     {
         auto functionType = node->type();
-        auto functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
-        auto functionName = functionDefinition.name();
+        auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
+        auto& functionName = functionDefinition.name();
 
         m_currentFunction = m_module.getFunction(functionName);
         if (m_currentFunction == nullptr)
@@ -740,13 +748,16 @@ namespace Caracal
 
         std::vector<llvm::Type*> llvmParameterTypes;
         const auto& parameters = functionDefinition.parameters();
-        for(const auto& parameter : parameters)
+        auto isVariadic = functionDefinition.isVariadic();
+        auto parameterCount = (isVariadic ? parameters.size() - 1 : parameters.size());
+        
+        for (size_t i = 0; i < parameterCount; i++)
         {
-            auto llvmParameterType = GetLLVMTypeForCaraType(parameter.type(), context);
+            auto llvmParameterType = GetLLVMTypeForCaraType(parameters[i].type(), context);
             llvmParameterTypes.push_back(llvmParameterType);
         }
 
-        auto llvmFunctionType = llvm::FunctionType::get(llvmReturnType, llvmParameterTypes, false);
+        auto llvmFunctionType = llvm::FunctionType::get(llvmReturnType, llvmParameterTypes, isVariadic);
         return llvmFunctionType;
     }
 
@@ -759,18 +770,14 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::setupPrintfFunctionDeclaration() noexcept
+    void LLVMCodeGenerator::declareExternFunction(FunctionDefinitionStatement* node) noexcept
     {
-        auto& context = m_module.getContext();
-        auto bytePtrType = llvm::Type::getInt8Ty(context)->getPointerTo();
-
-        m_module.getOrInsertFunction("printf",
-            llvm::FunctionType::get(
-                llvm::Type::getInt32Ty(context),
-                bytePtrType,
-                true
-            )
-        );
+        auto functionType = node->type();
+        auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
+        auto& functionName = functionDefinition.name();
+        auto llvmFunctionType = generateFunctionType(functionDefinition);
+        // TODO handle linkage types
+        auto llvmFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_module);
     }
 
     llvm::GlobalValue* LLVMCodeGenerator::createGlobalValue(

@@ -70,7 +70,7 @@ namespace Caracal
         llvm::FunctionType* generateFunctionType(FunctionDefinition& functionDefinition) noexcept;
         void generateBlockNode(BlockNode* body) noexcept;
 
-        void setupPrintfFunctionDeclaration() noexcept;
+        void declareExternFunction(FunctionDefinitionStatement* node) noexcept;
         llvm::GlobalValue* createGlobalValue(const std::string& name, llvm::Constant* constant, bool isConst) noexcept;
         llvm::Value* createLocalValue(const std::string& name, llvm::Type* type) noexcept;
 

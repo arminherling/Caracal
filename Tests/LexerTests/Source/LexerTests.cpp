@@ -40,6 +40,7 @@ static std::vector<std::tuple<std::string, std::string, TokenKind>> Symbols_Data
         std::make_tuple("Semicolon", ";", TokenKind::Semicolon),
         std::make_tuple("Underscore", "_", TokenKind::Underscore),
         std::make_tuple("Uptick", "'", TokenKind::Uptick),
+        std::make_tuple("Hash", "#", TokenKind::Hash),
             
         std::make_tuple("Equal", "=", TokenKind::Equal),
         std::make_tuple("EqualEqual", "==", TokenKind::EqualEqual),
