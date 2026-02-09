@@ -6,6 +6,27 @@
 > [!NOTE]
 > Everything from syntax to semantics is currently work-in-progress and might change at any point.
 
+## Table of Contents
+- [Description](#description)
+- [Goals](#goals)
+- [Roadmap](#roadmap)
+- [Examples](#examples)
+- Language
+  - [Functions](#functions)
+  - [Constants](#constants)
+  - [Variables](#variables)
+  - [Operators](#operators)
+  - [Control flow](#control-flow)
+    - [Return](#return)
+    - [While](#while)
+    - [Skip](#skip)
+    - [Break](#break)
+    - [If](#if)
+    - [Trailing if](#trailing-if)
+  - [Types](#types)
+  - [Enums](#enums)
+  - [Variants](#variants)
+
 ## Description
 Caracal is an imperative, compiled programming language designed with a focus on simple and enjoyable syntax with sensible defaults.
 The goal is a statically typed language that feels like a dynamically typed language thanks to type inference.
@@ -29,26 +50,111 @@ The current focus is on getting a minimal version up and running. For that, I'm 
 ## Examples
 Some examples can be found under /Tests/TestData/Input here: [Link](Tests/TestData/Input)
 
-### Constants
-
-The global scope can't contain variables, any identifier defined here is a constant and can't be changed at runtime.
-
-```rb
-year :: 2026;
-currentOS :: OS.Windows;
-```
 
 ### Functions
 
-The global scope can also contain functions, they can be used to initialize constants.
+Caracal uses the ``def`` keyword to declare functions. Parameters start with the name and then the type, they are immutable by default.
 
 ```rb
 def square(x: i32) 
 { 
     return x * x;
 }
+```
+We can also declare external C functions with the ``extern`` annotation. This form also supports C's variadic parameters with ``...``.
 
-y :: square(10);
+```rb
+#extern()
+def puts(message: string) i32 {}
+
+#extern()
+def printf(message: string, ...) i32 {}
+```
+
+
+### Constants
+
+To declare constants in Caracal, we use similar syntax to parameters, except we use double colons. They can't be changed during runtime as the name implies. Es can be declared in global scope or function scope.
+The type is infered during compilation, but you can use an explicit type.
+
+```rb
+// infered type of OS
+currentOS :: OS.Windows;
+
+// explicit type of i32
+year : i32 : 2026;
+```
+
+
+### Variables
+
+Variables are similar to constants but they can be changed during runtime. We declare them with ``:=``. Unlike constants, variables cant be declared in global scope. We can also state the type explicitly,same as constants.
+
+```rb
+def getRandomNumber() i32
+{
+    // chosen by fair dice roll.
+    // guaranteed to be random.
+    x := 4;
+    return x;
+}
+```
+
+
+### Operators
+...
+
+### Control flow
+...
+### Return
+...
+#### While
+...
+#### Skip
+...
+#### Break
+...
+#### If 
+...
+### Trailing if
+...
+
+
+### Enums
+
+Enums in Caracal are scoped constants with the same type, they work similar to C/C++.
+
+```rb
+enum Values
+{
+    First :: 1
+    Second :: 2
+    Third :: 3
+}
+
+s :: Values.Second;
+```
+
+If the enum has the ``autoIncrement`` annotation, then the first member starts with the value 0, and each successive member has a value one greater than the previous one, unless the value is manually assigned.
+
+```rb
+#autoIncrement()
+enum Values
+{
+    First        // 0
+    Second :: 5  // 5
+    Third        // 6
+}
+```
+
+The base type of the enum is infered by default but we can also use an explicit type.
+
+```rb
+enum Values : i32
+{
+    First :: 1
+    Second :: 2
+}
 ```
 
 ### Types
@@ -72,54 +178,7 @@ type Two
 }
 ```
 
-### Enums
-
-Enums are a way to define constant values, they work similar to C/C++.
-The first member has a value of 0, and each successive member has a value one greater than the previous one, unless the value is manually assigned.
-
-```rb
-enum Values
-{
-    First
-    Second :: 5
-    Third
-}
-
-s :: Values.Second;
-```
-
 ### Variants
 
 Variants, also known as sum types or tagged unions, are Caracal's way to do polymorphism, they allow you to put different types behind a unified interface. They can be extended from multiple files.
 
-```rb
-variant V : Vector1D | Vector2D | Vector3D
-{
-    def distance()
-    {
-        case Vector1D d
-        {
-            return 1;
-        }
-        case Vector2D d
-        {
-            return 2;
-        }
-        case Vector3D d
-        {
-            return 3;
-        }
-    }
-}
-
-extend variant V : Vector4D
-{
-    def distance()
-    {
-        case Vector4d d
-        {
-            return 4;
-        }
-    }
-}
-```
