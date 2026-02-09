@@ -1,0 +1,5 @@
+﻿def func() i32
+{
+    return 1 if true;
+    return 2;
+}

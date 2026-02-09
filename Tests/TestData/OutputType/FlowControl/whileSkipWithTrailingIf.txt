@@ -1,0 +1,30 @@
+FunctionDefinitionStatement: {
+    Type: () -> void
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(2): {
+        WhileStatement: {
+            Condition: {
+                BoolLiteral: true
+            }
+            True: {
+                BlockNode(1): {
+                    IfStatement: {
+                        Condition: {
+                            BoolLiteral: true
+                        }
+                        True: {
+                            SkipStatement
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: void
+        }
+    }
+}

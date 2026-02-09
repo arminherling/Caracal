@@ -569,6 +569,17 @@ namespace Caracal
     StatementUPtr Parser::parseBreakStatement()
     {
         auto keyword = advanceOnMatch(TokenKind::BreakKeyword);
+
+        // parse trailing if statement like "break if condition;"
+        if(currentToken().kind == TokenKind::IfKeyword)
+        {
+            auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
+            auto condition = parseExpression(StatementScope::Function);
+            auto semicolon = advanceOnMatch(TokenKind::Semicolon);
+            auto breakStatement = std::make_unique<BreakStatement>(keyword, semicolon);
+            return std::make_unique<IfStatement>(ifKeyword, std::move(condition), std::move(breakStatement));
+        }
+
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
         return std::make_unique<BreakStatement>(keyword, semicolon);
     }
@@ -576,6 +587,18 @@ namespace Caracal
     StatementUPtr Parser::parseSkipStatement()
     {
         auto keyword = advanceOnMatch(TokenKind::SkipKeyword);
+
+        // parse trailing if statement like "skip if condition;"
+        if(currentToken().kind == TokenKind::IfKeyword)
+        {
+            auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
+            auto condition = parseExpression(StatementScope::Function);
+            auto semicolon = advanceOnMatch(TokenKind::Semicolon);
+            auto skipStatement = std::make_unique<SkipStatement>(keyword, semicolon);
+
+            return std::make_unique<IfStatement>(ifKeyword, std::move(condition), std::move(skipStatement));
+        }
+
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
         return std::make_unique<SkipStatement>(keyword, semicolon);
     }
@@ -584,12 +607,23 @@ namespace Caracal
     {
         auto returnKeyword = advanceOnMatch(TokenKind::ReturnKeyword);
         std::optional<ExpressionUPtr> expression;
-        if (currentToken().kind != TokenKind::Semicolon)
+        if (currentToken().kind != TokenKind::Semicolon && currentToken().kind != TokenKind::IfKeyword)
         {
             expression = parseExpression(scope);
         }
-        auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
+        // parse trailing if statement like "return expression if condition;"
+        if (currentToken().kind == TokenKind::IfKeyword)
+        {
+            auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
+            auto condition = parseExpression(scope);
+            auto semicolon = advanceOnMatch(TokenKind::Semicolon);
+            auto returnStatement = std::make_unique<ReturnStatement>(returnKeyword, std::move(expression), semicolon);
+
+            return std::make_unique<IfStatement>(ifKeyword, std::move(condition), std::move(returnStatement));
+        }
+
+        auto semicolon = advanceOnMatch(TokenKind::Semicolon);
         return std::make_unique<ReturnStatement>(returnKeyword, std::move(expression), semicolon);
     }
 
