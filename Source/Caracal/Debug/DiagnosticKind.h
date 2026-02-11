@@ -10,6 +10,7 @@ namespace Caracal
         _0003_ExpectedXButGotY,
         _0004_ExtraTokensRemaining,
         _0005_ExpectedEnumField,
-        _0006_UnexpectedAnnotation
+        _0006_UnexpectedAnnotation,
+        _0007_UnknownAnnotation
     };
 }

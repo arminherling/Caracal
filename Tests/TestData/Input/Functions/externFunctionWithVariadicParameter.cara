@@ -1,2 +1,2 @@
-﻿#extern("C")
+﻿#extern
 def printf(message: string, ...) i32 {}

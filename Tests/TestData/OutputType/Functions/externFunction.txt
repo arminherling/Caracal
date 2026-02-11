@@ -1,11 +1,8 @@
 FunctionDefinitionStatement: {
     Type: (string) -> i32
     Name: puts
-    AnnotationNode: {
-        Name: extern
-        ArgumentsNode(1): {
-            StringLiteral: "C"
-        }
+    Annotation: {
+        Name: Extern
     }
     ParametersNode(1): {
         ParameterNode: {

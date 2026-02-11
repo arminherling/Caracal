@@ -1,32 +1,33 @@
 ﻿#pragma once
 
 #include <Caracal/API.h>
-#include <Caracal/Syntax/NameExpression.h>
+#include <Caracal/Semantic/AnnotationKind.h>
 #include <Caracal/Syntax/ArgumentsNode.h>
 
 namespace Caracal
 {
-    class CARACAL_API AnnotationNode : public Node
+    class CARACAL_API AnnotationNode
     {
     public:
         AnnotationNode(
+            AnnotationKind kind,
             const Token& hashToken,
             const Token& nameToken,
             std::string_view name, 
-            ArgumentsNodeUPtr&& argumentsNode);
+            std::optional<ArgumentsNodeUPtr>&& argumentsNode);
 
-        CARACAL_DELETE_COPY_DEFAULT_MOVE(AnnotationNode)
-
+        [[nodiscard]] AnnotationKind kind() const noexcept { return m_kind; }
         [[nodiscard]] const Token& hashToken() const noexcept { return m_hashToken; }
         [[nodiscard]] const Token& nameToken() const noexcept { return m_nameToken; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
-        [[nodiscard]] const ArgumentsNodeUPtr& argumentsNode() const noexcept { return m_argumentsNode; }
+        [[nodiscard]] const std::optional<ArgumentsNodeUPtr>& argumentsNode() const noexcept { return m_argumentsNode; }
 
     private:
+        AnnotationKind m_kind;
         Token m_hashToken;
         Token m_nameToken;
         std::string m_name;
-        ArgumentsNodeUPtr m_argumentsNode;
+        std::optional<ArgumentsNodeUPtr> m_argumentsNode;
     };
 
     using AnnotationNodeUPtr = std::unique_ptr<AnnotationNode>;

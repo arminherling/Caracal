@@ -22,6 +22,7 @@
 #include <Caracal/Syntax/UnaryExpression.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/WhileStatement.h>
+#include <Caracal/Semantic/ExternAnnotation.h>
 
 namespace Caracal
 {
@@ -83,13 +84,6 @@ namespace Caracal
                 {
                     if(scope == StatementScope::Global)
                     {
-                        if(m_currentAnnotation.has_value())
-                        {
-                            const auto& location = m_tokens.getSourceLocation(current);
-                            m_diagnostics.AddError(DiagnosticKind::_0006_UnexpectedAnnotation, location);
-                            advanceCurrentIndex();
-                            break;
-                        }
                         buildAnnotationNode(scope);
                         break;
                     }
@@ -860,8 +854,28 @@ namespace Caracal
         auto nameToken = advanceOnMatch(TokenKind::Identifier);
         auto name = m_tokens.getLexeme(nameToken);
 
-        auto arguments = parseArgumentsNode(scope);
-        m_currentAnnotation = std::make_unique<AnnotationNode>(hashToken, nameToken, name, std::move(arguments));
+        std::optional<ArgumentsNodeUPtr> arguments;
+        if (currentToken().kind == TokenKind::OpenParenthesis)
+        {
+            arguments = parseArgumentsNode(scope);
+        }
+
+        if (m_currentAnnotation.has_value())
+        {
+            const auto& location = m_tokens.getSourceLocation(nameToken);
+            m_diagnostics.AddError(DiagnosticKind::_0006_UnexpectedAnnotation, location);
+            return;
+        }
+
+        if(name == "extern")
+        {
+            m_currentAnnotation = std::make_unique<ExternAnnotation>(hashToken, nameToken, name, std::move(arguments));
+        }
+        else
+        {
+            const auto& location = m_tokens.getSourceLocation(nameToken);
+            m_diagnostics.AddError(DiagnosticKind::_0007_UnknownAnnotation, location);
+        }
     }
 
     Token Parser::advanceOnMatch(TokenKind kind)

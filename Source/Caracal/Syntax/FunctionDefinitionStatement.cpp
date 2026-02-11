@@ -1,4 +1,5 @@
 ﻿#include "FunctionDefinitionStatement.h"
+#include "FunctionDefinitionStatement.h"
 
 namespace Caracal
 {
@@ -9,7 +10,7 @@ namespace Caracal
         ParametersNodeUPtr&& parametersNode,
         ReturnTypesNodeUPtr&& returnTypesNode,
         BlockNodeUPtr&& bodyNode,
-        std::optional<AnnotationNodeUPtr>&& annotationNode)
+        std::optional<AnnotationNodeUPtr>&& annotation)
         : Statement(NodeKind::FunctionDefinitionStatement, Type::Undefined())
         , m_keywordToken{ keywordToken }
         , m_nameToken{ nameToken }
@@ -17,7 +18,18 @@ namespace Caracal
         , m_parametersNode{ std::move(parametersNode) }
         , m_returnTypesNode{ std::move(returnTypesNode) }
         , m_bodyNode{ std::move(bodyNode) }
-        , m_annotationNode{ std::move(annotationNode) }
+        , m_annotation{ std::move(annotation) }
     {
+    }
+
+    bool FunctionDefinitionStatement::isExtern() const noexcept
+    {
+        if (m_annotation.has_value())
+        {
+            const auto& annotationNode = m_annotation.value();
+            if (annotationNode->kind() == AnnotationKind::Extern)
+                return true;
+        }
+        return false;
     }
 }

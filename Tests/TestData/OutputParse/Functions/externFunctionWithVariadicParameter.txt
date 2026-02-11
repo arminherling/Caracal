@@ -1,11 +1,8 @@
 FunctionDefinitionStatement: {
     Type: undefined
     Name: printf
-    AnnotationNode: {
-        Name: extern
-        ArgumentsNode(1): {
-            StringLiteral: "C"
-        }
+    Annotation: {
+        Name: Extern
     }
     ParametersNode(2): {
         ParameterNode: {

@@ -1,2 +1,2 @@
-﻿#extern("C")
+﻿#extern
 def puts(message: string) i32 {}
