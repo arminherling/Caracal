@@ -4,6 +4,7 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/ADT/APFloat.h>
+#include <Caracal/Syntax/GroupingExpression.h>
 
 namespace Caracal
 {
@@ -389,6 +390,12 @@ namespace Caracal
             case NodeKind::StringLiteral:
             {
                 return generateStringLiteral((StringLiteral*)node);
+            }
+            case NodeKind::GroupingExpression:
+            {
+                // TODO move this to a rewriter later
+                const auto groupingExpression = (GroupingExpression*)node;
+                return generateExpression(groupingExpression->expression().get());
             }
             default:
             {
