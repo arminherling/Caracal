@@ -28,6 +28,8 @@ namespace Caracal
         [[nodiscard]] const std::optional<Token>& colon1() const noexcept { return m_colon1; }
         [[nodiscard]] const std::optional<Token>& colon2() const noexcept { return m_colon2; }
         [[nodiscard]] const std::optional<ExpressionUPtr>& valueExpression() const noexcept { return m_valueExpression; }
+        [[nodiscard]] const std::optional<i32>& constantValue() const noexcept { return m_constantValue; }
+        void setValue(i32 value) noexcept { m_constantValue = value; }
 
     private:
         Token m_nameToken;
@@ -35,6 +37,7 @@ namespace Caracal
         std::optional<Token> m_colon1;
         std::optional<Token> m_colon2;
         std::optional<ExpressionUPtr> m_valueExpression;
+        std::optional<i32> m_constantValue;
     };
 
     using EnumFieldDeclarationUPtr = std::unique_ptr<EnumFieldDeclaration>;

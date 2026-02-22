@@ -1,15 +1,21 @@
 EnumDefinitionStatement: {
-    Type: undefined
+    Type: Values(u8)
     Name: Values
+    Annotation: {
+        Name: Flag
+    }
     FieldNodes(3): {
         EnumFieldDeclaration: {
             Name: First
+            Value: 0
         }
         EnumFieldDeclaration: {
             Name: Second
+            Value: 1
         }
         EnumFieldDeclaration: {
             Name: Third
+            Value: 2
         }
     }
 }

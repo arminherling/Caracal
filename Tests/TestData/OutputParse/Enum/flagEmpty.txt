@@ -1,6 +1,9 @@
 EnumDefinitionStatement: {
     Type: undefined
     Name: Empty
+    Annotation: {
+        Name: Flag
+    }
     FieldNodes(0): {
     }
 }

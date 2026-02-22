@@ -23,6 +23,8 @@
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/WhileStatement.h>
 #include <Caracal/Semantic/ExternAnnotation.h>
+#include <Caracal/Semantic/FlagAnnotation.h>
+#include <Caracal/Semantic/StepAnnotation.h>
 
 namespace Caracal
 {
@@ -347,7 +349,10 @@ namespace Caracal
         auto enumFields = parseEnumFields();
         auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
 
-        return std::make_unique<EnumDefinitionStatement>(keyword, nameToken, name, colonToken, std::move(baseType), openBracket, std::move(enumFields), closeBracket);
+        auto optionalAnnotation = std::move(m_currentAnnotation);
+        m_currentAnnotation = std::nullopt;
+
+        return std::make_unique<EnumDefinitionStatement>(keyword, nameToken, name, colonToken, std::move(baseType), openBracket, std::move(enumFields), closeBracket, std::move(optionalAnnotation));
     }
 
     std::vector<EnumFieldDeclarationUPtr> Parser::parseEnumFields()
@@ -870,6 +875,28 @@ namespace Caracal
         if(name == "extern")
         {
             m_currentAnnotation = std::make_unique<ExternAnnotation>(hashToken, nameToken, name, std::move(arguments));
+        }
+        else if(name == "flag")
+        {
+            m_currentAnnotation = std::make_unique<FlagAnnotation>(hashToken, nameToken, name, std::move(arguments));
+        }
+        else if(name == "step")
+        {
+            if(!arguments.has_value())
+            {
+                const auto& location = m_tokens.getSourceLocation(nameToken);
+                m_diagnostics.AddError(DiagnosticKind::_0008_AnnotationMissingArguments, location);
+                return;
+            }
+
+            if(arguments.value()->arguments().size() != 1)
+            {
+                const auto& location = m_tokens.getSourceLocation(nameToken);
+                m_diagnostics.AddError(DiagnosticKind::_0009_AnnotationWrongNumberOfArguments, location);
+                return;
+            }
+
+            m_currentAnnotation = std::make_unique<StepAnnotation>(hashToken, nameToken, name, std::move(arguments));
         }
         else
         {

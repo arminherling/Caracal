@@ -1,6 +1,9 @@
 EnumDefinitionStatement: {
     Type: undefined
     Name: Values
+    Annotation: {
+        Name: Flag
+    }
     FieldNodes(3): {
         EnumFieldDeclaration: {
             Name: First

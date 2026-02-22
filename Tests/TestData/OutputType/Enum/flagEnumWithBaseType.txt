@@ -1,13 +1,17 @@
 EnumDefinitionStatement: {
-    Type: undefined
+    Type: Values(i32)
     Name: Values
+    Annotation: {
+        Name: Flag
+    }
     TypeNameNode: {
-        Type: undefined
+        Type: i32
         Lexeme: i32
     }
     FieldNodes(1): {
         EnumFieldDeclaration: {
-            Name: Value
+            Name: Value1
+            Value: 0
         }
     }
 }

@@ -65,6 +65,11 @@ namespace Caracal
                 typeCheckFunctionDefinitionStatement((FunctionDefinitionStatement*)statement);
                 break;
             }
+            case NodeKind::EnumDefinitionStatement:
+            {
+                typeCheckEnumDefinitionStatement((EnumDefinitionStatement*)statement);
+                break;
+            }
             case NodeKind::IfStatement:
             {
                 typeCheckIfStatement((IfStatement*)statement);
@@ -204,6 +209,84 @@ namespace Caracal
         m_currentReturnType = Type::Void();
     }
 
+    void TypeChecker::typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement)
+    {
+        const auto& enumName = statement->name();
+        auto baseType = Type::Undefined();
+        auto defaultBaseType = m_options.defaultEnumBaseType;
+        auto& enumDefinition = m_typeDatabase.createEnum(enumName);
+        auto enumType = enumDefinition.type();
+        auto step = 1;
+
+        if (statement->baseType().has_value())
+        {
+            baseType = typeCheckTypeNameNode(statement->baseType().value().get());
+            enumDefinition.setBaseType(baseType);
+        }
+
+        if (statement->hasStep())
+        {
+            auto stepAnnotation = statement->annotation().value().get();
+            auto arguments = stepAnnotation->argumentsNode().value().get();
+            auto stepParameter = arguments->arguments().at(0).get();
+            if (stepParameter->kind() == NodeKind::NumberLiteral)
+            {
+                step = convertToI32((NumberLiteral*)stepParameter);
+            }
+        }
+
+        const auto& fieldNodes = statement->fieldNodes();
+        i32 currentFieldValue = 0;
+        for(auto& fieldNode : fieldNodes)
+        {
+            const auto& fieldName = fieldNode->name();
+            if(enumDefinition.hasField(fieldName))
+            {
+                TODO("Add error diagnostics for duplicate enum field name");
+            }
+
+            if(fieldNode->valueExpression().has_value())
+            {
+                auto expression = fieldNode->valueExpression().value().get();
+                auto fieldValueType = typeCheckExpression(expression);
+                if(baseType == Type::Undefined())
+                {
+                    baseType = fieldValueType;
+                    enumDefinition.setBaseType(baseType);
+                }
+                else if(fieldValueType != baseType)
+                {
+                    TODO("Add error diagnostics for enum field value type mismatch");
+                }
+
+                if(expression->kind() == NodeKind::NumberLiteral && expression->type() == Type::I32())
+                {
+                    auto value = convertToI32((NumberLiteral*)expression);
+                    enumDefinition.addField(fieldName, value);
+                    fieldNode->setValue(value);
+                    currentFieldValue = value + step;
+                }
+                else
+                {
+                    enumDefinition.addField(fieldName, expression);
+                }
+            }
+            else
+            {
+                enumDefinition.addField(fieldName, currentFieldValue);
+                fieldNode->setValue(currentFieldValue);
+                currentFieldValue += step;
+            }
+        }
+
+        if (enumDefinition.baseType() == Type::Undefined())
+        {
+            enumDefinition.setBaseType(defaultBaseType);
+        }
+
+        statement->setType(enumType);
+    }
+
     void TypeChecker::typeCheckIfStatement(IfStatement* statement)
     {
         auto conditionType = typeCheckExpression(statement->condition().get());
@@ -246,14 +329,6 @@ namespace Caracal
         else
         {
             statement->setType(Type::Void());
-        }
-    }
-
-    void TypeChecker::typeCheckBlockNode(BlockNode* body)
-    {
-        for (const auto& statement : body->statements())
-        {
-            typeCheckStatement(statement.get());
         }
     }
 
@@ -342,36 +417,21 @@ namespace Caracal
 
     Type TypeChecker::typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression)
     {
-        auto leftType = typeCheckExpression(binaryExpression->leftExpression().get());
-        auto rightType = typeCheckExpression(binaryExpression->rightExpression().get());
-
         switch (binaryExpression->binaryOperator())
         {
             case BinaryOperatorKind::MemberAccess:
             {
-                //auto leftExpression = binaryExpression->leftExpression();
-                ////TODO disallow other expressions
-                //assert(leftExpression->kind() == NodeKind::NameExpression);
-                //auto scopeNameExpression = (NameExpression*)leftExpression;
-                //auto scopeName = m_parseTree.tokens().getLexeme(scopeNameExpression->identifier());
-                //auto thisType = m_typeDatabase.getTypeByName(scopeName);
-    
-                //switch (thisType.kind())
-                //{
-                //    case TypeKind::Enum:
-                //    {
-                //        auto& scopeEnumDefinition = m_typeDatabase.getEnumDefinition(thisType);
-                //        auto rightExpression = binaryExpression->rightExpression();
-                //        //TODO allow/disallow other expressions
-                //        assert(rightExpression->kind() == NodeKind::NameExpression);
-                //        auto fieldNameExpression = (NameExpression*)rightExpression;
-                //        auto fieldName = m_parseTree.tokens().getLexeme(fieldNameExpression->identifier());
-                //        auto enumField = scopeEnumDefinition.getFieldByName(fieldName);
-                //        return new TypedEnumValueAccessExpression(thisType, enumField, binaryExpression);
-                //    }
-                //}
+                auto leftType = typeCheckExpression(binaryExpression->leftExpression().get());
+                if(leftType.kind() == TypeKind::Enum)
+                {
+                    binaryExpression->setType(leftType);
+                    binaryExpression->rightExpression()->setType(leftType);
+                    return leftType;
+                }
 
                 TODO("Handle MemberAccess");
+                //auto rightType = typeCheckExpression(binaryExpression->rightExpression().get());
+                
                 return Type::Undefined();
             }
             case BinaryOperatorKind::Addition:
@@ -379,6 +439,9 @@ namespace Caracal
             case BinaryOperatorKind::Multiplication:
             case BinaryOperatorKind::Division:
             {
+                auto leftType = typeCheckExpression(binaryExpression->leftExpression().get());
+                auto rightType = typeCheckExpression(binaryExpression->rightExpression().get());
+
                 // TODO we need to be able look up the resulting type for a binary expression, 
                 // for now we'll just make sure left and right have the same type and use that one
                 if (leftType != rightType)
@@ -398,6 +461,9 @@ namespace Caracal
             case BinaryOperatorKind::LogicalAnd:
             case BinaryOperatorKind::LogicalOr:
             {
+                auto leftType = typeCheckExpression(binaryExpression->leftExpression().get());
+                auto rightType = typeCheckExpression(binaryExpression->rightExpression().get());
+
                 // TODO we need to be able look up the resulting type for a binary expression,
                 // for now we'll just make sure left and right have the same type and use that one
                 if (leftType != rightType)
@@ -422,7 +488,15 @@ namespace Caracal
     Type TypeChecker::typeCheckNameExpression(NameExpression* expression)
     {
         const auto& name = expression->name();
-        auto optionalType = currentScope()->tryGetVariableBinding(name);
+        auto optionalVariableType = currentScope()->tryGetVariableBinding(name);
+        if (optionalVariableType.has_value())
+        {
+            auto type = optionalVariableType.value();
+            expression->setType(type);
+            return type;
+        }
+
+        auto optionalType = m_typeDatabase.tryGetTypeByName(name);
         if (optionalType.has_value())
         {
             auto type = optionalType.value();
@@ -582,6 +656,30 @@ namespace Caracal
         return types;
     }
 
+    i32 TypeChecker::convertToI32(NumberLiteral* literal)
+    {
+        auto literalType = typeCheckNumberLiteral(literal);
+        if (literalType != Type::I32())
+        {
+            TODO("Add error diagnostics for number literal type mismatch");
+            return 0;
+        }
+
+        const auto& literalToken = literal->literalToken();
+        const auto lexeme = m_parseTree.tokens().getLexeme(literalToken);
+        auto value = std::stoll(std::string(lexeme));
+
+        return static_cast<i32>(value);
+    }
+
+    void TypeChecker::typeCheckBlockNode(BlockNode* body)
+    {
+        for (const auto& statement : body->statements())
+        {
+            typeCheckStatement(statement.get());
+        }
+    }
+
     void TypeChecker::pushScope(ScopeKind kind)
     {
         auto parent = m_scopes.back().get();
@@ -603,37 +701,6 @@ namespace Caracal
     }
 }
 
-//TypedStatement* TypeChecker::typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement)
-//{
-//    auto& optionalBaseTypeName = statement->baseType();
-//    auto baseType = Type::Undefined();
-//    if (optionalBaseTypeName.has_value())
-//    {
-//        auto typeName = optionalBaseTypeName.value().name();
-//        auto& identifier = typeName->identifier();
-//        auto lexeme = m_parseTree.tokens().getLexeme(identifier);
-//        baseType = m_typeDatabase.getTypeByName(lexeme);
-//    }
-//    else
-//    {
-//        baseType = m_options.defaultEnumBaseType;
-//    }
-//
-//    if (baseType == Type::Undefined())
-//    {
-//        TODO("We need an error node and need to print diagnostics about unknown enum base type");
-//    }
-//
-//    auto& nameToken = statement->name();
-//    auto enumName = m_parseTree.tokens().getLexeme(nameToken);
-//    // TODO check if there is already a type with the name
-//    auto newType = m_typeDatabase.createEnum(enumName);
-//    auto enumFields = typeCheckEnumFieldDefinitionNodes(newType, baseType, statement->fieldDefinitions());
-//
-//    currentScope()->addTypeBinding(enumName, newType);
-//    return new TypedEnumDefinitionStatement(enumName, newType, baseType, enumFields, statement);
-//}
-//
 //TypedStatement* TypeChecker::typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement)
 //{
 //    auto& nameToken = statement->name();

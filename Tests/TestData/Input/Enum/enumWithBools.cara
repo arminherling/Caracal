@@ -1,0 +1,5 @@
+enum Answer
+{
+    Yes :: true
+    No :: false
+}

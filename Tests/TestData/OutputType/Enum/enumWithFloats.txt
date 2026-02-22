@@ -1,0 +1,22 @@
+EnumDefinitionStatement: {
+    Type: Math(f32)
+    Name: Math
+    FieldNodes(4): {
+        EnumFieldDeclaration: {
+            Name: Zero
+            NumberLiteral: 0.0
+        }
+        EnumFieldDeclaration: {
+            Name: One
+            NumberLiteral: 1.0
+        }
+        EnumFieldDeclaration: {
+            Name: Pi
+            NumberLiteral: 3.1415927410125732
+        }
+        EnumFieldDeclaration: {
+            Name: Tau
+            NumberLiteral: 6.2831854820251465
+        }
+    }
+}

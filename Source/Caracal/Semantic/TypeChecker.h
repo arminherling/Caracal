@@ -22,6 +22,7 @@
 #include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/FunctionCallExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
+#include <Caracal/Syntax/EnumDefinitionStatement.h>
 
 namespace Caracal
 {
@@ -46,6 +47,7 @@ namespace Caracal
             void typeCheckExpressionStatement(ExpressionStatement* statement);
             void typeCheckAssignmentStatement(AssignmentStatement* statement);
             void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
+            void typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
             void typeCheckIfStatement(IfStatement* statement);
             void typeCheckWhileStatement(WhileStatement* statement);
             void typeCheckReturnStatement(ReturnStatement* statement);
@@ -67,7 +69,6 @@ namespace Caracal
             void typeCheckBlockNode(BlockNode* body);
 
         //    [[nodiscard]] TypedStatement* typeCheckExpressionStatement(ExpressionStatement* statement);
-        //    [[nodiscard]] TypedStatement* typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
         //    [[nodiscard]] TypedStatement* typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement);
         //    [[nodiscard]] TypedMethodDefinitionStatement* typeCheckTypeMethodDefinitionStatement(Type newRefType, Type newType, MethodDefinitionStatement* statement);
         //    [[nodiscard]] TypedStatement* typeCheckIfStatement(IfStatement* statement);
@@ -90,6 +91,7 @@ namespace Caracal
         //    [[nodiscard]] Type convertTypeNameToType(const TypeName& typeName);
         //    [[nodiscard]] std::tuple<TypedExpression*, i32> convertValueToTypedLiteral(QStringView literal, Type type, Node* source);
         //    [[nodiscard]] std::tuple<TypedExpression*, i32> convertValueToTypedLiteral(i32 value, Type type, Node* source);
+            [[nodiscard]] i32 convertToI32(NumberLiteral* literal);
         
             void pushScope(ScopeKind kind);
             void popScope();

@@ -34,6 +34,8 @@
 #include <Caracal/Text/StringBuilder.h>
 #include <Caracal/Semantic/TypeDatabase.h>
 #include <Caracal/Semantic/ExternAnnotation.h>
+#include <Caracal/Semantic/StepAnnotation.h>
+#include <Caracal/Semantic/FlagAnnotation.h>
 
 namespace Caracal 
 {
@@ -67,7 +69,6 @@ namespace Caracal
         void prettyPrintBreakStatement(BreakStatement* statement);
         void prettyPrintSkipStatement(SkipStatement* statement);
         void prettyPrintReturnStatement(ReturnStatement* statement);
-        void prettyPrintExternAnnotation(ExternAnnotation* annotation);
         void prettyPrintArgumentsNode(ArgumentsNode* arguments);
         void prettyPrintParameterNode(ParameterNode* parameter);
         void prettyPrintParametersNode(ParametersNode* parameters);
@@ -87,6 +88,10 @@ namespace Caracal
         void prettyPrintStringLiteral(StringLiteral* string);
     //    void PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess);
     //    void PrettyPrintError(Error* error);
+        void prettyPrintAnnotation(AnnotationNode* annotation);
+        void prettyPrintExternAnnotation(ExternAnnotation* annotation);
+        void prettyPrintStepAnnotation(StepAnnotation* annotation);
+        void prettyPrintFlagAnnotation(FlagAnnotation* annotation);
 
         void writeIndentedTypeName(Type type, std::string_view = "Type: ");
 

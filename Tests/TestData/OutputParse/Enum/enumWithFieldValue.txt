@@ -1,4 +1,5 @@
 EnumDefinitionStatement: {
+    Type: undefined
     Name: Values
     FieldNodes(3): {
         EnumFieldDeclaration: {

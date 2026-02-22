@@ -1,15 +1,25 @@
 EnumDefinitionStatement: {
-    Type: undefined
+    Type: Values(i32)
     Name: Values
+    Annotation: {
+        Name: Step
+        ArgumentsNode(1): {
+            NumberLiteral: 3
+        }
+    }
     FieldNodes(3): {
         EnumFieldDeclaration: {
             Name: First
+            Value: 0
         }
         EnumFieldDeclaration: {
             Name: Second
+            NumberLiteral: 5
+            Value: 5
         }
         EnumFieldDeclaration: {
             Name: Third
+            Value: 8
         }
     }
 }

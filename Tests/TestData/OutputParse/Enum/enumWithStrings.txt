@@ -1,0 +1,54 @@
+EnumDefinitionStatement: {
+    Type: undefined
+    Name: Month
+    FieldNodes(12): {
+        EnumFieldDeclaration: {
+            Name: January
+            StringLiteral: "Jan"
+        }
+        EnumFieldDeclaration: {
+            Name: February
+            StringLiteral: "Feb"
+        }
+        EnumFieldDeclaration: {
+            Name: March
+            StringLiteral: "Mar"
+        }
+        EnumFieldDeclaration: {
+            Name: April
+            StringLiteral: "Apr"
+        }
+        EnumFieldDeclaration: {
+            Name: May
+            StringLiteral: "May"
+        }
+        EnumFieldDeclaration: {
+            Name: June
+            StringLiteral: "Jun"
+        }
+        EnumFieldDeclaration: {
+            Name: July
+            StringLiteral: "Jul"
+        }
+        EnumFieldDeclaration: {
+            Name: August
+            StringLiteral: "Aug"
+        }
+        EnumFieldDeclaration: {
+            Name: September
+            StringLiteral: "Sep"
+        }
+        EnumFieldDeclaration: {
+            Name: October
+            StringLiteral: "Oct"
+        }
+        EnumFieldDeclaration: {
+            Name: November
+            StringLiteral: "Nov"
+        }
+        EnumFieldDeclaration: {
+            Name: December
+            StringLiteral: "Dec"
+        }
+    }
+}

@@ -27,8 +27,7 @@ namespace Caracal
         if (m_annotation.has_value())
         {
             const auto& annotationNode = m_annotation.value();
-            if (annotationNode->kind() == AnnotationKind::Extern)
-                return true;
+            return annotationNode->kind() == AnnotationKind::Extern;
         }
         return false;
     }

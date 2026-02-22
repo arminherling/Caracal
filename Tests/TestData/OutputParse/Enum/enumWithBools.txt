@@ -1,0 +1,14 @@
+EnumDefinitionStatement: {
+    Type: undefined
+    Name: Answer
+    FieldNodes(2): {
+        EnumFieldDeclaration: {
+            Name: Yes
+            BoolLiteral: true
+        }
+        EnumFieldDeclaration: {
+            Name: No
+            BoolLiteral: false
+        }
+    }
+}

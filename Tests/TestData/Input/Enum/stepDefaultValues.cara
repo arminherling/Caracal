@@ -1,4 +1,5 @@
-﻿enum Values 
+﻿#step(3)
+enum Values 
 {
     First
     Second

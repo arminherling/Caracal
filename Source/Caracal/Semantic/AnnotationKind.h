@@ -11,10 +11,7 @@ namespace Caracal
 
         Extern,
         Flag,
-        AutoIncrement,
-        DebugOnly,
-
-        UserDefined,
+        Step,
     };
 
     [[nodiscard]] CARACAL_API std::string stringify(AnnotationKind kind);

@@ -7,14 +7,11 @@ namespace Caracal
     std::string stringify(AnnotationKind kind)
     {
         static const std::unordered_map<AnnotationKind, std::string_view> kindToString{
-            { AnnotationKind::Error,            std::string_view("Error") },
+            { AnnotationKind::Error,        std::string_view("Error") },
 
-            { AnnotationKind::Extern,           std::string_view("Extern") },
-            { AnnotationKind::Flag,             std::string_view("Flag") },
-            { AnnotationKind::AutoIncrement,    std::string_view("AutoIncrement") },
-            { AnnotationKind::DebugOnly,        std::string_view("DebugOnly") },
-
-            { AnnotationKind::UserDefined,      std::string_view("UserDefined") },
+            { AnnotationKind::Extern,       std::string_view("Extern") },
+            { AnnotationKind::Flag,         std::string_view("Flag") },
+            { AnnotationKind::Step,         std::string_view("Step") },
         };
 
         const auto it = kindToString.find(kind);

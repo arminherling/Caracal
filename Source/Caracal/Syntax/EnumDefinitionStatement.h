@@ -5,6 +5,7 @@
 #include <Caracal/Syntax/Statement.h>
 #include <Caracal/Syntax/Token.h>
 #include <Caracal/Syntax/TypeNameNode.h>
+#include <Caracal/Syntax/AnnotationNode.h>
 
 namespace Caracal
 {
@@ -19,7 +20,8 @@ namespace Caracal
             std::optional<TypeNameNodeUPtr>&& baseType,
             const Token& openBracket,
             std::vector<EnumFieldDeclarationUPtr>&& fieldNodes,
-            const Token& closeBracket);
+            const Token& closeBracket,
+            std::optional<AnnotationNodeUPtr>&& annotation);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(EnumDefinitionStatement)
 
@@ -31,6 +33,9 @@ namespace Caracal
         [[nodiscard]] const Token& openBracket() const noexcept { return m_openBracket; }
         [[nodiscard]] const std::vector<EnumFieldDeclarationUPtr>& fieldNodes() const noexcept { return m_fieldNodes; }
         [[nodiscard]] const Token& closeBracket() const noexcept { return m_closeBracket; }
+        [[nodiscard]] const std::optional<AnnotationNodeUPtr>& annotation() const noexcept { return m_annotation; }
+        [[nodiscard]] bool hasStep() const noexcept;
+        [[nodiscard]] bool isFlag() const noexcept;
 
     private:
         Token m_enumKeyword;
@@ -41,5 +46,6 @@ namespace Caracal
         Token m_openBracket;
         std::vector<EnumFieldDeclarationUPtr> m_fieldNodes;
         Token m_closeBracket;
+        std::optional<AnnotationNodeUPtr> m_annotation;
     };
 }

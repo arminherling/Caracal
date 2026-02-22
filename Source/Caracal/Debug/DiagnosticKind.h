@@ -11,6 +11,8 @@ namespace Caracal
         _0004_ExtraTokensRemaining,
         _0005_ExpectedEnumField,
         _0006_UnexpectedAnnotation,
-        _0007_UnknownAnnotation
+        _0007_UnknownAnnotation,
+        _0008_AnnotationMissingArguments,
+        _0009_AnnotationWrongNumberOfArguments,
     };
 }

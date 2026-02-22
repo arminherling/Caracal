@@ -1,5 +1,5 @@
 EnumDefinitionStatement: {
-    Type: undefined
+    Type: Empty(u8)
     Name: Empty
     FieldNodes(0): {
     }

@@ -1,4 +1,4 @@
-﻿#include <Caracal/Debug/ParseTreePrinter.h>
+﻿#include "ParseTreePrinter.h"
 #include <Caracal/Semantic/TypeDatabase.h>
 
 namespace Caracal
@@ -345,9 +345,9 @@ namespace Caracal
 
         m_builder.appendIndented("Name: ").appendLine(statement->name());
 
-        if(statement->isExtern())
+        if(statement->annotation().has_value())
         {
-            prettyPrintExternAnnotation((ExternAnnotation*)statement->annotation().value().get());
+            prettyPrintAnnotation(statement->annotation().value().get());
         }
 
         prettyPrintParametersNode(statement->parametersNode().get());
@@ -381,7 +381,14 @@ namespace Caracal
     {
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
         m_builder.pushIndentation();
+
+        writeIndentedTypeName(statement->type());
         m_builder.appendIndented("Name: ").appendLine(statement->name());
+
+        if (statement->annotation().has_value())
+        {
+            prettyPrintAnnotation(statement->annotation().value().get());
+        }
 
         if (statement->baseType().has_value())
         {
@@ -413,6 +420,10 @@ namespace Caracal
         if (statement->valueExpression().has_value())
         {
             prettyPrintNode(statement->valueExpression().value().get());
+        }
+        if(statement->constantValue().has_value())
+        {
+            m_builder.appendIndented("Value: ").appendLine(std::to_string(statement->constantValue().value()));
         }
     
         m_builder.popIndentation();
@@ -652,21 +663,6 @@ namespace Caracal
         m_builder.appendIndented(stringify(string->kind())).append(": ").appendLine(lexeme);
     }
 
-    void ParseTreePrinter::prettyPrintExternAnnotation(ExternAnnotation* annotation)
-    {
-        m_builder.appendIndentedLine("Annotation: {");
-        m_builder.pushIndentation();
-
-        m_builder.appendIndented("Name: ").appendLine(stringify(annotation->kind()));
-        if (annotation->argumentsNode().has_value())
-        {
-            prettyPrintArgumentsNode(annotation->argumentsNode().value().get());
-        }
-
-        m_builder.popIndentation();
-        m_builder.appendIndentedLine("}");
-    }
-
     void ParseTreePrinter::prettyPrintArgumentsNode(ArgumentsNode* node)
     {
         const auto& arguments = node->arguments();
@@ -748,6 +744,74 @@ namespace Caracal
         m_builder.appendIndentedLine("}");
     }
 
+    void ParseTreePrinter::prettyPrintAnnotation(AnnotationNode* annotation)
+    {
+        switch (annotation->kind())
+        {
+            case AnnotationKind::Extern:
+            {
+                prettyPrintExternAnnotation((ExternAnnotation*)annotation);
+                break;
+            }
+            case AnnotationKind::Flag:
+            {
+                prettyPrintFlagAnnotation((FlagAnnotation*)annotation);
+                break;
+            }
+            case AnnotationKind::Step:
+            {
+                prettyPrintStepAnnotation((StepAnnotation*)annotation);
+                break;
+            }
+            default:
+            {
+                m_builder.appendIndentedLine("Missing AnnotationKind!!");
+                break;
+            }
+        }
+    }
+
+    void ParseTreePrinter::prettyPrintExternAnnotation(ExternAnnotation* annotation)
+    {
+        m_builder.appendIndentedLine("Annotation: {");
+        m_builder.pushIndentation();
+
+        m_builder.appendIndented("Name: ").appendLine(stringify(annotation->kind()));
+        if (annotation->argumentsNode().has_value())
+        {
+            prettyPrintArgumentsNode(annotation->argumentsNode().value().get());
+        }
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+    }
+
+    void ParseTreePrinter::prettyPrintStepAnnotation(StepAnnotation* annotation)
+    {
+        m_builder.appendIndentedLine("Annotation: {");
+        m_builder.pushIndentation();
+
+        m_builder.appendIndented("Name: ").appendLine(stringify(annotation->kind()));
+        if (annotation->argumentsNode().has_value())
+        {
+            prettyPrintArgumentsNode(annotation->argumentsNode().value().get());
+        }
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+    }
+
+    void ParseTreePrinter::prettyPrintFlagAnnotation(FlagAnnotation* annotation)
+    {
+        m_builder.appendIndentedLine("Annotation: {");
+        m_builder.pushIndentation();
+
+        m_builder.appendIndented("Name: ").appendLine(stringify(annotation->kind()));
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+    }
+
     void ParseTreePrinter::writeIndentedTypeName(Type type, std::string_view prefix)
     {
         if(type.kind() == TypeKind::Function)
@@ -788,6 +852,20 @@ namespace Caracal
                     m_builder.append(", ");
             }
             m_builder.appendLine("");
+            return;
+        }
+        else if (type.kind() == TypeKind::Enum)
+        {
+            const auto& enumDefinition = m_typeDatabase->getEnumDefinition(type);
+            auto name = enumDefinition.name();
+            auto baseType = enumDefinition.baseType();
+
+            m_builder
+                .appendIndented(prefix)
+                .append(name)
+                .append("(")
+                .append(TypeDatabase::TryFindName(baseType))
+                .appendLine(")");
             return;
         }
 
