@@ -9,6 +9,11 @@ namespace Caracal
     {
     }
     
+    const EnumField& EnumDefinition::getFieldByName(std::string_view fieldName) const noexcept
+    {
+        return m_fields.at(std::string(fieldName));
+    }
+
     bool EnumDefinition::hasField(std::string_view fieldName) const noexcept
     {
         if(m_fields.contains(std::string(fieldName)))
@@ -25,14 +30,4 @@ namespace Caracal
     {
         m_fields.emplace(std::string(name), EnumField{ name, value });
     }
-//
-//Field* EnumDefinition::getFieldByName(QStringView fieldName) const noexcept
-//{
-//    auto name = fieldName.toString();
-//    if (m_fields.contains(name))
-//        return m_fields.at(name);
-//    else
-//        return nullptr;
-//}
-
 }

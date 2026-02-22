@@ -12,6 +12,7 @@ namespace Caracal
     {
         return std::unordered_map<Type, llvm::Type*>{
             { Type::Bool(), llvm::Type::getInt1Ty(context) },
+            { Type::U8(), llvm::Type::getInt8Ty(context) },
             { Type::I32(), llvm::Type::getInt32Ty(context) },
             { Type::F32(), llvm::Type::getFloatTy(context) },
             { Type::String(), llvm::PointerType::getUnqual(context) },
@@ -134,6 +135,10 @@ namespace Caracal
             case NodeKind::BlockNode:
             {
                 generateBlockNode((BlockNode*)node);
+                break;
+            }
+            case NodeKind::EnumDefinitionStatement:
+            {
                 break;
             }
             default:
@@ -409,6 +414,30 @@ namespace Caracal
     {
         switch (node->binaryOperator())
         {
+            case BinaryOperatorKind::MemberAccess:
+            {
+                const auto type = node->type();
+                if (type.kind() == TypeKind::Enum)
+                {
+                    const auto& enumDefinition = m_typeDatabase.getEnumDefinition(type);
+                    const auto baseType = enumDefinition.baseType();
+                    const auto llvmType = GetLLVMTypeForCaraType(baseType, m_module.getContext());
+
+                    const auto nameExpression = (NameExpression*)node->rightExpression().get();
+                    const auto& name = nameExpression->name();
+                    const auto& enumField = enumDefinition.getFieldByName(name);
+
+                    if(enumField.expression() != nullptr)
+                    {
+                        return generateExpression(enumField.expression());
+                    }
+
+                    return llvm::ConstantInt::get(llvmType, enumField.value());
+                }
+
+                TODO("Member access operator not implemented yet");
+                break;
+            }
             case BinaryOperatorKind::Addition:
             {
                 const auto resultType = GetLLVMTypeForCaraType(node->type(), m_module.getContext());
@@ -672,7 +701,7 @@ namespace Caracal
             if (functionIsVariadic)
             {
                 // we need to promote bool to int32 for variadic functions like printf
-                if (llvmArgumentValue->getType()->isIntegerTy(1))
+                if (llvmArgumentValue->getType()->isIntegerTy(1) || llvmArgumentValue->getType()->isIntegerTy(8))
                 {
                     llvmArgumentValue = m_irBuilder->CreateZExt(llvmArgumentValue, llvm::Type::getInt32Ty(m_module.getContext()));
                 }

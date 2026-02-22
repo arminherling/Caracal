@@ -13,7 +13,7 @@ namespace Caracal
         [[nodiscard]] Type type() const noexcept { return m_type; }
         [[nodiscard]] Type baseType() const noexcept { return m_baseType; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
-        //[[nodiscard]] EnumField& getFieldByName(std::string_view fieldName) const noexcept;
+        [[nodiscard]] const EnumField& getFieldByName(std::string_view fieldName) const noexcept;
         [[nodiscard]] bool hasField(std::string_view fieldName) const noexcept;
 
         void setBaseType(Type baseType) noexcept { m_baseType = baseType; }
