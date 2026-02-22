@@ -4,4 +4,7 @@ enum Values
     First
     Second
     Third
+    Fourth
+    Fifth
+    Sixth
 }

@@ -217,6 +217,7 @@ namespace Caracal
         auto& enumDefinition = m_typeDatabase.createEnum(enumName);
         auto enumType = enumDefinition.type();
         auto step = 1;
+        const auto isFlag = statement->isFlag();
 
         if (statement->baseType().has_value())
         {
@@ -245,7 +246,26 @@ namespace Caracal
                 TODO("Add error diagnostics for duplicate enum field name");
             }
 
-            if(fieldNode->valueExpression().has_value())
+            if(isFlag)
+            {
+                if(fieldNode->valueExpression().has_value())
+                {
+                    TODO("Add error diagnostics for flag enums not allowing explicit values");
+                }
+
+                enumDefinition.addField(fieldName, currentFieldValue);
+                fieldNode->setValue(currentFieldValue);
+
+                if(currentFieldValue == 0)
+                {
+                    currentFieldValue = 1;
+                }
+                else
+                {
+                    currentFieldValue *= 2;
+                }
+            }
+            else if(fieldNode->valueExpression().has_value())
             {
                 auto expression = fieldNode->valueExpression().value().get();
                 auto fieldValueType = typeCheckExpression(expression);

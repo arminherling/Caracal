@@ -4,7 +4,7 @@ EnumDefinitionStatement: {
     Annotation: {
         Name: Flag
     }
-    FieldNodes(3): {
+    FieldNodes(6): {
         EnumFieldDeclaration: {
             Name: First
             Value: 0
@@ -16,6 +16,18 @@ EnumDefinitionStatement: {
         EnumFieldDeclaration: {
             Name: Third
             Value: 2
+        }
+        EnumFieldDeclaration: {
+            Name: Fourth
+            Value: 4
+        }
+        EnumFieldDeclaration: {
+            Name: Fifth
+            Value: 8
+        }
+        EnumFieldDeclaration: {
+            Name: Sixth
+            Value: 16
         }
     }
 }
