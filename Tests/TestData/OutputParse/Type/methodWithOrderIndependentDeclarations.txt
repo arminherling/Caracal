@@ -1,4 +1,5 @@
 TypeDefinitionStatement: {
+    Type: undefined
     Name: Two
     BlockNode(3): {
         TypeFieldDeclaration: {

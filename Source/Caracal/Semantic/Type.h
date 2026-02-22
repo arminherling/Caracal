@@ -12,7 +12,8 @@ namespace Caracal
         Builtin,
         Enum,
         Type,
-        Function
+        Function,
+        Method
     };
 
     class CARACAL_API Type

@@ -23,6 +23,8 @@
 #include <Caracal/Syntax/FunctionCallExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
 #include <Caracal/Syntax/EnumDefinitionStatement.h>
+#include <Caracal/Syntax/TypeDefinitionStatement.h>
+#include <Caracal/Syntax/MethodDefinitionStatement.h>
 
 namespace Caracal
 {
@@ -48,6 +50,8 @@ namespace Caracal
             void typeCheckAssignmentStatement(AssignmentStatement* statement);
             void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
             void typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
+            void typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement);
+            void typeCheckMethodDefinitionStatement(TypeDefinition& typeDefinition, MethodDefinitionStatement* statement);
             void typeCheckIfStatement(IfStatement* statement);
             void typeCheckWhileStatement(WhileStatement* statement);
             void typeCheckReturnStatement(ReturnStatement* statement);
@@ -67,30 +71,6 @@ namespace Caracal
             [[nodiscard]] std::vector<Type> typeCheckArgumentsNode(ArgumentsNode* argumentsNode);
 
             void typeCheckBlockNode(BlockNode* body);
-
-        //    [[nodiscard]] TypedStatement* typeCheckExpressionStatement(ExpressionStatement* statement);
-        //    [[nodiscard]] TypedStatement* typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement);
-        //    [[nodiscard]] TypedMethodDefinitionStatement* typeCheckTypeMethodDefinitionStatement(Type newRefType, Type newType, MethodDefinitionStatement* statement);
-        //    [[nodiscard]] TypedStatement* typeCheckIfStatement(IfStatement* statement);
-        //    [[nodiscard]] TypedStatement* typeCheckWhileStatement(WhileStatement* statement);
-        //    [[nodiscard]] QList<TypedFieldDefinitionNode*> typeCheckEnumFieldDefinitionNodes(
-        //        Type newType, 
-        //        Type baseType, 
-        //        const QList<EnumFieldDefinitionStatement*>& fieldDefinitions);
-        //    [[nodiscard]] QList<TypedFieldDefinitionNode*> typeCheckTypeFieldDefinitionNodes(Type newType, BlockNode* body);
-        //    [[nodiscard]] QList<TypedMethodDefinitionStatement*> typeCheckTypeMethodDefinitions(Type newRefType, Type newType, BlockNode* body);
-        //    [[nodiscard]] QList<Parameter*> typeCheckFunctionParameters(ParametersNode* parametersNode);
-        //    [[nodiscard]] TypedExpression* typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression); 
-        //    [[nodiscard]] QList<TypedExpression*> typeCheckFunctionCallArguments(ArgumentsNode* argumentsNode);
-        //    [[nodiscard]] TypedExpression* typeCheckNameExpression(NameExpression* expression);
-        //    [[nodiscard]] TypedExpression* typeCheckMemberAccessExpression(MemberAccessExpression* expression);
-        //    [[nodiscard]] TypedExpression* typeCheckDiscardLiteral(DiscardLiteral* literal);
-        //    [[nodiscard]] TypedExpression* typeCheckBoolLiteral(BoolLiteral* literal);
-        //
-        //    [[nodiscard]] Type inferType(TypedNode* node);
-        //    [[nodiscard]] Type convertTypeNameToType(const TypeName& typeName);
-        //    [[nodiscard]] std::tuple<TypedExpression*, i32> convertValueToTypedLiteral(QStringView literal, Type type, Node* source);
-        //    [[nodiscard]] std::tuple<TypedExpression*, i32> convertValueToTypedLiteral(i32 value, Type type, Node* source);
             [[nodiscard]] i32 convertToI32(NumberLiteral* literal);
         
             void pushScope(ScopeKind kind);

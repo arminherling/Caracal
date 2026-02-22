@@ -1,5 +1,4 @@
 ﻿#include "FunctionDefinitionStatement.h"
-#include "FunctionDefinitionStatement.h"
 
 namespace Caracal
 {

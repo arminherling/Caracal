@@ -320,22 +320,6 @@ namespace Caracal
         m_builder.appendIndentedLine("}");
     }
 
-    void ParseTreePrinter::prettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement)
-    {
-        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
-        m_builder.pushIndentation();
-
-        m_builder.appendIndented("Name: ").appendLine(statement->name());
-        if (statement->constructorParameters().has_value())
-        {
-            prettyPrintParametersNode(statement->constructorParameters().value().get());
-        }
-        prettyPrintBlockNode(statement->bodyNode().get());
-
-        m_builder.popIndentation();
-        m_builder.appendIndentedLine("}");
-    }
-
     void ParseTreePrinter::prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
     {
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
@@ -362,6 +346,8 @@ namespace Caracal
     {
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
         m_builder.pushIndentation();
+
+        writeIndentedTypeName(statement->type());
 
         if (statement->specialFunctionType() != SpecialFunctionType::None)
         {
@@ -429,7 +415,24 @@ namespace Caracal
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
     }
-    
+
+    void ParseTreePrinter::prettyPrintTypeDefinitionStatement(TypeDefinitionStatement* statement)
+    {
+        m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
+        writeIndentedTypeName(statement->type());
+        m_builder.appendIndented("Name: ").appendLine(statement->name());
+        if (statement->constructorParameters().has_value())
+        {
+            prettyPrintParametersNode(statement->constructorParameters().value().get());
+        }
+        prettyPrintBlockNode(statement->bodyNode().get());
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+    }
+
     void ParseTreePrinter::prettyPrintIfStatement(IfStatement* statement)
     {
         m_builder.appendIndented(stringify(statement->kind())).appendLine(": {");
@@ -814,21 +817,39 @@ namespace Caracal
 
     void ParseTreePrinter::writeIndentedTypeName(Type type, std::string_view prefix)
     {
-        if(type.kind() == TypeKind::Function)
+        if (type.kind() == TypeKind::Enum)
         {
-            if(m_typeDatabase == nullptr)
-            {
-                m_builder.appendIndentedLine(prefix).append("Function");
-                return;
-            }
+            const auto& enumDefinition = m_typeDatabase->getEnumDefinition(type);
+            auto name = enumDefinition.name();
+            auto baseType = enumDefinition.baseType();
 
+            m_builder
+                .appendIndented(prefix)
+                .append(name)
+                .append("(")
+                .append(TypeDatabase::TryFindName(baseType))
+                .appendLine(")");
+            return;
+        }
+        else if (type.kind() == TypeKind::Type)
+        {
+            const auto& typeDefinition = m_typeDatabase->getTypeDefinition(type);
+            auto name = typeDefinition.name();
+
+            m_builder
+                .appendIndented(prefix)
+                .appendLine(name);
+            return;
+        }
+        else if (type.kind() == TypeKind::Function)
+        {
             const auto& functionDefinition = m_typeDatabase->getFunctionDefinition(type);
             const auto& parameters = functionDefinition.parameters();
             const auto& returnTypes = functionDefinition.returnTypes();
 
             m_builder.appendIndented(prefix);
             m_builder.append("(");
-            
+
             for (size_t i = 0; i < parameters.size(); i++)
             {
                 auto parameter = parameters[i];
@@ -838,7 +859,7 @@ namespace Caracal
             }
 
             m_builder.append(") -> ");
-            if(returnTypes.empty())
+            if (returnTypes.empty())
             {
                 m_builder.appendLine("void");
                 return;
@@ -854,18 +875,38 @@ namespace Caracal
             m_builder.appendLine("");
             return;
         }
-        else if (type.kind() == TypeKind::Enum)
+        else if (type.kind() == TypeKind::Method)
         {
-            const auto& enumDefinition = m_typeDatabase->getEnumDefinition(type);
-            auto name = enumDefinition.name();
-            auto baseType = enumDefinition.baseType();
+            const auto& methodDefinition = m_typeDatabase->getMethodDefinition(type);
+            const auto& parameters = methodDefinition.parameters();
+            const auto& returnTypes = methodDefinition.returnTypes();
 
-            m_builder
-                .appendIndented(prefix)
-                .append(name)
-                .append("(")
-                .append(TypeDatabase::TryFindName(baseType))
-                .appendLine(")");
+            m_builder.appendIndented(prefix);
+            m_builder.append("(");
+
+            for (size_t i = 0; i < parameters.size(); i++)
+            {
+                auto parameter = parameters[i];
+                m_builder.append(TypeDatabase::TryFindName(parameter.type()));
+                if (i < parameters.size() - 1)
+                    m_builder.append(", ");
+            }
+
+            m_builder.append(") -> ");
+            if (returnTypes.empty())
+            {
+                m_builder.appendLine("void");
+                return;
+            }
+
+            for (size_t i = 0; i < returnTypes.size(); i++)
+            {
+                auto returnType = returnTypes[i];
+                m_builder.append(TypeDatabase::TryFindName(returnType));
+                if (i < returnTypes.size() - 1)
+                    m_builder.append(", ");
+            }
+            m_builder.appendLine("");
             return;
         }
 

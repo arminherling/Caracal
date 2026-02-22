@@ -15,7 +15,6 @@ namespace Caracal
             { NodeKind::TypeFieldDeclaration,           std::string_view("TypeFieldDeclaration") },
             { NodeKind::EnumFieldDeclaration,           std::string_view("EnumFieldDeclaration") },
 
-            { NodeKind::CppBlockStatement,              std::string_view("CppBlockStatement") },
             { NodeKind::ExpressionStatement,            std::string_view("ExpressionStatement") },
             { NodeKind::AssignmentStatement,            std::string_view("AssignmentStatement") },
             { NodeKind::FunctionDefinitionStatement,    std::string_view("FunctionDefinitionStatement") },

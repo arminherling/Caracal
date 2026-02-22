@@ -1,23 +1,24 @@
 TypeDefinitionStatement: {
-    Type: undefined
+    Type: Zero
     Name: Zero
     BlockNode(1): {
         MethodDefinitionStatement: {
-            Modifier: Private
+            Type: () -> i32
+            Modifier: Static
             MethodNameNode: {
-                MethodName: _value
+                MethodName: Zero.value
             }
             ParametersNode(0): {
             }
             ReturnTypesNode(1): {
                 TypeNameNode: {
-                    Type: undefined
+                    Type: i32
                     Lexeme: i32
                 }
             }
             BlockNode(1): {
                 ReturnStatement: {
-                    Type: undefined
+                    Type: i32
                     NumberLiteral: 0
                 }
             }

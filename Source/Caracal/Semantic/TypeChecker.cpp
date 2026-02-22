@@ -70,6 +70,11 @@ namespace Caracal
                 typeCheckEnumDefinitionStatement((EnumDefinitionStatement*)statement);
                 break;
             }
+            case NodeKind::TypeDefinitionStatement:
+            {
+                typeCheckTypeDefinitionStatement((TypeDefinitionStatement*)statement);
+                break;
+            }
             case NodeKind::IfStatement:
             {
                 typeCheckIfStatement((IfStatement*)statement);
@@ -305,6 +310,67 @@ namespace Caracal
         }
 
         statement->setType(enumType);
+    }
+
+    void TypeChecker::typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement)
+    {
+        const auto& typeName = statement->name();
+        auto& typeDefinition = m_typeDatabase.createType(typeName);
+        auto typeType = typeDefinition.type();
+
+        //auto constructorParameters = typeCheckParametersNode(statement->constructorParameters().value().get());
+        
+        const auto& definitionStatements = statement->bodyNode()->statements();
+        for (auto& definitionStatement : definitionStatements)
+        {
+            switch (definitionStatement->kind())
+            {
+                case NodeKind::TypeFieldDeclaration:
+                {
+                    TODO("Handle type field declaration in type definition");
+                    break;
+                }
+                case NodeKind::MethodDefinitionStatement:
+                {
+                    typeCheckMethodDefinitionStatement(typeDefinition, (MethodDefinitionStatement*)definitionStatement.get());
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        // TODO check if type with same name exists already
+    
+        //typeCheckBlockNode(statement->bodyNode().get());
+    
+        statement->setType(typeType);
+    }
+
+    void TypeChecker::typeCheckMethodDefinitionStatement(TypeDefinition& typeDefinition, MethodDefinitionStatement* statement)
+    {
+        m_currentReturnType = Type::Void();
+        auto parentScope = currentScope();
+        pushScope(ScopeKind::Method);
+
+        // TODO check if method with same name and parameters exists already
+
+        auto methodName = statement->methodNameNode()->methodName();
+        auto modifier = statement->modifier();
+        auto parametersTypes = typeCheckParametersNode(statement->parametersNode().get());
+        auto returnTypes = typeCheckReturnTypesNode(statement->returnTypesNode().get());
+
+        auto& methodDefinition = m_typeDatabase.createMethod(typeDefinition, modifier, methodName, parametersTypes, returnTypes);
+        auto methodType = methodDefinition.type();
+
+        typeCheckBlockNode(statement->bodyNode().get());
+
+        // TODO check if return type matches declared return types
+
+        statement->setType(methodType);
+
+        popScope();
+        m_currentReturnType = Type::Void();
     }
 
     void TypeChecker::typeCheckIfStatement(IfStatement* statement)

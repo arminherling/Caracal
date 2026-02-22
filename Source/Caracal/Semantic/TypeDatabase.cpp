@@ -1,65 +1,7 @@
 ﻿#include "TypeDatabase.h"
-//
-//TypeDatabase::TypeDatabase()
-//    : m_nextId{ 100 }
-//{
-//    addBuiltinType(Type::Discard(), QString("_"));
-//    addBuiltinType(Type::Void(), QString("void"));
-//    addBuiltinTypesWithVariation(Type::Bool(), QString("bool"));
-//    addBuiltinTypesWithVariation(Type::U8(), QString("u8"));
-//    addBuiltinTypesWithVariation(Type::I32(), QString("i32"));
-//}
-//
-//Type TypeDatabase::getTypeByName(QStringView typeName) const noexcept
-//{
-//    auto name = typeName.toString();
-//    if (m_names.contains(name))
-//        return m_names.at(name);
-//    else
-//        return Type::Undefined();
-//}
-//TypeDefinition& TypeDatabase::getTypeDefinition(Type type) noexcept
-//{
-//    static auto invalidType = TypeDefinition{ Type::Undefined(), QString("???") };
-//
-//    auto id = type.id();
-//    if (m_typeDefinitions.contains(id))
-//        return m_typeDefinitions.at(id);
-//    else
-//        return invalidType;
-//}
-//Type TypeDatabase::createType(QStringView name, TypeKind kind) noexcept
-//{
-//    auto typeName = name.toString();
-//    auto type = Type{ m_nextId++, kind };
-//    m_names.emplace(typeName, type);
-//    m_typeDefinitions.emplace(type.id(), TypeDefinition{type, typeName});
-//    return type;
-//}
-
-//
-//void TypeDatabase::addBuiltinTypesWithVariation(Type type, const QString& name) noexcept
-//{
-//    addBuiltinType(type, name);
-//
-//    auto refTypeName = QString("ref %1").arg(name);
-//    auto refType = Type(type.id() + 1, type.kind());
-//    addBuiltinType(refType, refTypeName);
-//
-//    //auto nullableTypeName = QString("%1?").arg(name);
-//    //auto nullableType = Type(type.id() + 2, type.kind());
-//    //addBuiltinType(nullableType, nullableTypeName);
-//
-//    //auto nullableRefTypeName = QString("ref %1?").arg(name);
-//    //auto nullableRefType = Type(type.id() + 3, type.kind());
-//    //addBuiltinType(nullableRefType, nullableRefTypeName);
-//}
-//
-//void TypeDatabase::addBuiltinType(Type type, const QString& name) noexcept
-//{
-//    m_names.emplace(name, type);
-//    m_typeDefinitions.emplace(type.id(), TypeDefinition{ type, name });
-//}
+#include "TypeDatabase.h"
+#include "TypeDatabase.h"
+#include "TypeDatabase.h"
 
 namespace Caracal
 {
@@ -134,6 +76,17 @@ namespace Caracal
         else
             return invalidEnum;
     }
+
+    TypeDefinition& TypeDatabase::getTypeDefinition(Type type) noexcept
+    {
+        static auto invalidType = TypeDefinition{ Type::Undefined(), std::string("???") };
+        
+        auto id = type.id();
+        if (m_typeDefinitions.contains(id))
+            return m_typeDefinitions.at(id);
+        else
+            return invalidType;
+    }
     
     FunctionDefinition& TypeDatabase::getFunctionDefinition(Type type) noexcept
     {
@@ -144,6 +97,17 @@ namespace Caracal
             return m_functionDefinitions.at(id);
         else
             return invalidFunction;
+    }
+
+    MethodDefinition& TypeDatabase::getMethodDefinition(Type type) noexcept
+    {
+        static auto invalidMethod = MethodDefinition{ Type::Undefined(), Type::Undefined(), std::string("???"), MethodModifier::None };
+        
+        auto id = type.id();
+        if (m_methodDefinitions.contains(id))
+            return m_methodDefinitions.at(id);
+        else
+            return invalidMethod;
     }
 
     std::optional<Type> TypeDatabase::tryGetTypeByName(std::string_view name) const noexcept
@@ -163,6 +127,33 @@ namespace Caracal
         m_enumDefinitions.try_emplace(enumId, EnumDefinition{ enumType, enumName });
 
         return m_enumDefinitions.at(enumId);
+    }
+
+    TypeDefinition& TypeDatabase::createType(std::string_view name) noexcept
+    {
+        auto typeName = std::string(name);
+        auto typeId = m_nextId++;
+        auto newType = Type{ typeId, TypeKind::Type };
+        m_names.try_emplace(typeName, newType);
+        m_typeDefinitions.try_emplace(typeId, TypeDefinition{ newType, typeName });
+
+        return m_typeDefinitions.at(typeId);
+    }
+
+    MethodDefinition& TypeDatabase::createMethod(
+        TypeDefinition& typeDefinition, 
+        MethodModifier modifier, 
+        const std::string& methodName, 
+        const std::vector<Parameter>& parameters, 
+        const std::vector<Type>& returnTypes) noexcept
+    {
+        auto parentType = typeDefinition.type();
+        auto methodId = m_nextId++;
+        auto methodType = Type{ methodId, TypeKind::Method };
+        m_methodDefinitions.try_emplace(methodId, MethodDefinition{ parentType, methodType, methodName, modifier, parameters, returnTypes });
+        typeDefinition.addMethod(methodType, methodName);
+
+        return m_methodDefinitions.at(methodId);
     }
     
     FunctionDefinition& TypeDatabase::createFunction(

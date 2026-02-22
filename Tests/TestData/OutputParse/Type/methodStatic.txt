@@ -1,4 +1,5 @@
 TypeDefinitionStatement: {
+    Type: undefined
     Name: Zero
     BlockNode(1): {
         MethodDefinitionStatement: {

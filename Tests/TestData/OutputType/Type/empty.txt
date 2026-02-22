@@ -1,5 +1,5 @@
 TypeDefinitionStatement: {
-    Type: undefined
+    Type: Empty
     Name: Empty
     BlockNode(0): {
     }

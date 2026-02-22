@@ -15,7 +15,6 @@ namespace Caracal
         TypeFieldDeclaration,
         EnumFieldDeclaration,
 
-        CppBlockStatement,
         ExpressionStatement,
         AssignmentStatement,
         FunctionDefinitionStatement,
