@@ -102,6 +102,15 @@ namespace Caracal
 
                 break;
             }
+            case NodeKind::EnumDefinitionStatement:
+            {
+                break;
+            }
+            case NodeKind::TypeDefinitionStatement:
+            {
+                generateTypeDefinition((TypeDefinitionStatement*)node);
+                break;
+            }
             case NodeKind::IfStatement:
             {
                 generateIfStatement((IfStatement*)node);
@@ -135,10 +144,6 @@ namespace Caracal
             case NodeKind::BlockNode:
             {
                 generateBlockNode((BlockNode*)node);
-                break;
-            }
-            case NodeKind::EnumDefinitionStatement:
-            {
                 break;
             }
             default:
@@ -220,8 +225,15 @@ namespace Caracal
     void LLVMCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept
     {
         auto functionType = node->type();
+        const auto& body = node->bodyNode();
+
+        generateFunction(functionType, body.get());
+    }
+
+    void LLVMCodeGenerator::generateFunction(Type functionType, BlockNode* body) noexcept
+    {
         auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
-        auto& functionName = functionDefinition.name();
+        auto& functionName = functionDefinition.fullName();
 
         m_currentFunction = m_module.getFunction(functionName);
         if (m_currentFunction == nullptr)
@@ -239,7 +251,7 @@ namespace Caracal
 
         const auto& functionParameters = functionDefinition.parameters();
         auto functionArguments = m_currentFunction->args();
-        for (auto& argument: functionArguments)
+        for (auto& argument : functionArguments)
         {
             const auto& parameter = functionParameters.at(argument.getArgNo());
             argument.setName(parameter.name());
@@ -247,11 +259,28 @@ namespace Caracal
             currentScope()->addVariableBinding(parameter.name(), &argument);
         }
 
-        const auto& body = node->bodyNode();
-        generateBlockNode(body.get());
+        generateBlockNode(body);
 
         popScope();
         m_currentFunction = nullptr;
+    }
+
+    void LLVMCodeGenerator::generateTypeDefinition(TypeDefinitionStatement* node) noexcept
+    {
+        auto thisType = node->type();
+        auto typeDefinition = m_typeDatabase.getTypeDefinition(thisType);
+
+        const auto& statements = node->bodyNode()->statements();
+        for(const auto& statement : statements)
+        {
+            if(statement->kind() == NodeKind::MethodDefinitionStatement)
+            {
+                auto method = (MethodDefinitionStatement*)statement.get();
+                auto methodType = method->type();
+                auto methodBody = method->bodyNode().get();
+                generateFunction(methodType, methodBody);
+            }
+        }
     }
 
     void LLVMCodeGenerator::generateIfStatement(IfStatement* node) noexcept
@@ -433,6 +462,10 @@ namespace Caracal
                     }
 
                     return llvm::ConstantInt::get(llvmType, enumField.value());
+                }
+                else if (node->rightExpression()->kind() == NodeKind::FunctionCallExpression)
+                {
+                    return generateExpression(node->rightExpression().get());
                 }
 
                 TODO("Member access operator not implemented yet");
@@ -681,10 +714,9 @@ namespace Caracal
 
     llvm::Value* LLVMCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node) noexcept
     {
-        const auto nameExpression = node->nameExpression().get();
-        const auto functionName = m_parseTree.tokens().getLexeme(nameExpression->nameToken());
-        auto argumentsNode = node->argumentsNode().get();
-
+        auto functionType = node->functionType();
+        auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
+        auto functionName = functionDefinition.fullName();
         const auto maybeMappedFunctionName = MapFunctionNameToExternFunction(functionName);
         auto llvmFunction = m_module.getFunction(maybeMappedFunctionName);
         if (llvmFunction == nullptr)
@@ -694,6 +726,7 @@ namespace Caracal
 
         const auto functionIsVariadic = llvmFunction->isVarArg();
         std::vector<llvm::Value*> llvmArguments;
+        const auto& argumentsNode = node->argumentsNode();
         const auto& arguments = argumentsNode->arguments();
         for (const auto& argument : arguments)
         {

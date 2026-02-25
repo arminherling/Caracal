@@ -355,8 +355,8 @@ namespace Caracal
 
         // TODO check if method with same name and parameters exists already
 
-        auto methodName = statement->methodNameNode()->methodName();
         auto modifier = statement->modifier();
+        auto methodName = statement->methodNameNode()->methodName();
         auto parametersTypes = typeCheckParametersNode(statement->parametersNode().get());
         auto returnTypes = typeCheckReturnTypesNode(statement->returnTypesNode().get());
 
@@ -514,10 +514,48 @@ namespace Caracal
                     binaryExpression->rightExpression()->setType(leftType);
                     return leftType;
                 }
+                else if (leftType.kind() == TypeKind::Type)
+                {
+                    if (binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression)
+                    {
+                        // TODO refactor with typeCheckFunctionCallExpression
+                        auto functionCallExpression = (FunctionCallExpression*)binaryExpression->rightExpression().get();
+                        const auto& name = functionCallExpression->nameExpression()->name();
+
+                        auto& typeDefinition = m_typeDatabase.getTypeDefinition(leftType);
+                        auto optionalMethodType = typeDefinition.tryGetMethodTypeByName(name);
+                        if (optionalMethodType.has_value())
+                        {
+                            auto methodType = optionalMethodType.value();
+                            auto& methodDefinition = m_typeDatabase.getFunctionDefinition(methodType);
+                            const auto& returnTypes = methodDefinition.returnTypes();
+                            Type returnType = Type::Void();
+                            if (returnTypes.size() == 1)
+                            {
+                                returnType = returnTypes[0];
+                            }
+                            else if (returnTypes.size() > 1)
+                            {
+                                TODO("Handle multiple return types");
+                            }
+                            
+                            binaryExpression->setType(returnType);
+                            functionCallExpression->setType(returnType);
+                            functionCallExpression->setFunctionType(methodType);
+                            return returnType;
+                        }
+                        else
+                        {
+                            TODO("Add error diagnostics for unknown method");
+                        }
+                    }
+                    else
+                    {
+                        TODO("Add error diagnostics for invalid member access on type");
+                    }
+                }
 
                 TODO("Handle MemberAccess");
-                //auto rightType = typeCheckExpression(binaryExpression->rightExpression().get());
-                
                 return Type::Undefined();
             }
             case BinaryOperatorKind::Addition:

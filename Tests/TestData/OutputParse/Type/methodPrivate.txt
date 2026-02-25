@@ -3,6 +3,7 @@ TypeDefinitionStatement: {
     Name: Zero
     BlockNode(1): {
         MethodDefinitionStatement: {
+            Type: undefined
             Modifier: Private
             MethodNameNode: {
                 MethodName: _value

@@ -1,6 +1,6 @@
-﻿#include <Caracal/Syntax/MethodNameNode.h>
+﻿#include "MethodNameNode.h"
 
-namespace Caracal 
+namespace Caracal
 {
     MethodNameNode::MethodNameNode(
         const Token& methodNameToken,
@@ -24,5 +24,17 @@ namespace Caracal
         , m_methodNameToken(methodNameToken)
         , m_methodName(methodName)
     {
+    }
+
+    std::string Caracal::MethodNameNode::fullMethodName() const noexcept
+    {
+        if (hasTypeName())
+        {
+            return typeName().value() + "." + methodName();
+        }
+        else
+        {
+            return methodName();
+        }
     }
 }

@@ -3,6 +3,7 @@ TypeDefinitionStatement: {
     Name: Zero
     BlockNode(1): {
         MethodDefinitionStatement: {
+            Type: undefined
             Modifier: Static
             MethodNameNode: {
                 MethodName: Zero.value
@@ -19,6 +20,39 @@ TypeDefinitionStatement: {
                 ReturnStatement: {
                     Type: undefined
                     NumberLiteral: 0
+                }
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: v
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: Zero
+                }
+            }
+            Operation: MemberAccess
+            Right: {
+                FunctionCallExpression: {
+                    Type: undefined
+                    Function type: undefined
+                    NameExpression: {
+                        Type: undefined
+                        Name: value
+                    }
+                    ArgumentsNode(0): {
+                    }
                 }
             }
         }

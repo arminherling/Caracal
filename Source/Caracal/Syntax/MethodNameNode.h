@@ -28,7 +28,7 @@ namespace Caracal
         [[nodiscard]] const Token& methodNameToken() const noexcept { return m_methodNameToken; }
         [[nodiscard]] const std::string& methodName() const noexcept { return m_methodName; }
         [[nodiscard]] bool hasTypeName() const noexcept { return m_typeName.has_value(); }
-
+        [[nodiscard]] std::string fullMethodName() const noexcept;
     private:
         std::optional<Token> m_typeNameToken;
         std::optional<std::string> m_typeName;

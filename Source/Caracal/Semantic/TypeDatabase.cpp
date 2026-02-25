@@ -1,7 +1,4 @@
 ﻿#include "TypeDatabase.h"
-#include "TypeDatabase.h"
-#include "TypeDatabase.h"
-#include "TypeDatabase.h"
 
 namespace Caracal
 {
@@ -31,10 +28,25 @@ namespace Caracal
         };
     }
 
+    [[nodiscard]] static FunctionType ToFunctionType(MethodModifier modifier)
+    {
+        switch (modifier)
+        {
+            case MethodModifier::Public:
+                return FunctionType::PublicMethod;
+            case MethodModifier::Private:
+                return FunctionType::PrivateMethod;
+            case MethodModifier::Static:
+                return FunctionType::StaticMethod;
+            default:
+                return FunctionType::None;
+        }
+    }
+
     TypeDatabase::TypeDatabase()
     {
         // TODO remove this once we got a prelude
-        m_functionDefinitions.try_emplace(1000, FunctionDefinition{ Type{ 1000, TypeKind::Function }, "print", false, {Parameter{"msg", Type::String()}} });
+        m_functionDefinitions.try_emplace(1000, FunctionDefinition{ Type{ 1000, TypeKind::Function }, Type::Undefined(), FunctionType::FreeFunction, "print", "print", false, {Parameter{"msg", Type::String()}} });
     }
 
     Type TypeDatabase::TryFindBuiltin(std::string_view typeName) noexcept
@@ -90,24 +102,13 @@ namespace Caracal
     
     FunctionDefinition& TypeDatabase::getFunctionDefinition(Type type) noexcept
     {
-        static auto invalidFunction = FunctionDefinition{ Type::Undefined(), std::string("???"), false };
+        static auto invalidFunction = FunctionDefinition{ Type::Undefined(), Type::Undefined(), FunctionType::None, std::string("???"), std::string("???"), false };
 
         auto id = type.id();
         if (m_functionDefinitions.contains(id))
             return m_functionDefinitions.at(id);
         else
             return invalidFunction;
-    }
-
-    MethodDefinition& TypeDatabase::getMethodDefinition(Type type) noexcept
-    {
-        static auto invalidMethod = MethodDefinition{ Type::Undefined(), Type::Undefined(), std::string("???"), MethodModifier::None };
-        
-        auto id = type.id();
-        if (m_methodDefinitions.contains(id))
-            return m_methodDefinitions.at(id);
-        else
-            return invalidMethod;
     }
 
     std::optional<Type> TypeDatabase::tryGetTypeByName(std::string_view name) const noexcept
@@ -140,22 +141,6 @@ namespace Caracal
         return m_typeDefinitions.at(typeId);
     }
 
-    MethodDefinition& TypeDatabase::createMethod(
-        TypeDefinition& typeDefinition, 
-        MethodModifier modifier, 
-        const std::string& methodName, 
-        const std::vector<Parameter>& parameters, 
-        const std::vector<Type>& returnTypes) noexcept
-    {
-        auto parentType = typeDefinition.type();
-        auto methodId = m_nextId++;
-        auto methodType = Type{ methodId, TypeKind::Method };
-        m_methodDefinitions.try_emplace(methodId, MethodDefinition{ parentType, methodType, methodName, modifier, parameters, returnTypes });
-        typeDefinition.addMethod(methodType, methodName);
-
-        return m_methodDefinitions.at(methodId);
-    }
-    
     FunctionDefinition& TypeDatabase::createFunction(
         std::string_view name,
         const std::vector<Parameter>& parameters,
@@ -165,8 +150,26 @@ namespace Caracal
         auto functionId = m_nextId++;
         auto functionType = Type{ functionId, TypeKind::Function };
         auto isVariadic = !parameters.empty() && parameters.back().type() == Type::CVariadic();
-        m_functionDefinitions.try_emplace(functionId, FunctionDefinition{ functionType, functionName, isVariadic, parameters, returnTypes });
+        m_functionDefinitions.try_emplace(functionId, FunctionDefinition{ functionType, Type::Undefined(), FunctionType::FreeFunction, functionName, functionName, isVariadic, parameters, returnTypes });
 
         return m_functionDefinitions.at(functionId);
+    }
+
+    FunctionDefinition& TypeDatabase::createMethod(
+        TypeDefinition& typeDefinition,
+        MethodModifier modifier,
+        const std::string& methodName,
+        const std::vector<Parameter>& parameters,
+        const std::vector<Type>& returnTypes) noexcept
+    {
+        auto parentType = typeDefinition.type();
+        auto fullMethodName = typeDefinition.name() + "." + methodName;
+        auto methodId = m_nextId++;
+        auto newType = Type{ methodId, TypeKind::Method };
+        auto functionType = ToFunctionType(modifier);
+        m_functionDefinitions.try_emplace(methodId, FunctionDefinition{ newType, parentType, functionType, methodName, fullMethodName, false, parameters, returnTypes });
+        typeDefinition.addMethod(newType, methodName);
+
+        return m_functionDefinitions.at(methodId);
     }
 }

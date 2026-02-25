@@ -1,7 +1,9 @@
-type Zero
+﻿type Zero
 {
     def Zero.value() i32
     {
         return 0;
     }
 }
+
+v :: Zero.value();

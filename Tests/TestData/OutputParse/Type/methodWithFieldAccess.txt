@@ -21,6 +21,7 @@ TypeDefinitionStatement: {
             }
         }
         MethodDefinitionStatement: {
+            Type: undefined
             Modifier: Public
             MethodNameNode: {
                 MethodName: value

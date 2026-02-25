@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <Caracal/Semantic/Type.h>
-#include <Caracal/Semantic/MethodDefinition.h>
+#include <optional>
 #include <string>
 
 namespace Caracal
@@ -14,7 +14,8 @@ namespace Caracal
         [[nodiscard]] Type type() const noexcept { return m_type; }
         [[nodiscard]] std::string name() const noexcept { return m_name; }
         void addMethod(Type methodType, const std::string& methodName) noexcept;
-
+        [[nodiscard]] std::optional<Type> tryGetMethodTypeByName(std::string_view methodName) const noexcept;
+        
     private:
         Type m_type;
         std::string m_name;

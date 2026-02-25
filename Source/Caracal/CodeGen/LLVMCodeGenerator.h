@@ -19,6 +19,7 @@
 #include <Caracal/Syntax/ExpressionStatement.h>
 #include <Caracal/Semantic/TypeDatabase.h>
 #include <Caracal/CodeGen/LLVMScope.h>
+#include <Caracal/Syntax/TypeDefinitionStatement.h>
 
 // forward declare so that we keep the headers clean and dont need to link llvm in the tests
 namespace llvm {
@@ -32,6 +33,7 @@ namespace llvm {
     class Type;
     class IRBuilderBase;
 }
+
 namespace Caracal
 {
     class LLVMCodeGenerator
@@ -53,6 +55,8 @@ namespace Caracal
         void generateExpressionStatement(ExpressionStatement* node) noexcept;
         void generateAssignmentStatement(AssignmentStatement* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
+        void generateFunction(Type functionType, BlockNode* body) noexcept;
+        void generateTypeDefinition(TypeDefinitionStatement* node) noexcept;
         void generateIfStatement(IfStatement* node) noexcept;
         void generateWhileStatement(WhileStatement* node) noexcept;
         void generateBreakStatement() noexcept;

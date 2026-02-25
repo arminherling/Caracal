@@ -841,45 +841,11 @@ namespace Caracal
                 .appendLine(name);
             return;
         }
-        else if (type.kind() == TypeKind::Function)
+        else if (type.kind() == TypeKind::Function || type.kind() == TypeKind::Method)
         {
             const auto& functionDefinition = m_typeDatabase->getFunctionDefinition(type);
             const auto& parameters = functionDefinition.parameters();
             const auto& returnTypes = functionDefinition.returnTypes();
-
-            m_builder.appendIndented(prefix);
-            m_builder.append("(");
-
-            for (size_t i = 0; i < parameters.size(); i++)
-            {
-                auto parameter = parameters[i];
-                m_builder.append(TypeDatabase::TryFindName(parameter.type()));
-                if (i < parameters.size() - 1)
-                    m_builder.append(", ");
-            }
-
-            m_builder.append(") -> ");
-            if (returnTypes.empty())
-            {
-                m_builder.appendLine("void");
-                return;
-            }
-
-            for (size_t i = 0; i < returnTypes.size(); i++)
-            {
-                auto returnType = returnTypes[i];
-                m_builder.append(TypeDatabase::TryFindName(returnType));
-                if (i < returnTypes.size() - 1)
-                    m_builder.append(", ");
-            }
-            m_builder.appendLine("");
-            return;
-        }
-        else if (type.kind() == TypeKind::Method)
-        {
-            const auto& methodDefinition = m_typeDatabase->getMethodDefinition(type);
-            const auto& parameters = methodDefinition.parameters();
-            const auto& returnTypes = methodDefinition.returnTypes();
 
             m_builder.appendIndented(prefix);
             m_builder.append("(");
