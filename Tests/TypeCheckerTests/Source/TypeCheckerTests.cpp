@@ -3,7 +3,7 @@
 #include <Caracal/Debug/ParseTreePrinter.h>
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
-#include <Caracal/Semantic/TypeDatabase.h>
+#include <Caracal/Semantic/Module.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/Text/File.h>
@@ -32,7 +32,7 @@ static void FileTests(
     const auto tokens = Caracal::lex(source, diagnostics);
     auto parseTree = Caracal::parse(tokens, diagnostics);
 
-    Caracal::TypeDatabase typeDatabase;
+    Caracal::Module module = Caracal::Module::WithBuiltins();
     Caracal::TypeCheckerOptions options{
         .defaultIntegerType = Caracal::Type::I32(),
         .defaultFloatingType = Caracal::Type::F32(),
@@ -40,7 +40,7 @@ static void FileTests(
     };
 
     auto startTime = std::chrono::high_resolution_clock::now();
-    auto wasSuccessful = Caracal::typeCheck(parseTree, options, typeDatabase, diagnostics);
+    auto wasSuccessful = Caracal::typeCheck(parseTree, options, module, diagnostics);
     auto endTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "      Type check(): " << CaraTest::stringify(endTime - startTime) << std::endl;
@@ -49,7 +49,7 @@ static void FileTests(
         CaraTest::fail();// ("Type checking failed");
     }
 
-    Caracal::ParseTreePrinter printer{ parseTree, &typeDatabase };
+    Caracal::ParseTreePrinter printer{ parseTree, &module };
     const auto output = printer.prettyPrint();
 
     CaraTest::isTrue(diagnostics.Diagnostics().empty());

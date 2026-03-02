@@ -4,7 +4,7 @@
 #include <Caracal/Defines.h>
 #include <Caracal/Debug/DiagnosticsBag.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
-#include <Caracal/Semantic/TypeDatabase.h>
+#include <Caracal/Semantic/Module.h>
 #include <Caracal/Semantic/Parameter.h>
 #include <Caracal/Semantic/Scope.h>
 #include <Caracal/Syntax/ParseTree.h>
@@ -34,7 +34,7 @@ namespace Caracal
         TypeChecker(
             ParseTree& parseTree,
             const TypeCheckerOptions& options,
-            TypeDatabase& typeDatabase,
+            Module& module,
             DiagnosticsBag& diagnostics);
 
         CARACAL_DELETE_COPY_DELETE_MOVE(TypeChecker)
@@ -79,7 +79,7 @@ namespace Caracal
         
             ParseTree& m_parseTree;
             TypeCheckerOptions m_options;
-            TypeDatabase& m_typeDatabase;
+            Module& m_module;
             DiagnosticsBag& m_diagnostics;
             Type m_currentReturnType;
             std::vector<std::unique_ptr<Scope>> m_scopes;
@@ -89,7 +89,7 @@ namespace Caracal
     CARACAL_API bool typeCheck(
         ParseTree& parseTree, 
         const TypeCheckerOptions& options, 
-        TypeDatabase& typeDatabase, 
+        Module& module, 
         DiagnosticsBag& diagnostics) noexcept;
 };
 

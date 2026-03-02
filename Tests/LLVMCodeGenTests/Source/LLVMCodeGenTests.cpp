@@ -32,14 +32,14 @@ static void FileTests(
     auto parseTree = Caracal::parse(tokens, diagnostics);
     CaraTest::isTrue(diagnostics.Diagnostics().empty());
 
-    Caracal::TypeDatabase typeDatabase{};
+    Caracal::Module caracalModule = Caracal::Module::WithBuiltins();
     Caracal::TypeCheckerOptions options{
         .defaultIntegerType = Caracal::Type::I32(),
         .defaultFloatingType = Caracal::Type::F32(),
         .defaultEnumBaseType = Caracal::Type::U8()
     };
 
-    auto wasSuccessful = Caracal::typeCheck(parseTree, options, typeDatabase, diagnostics);
+    auto wasSuccessful = Caracal::typeCheck(parseTree, options, caracalModule, diagnostics);
     if (!wasSuccessful)
     {
         std::cout << "Type checking failed!";
@@ -47,10 +47,10 @@ static void FileTests(
     }
 
     //llvm::LLVMContext context;
-    //llvm::Module module("file_test", context);
+    //llvm::Module llvmModule("file_test", context);
 
     //const auto startTime = std::chrono::high_resolution_clock::now();
-    //wasSuccessful = Caracal::generateLLVMModule(parseTree,typeDatabase, module);
+    //wasSuccessful = Caracal::generateLLVMModule(parseTree, caracalModule, llvmModule);
     //const auto endTime = std::chrono::high_resolution_clock::now();
 
     //std::cout << "      generateLLVMModule(): " << CaraTest::stringify(endTime - startTime) << std::endl;
@@ -59,7 +59,7 @@ static void FileTests(
 
     //std::string output;
     //llvm::raw_string_ostream irStream(output);
-    //module.print(irStream, nullptr);
+    //llvmModule.print(irStream, nullptr);
     //irStream.flush();
     //CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
 }

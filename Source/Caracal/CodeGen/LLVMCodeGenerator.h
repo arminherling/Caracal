@@ -17,7 +17,7 @@
 #include <Caracal/Syntax/FunctionCallExpression.h>
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
-#include <Caracal/Semantic/TypeDatabase.h>
+#include <Caracal/Semantic/Module.h>
 #include <Caracal/CodeGen/LLVMScope.h>
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
 
@@ -41,8 +41,8 @@ namespace Caracal
     public:
         LLVMCodeGenerator(
             const ParseTree& parseTree, 
-            TypeDatabase& typeDatabase, 
-            llvm::Module& module);
+            Module& caracalModule, 
+            llvm::Module& llvmModule);
 
         CARACAL_DELETE_COPY_DELETE_MOVE(LLVMCodeGenerator)
 
@@ -84,8 +84,8 @@ namespace Caracal
 
     private:
         const ParseTree& m_parseTree;
-        TypeDatabase& m_typeDatabase;
-        llvm::Module& m_module;
+        Module& m_caracalModule;
+        llvm::Module& m_llvmModule;
         llvm::Function* m_currentFunction;
         llvm::BasicBlock* m_currentConditionBlock;
         llvm::BasicBlock* m_currentEndBlock;
@@ -93,5 +93,5 @@ namespace Caracal
         std::vector<std::unique_ptr<LLVMScope>> m_scopes;
     };
 
-    bool generateLLVMModule(const ParseTree& parseTree, TypeDatabase& typeDatabase, llvm::Module& module) noexcept;
+    bool generateLLVMModule(const ParseTree& parseTree, Module& caracalModule, llvm::Module& llvmModule) noexcept;
 }

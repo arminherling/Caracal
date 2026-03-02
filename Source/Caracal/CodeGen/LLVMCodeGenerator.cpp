@@ -46,15 +46,15 @@ namespace Caracal
 
     LLVMCodeGenerator::LLVMCodeGenerator(
         const ParseTree& parseTree, 
-        TypeDatabase& typeDatabase,
-        llvm::Module& module)
+        Module& caracalModule,
+        llvm::Module& llvmModule)
         : m_parseTree{ parseTree }
-        , m_typeDatabase{ typeDatabase }
-        , m_module{ module }
+        , m_caracalModule{ caracalModule }
+        , m_llvmModule{ llvmModule }
         , m_currentFunction{ nullptr }
         , m_currentConditionBlock{ nullptr }
         , m_currentEndBlock{ nullptr }
-        , m_irBuilder{ std::make_unique<llvm::IRBuilder<>>(module.getContext()) }
+        , m_irBuilder{ std::make_unique<llvm::IRBuilder<>>(llvmModule.getContext()) }
     {
         m_scopes.emplace_back(std::make_unique<LLVMScope>(nullptr));
     }
@@ -232,20 +232,20 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateFunction(Type functionType, BlockNode* body) noexcept
     {
-        auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
+        auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
         auto& functionName = functionDefinition.fullName();
 
-        m_currentFunction = m_module.getFunction(functionName);
+        m_currentFunction = m_llvmModule.getFunction(functionName);
         if (m_currentFunction == nullptr)
         {
             auto llvmFunctionType = generateFunctionType(functionDefinition);
             // TODO handle linkage types
-            m_currentFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_module);
+            m_currentFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_llvmModule);
         }
 
         pushScope();
 
-        auto& context = m_module.getContext();
+        auto& context = m_llvmModule.getContext();
         auto entry = llvm::BasicBlock::Create(context, "entry", m_currentFunction);
         m_irBuilder->SetInsertPoint(entry);
 
@@ -268,7 +268,7 @@ namespace Caracal
     void LLVMCodeGenerator::generateTypeDefinition(TypeDefinitionStatement* node) noexcept
     {
         auto thisType = node->type();
-        auto typeDefinition = m_typeDatabase.getTypeDefinition(thisType);
+        auto typeDefinition = m_caracalModule.getTypeDefinition(thisType);
 
         const auto& statements = node->bodyNode()->statements();
         for(const auto& statement : statements)
@@ -289,13 +289,13 @@ namespace Caracal
         const auto condition = node->condition().get();
         auto llvmCondition = generateExpression(condition);
 
-        auto trueBlock = llvm::BasicBlock::Create(m_module.getContext(), "if_true", m_currentFunction);
+        auto trueBlock = llvm::BasicBlock::Create(m_llvmModule.getContext(), "if_true", m_currentFunction);
         llvm::BasicBlock* falseBlock = nullptr;
         if (hasFalseBlock)
         {
-            falseBlock = llvm::BasicBlock::Create(m_module.getContext(), "if_false");
+            falseBlock = llvm::BasicBlock::Create(m_llvmModule.getContext(), "if_false");
         }
-        auto afterBlock = llvm::BasicBlock::Create(m_module.getContext(), "if_end");
+        auto afterBlock = llvm::BasicBlock::Create(m_llvmModule.getContext(), "if_end");
 
         if(hasFalseBlock)
         {
@@ -335,7 +335,7 @@ namespace Caracal
     void LLVMCodeGenerator::generateWhileStatement(WhileStatement* node) noexcept
     {
         const auto condition = node->condition().get();
-        auto conditionBlock = llvm::BasicBlock::Create(m_module.getContext(), "while_condition", m_currentFunction);
+        auto conditionBlock = llvm::BasicBlock::Create(m_llvmModule.getContext(), "while_condition", m_currentFunction);
         
         m_irBuilder->CreateBr(conditionBlock);
         m_irBuilder->SetInsertPoint(conditionBlock);
@@ -343,8 +343,8 @@ namespace Caracal
         auto oldConditionBlock = m_currentConditionBlock;
         m_currentConditionBlock = conditionBlock;
 
-        auto loopBlock = llvm::BasicBlock::Create(m_module.getContext(), "while_loop");
-        auto afterBlock = llvm::BasicBlock::Create(m_module.getContext(), "while_end");
+        auto loopBlock = llvm::BasicBlock::Create(m_llvmModule.getContext(), "while_loop");
+        auto afterBlock = llvm::BasicBlock::Create(m_llvmModule.getContext(), "while_end");
         auto oldAfterBlock = m_currentEndBlock;
         m_currentEndBlock = afterBlock;
 
@@ -448,9 +448,9 @@ namespace Caracal
                 const auto type = node->type();
                 if (type.kind() == TypeKind::Enum)
                 {
-                    const auto& enumDefinition = m_typeDatabase.getEnumDefinition(type);
+                    const auto& enumDefinition = m_caracalModule.getEnumDefinition(type);
                     const auto baseType = enumDefinition.baseType();
-                    const auto llvmType = GetLLVMTypeForCaraType(baseType, m_module.getContext());
+                    const auto llvmType = GetLLVMTypeForCaraType(baseType, m_llvmModule.getContext());
 
                     const auto nameExpression = (NameExpression*)node->rightExpression().get();
                     const auto& name = nameExpression->name();
@@ -473,7 +473,7 @@ namespace Caracal
             }
             case BinaryOperatorKind::Addition:
             {
-                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_module.getContext());
+                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_llvmModule.getContext());
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
@@ -492,7 +492,7 @@ namespace Caracal
             }
             case BinaryOperatorKind::Subtraction:
             {
-                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_module.getContext());
+                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_llvmModule.getContext());
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
@@ -511,7 +511,7 @@ namespace Caracal
             }
             case BinaryOperatorKind::Multiplication:
             {
-                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_module.getContext());
+                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_llvmModule.getContext());
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
@@ -530,7 +530,7 @@ namespace Caracal
             }
             case BinaryOperatorKind::Division:
             {
-                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_module.getContext());
+                const auto resultType = GetLLVMTypeForCaraType(node->type(), m_llvmModule.getContext());
                 const auto lhs = generateExpression(node->leftExpression().get());
                 const auto rhs = generateExpression(node->rightExpression().get());
 
@@ -715,10 +715,10 @@ namespace Caracal
     llvm::Value* LLVMCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node) noexcept
     {
         auto functionType = node->functionType();
-        auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
+        auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
         auto functionName = functionDefinition.fullName();
         const auto maybeMappedFunctionName = MapFunctionNameToExternFunction(functionName);
-        auto llvmFunction = m_module.getFunction(maybeMappedFunctionName);
+        auto llvmFunction = m_llvmModule.getFunction(maybeMappedFunctionName);
         if (llvmFunction == nullptr)
         {
             TODO("Function not found in module during function call generation");
@@ -736,12 +736,12 @@ namespace Caracal
                 // we need to promote bool to int32 for variadic functions like printf
                 if (llvmArgumentValue->getType()->isIntegerTy(1) || llvmArgumentValue->getType()->isIntegerTy(8))
                 {
-                    llvmArgumentValue = m_irBuilder->CreateZExt(llvmArgumentValue, llvm::Type::getInt32Ty(m_module.getContext()));
+                    llvmArgumentValue = m_irBuilder->CreateZExt(llvmArgumentValue, llvm::Type::getInt32Ty(m_llvmModule.getContext()));
                 }
                 // we need to promote float to double for variadic functions like printf
                 else if (llvmArgumentValue->getType()->isFloatTy())
                 {
-                    llvmArgumentValue = m_irBuilder->CreateFPExt(llvmArgumentValue, llvm::Type::getDoubleTy(m_module.getContext()));
+                    llvmArgumentValue = m_irBuilder->CreateFPExt(llvmArgumentValue, llvm::Type::getDoubleTy(m_llvmModule.getContext()));
                 }
             }
             llvmArguments.push_back(llvmArgumentValue);
@@ -752,7 +752,7 @@ namespace Caracal
 
     llvm::Value* LLVMCodeGenerator::generateBoolLiteral(BoolLiteral* node) noexcept
     {
-        auto& context = m_module.getContext();
+        auto& context = m_llvmModule.getContext();
         if (node->value())
         {
             return llvm::ConstantInt::getTrue(context);
@@ -765,7 +765,7 @@ namespace Caracal
 
     llvm::Value* LLVMCodeGenerator::generateNumberLiteral(NumberLiteral* node) noexcept
     {
-        auto& context = m_module.getContext();
+        auto& context = m_llvmModule.getContext();
         const auto literalType = node->type();
         const auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
 
@@ -790,14 +790,14 @@ namespace Caracal
 
     llvm::Value* LLVMCodeGenerator::generateStringLiteral(StringLiteral* node) noexcept
     {
-        auto& context = m_module.getContext();
+        auto& context = m_llvmModule.getContext();
         const auto& stringContent = node->escapedContent();
-        return m_irBuilder->CreateGlobalString(stringContent, "", 0, &m_module);
+        return m_irBuilder->CreateGlobalString(stringContent, "", 0, &m_llvmModule);
     }
 
     llvm::FunctionType* LLVMCodeGenerator::generateFunctionType(FunctionDefinition& functionDefinition) noexcept
     {
-        auto& context = m_module.getContext();
+        auto& context = m_llvmModule.getContext();
         const auto& returnTypes = functionDefinition.returnTypes();
         const auto hasReturnTypes = !returnTypes.empty();
 
@@ -842,11 +842,11 @@ namespace Caracal
     void LLVMCodeGenerator::declareExternFunction(FunctionDefinitionStatement* node) noexcept
     {
         auto functionType = node->type();
-        auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
+        auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
         auto& functionName = functionDefinition.name();
         auto llvmFunctionType = generateFunctionType(functionDefinition);
         // TODO handle linkage types
-        auto llvmFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_module);
+        auto llvmFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_llvmModule);
     }
 
     llvm::GlobalValue* LLVMCodeGenerator::createGlobalValue(
@@ -854,7 +854,7 @@ namespace Caracal
         llvm::Constant* constant, 
         bool isConst) noexcept
     {
-        auto value = m_module.getOrInsertGlobal(name, constant->getType());
+        auto value = m_llvmModule.getOrInsertGlobal(name, constant->getType());
         value->setAlignment(llvm::MaybeAlign(4));
         value->setConstant(isConst);
         value->setInitializer(constant);
@@ -894,9 +894,9 @@ namespace Caracal
         return m_scopes.back().get();
     }
 
-    bool generateLLVMModule(const ParseTree& parseTree, TypeDatabase& typeDatabase, llvm::Module& module) noexcept
+    bool generateLLVMModule(const ParseTree& parseTree, Module& caracalModule, llvm::Module& llvmModule) noexcept
     {
-        LLVMCodeGenerator generator{ parseTree, typeDatabase, module };
+        LLVMCodeGenerator generator{ parseTree, caracalModule, llvmModule };
         return generator.generate();
     }
 }

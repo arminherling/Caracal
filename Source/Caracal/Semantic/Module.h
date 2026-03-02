@@ -13,19 +13,21 @@
 
 namespace Caracal
 {
-    class CARACAL_API TypeDatabase
+    class CARACAL_API Module
     {
     public:
-        TypeDatabase();
+        Module() = default;
 
-        [[nodiscard]] static Type TryFindBuiltin(std::string_view typeName) noexcept;
-        [[nodiscard]] static std::string_view TryFindName(Type type) noexcept;
+        [[nodiscard]] static Module WithBuiltins() noexcept;
+
+        //[[nodiscard]] static Type TryFindBuiltin(std::string_view typeName) noexcept;
 
         [[nodiscard]] Type tryGetFunctionTypeByName(std::string_view typeName) const noexcept;
         [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;
         [[nodiscard]] TypeDefinition& getTypeDefinition(Type type) noexcept;
         [[nodiscard]] FunctionDefinition& getFunctionDefinition(Type type) noexcept;
-        [[nodiscard]] std::optional<Type> tryGetTypeByName(std::string_view name) const noexcept;
+        [[nodiscard]] Type tryGetTypeByName(std::string_view name) const noexcept;
+        [[nodiscard]] std::string_view getNameByType(Type type) noexcept;
 
         [[nodiscard]] EnumDefinition& createEnum(std::string_view name) noexcept;
         [[nodiscard]] TypeDefinition& createType(std::string_view name) noexcept;
@@ -39,12 +41,14 @@ namespace Caracal
             const std::string& methodName,
             const std::vector<Parameter>& parameters,
             const std::vector<Type>& returnTypes) noexcept;
+        void createBuiltinType(Type type, std::string_view name, bool addVariants = false);
 
     private:
-        std::unordered_map<std::string, Type> m_names;
+        std::unordered_map<i32, TypeDefinition> m_typeDefinitions;
         std::unordered_map<i32, EnumDefinition> m_enumDefinitions;
         std::unordered_map<i32, FunctionDefinition> m_functionDefinitions;
-        std::unordered_map<i32, TypeDefinition> m_typeDefinitions;
-        i32 m_nextId = 2000;
+        std::unordered_map<i32, std::string> m_typeNames;
+        std::unordered_map<std::string, Type> m_nameToTypes;
+        i32 m_nextId = 0;
     };
 }

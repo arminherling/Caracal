@@ -1,14 +1,14 @@
 ﻿#include "ParseTreePrinter.h"
-#include <Caracal/Semantic/TypeDatabase.h>
+#include <Caracal/Semantic/Module.h>
 
 namespace Caracal
 {
     ParseTreePrinter::ParseTreePrinter(
         const ParseTree& parseTree, 
-        TypeDatabase* typeDatabase, 
+        Module* module, 
         i32 indentation)
         : m_parseTree{ parseTree }
-        , m_typeDatabase{ typeDatabase }
+        , m_module{ module }
         , m_builder{ indentation }
     {
     }
@@ -819,7 +819,7 @@ namespace Caracal
     {
         if (type.kind() == TypeKind::Enum)
         {
-            const auto& enumDefinition = m_typeDatabase->getEnumDefinition(type);
+            const auto& enumDefinition = m_module->getEnumDefinition(type);
             auto name = enumDefinition.name();
             auto baseType = enumDefinition.baseType();
 
@@ -827,13 +827,13 @@ namespace Caracal
                 .appendIndented(prefix)
                 .append(name)
                 .append("(")
-                .append(TypeDatabase::TryFindName(baseType))
+                .append(m_module->getNameByType(baseType))
                 .appendLine(")");
             return;
         }
         else if (type.kind() == TypeKind::Type)
         {
-            const auto& typeDefinition = m_typeDatabase->getTypeDefinition(type);
+            const auto& typeDefinition = m_module->getTypeDefinition(type);
             auto name = typeDefinition.name();
 
             m_builder
@@ -843,7 +843,7 @@ namespace Caracal
         }
         else if (type.kind() == TypeKind::Function || type.kind() == TypeKind::Method)
         {
-            const auto& functionDefinition = m_typeDatabase->getFunctionDefinition(type);
+            const auto& functionDefinition = m_module->getFunctionDefinition(type);
             const auto& parameters = functionDefinition.parameters();
             const auto& returnTypes = functionDefinition.returnTypes();
 
@@ -853,7 +853,7 @@ namespace Caracal
             for (size_t i = 0; i < parameters.size(); i++)
             {
                 auto parameter = parameters[i];
-                m_builder.append(TypeDatabase::TryFindName(parameter.type()));
+                m_builder.append(m_module->getNameByType(parameter.type()));
                 if (i < parameters.size() - 1)
                     m_builder.append(", ");
             }
@@ -868,7 +868,7 @@ namespace Caracal
             for (size_t i = 0; i < returnTypes.size(); i++)
             {
                 auto returnType = returnTypes[i];
-                m_builder.append(TypeDatabase::TryFindName(returnType));
+                m_builder.append(m_module->getNameByType(returnType));
                 if (i < returnTypes.size() - 1)
                     m_builder.append(", ");
             }
@@ -876,7 +876,7 @@ namespace Caracal
             return;
         }
 
-        auto name = TypeDatabase::TryFindName(type);
+        auto name = m_module->getNameByType(type);
         m_builder.appendIndented(prefix).appendLine(name);
     }
 }

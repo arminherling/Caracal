@@ -5,21 +5,21 @@ namespace Caracal
     bool typeCheck(
         ParseTree& parseTree,
         const TypeCheckerOptions& options,
-        TypeDatabase& typeDatabase,
+        Module& module,
         DiagnosticsBag& diagnostics) noexcept
     {
-        TypeChecker typeChecker{ parseTree, options, typeDatabase, diagnostics };
+        TypeChecker typeChecker{ parseTree, options, module, diagnostics };
         return typeChecker.typeCheck();
     }
 
     TypeChecker::TypeChecker(
         ParseTree& parseTree,
         const TypeCheckerOptions& options,
-        TypeDatabase& typeDatabase,
+        Module& module,
         DiagnosticsBag& diagnostics)
         : m_parseTree{ parseTree }
         , m_options{ options }
-        , m_typeDatabase{ typeDatabase }
+        , m_module{ module }
         , m_diagnostics{ diagnostics }
         , m_currentReturnType{ Type::Void() }
         , m_scopes{}
@@ -201,7 +201,7 @@ namespace Caracal
         auto parametersTypes = typeCheckParametersNode(statement->parametersNode().get());
         auto returnTypes = typeCheckReturnTypesNode(statement->returnTypesNode().get());
 
-        auto& functionDefinition = m_typeDatabase.createFunction(functionName, parametersTypes, returnTypes);
+        auto& functionDefinition = m_module.createFunction(functionName, parametersTypes, returnTypes);
         auto functionType = functionDefinition.type();
 
         typeCheckBlockNode(statement->bodyNode().get());
@@ -219,7 +219,7 @@ namespace Caracal
         const auto& enumName = statement->name();
         auto baseType = Type::Undefined();
         auto defaultBaseType = m_options.defaultEnumBaseType;
-        auto& enumDefinition = m_typeDatabase.createEnum(enumName);
+        auto& enumDefinition = m_module.createEnum(enumName);
         auto enumType = enumDefinition.type();
         auto step = 1;
         const auto isFlag = statement->isFlag();
@@ -315,7 +315,7 @@ namespace Caracal
     void TypeChecker::typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement)
     {
         const auto& typeName = statement->name();
-        auto& typeDefinition = m_typeDatabase.createType(typeName);
+        auto& typeDefinition = m_module.createType(typeName);
         auto typeType = typeDefinition.type();
 
         //auto constructorParameters = typeCheckParametersNode(statement->constructorParameters().value().get());
@@ -360,7 +360,7 @@ namespace Caracal
         auto parametersTypes = typeCheckParametersNode(statement->parametersNode().get());
         auto returnTypes = typeCheckReturnTypesNode(statement->returnTypesNode().get());
 
-        auto& methodDefinition = m_typeDatabase.createMethod(typeDefinition, modifier, methodName, parametersTypes, returnTypes);
+        auto& methodDefinition = m_module.createMethod(typeDefinition, modifier, methodName, parametersTypes, returnTypes);
         auto methodType = methodDefinition.type();
 
         typeCheckBlockNode(statement->bodyNode().get());
@@ -522,12 +522,12 @@ namespace Caracal
                         auto functionCallExpression = (FunctionCallExpression*)binaryExpression->rightExpression().get();
                         const auto& name = functionCallExpression->nameExpression()->name();
 
-                        auto& typeDefinition = m_typeDatabase.getTypeDefinition(leftType);
+                        auto& typeDefinition = m_module.getTypeDefinition(leftType);
                         auto optionalMethodType = typeDefinition.tryGetMethodTypeByName(name);
                         if (optionalMethodType.has_value())
                         {
                             auto methodType = optionalMethodType.value();
-                            auto& methodDefinition = m_typeDatabase.getFunctionDefinition(methodType);
+                            auto& methodDefinition = m_module.getFunctionDefinition(methodType);
                             const auto& returnTypes = methodDefinition.returnTypes();
                             Type returnType = Type::Void();
                             if (returnTypes.size() == 1)
@@ -620,10 +620,9 @@ namespace Caracal
             return type;
         }
 
-        auto optionalType = m_typeDatabase.tryGetTypeByName(name);
-        if (optionalType.has_value())
+        auto type = m_module.tryGetTypeByName(name);
+        if (type != Type::Undefined())
         {
-            auto type = optionalType.value();
             expression->setType(type);
             return type;
         }
@@ -637,13 +636,13 @@ namespace Caracal
     {
         const auto& name = functionCallExpression->nameExpression()->nameToken();
         auto lexeme = m_parseTree.tokens().getLexeme(name);
-        auto functionType = m_typeDatabase.tryGetFunctionTypeByName(lexeme);
+        auto functionType = m_module.tryGetFunctionTypeByName(lexeme);
         if(functionType == Type::Undefined())
         {
             TODO("Add error diagnostics for unknown function call");
             return Type::Undefined();
         }
-        const auto& functionDefinition = m_typeDatabase.getFunctionDefinition(functionType);
+        const auto& functionDefinition = m_module.getFunctionDefinition(functionType);
 
         auto argumentsNode = functionCallExpression->argumentsNode().get();
         auto argumentTypes = typeCheckArgumentsNode(argumentsNode);
@@ -727,11 +726,18 @@ namespace Caracal
     Type TypeChecker::typeCheckTypeNameNode(TypeNameNode* typeNameNode)
     {
         const auto& name = typeNameNode->name();
-        auto type = TypeDatabase::TryFindBuiltin(name);
-        
-        // TODO ref and nullable handling
-        typeNameNode->setType(type);
-        return type;
+        auto type = m_module.tryGetTypeByName(name);
+        if(type != Type::Undefined())
+        {
+            // TODO ref and nullable handling
+            typeNameNode->setType(type);
+            return type;
+        }
+        else 
+        {
+            TODO("Add error diagnostics for unknown type name");
+            return Type::Undefined();
+        }
     }
     
     std::vector<Parameter> TypeChecker::typeCheckParametersNode(ParametersNode* parametersNode)
@@ -832,8 +838,8 @@ namespace Caracal
 //    // TODO check if there is already a type with the name
 //    // TODO create all type variations
 //    auto refName = QString("ref ") + typeName.toString();
-//    auto newRefType = m_typeDatabase.createType(refName, TypeKind::Type);
-//    auto newType = m_typeDatabase.createType(typeName, TypeKind::Type);
+//    auto newRefType = m_module.createType(refName, TypeKind::Type);
+//    auto newType = m_module.createType(typeName, TypeKind::Type);
 //    currentScope()->addTypeBinding(typeName, newType);
 //
 //    pushScope(ScopeKind::Type);
@@ -852,9 +858,9 @@ namespace Caracal
 //    auto& nameToken = statement->name();
 //    auto methodName = m_parseTree.tokens().getLexeme(nameToken);
 //    // TODO check if method with same name and parameters exists already
-//    auto newMethodType = m_typeDatabase.createFunction(methodName);
+//    auto newMethodType = m_module.createFunction(methodName);
 //    parentScope->addFunctionBinding(methodName, newMethodType);
-//    auto& typeDefinition = m_typeDatabase.getTypeDefinition(newType);
+//    auto& typeDefinition = m_module.getTypeDefinition(newType);
 //    typeDefinition.addFunction(newMethodType, methodName);
 //    auto& methodDefinition = typeDefinition.getFunctionDefinition(newMethodType);
 //
@@ -878,7 +884,7 @@ namespace Caracal
 //    Type baseType,
 //    const QList<EnumFieldDefinitionStatement*>& fieldDefinitions)
 //{
-//    auto& enumDefinition = m_typeDatabase.getEnumDefinition(newType);
+//    auto& enumDefinition = m_module.getEnumDefinition(newType);
 //
 //    QList<TypedFieldDefinitionNode*> enumFields;
 //    int nextValue = 0;
@@ -916,7 +922,7 @@ namespace Caracal
 //
 //QList<TypedFieldDefinitionNode*> TypeChecker::typeCheckTypeFieldDefinitionNodes(Type newType, BlockNode* body)
 //{
-//    auto& typeDefinition = m_typeDatabase.getTypeDefinition(newType);
+//    auto& typeDefinition = m_module.getTypeDefinition(newType);
 //
 //    QList<TypedFieldDefinitionNode*> typeFields;
 //
@@ -996,7 +1002,7 @@ namespace Caracal
 //TypedExpression* TypeChecker::typeCheckMemberAccessExpression(MemberAccessExpression* expression)
 //{
 //    auto thisType = currentScope()->tryGetTypeBinding(QStringView(u"this"));
-//    auto& typeDefinition = m_typeDatabase.getTypeDefinition(thisType);
+//    auto& typeDefinition = m_module.getTypeDefinition(thisType);
 //    auto innerExpression = expression->expression();
 //
 //    switch (innerExpression->kind())
@@ -1067,7 +1073,7 @@ namespace Caracal
 //    auto ref = (typeName.isReference() ? QString("ref ") : QString());
 //    auto name = ref + nameLexeme.toString();
 //
-//    return m_typeDatabase.getTypeByName(name);
+//    return m_module.getTypeByName(name);
 //}
 //
 //std::tuple<TypedExpression*, i32> TypeChecker::convertValueToTypedLiteral(QStringView valueLexeme, Type type, Node* source)

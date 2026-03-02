@@ -46,14 +46,14 @@ namespace Caracal
             return 1;
         }
 
-        Caracal::TypeDatabase typeDatabase{};
+        Caracal::Module caracalModule = Caracal::Module::WithBuiltins();
         Caracal::TypeCheckerOptions options{
             .defaultIntegerType = Caracal::Type::I32(),
             .defaultFloatingType = Caracal::Type::F32(),
             .defaultEnumBaseType = Caracal::Type::U8()
         };
 
-        auto wasSuccessful = Caracal::typeCheck(parseTree, options, typeDatabase, diagnostics);
+        auto wasSuccessful = Caracal::typeCheck(parseTree, options, caracalModule, diagnostics);
         if (!wasSuccessful)
         {
             std::cout << "Type checking failed!";
@@ -64,7 +64,7 @@ namespace Caracal
         llvm::InitializeNativeTargetAsmPrinter();
 
         llvm::LLVMContext context;
-        auto module = std::make_unique<llvm::Module>("CaracalModule", context);
+        auto llvmModule = std::make_unique<llvm::Module>("CaracalModule", context);
 
         auto defaultTargetTriple = llvm::sys::getDefaultTargetTriple();
         llvm::outs() << "TargetTriple: " << defaultTargetTriple << '\n';
@@ -82,10 +82,10 @@ namespace Caracal
         llvm::TargetOptions targetOptions{};
         auto relocModel = std::optional<llvm::Reloc::Model>();
         auto targetMachine = target->createTargetMachine(triple, CPU, features, targetOptions, relocModel);
-        module->setDataLayout(targetMachine->createDataLayout());
-        module->setTargetTriple(triple);
+        llvmModule->setDataLayout(targetMachine->createDataLayout());
+        llvmModule->setTargetTriple(triple);
 
-        wasSuccessful = Caracal::generateLLVMModule(parseTree, typeDatabase, *module);
+        wasSuccessful = Caracal::generateLLVMModule(parseTree, caracalModule, *llvmModule);
         if (!wasSuccessful)
         {
             std::cout << "Module not generated!";
@@ -94,7 +94,7 @@ namespace Caracal
 
         std::string irOutput;
         llvm::raw_string_ostream irStream(irOutput);
-        module->print(irStream, nullptr);
+        llvmModule->print(irStream, nullptr);
         irStream.flush();
         llvm::outs() << "Module IR:\n" << irOutput << "\n";
 
@@ -114,7 +114,7 @@ namespace Caracal
             llvm::errs() << "TargetMachine cant emit a file of this type\n";
             return 1;
         }
-        passManager.run(*module);
+        passManager.run(*llvmModule);
         objectFile.flush();
 
         const auto lldPath = llvm::sys::findProgramByName("lld-link").get();
@@ -152,7 +152,7 @@ namespace Caracal
         return exeResult;
     }
 
-    std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, TypeDatabase& typeDatabase)
+    std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, Module& caracalModule)
     {
         llvm::InitializeNativeTarget();
         llvm::InitializeNativeTargetAsmPrinter();
@@ -179,7 +179,7 @@ namespace Caracal
         module->setDataLayout(targetMachine->createDataLayout());
         module->setTargetTriple(triple);
 
-        auto wasSuccessful = Caracal::generateLLVMModule(parseTree, typeDatabase, *module);
+        auto wasSuccessful = Caracal::generateLLVMModule(parseTree, caracalModule, *module);
         if (!wasSuccessful)
         {
             std::cout << "Module not generated!";
