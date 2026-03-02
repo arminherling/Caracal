@@ -689,6 +689,7 @@ namespace Caracal
                 return nullptr;
             }
         }
+        return nullptr;
     }
 
     llvm::Value* LLVMCodeGenerator::generateNameExpression(NameExpression* node) noexcept
