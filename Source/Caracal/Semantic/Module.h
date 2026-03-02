@@ -6,7 +6,7 @@
 #include <Caracal/Semantic/EnumDefinition.h>
 #include <Caracal/Semantic/TypeDefinition.h>
 #include <Caracal/Semantic/FunctionDefinition.h>
-#include <Caracal/syntax/MethodDefinitionStatement.h>
+#include <Caracal/Syntax/MethodDefinitionStatement.h>
 #include <Caracal/Semantic/Parameter.h>
 #include <string_view>
 #include <unordered_map>
