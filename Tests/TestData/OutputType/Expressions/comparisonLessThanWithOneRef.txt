@@ -1,0 +1,70 @@
+FunctionDefinitionStatement: {
+    Type: () -> void
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(4): {
+        ConstantDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: x
+                }
+            }
+            Right: {
+                NumberLiteral: 1
+            }
+        }
+        ConstantDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: y
+                }
+            }
+            Right: {
+                NumberLiteral: 2
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        UnaryExpression: {
+                            Type: ref i32
+                            Operation: ReferenceOf
+                            Expression: {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: x
+                                }
+                            }
+                        }
+                    }
+                    Operation: LessThan
+                    Right: {
+                        NameExpression: {
+                            Type: i32
+                            Name: y
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: void
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: void
+        }
+    }
+}

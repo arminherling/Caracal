@@ -1,0 +1,69 @@
+EnumDefinitionStatement: {
+    Type: Values(u8)
+    Name: Values
+    FieldNodes(2): {
+        EnumFieldDeclaration: {
+            Name: First
+            Value: 0
+        }
+        EnumFieldDeclaration: {
+            Name: Second
+            Value: 1
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (Values) -> void
+    Name: inner
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: x
+            TypeNameNode: {
+                Type: Values(u8)
+                Lexeme: Values
+            }
+        }
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(0): {
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> void
+    Name: outer
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                Type: void
+                Function type: (Values) -> void
+                NameExpression: {
+                    Type: undefined
+                    Name: inner
+                }
+                ArgumentsNode(1): {
+                    BinaryExpression: {
+                        Type: Values(u8)
+                        Left: {
+                            NameExpression: {
+                                Type: Values(u8)
+                                Name: Values
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            NameExpression: {
+                                Type: Values(u8)
+                                Name: First
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

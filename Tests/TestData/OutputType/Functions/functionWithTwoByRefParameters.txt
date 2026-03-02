@@ -1,0 +1,69 @@
+FunctionDefinitionStatement: {
+    Type: (ref i32, ref i32) -> void
+    Name: swap
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: ref i32
+                Lexeme: i32
+                Ref: true
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: ref i32
+                Lexeme: i32
+                Ref: true
+            }
+        }
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(3): {
+        ConstantDeclaration: {
+            Type: ref i32
+            Left: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: temp
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: a
+                }
+            }
+        }
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: a
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: b
+                }
+            }
+        }
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: b
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: temp
+                }
+            }
+        }
+    }
+}

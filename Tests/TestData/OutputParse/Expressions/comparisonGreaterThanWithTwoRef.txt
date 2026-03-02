@@ -1,0 +1,76 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(4): {
+        ConstantDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: x
+                }
+            }
+            Right: {
+                NumberLiteral: 1
+            }
+        }
+        ConstantDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: y
+                }
+            }
+            Right: {
+                NumberLiteral: 2
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        UnaryExpression: {
+                            Type: undefined
+                            Operation: ReferenceOf
+                            Expression: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: x
+                                }
+                            }
+                        }
+                    }
+                    Operation: GreaterThan
+                    Right: {
+                        UnaryExpression: {
+                            Type: undefined
+                            Operation: ReferenceOf
+                            Expression: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: y
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+        }
+    }
+}

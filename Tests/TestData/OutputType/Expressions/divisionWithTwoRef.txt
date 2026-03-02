@@ -1,0 +1,60 @@
+ConstantDeclaration: {
+    Type: i32
+    Left: {
+        NameExpression: {
+            Type: i32
+            Name: x
+        }
+    }
+    Right: {
+        NumberLiteral: 1
+    }
+}
+ConstantDeclaration: {
+    Type: i32
+    Left: {
+        NameExpression: {
+            Type: i32
+            Name: y
+        }
+    }
+    Right: {
+        NumberLiteral: 2
+    }
+}
+ConstantDeclaration: {
+    Type: i32
+    Left: {
+        Discard: _
+    }
+    Right: {
+        BinaryExpression: {
+            Type: i32
+            Left: {
+                UnaryExpression: {
+                    Type: ref i32
+                    Operation: ReferenceOf
+                    Expression: {
+                        NameExpression: {
+                            Type: i32
+                            Name: x
+                        }
+                    }
+                }
+            }
+            Operation: Division
+            Right: {
+                UnaryExpression: {
+                    Type: ref i32
+                    Operation: ReferenceOf
+                    Expression: {
+                        NameExpression: {
+                            Type: i32
+                            Name: y
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

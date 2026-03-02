@@ -1,0 +1,60 @@
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: x
+        }
+    }
+    Right: {
+        NumberLiteral: 1
+    }
+}
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: y
+        }
+    }
+    Right: {
+        NumberLiteral: 2
+    }
+}
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        Discard: _
+    }
+    Right: {
+        BinaryExpression: {
+            Type: undefined
+            Left: {
+                UnaryExpression: {
+                    Type: undefined
+                    Operation: ReferenceOf
+                    Expression: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: x
+                        }
+                    }
+                }
+            }
+            Operation: Subtraction
+            Right: {
+                UnaryExpression: {
+                    Type: undefined
+                    Operation: ReferenceOf
+                    Expression: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: y
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

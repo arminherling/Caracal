@@ -12,7 +12,7 @@ namespace Caracal
         TypeDefinition(Type type, const std::string& name);
 
         [[nodiscard]] Type type() const noexcept { return m_type; }
-        [[nodiscard]] std::string name() const noexcept { return m_name; }
+        [[nodiscard]] const std::string& name() const noexcept { return m_name; }
         void addMethod(Type methodType, const std::string& methodName) noexcept;
         [[nodiscard]] std::optional<Type> tryGetMethodTypeByName(std::string_view methodName) const noexcept;
         

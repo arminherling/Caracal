@@ -817,14 +817,21 @@ namespace Caracal
 
     void ParseTreePrinter::writeIndentedTypeName(Type type, std::string_view prefix)
     {
+        m_builder.appendIndented(prefix);
+        
+        if(type.isReference())
+        {
+            m_builder.append("ref ");
+            type = type.toValue();
+        }
+        
         if (type.kind() == TypeKind::Enum)
         {
             const auto& enumDefinition = m_module->getEnumDefinition(type);
-            auto name = enumDefinition.name();
+            auto& name = enumDefinition.name();
             auto baseType = enumDefinition.baseType();
 
             m_builder
-                .appendIndented(prefix)
                 .append(name)
                 .append("(")
                 .append(m_module->getNameByType(baseType))
@@ -834,10 +841,9 @@ namespace Caracal
         else if (type.kind() == TypeKind::Type)
         {
             const auto& typeDefinition = m_module->getTypeDefinition(type);
-            auto name = typeDefinition.name();
+            auto& name = typeDefinition.name();
 
             m_builder
-                .appendIndented(prefix)
                 .appendLine(name);
             return;
         }
@@ -847,13 +853,16 @@ namespace Caracal
             const auto& parameters = functionDefinition.parameters();
             const auto& returnTypes = functionDefinition.returnTypes();
 
-            m_builder.appendIndented(prefix);
             m_builder.append("(");
 
             for (size_t i = 0; i < parameters.size(); i++)
             {
-                auto parameter = parameters[i];
-                m_builder.append(m_module->getNameByType(parameter.type()));
+                auto parameter = parameters[i].type();
+                if (parameter.isReference())
+                {
+                    m_builder.append("ref ");
+                }
+                m_builder.append(m_module->getNameByType(parameter));
                 if (i < parameters.size() - 1)
                     m_builder.append(", ");
             }
@@ -877,6 +886,6 @@ namespace Caracal
         }
 
         auto name = m_module->getNameByType(type);
-        m_builder.appendIndented(prefix).appendLine(name);
+        m_builder.appendLine(name);
     }
 }

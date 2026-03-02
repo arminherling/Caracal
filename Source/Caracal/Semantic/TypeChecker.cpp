@@ -490,8 +490,15 @@ namespace Caracal
             }
             case UnaryOperatorKind::ReferenceOf:
             {
-                TODO("Handle reference of operator");
-                return Type::Undefined();
+                auto type = typeCheckExpression(unaryExpression->expression().get());
+                if (type.isReference())
+                {
+                    TODO("Add error diagnostics for already being a reference");
+                    return Type::Undefined();
+                }
+                auto referenceType = type.toReference();
+                unaryExpression->setType(referenceType);
+                return referenceType;
             }
             default:
             {
@@ -564,7 +571,15 @@ namespace Caracal
             case BinaryOperatorKind::Division:
             {
                 auto leftType = typeCheckExpression(binaryExpression->leftExpression().get());
+                if (leftType.isReference())
+                {
+                    leftType = leftType.toValue();
+                }
                 auto rightType = typeCheckExpression(binaryExpression->rightExpression().get());
+                if(rightType.isReference())
+                {
+                    rightType = rightType.toValue();
+                }
 
                 // TODO we need to be able look up the resulting type for a binary expression, 
                 // for now we'll just make sure left and right have the same type and use that one
@@ -586,7 +601,15 @@ namespace Caracal
             case BinaryOperatorKind::LogicalOr:
             {
                 auto leftType = typeCheckExpression(binaryExpression->leftExpression().get());
+                if (leftType.isReference())
+                {
+                    leftType = leftType.toValue();
+                }
                 auto rightType = typeCheckExpression(binaryExpression->rightExpression().get());
+                if (rightType.isReference())
+                {
+                    rightType = rightType.toValue();
+                }
 
                 // TODO we need to be able look up the resulting type for a binary expression,
                 // for now we'll just make sure left and right have the same type and use that one
@@ -729,7 +752,16 @@ namespace Caracal
         auto type = m_module.tryGetTypeByName(name);
         if(type != Type::Undefined())
         {
-            // TODO ref and nullable handling
+            if(typeNameNode->isReference())
+            {
+                if (type.isReference())
+                {
+                    TODO("Add error diagnostics for already being a reference");
+                    return Type::Undefined();
+                }
+                type = type.toReference();
+            }
+            // TODO nullable handling
             typeNameNode->setType(type);
             return type;
         }
@@ -770,6 +802,10 @@ namespace Caracal
         for(const auto& returnTypeNode : returnTypesNode->returnTypes())
         {
             auto returnType = typeCheckTypeNameNode(returnTypeNode.get());
+            if(returnType.isReference())
+            {
+                TODO("Add error diagnostics for return type cannot be a reference");
+            }
             types.push_back(returnType);
         }
         return types;

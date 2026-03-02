@@ -1,0 +1,43 @@
+FunctionDefinitionStatement: {
+    Type: () -> void
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(2): {
+        ConstantDeclaration: {
+            Type: bool
+            Left: {
+                NameExpression: {
+                    Type: bool
+                    Name: a
+                }
+            }
+            Right: {
+                BoolLiteral: true
+            }
+        }
+        ConstantDeclaration: {
+            Type: ref bool
+            Left: {
+                NameExpression: {
+                    Type: ref bool
+                    Name: b
+                }
+            }
+            Right: {
+                UnaryExpression: {
+                    Type: ref bool
+                    Operation: ReferenceOf
+                    Expression: {
+                        NameExpression: {
+                            Type: bool
+                            Name: a
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

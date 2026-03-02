@@ -1,11 +1,11 @@
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: (ref i32) -> void
     Name: inner
     ParametersNode(1): {
         ParameterNode: {
             Name: x
             TypeNameNode: {
-                Type: undefined
+                Type: ref i32
                 Lexeme: i32
                 Ref: true
             }
@@ -17,7 +17,7 @@ FunctionDefinitionStatement: {
     }
 }
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> void
     Name: outer
     ParametersNode(0): {
     }
@@ -25,10 +25,10 @@ FunctionDefinitionStatement: {
     }
     BlockNode(2): {
         VariableDeclaration: {
-            Type: undefined
+            Type: i32
             Left: {
                 NameExpression: {
-                    Type: undefined
+                    Type: i32
                     Name: x
                 }
             }
@@ -38,19 +38,19 @@ FunctionDefinitionStatement: {
         }
         ExpressionStatement: {
             FunctionCallExpression: {
-                Type: undefined
-                Function type: undefined
+                Type: void
+                Function type: (ref i32) -> void
                 NameExpression: {
                     Type: undefined
                     Name: inner
                 }
                 ArgumentsNode(1): {
                     UnaryExpression: {
-                        Type: undefined
+                        Type: ref i32
                         Operation: ReferenceOf
                         Expression: {
                             NameExpression: {
-                                Type: undefined
+                                Type: i32
                                 Name: x
                             }
                         }

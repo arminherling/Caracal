@@ -1,0 +1,33 @@
+ConstantDeclaration: {
+    Type: i32
+    Left: {
+        NameExpression: {
+            Type: i32
+            Name: x
+        }
+    }
+    Right: {
+        NumberLiteral: 1
+    }
+}
+ConstantDeclaration: {
+    Type: ref i32
+    Left: {
+        NameExpression: {
+            Type: ref i32
+            Name: y
+        }
+    }
+    Right: {
+        UnaryExpression: {
+            Type: ref i32
+            Operation: ReferenceOf
+            Expression: {
+                NameExpression: {
+                    Type: i32
+                    Name: x
+                }
+            }
+        }
+    }
+}
