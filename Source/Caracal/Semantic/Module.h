@@ -20,8 +20,6 @@ namespace Caracal
 
         [[nodiscard]] static Module WithBuiltins() noexcept;
 
-        //[[nodiscard]] static Type TryFindBuiltin(std::string_view typeName) noexcept;
-
         [[nodiscard]] Type tryGetFunctionTypeByName(std::string_view typeName) const noexcept;
         [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;
         [[nodiscard]] TypeDefinition& getTypeDefinition(Type type) noexcept;

@@ -221,8 +221,9 @@ namespace Caracal
         auto defaultBaseType = m_options.defaultEnumBaseType;
         auto& enumDefinition = m_module.createEnum(enumName);
         auto enumType = enumDefinition.type();
-        auto step = 1;
         const auto isFlag = statement->isFlag();
+        auto currentFieldValue = isFlag ? 1 : 0;
+        auto step = 1;
 
         if (statement->baseType().has_value())
         {
@@ -242,7 +243,6 @@ namespace Caracal
         }
 
         const auto& fieldNodes = statement->fieldNodes();
-        i32 currentFieldValue = 0;
         for(auto& fieldNode : fieldNodes)
         {
             const auto& fieldName = fieldNode->name();
