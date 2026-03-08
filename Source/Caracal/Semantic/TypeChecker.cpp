@@ -178,7 +178,15 @@ namespace Caracal
     void TypeChecker::typeCheckAssignmentStatement(AssignmentStatement* statement)
     {
         auto leftType = typeCheckExpression(statement->leftExpression().get());
+        if (leftType.isReference())
+        {
+            leftType = leftType.toValue();
+        }
         auto rightType = typeCheckExpression(statement->rightExpression().get());
+        if (rightType.isReference())
+        {
+            rightType = rightType.toValue();
+        }
 
         if(leftType == Type::Discard())
             return;

@@ -20,6 +20,7 @@
 #include <Caracal/Semantic/Module.h>
 #include <Caracal/CodeGen/LLVMScope.h>
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
+#include <Caracal/Syntax/UnaryExpression.h>
 
 // forward declare so that we keep the headers clean and dont need to link llvm in the tests
 namespace llvm {
@@ -65,18 +66,21 @@ namespace Caracal
 
         llvm::Value* generateExpression(Expression* node) noexcept;
         llvm::Value* generateBinaryExpression(BinaryExpression* node) noexcept;
+        llvm::Value* generateUnaryExpression(UnaryExpression* node) noexcept;
         llvm::Value* generateNameExpression(NameExpression* node) noexcept; 
         llvm::Value* generateFunctionCallExpression(FunctionCallExpression* node) noexcept;
         llvm::Value* generateBoolLiteral(BoolLiteral* node) noexcept;
         llvm::Value* generateNumberLiteral(NumberLiteral* node) noexcept;
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
 
-        llvm::FunctionType* generateFunctionType(FunctionDefinition& functionDefinition) noexcept;
         void generateBlockNode(BlockNode* body) noexcept;
-
         void declareExternFunction(FunctionDefinitionStatement* node) noexcept;
         llvm::GlobalValue* createGlobalValue(const std::string& name, llvm::Constant* constant, bool isConst) noexcept;
         llvm::Value* createLocalValue(const std::string& name, llvm::Type* type) noexcept;
+        llvm::Function* getOrCreateFunctionDeclaration(FunctionDefinition& functionDefinition);
+        llvm::FunctionType* buildFunctionType(FunctionDefinition& functionDefinition) noexcept;
+        llvm::Value* dereferenceIfNeeded(Expression* expr, llvm::Value* val, llvm::Type* desiredTy) noexcept;
+        llvm::Value* getPointerForAssignment(Expression* expr, llvm::Value* val) noexcept;
 
         void pushScope();
         void popScope();

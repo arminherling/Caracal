@@ -21,6 +21,11 @@ namespace Caracal
 
     [[nodiscard]] static llvm::Type* GetLLVMTypeForCaraType(Type type, llvm::LLVMContext& context) noexcept
     {
+        if (type.isReference())
+        {
+            return llvm::PointerType::getUnqual(context);
+        }
+
         static const auto llvmTypes = InitializeTypeToLLVMType(context);
         if (const auto result = llvmTypes.find(type); result != llvmTypes.end())
             return result->second;
@@ -42,6 +47,39 @@ namespace Caracal
             return result->second;
 
         return functionName;
+    }
+
+    [[nodiscard]] static void SetupFunctionParameters(
+        FunctionDefinition& functionDefinition,
+        llvm::Function* llvmFunction,
+        LLVMScope* scope,
+        llvm::IRBuilderBase* irBuilderBase) noexcept
+    {
+        const auto& functionParameters = functionDefinition.parameters();
+        auto functionArguments = llvmFunction->args();
+        for (auto& argument : functionArguments)
+        {
+            const auto& parameter = functionParameters.at(argument.getArgNo());
+            argument.setName(parameter.name());
+
+            if (parameter.type().isReference())
+            {
+                // we can mark references as nonnull
+                llvmFunction->addParamAttr(
+                    argument.getArgNo(), 
+                    llvm::Attribute::get(llvmFunction->getContext(), llvm::Attribute::AttrKind::NonNull));
+
+                // references dont need alloca, we can just use the argument pointer directly as the storage
+                scope->addVariableBinding(parameter.name(), &argument);
+            }
+            else
+            {
+                llvm::IRBuilder<> entryBuilder(&llvmFunction->getEntryBlock(), llvmFunction->getEntryBlock().getFirstInsertionPt());
+                auto allocated = entryBuilder.CreateAlloca(argument.getType(), 0, parameter.name());
+                scope->addVariableBinding(parameter.name(), allocated);
+                irBuilderBase->CreateStore(&argument, allocated);
+            }
+        }
     }
 
     LLVMCodeGenerator::LLVMCodeGenerator(
@@ -165,12 +203,23 @@ namespace Caracal
         const auto& name = nameExpression->name();
         
         auto llvmValue = generateExpression(node->rightExpression().get());
+        if (!llvmValue)
+        {
+            TODO("Right-hand side of constant declaration produced null during codegen");
+            return;
+        }
         auto isGlobalConstant = node->isGlobalConstant();
 
         if (isGlobalConstant)
         {
-            const auto llvmConstant = llvm::dyn_cast<llvm::Constant>(llvmValue);
-            createGlobalValue(name, llvmConstant, true);
+            if (auto llvmConstant = llvm::dyn_cast<llvm::Constant>(llvmValue))
+            {
+                createGlobalValue(name, llvmConstant, true);
+            }
+            else
+            {
+                TODO("Global constant must be an llvm::Constant");
+            }
         }
         else
         {
@@ -192,6 +241,11 @@ namespace Caracal
         const auto& name = nameExpression->name();
 
         auto llvmValue = generateExpression(node->rightExpression().get());
+        if (!llvmValue)
+        {
+            TODO("Right-hand side of variable declaration produced null during codegen");
+            return;
+        }
 
         const auto llvmType = llvmValue->getType();
         const auto localValue = createLocalValue(name, llvmType);
@@ -202,21 +256,55 @@ namespace Caracal
     void LLVMCodeGenerator::generateExpressionStatement(ExpressionStatement* node) noexcept
     {
         const auto expression = node->expression().get();
-        auto llvmValue = generateExpression(expression);
+        static_cast<void>(generateExpression(expression));
     }
 
     void LLVMCodeGenerator::generateAssignmentStatement(AssignmentStatement* node) noexcept
     {
         const auto leftExpression = node->leftExpression().get();
         const auto rightExpression = node->rightExpression().get();
-        auto llvmLeftValue = generateExpression(leftExpression);
-        auto llvmRightValue = generateExpression(rightExpression);
 
-        if(auto localValue = llvm::dyn_cast<llvm::LoadInst>(llvmLeftValue))
+        auto llvmLeftValue = generateExpression(leftExpression);
+        if (llvmLeftValue == nullptr)
         {
-            m_irBuilder->CreateStore(llvmRightValue, localValue->getPointerOperand());
+            TODO("Left expression return nullptr");
+            return;
         }
-        else 
+        auto llvmRightValue = generateExpression(rightExpression);
+        if (llvmRightValue == nullptr)
+        {
+            TODO("Right expression return nullptr");
+            return;
+        }
+
+        const bool leftIsReference = leftExpression->type().isReference();
+        const bool rightIsReference = rightExpression->type().isReference();
+
+        llvm::Value* valueToStore = llvmRightValue;
+        llvm::Value* destinationPtr = nullptr;
+
+        // if left is a ref we can directly store into the pointer
+        if (leftIsReference)
+        {
+            destinationPtr = getPointerForAssignment(leftExpression, llvmLeftValue);
+            m_irBuilder->CreateStore(valueToStore, destinationPtr);
+            return;
+        }
+
+        // If right is ref we need to load the pointee value then store into left's storage
+        if (rightIsReference)
+        {
+            auto rightValCarType = rightExpression->type().toValue();
+            auto llvmRightValType = GetLLVMTypeForCaraType(rightValCarType, m_llvmModule.getContext());
+
+            valueToStore = dereferenceIfNeeded(rightExpression, llvmRightValue, llvmRightValType);
+        }
+
+        if(auto localLoad = (llvmLeftValue ? llvm::dyn_cast<llvm::LoadInst>(llvmLeftValue) : nullptr))
+        {
+            m_irBuilder->CreateStore(valueToStore, localLoad->getPointerOperand());
+        }
+        else
         {
             TODO("Left expression of assignment statement must be a load instruction");
         }
@@ -235,34 +323,41 @@ namespace Caracal
         auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
         auto& functionName = functionDefinition.fullName();
 
-        m_currentFunction = m_llvmModule.getFunction(functionName);
-        if (m_currentFunction == nullptr)
-        {
-            auto llvmFunctionType = generateFunctionType(functionDefinition);
-            // TODO handle linkage types
-            m_currentFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_llvmModule);
-        }
+        m_currentFunction = getOrCreateFunctionDeclaration(functionDefinition);
 
         pushScope();
 
-        auto& context = m_llvmModule.getContext();
-        auto entry = llvm::BasicBlock::Create(context, "entry", m_currentFunction);
+        auto entry = llvm::BasicBlock::Create(m_llvmModule.getContext(), "entry", m_currentFunction);
         m_irBuilder->SetInsertPoint(entry);
 
-        const auto& functionParameters = functionDefinition.parameters();
-        auto functionArguments = m_currentFunction->args();
-        for (auto& argument : functionArguments)
-        {
-            const auto& parameter = functionParameters.at(argument.getArgNo());
-            argument.setName(parameter.name());
-
-            currentScope()->addVariableBinding(parameter.name(), &argument);
-        }
+        SetupFunctionParameters(functionDefinition, m_currentFunction, currentScope(), m_irBuilder.get());
 
         generateBlockNode(body);
 
+        auto llvmReturnType = m_currentFunction->getReturnType();
+        if (llvmReturnType->isVoidTy())
+        {
+            // we need to add a return void
+            m_irBuilder->CreateRetVoid();
+        }
+        
         popScope();
         m_currentFunction = nullptr;
+    }
+
+    llvm::Function* LLVMCodeGenerator::getOrCreateFunctionDeclaration(FunctionDefinition& functionDefinition)
+    {
+        auto& context = m_llvmModule.getContext();
+        auto& functionName = functionDefinition.fullName();
+
+        auto llvmFunction = m_llvmModule.getFunction(functionName);
+        if (llvmFunction != nullptr)
+            return llvmFunction;
+
+        auto llvmFunctionType = buildFunctionType(functionDefinition);
+
+        // TODO handle linkage types
+        return llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_llvmModule);
     }
 
     void LLVMCodeGenerator::generateTypeDefinition(TypeDefinitionStatement* node) noexcept
@@ -409,6 +504,10 @@ namespace Caracal
             {
                 return generateBinaryExpression((BinaryExpression*)node);
             }
+            case NodeKind::UnaryExpression:
+            {
+                return generateUnaryExpression((UnaryExpression*)node);
+            }
             case NodeKind::NameExpression:
             {
                 return generateNameExpression((NameExpression*)node);
@@ -434,6 +533,50 @@ namespace Caracal
             default:
             {
                 TODO("Missing NodeKind!!");
+                return nullptr;
+            }
+        }
+    }
+
+    llvm::Value* LLVMCodeGenerator::generateUnaryExpression(UnaryExpression* node) noexcept
+    {
+        switch (node->unaryOperator())
+        {
+            case UnaryOperatorKind::ReferenceOf:
+            {
+                if (node->expression()->kind() == NodeKind::NameExpression)
+                {
+                    const auto nameExpression = (NameExpression*)node->expression().get();
+                    const auto& name = nameExpression->name();
+                    auto value = currentScope()->getVariableBinding(name);
+
+                    if (auto localAlloca = llvm::dyn_cast<llvm::AllocaInst>(value))
+                    {
+                        return localAlloca;
+                    }
+                    else if (auto globalValue = llvm::dyn_cast<llvm::GlobalVariable>(value))
+                    {
+                        return globalValue;
+                    }
+                    else if (auto argumentValue = llvm::dyn_cast<llvm::Argument>(value))
+                    {
+                        return argumentValue;
+                    }
+                    else
+                    {
+                        TODO("ReferenceOf on unsupported value kind");
+                        return nullptr;
+                    }
+                }
+                else
+                {
+                    TODO("ReferenceOf currently only supports name expressions");
+                    return nullptr;
+                }
+            }
+            default:
+            {
+                TODO("Unsupported unary operator in code generation");
                 return nullptr;
             }
         }
@@ -474,8 +617,11 @@ namespace Caracal
             case BinaryOperatorKind::Addition:
             {
                 const auto resultType = GetLLVMTypeForCaraType(node->type(), m_llvmModule.getContext());
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, resultType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, resultType);
 
                 if (resultType->isIntegerTy())
                 {
@@ -493,8 +639,11 @@ namespace Caracal
             case BinaryOperatorKind::Subtraction:
             {
                 const auto resultType = GetLLVMTypeForCaraType(node->type(), m_llvmModule.getContext());
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, resultType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, resultType);
 
                 if (resultType->isIntegerTy())
                 {
@@ -512,8 +661,11 @@ namespace Caracal
             case BinaryOperatorKind::Multiplication:
             {
                 const auto resultType = GetLLVMTypeForCaraType(node->type(), m_llvmModule.getContext());
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, resultType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, resultType);
 
                 if (resultType->isIntegerTy())
                 {
@@ -531,8 +683,11 @@ namespace Caracal
             case BinaryOperatorKind::Division:
             {
                 const auto resultType = GetLLVMTypeForCaraType(node->type(), m_llvmModule.getContext());
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, resultType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, resultType);
 
                 if (resultType->isIntegerTy())
                 {
@@ -549,14 +704,20 @@ namespace Caracal
             }
             case BinaryOperatorKind::Equal:
             {
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
 
-                if (lhs->getType()->isIntegerTy())
+                auto leftType = node->leftExpression()->type().toValue();
+                const auto targetType = GetLLVMTypeForCaraType(leftType, m_llvmModule.getContext());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, targetType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, targetType);
+
+                if (targetType->isIntegerTy())
                 {
                     return m_irBuilder->CreateICmpEQ(lhs, rhs, "eqtmp");
                 }
-                else if (lhs->getType()->isFloatingPointTy())
+                else if (targetType->isFloatingPointTy())
                 {
                     return m_irBuilder->CreateFCmpUEQ(lhs, rhs, "eqtmp");
                 }
@@ -567,14 +728,20 @@ namespace Caracal
             }
             case BinaryOperatorKind::NotEqual:
             {
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
 
-                if (lhs->getType()->isIntegerTy())
+                auto leftType = node->leftExpression()->type().toValue();
+                const auto targetType = GetLLVMTypeForCaraType(leftType, m_llvmModule.getContext());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, targetType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, targetType);
+
+                if (targetType->isIntegerTy())
                 {
                     return m_irBuilder->CreateICmpNE(lhs, rhs, "netmp");
                 }
-                else if (lhs->getType()->isFloatingPointTy())
+                else if (targetType->isFloatingPointTy())
                 {
                     return m_irBuilder->CreateFCmpUNE(lhs, rhs, "netmp");
                 }
@@ -585,14 +752,20 @@ namespace Caracal
             }
             case BinaryOperatorKind::LessThan:
             {
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
 
-                if (lhs->getType()->isIntegerTy())
+                auto leftType = node->leftExpression()->type().toValue();
+                const auto targetType = GetLLVMTypeForCaraType(leftType, m_llvmModule.getContext());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, targetType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, targetType);
+
+                if (targetType->isIntegerTy())
                 {
                     return m_irBuilder->CreateICmpSLT(lhs, rhs, "lttmp");
                 }
-                else if (lhs->getType()->isFloatingPointTy())
+                else if (targetType->isFloatingPointTy())
                 {
                     return m_irBuilder->CreateFCmpULT(lhs, rhs, "lttmp");
                 }
@@ -603,14 +776,20 @@ namespace Caracal
             }
             case BinaryOperatorKind::LessOrEqual:
             {
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
 
-                if (lhs->getType()->isIntegerTy())
+                auto leftType = node->leftExpression()->type().toValue();
+                const auto targetType = GetLLVMTypeForCaraType(leftType, m_llvmModule.getContext());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, targetType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, targetType);
+
+                if (targetType->isIntegerTy())
                 {
                     return m_irBuilder->CreateICmpSLE(lhs, rhs, "letmp");
                 }
-                else if (lhs->getType()->isFloatingPointTy())
+                else if (targetType->isFloatingPointTy())
                 {
                     return m_irBuilder->CreateFCmpULE(lhs, rhs, "letmp");
                 }
@@ -621,14 +800,20 @@ namespace Caracal
             }
             case BinaryOperatorKind::GreaterThan:
             {
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
 
-                if (lhs->getType()->isIntegerTy())
+                auto leftType = node->leftExpression()->type().toValue();
+                const auto targetType = GetLLVMTypeForCaraType(leftType, m_llvmModule.getContext());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, targetType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, targetType);
+
+                if (targetType->isIntegerTy())
                 {
                     return m_irBuilder->CreateICmpSGT(lhs, rhs, "gttmp");
                 }
-                else if (lhs->getType()->isFloatingPointTy())
+                else if (targetType->isFloatingPointTy())
                 {
                     return m_irBuilder->CreateFCmpUGT(lhs, rhs, "gttmp");
                 }
@@ -639,14 +824,20 @@ namespace Caracal
             }
             case BinaryOperatorKind::GreaterOrEqual:
             {
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
 
-                if (lhs->getType()->isIntegerTy())
+                auto leftType = node->leftExpression()->type().toValue();
+                const auto targetType = GetLLVMTypeForCaraType(leftType, m_llvmModule.getContext());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, targetType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, targetType);
+
+                if (targetType->isIntegerTy())
                 {
                     return m_irBuilder->CreateICmpSGE(lhs, rhs, "getmp");
                 }
-                else if (lhs->getType()->isFloatingPointTy())
+                else if (targetType->isFloatingPointTy())
                 {
                     return m_irBuilder->CreateFCmpUGE(lhs, rhs, "getmp");
                 }
@@ -657,12 +848,18 @@ namespace Caracal
             }
             case BinaryOperatorKind::LogicalAnd:
             {
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
 
-                if (lhs->getType()->isIntegerTy())
+                auto leftType = node->leftExpression()->type().toValue();
+                const auto targetType = GetLLVMTypeForCaraType(leftType, m_llvmModule.getContext());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, targetType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, targetType);
+
+                if (targetType->isIntegerTy())
                 {
-                    return m_irBuilder->CreateLogicalAnd(lhs, rhs, "andtmp");
+                    return m_irBuilder->CreateAnd(lhs, rhs, "andtmp");
                 }
                 else
                 {
@@ -671,12 +868,18 @@ namespace Caracal
             }
             case BinaryOperatorKind::LogicalOr:
             {
-                const auto lhs = generateExpression(node->leftExpression().get());
-                const auto rhs = generateExpression(node->rightExpression().get());
+                auto lhs = generateExpression(node->leftExpression().get());
+                auto rhs = generateExpression(node->rightExpression().get());
 
-                if (lhs->getType()->isIntegerTy())
+                auto leftType = node->leftExpression()->type().toValue();
+                const auto targetType = GetLLVMTypeForCaraType(leftType, m_llvmModule.getContext());
+
+                lhs = dereferenceIfNeeded(node->leftExpression().get(), lhs, targetType);
+                rhs = dereferenceIfNeeded(node->rightExpression().get(), rhs, targetType);
+
+                if (targetType->isIntegerTy())
                 {
-                    return m_irBuilder->CreateLogicalOr(lhs, rhs, "ortmp");
+                    return m_irBuilder->CreateOr(lhs, rhs, "ortmp");
                 }
                 else
                 {
@@ -723,6 +926,7 @@ namespace Caracal
         if (llvmFunction == nullptr)
         {
             TODO("Function not found in module during function call generation");
+            return nullptr;
         }
 
         const auto functionIsVariadic = llvmFunction->isVarArg();
@@ -732,6 +936,11 @@ namespace Caracal
         for (const auto& argument : arguments)
         {
             auto llvmArgumentValue = generateExpression(argument.get());
+            if (!llvmArgumentValue)
+            {
+                TODO("Argument expression produced null during call generation");
+                continue;
+            }
             if (functionIsVariadic)
             {
                 // we need to promote bool to int32 for variadic functions like printf
@@ -796,24 +1005,21 @@ namespace Caracal
         return m_irBuilder->CreateGlobalString(stringContent, "", 0, &m_llvmModule);
     }
 
-    llvm::FunctionType* LLVMCodeGenerator::generateFunctionType(FunctionDefinition& functionDefinition) noexcept
+    llvm::FunctionType* LLVMCodeGenerator::buildFunctionType(FunctionDefinition& functionDefinition) noexcept
     {
         auto& context = m_llvmModule.getContext();
-        const auto& returnTypes = functionDefinition.returnTypes();
-        const auto hasReturnTypes = !returnTypes.empty();
-
         llvm::Type* llvmReturnType = nullptr;
-        if (!hasReturnTypes)
+        if (!functionDefinition.returnTypes().empty())
         {
-            llvmReturnType = llvm::Type::getVoidTy(context);
-        }
-        else
-        {
-            if(returnTypes.size() > 1)
+            if (functionDefinition.returnTypes().size() > 1)
             {
                 TODO("Handle multiple return types in function type generation");
             }
-            llvmReturnType = GetLLVMTypeForCaraType(returnTypes[0], context);
+            llvmReturnType = GetLLVMTypeForCaraType(functionDefinition.returnTypes()[0], context);
+        }
+        else
+        {
+            llvmReturnType = llvm::Type::getVoidTy(context);
         }
 
         std::vector<llvm::Type*> llvmParameterTypes;
@@ -827,8 +1033,7 @@ namespace Caracal
             llvmParameterTypes.push_back(llvmParameterType);
         }
 
-        auto llvmFunctionType = llvm::FunctionType::get(llvmReturnType, llvmParameterTypes, isVariadic);
-        return llvmFunctionType;
+        return llvm::FunctionType::get(llvmReturnType, llvmParameterTypes, isVariadic);
     }
 
     void LLVMCodeGenerator::generateBlockNode(BlockNode* body) noexcept
@@ -845,9 +1050,18 @@ namespace Caracal
         auto functionType = node->type();
         auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
         auto& functionName = functionDefinition.name();
-        auto llvmFunctionType = generateFunctionType(functionDefinition);
-        // TODO handle linkage types
+        auto llvmFunctionType = buildFunctionType(functionDefinition);
         auto llvmFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_llvmModule);
+
+        // we can mark references as nonnull
+        const auto& parameters = functionDefinition.parameters();
+        for (size_t i = 0; i < parameters.size(); ++i)
+        {
+            if (parameters[i].type().isReference())
+            {
+                llvmFunction->addParamAttr(i, llvm::Attribute::get(m_llvmModule.getContext(), llvm::Attribute::AttrKind::NonNull));
+            }
+        }
     }
 
     llvm::GlobalValue* LLVMCodeGenerator::createGlobalValue(
@@ -899,5 +1113,98 @@ namespace Caracal
     {
         LLVMCodeGenerator generator{ parseTree, caracalModule, llvmModule };
         return generator.generate();
+    }
+
+    llvm::Value* LLVMCodeGenerator::dereferenceIfNeeded(Expression* expression, llvm::Value* value, llvm::Type* targetType) noexcept
+    {
+        if (!expression->type().isReference())
+            return value;
+
+        // we need to deref the pointer for the values, and we need to handle 
+        // different pointer sources (load, global variable, argument, alloca)
+
+        if (auto loadInstruction = llvm::dyn_cast<llvm::LoadInst>(value))
+        {
+            if (loadInstruction->getType()->isPointerTy())
+            {
+                return m_irBuilder->CreateLoad(targetType, loadInstruction, "ref_load");
+            }
+            return loadInstruction;
+        }
+
+        if (auto globalVariable = llvm::dyn_cast<llvm::GlobalVariable>(value))
+        {
+            if (globalVariable->getValueType()->isPointerTy())
+            {
+                return m_irBuilder->CreateLoad(targetType, globalVariable, "ref_load");
+            }
+            return m_irBuilder->CreateLoad(globalVariable->getValueType(), globalVariable, "load");
+        }
+
+        if (auto argument = llvm::dyn_cast<llvm::Argument>(value))
+        {
+            if (argument->getType()->isPointerTy())
+            {
+                return m_irBuilder->CreateLoad(targetType, argument, "ref_load");
+            }
+            return argument;
+        }
+
+        if (auto allocaInstruction = llvm::dyn_cast<llvm::AllocaInst>(value))
+        {
+            if (allocaInstruction->getAllocatedType()->isPointerTy())
+            {
+                auto ptr = m_irBuilder->CreateLoad(allocaInstruction->getAllocatedType(), allocaInstruction, "ref_load_tmp");
+                return m_irBuilder->CreateLoad(targetType, ptr, "ref_load");
+            }
+            return m_irBuilder->CreateLoad(allocaInstruction->getAllocatedType(), allocaInstruction, "load");
+        }
+
+        if (value->getType()->isPointerTy())
+        {
+            return m_irBuilder->CreateLoad(targetType, value, "ref_load");
+        }
+
+        return value;
+    }
+
+    llvm::Value* LLVMCodeGenerator::getPointerForAssignment(Expression* expr, llvm::Value* value) noexcept
+    {
+        if (!value)
+        {
+            return nullptr;
+        }
+
+        if (auto loadInstruction = llvm::dyn_cast<llvm::LoadInst>(value))
+        {
+            return loadInstruction;
+        }
+        if (auto globalVariable = llvm::dyn_cast<llvm::GlobalVariable>(value))
+        {
+            if (globalVariable->getValueType()->isPointerTy())
+            {
+                return m_irBuilder->CreateLoad(globalVariable->getValueType(), globalVariable, "ref_load_lhs");
+            }
+            return globalVariable;
+        }
+        if (auto argument = llvm::dyn_cast<llvm::Argument>(value))
+        {
+            return argument;
+        }
+        if (auto allocaInstruction = llvm::dyn_cast<llvm::AllocaInst>(value))
+        {
+            if (allocaInstruction->getAllocatedType()->isPointerTy())
+            {
+                return m_irBuilder->CreateLoad(allocaInstruction->getAllocatedType(), allocaInstruction, "ref_load_lhs");
+            }
+            return allocaInstruction;
+        }
+
+        if (value->getType()->isPointerTy())
+        {
+            return value;
+        }
+
+        return nullptr;
     }
 }
