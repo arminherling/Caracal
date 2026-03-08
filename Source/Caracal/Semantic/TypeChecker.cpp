@@ -683,9 +683,8 @@ namespace Caracal
         auto parameterCount = (isVariadic ? parameterTypes.size() - 1 : parameterTypes.size());
         if (isVariadic)
         {
-            // we can either have same size or one less argument
-            if (parameterTypes.size() != argumentTypes.size() 
-                && parameterTypes.size() - 1 != argumentTypes.size())
+            // we need at least the nonvariadic parameters, the others are optional
+            if (argumentTypes.size() < parameterCount)
             {
                 TODO("Add error diagnostics for argument count mismatch in variadic function call");
                 return Type::Undefined();
