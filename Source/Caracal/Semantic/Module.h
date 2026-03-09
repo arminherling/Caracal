@@ -41,6 +41,8 @@ namespace Caracal
             const std::vector<Type>& returnTypes) noexcept;
         void createBuiltinType(Type type, std::string_view name, bool addVariants = false);
 
+        [[nodiscard]] const std::unordered_map<i32, FunctionDefinition>& functionDefinitions() const noexcept { return m_functionDefinitions; }
+
     private:
         std::unordered_map<i32, TypeDefinition> m_typeDefinitions;
         std::unordered_map<i32, EnumDefinition> m_enumDefinitions;

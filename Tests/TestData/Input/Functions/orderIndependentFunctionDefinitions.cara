@@ -3,7 +3,7 @@ def main()
     print(value());
 }
 
-def value() i32
+def value() string
 { 
-    return 231;
+    return "val";
 }

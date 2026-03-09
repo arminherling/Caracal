@@ -99,6 +99,8 @@ namespace Caracal
 
     bool LLVMCodeGenerator::generate()
     {
+        declareAllFunctions();
+
         for (const auto& statement : m_parseTree.statements())
         {
             generateNode(statement.get());
@@ -129,11 +131,7 @@ namespace Caracal
             case NodeKind::FunctionDefinitionStatement:
             {
                 auto functionDefinitionNode = (FunctionDefinitionStatement*)node;
-                if(functionDefinitionNode->isExtern())
-                {
-                    declareExternFunction(functionDefinitionNode);
-                }
-                else
+                if (!functionDefinitionNode->isExtern())
                 {
                     generateFunctionDefinition(functionDefinitionNode);
                 }
@@ -323,7 +321,7 @@ namespace Caracal
         auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
         auto& functionName = functionDefinition.fullName();
 
-        m_currentFunction = getOrCreateFunctionDeclaration(functionDefinition);
+        m_currentFunction = getFunctionDeclaration(functionDefinition);
 
         pushScope();
 
@@ -345,19 +343,24 @@ namespace Caracal
         m_currentFunction = nullptr;
     }
 
-    llvm::Function* LLVMCodeGenerator::getOrCreateFunctionDeclaration(FunctionDefinition& functionDefinition)
+    llvm::Function* LLVMCodeGenerator::getFunctionDeclaration(const FunctionDefinition& functionDefinition)
     {
-        auto& context = m_llvmModule.getContext();
         auto& functionName = functionDefinition.fullName();
-
         auto llvmFunction = m_llvmModule.getFunction(functionName);
         if (llvmFunction != nullptr)
             return llvmFunction;
 
-        auto llvmFunctionType = buildFunctionType(functionDefinition);
+        // try mapped name (print -> printf)
+        const auto maybeMappedFunctionName = MapFunctionNameToExternFunction(functionName);
+        if (maybeMappedFunctionName != functionName)
+        {
+            llvmFunction = m_llvmModule.getFunction(maybeMappedFunctionName);
+            if (llvmFunction != nullptr)
+                return llvmFunction;
+        }
 
-        // TODO handle linkage types
-        return llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_llvmModule);
+        TODO("This shouldn't happen");
+        return nullptr;
     }
 
     void LLVMCodeGenerator::generateTypeDefinition(TypeDefinitionStatement* node) noexcept
@@ -993,7 +996,7 @@ namespace Caracal
             auto returnValue = llvm::ConstantFP::get(context, llvm::APFloat(value));
             return returnValue;
         }
-         
+
         TODO("Handle other literal types in generateNumberLiteral");
         return nullptr;
     }
@@ -1005,7 +1008,7 @@ namespace Caracal
         return m_irBuilder->CreateGlobalString(stringContent, "", 0, &m_llvmModule);
     }
 
-    llvm::FunctionType* LLVMCodeGenerator::buildFunctionType(FunctionDefinition& functionDefinition) noexcept
+    llvm::FunctionType* LLVMCodeGenerator::buildFunctionType(const FunctionDefinition& functionDefinition) noexcept
     {
         auto& context = m_llvmModule.getContext();
         llvm::Type* llvmReturnType = nullptr;
@@ -1045,15 +1048,18 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::declareExternFunction(FunctionDefinitionStatement* node) noexcept
+    void LLVMCodeGenerator::declareFunction(const FunctionDefinition& functionDefinition) noexcept
     {
-        auto functionType = node->type();
-        auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
-        auto& functionName = functionDefinition.name();
+        auto& functionName = functionDefinition.fullName();
+        if (m_llvmModule.getFunction(functionName) != nullptr)
+        {
+            TODO("This shouldn't happen, " + functionName + " already declared");
+        }
+
         auto llvmFunctionType = buildFunctionType(functionDefinition);
         auto llvmFunction = llvm::Function::Create(llvmFunctionType, llvm::Function::ExternalLinkage, functionName, &m_llvmModule);
 
-        // we can mark references as nonnull
+        // mark reference parameters as nonnull
         const auto& parameters = functionDefinition.parameters();
         for (size_t i = 0; i < parameters.size(); ++i)
         {
@@ -1061,6 +1067,15 @@ namespace Caracal
             {
                 llvmFunction->addParamAttr(i, llvm::Attribute::get(m_llvmModule.getContext(), llvm::Attribute::AttrKind::NonNull));
             }
+        }
+    }
+
+    void LLVMCodeGenerator::declareAllFunctions() noexcept
+    {
+        for (const auto& definitionPair : m_caracalModule.functionDefinitions())
+        {
+            const auto& functionDefinition = definitionPair.second;
+            declareFunction(functionDefinition);
         }
     }
 

@@ -29,11 +29,163 @@ namespace Caracal
 
     bool TypeChecker::typeCheck()
     {
+        collectDeclarations();
+        typeCheckSignatures();
+        
         for (const auto& globalStatement : m_parseTree.statements())
         {
             typeCheckStatement(globalStatement.get());
         }
         return true;
+    }
+
+    void TypeChecker::collectDeclarations()
+    {
+        for (const auto& statement : m_parseTree.statements())
+        {
+            switch (statement->kind())
+            {
+                case NodeKind::EnumDefinitionStatement:
+                {
+                    auto enumStatement = (EnumDefinitionStatement*)statement.get();
+                    const auto& enumName = enumStatement->name();
+                    // TODO check if type with same name exists already
+                    auto& enumDefinition = m_module.createEnum(enumName);
+                    enumStatement->setType(enumDefinition.type());
+
+                    break;
+                }
+                case NodeKind::TypeDefinitionStatement:
+                {
+                    auto typeStatement = (TypeDefinitionStatement*)statement.get();
+                    // TODO check if type with same name exists already
+                    auto& typeDefinition = m_module.createType(typeStatement->name());
+                    typeStatement->setType(typeDefinition.type());
+
+                    const auto& bodyStatements = typeStatement->bodyNode()->statements();
+                    for (const auto& bodyStatement : bodyStatements)
+                    {
+                        if (bodyStatement->kind() == NodeKind::MethodDefinitionStatement)
+                        {
+                            auto methodStatement = (MethodDefinitionStatement*)bodyStatement.get();
+                            auto modifier = methodStatement->modifier();
+                            const auto& methodName = methodStatement->methodNameNode()->methodName();
+
+                            std::vector<Parameter> parameters{};
+                            const auto& parametersNodes = methodStatement->parametersNode()->parameters();
+                            for (const auto& parameterNode : parametersNodes)
+                            {
+                                parameters.emplace_back(parameterNode->name(), Type::Undefined());
+                            }
+
+                            auto& methodDefinition = m_module.createMethod(typeDefinition, modifier, methodName, parameters, std::vector<Type>());
+                            methodStatement->setType(methodDefinition.type());
+                        }
+                    }
+
+                    break;
+                }
+                case NodeKind::FunctionDefinitionStatement:
+                {
+                    auto functionStatement = (FunctionDefinitionStatement*)statement.get();
+                    const auto& functionName = functionStatement->name();
+
+                    std::vector<Parameter> parameters{};
+                    const auto& parametersNodes = functionStatement->parametersNode()->parameters();
+                    for (const auto& parameterNode : parametersNodes)
+                    {
+                        parameters.emplace_back(parameterNode->name(), Type::Undefined());
+                    }
+
+                    // TODO check if type with same name exists already
+                    auto& functionDefinition = m_module.createFunction(functionName, parameters, std::vector<Type>());
+                    functionStatement->setType(functionDefinition.type());
+
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+
+    void TypeChecker::typeCheckSignatures()
+    {
+        for (const auto& statement : m_parseTree.statements())
+        {
+            switch (statement->kind())
+            {
+                case NodeKind::FunctionDefinitionStatement:
+                {
+                    auto functionDefinitionStatement = (FunctionDefinitionStatement*)statement.get();
+                    const auto& functionName = functionDefinitionStatement->name();
+
+                    // creating scope for type-checking parameters
+                    pushScope(ScopeKind::Function);
+                    auto parameters = typeCheckParametersNode(functionDefinitionStatement->parametersNode().get());
+                    auto returns = typeCheckReturnTypesNode(functionDefinitionStatement->returnTypesNode().get());
+                    popScope();
+
+                    auto functionType = m_module.tryGetFunctionTypeByName(functionName);
+                    if (functionType == Type::Undefined())
+                    {
+                        TODO("This shouldn't happen");
+                    }
+
+                    auto& functionDefinition = m_module.getFunctionDefinition(functionType);
+                    auto isVariadic = !parameters.empty() && parameters.back().type() == Type::CVariadic();
+                    if (isVariadic && !functionDefinitionStatement->isExtern())
+                    {
+                        TODO("Add diagnostics for non-extern variadic function");
+                    }
+                    functionDefinition.setParameters(parameters);
+                    functionDefinition.setReturnTypes(returns);
+                    functionDefinition.setIsVariadic(isVariadic);
+
+                    break;
+                }
+                case NodeKind::TypeDefinitionStatement:
+                {
+                    auto typeDefinitionStatement = (TypeDefinitionStatement*)statement.get();
+                    auto typeType = m_module.tryGetTypeByName(typeDefinitionStatement->name());
+                    if (typeType == Type::Undefined())
+                    {
+                        TODO("This shouldn't happen");
+                    }
+
+                    auto& typeDefinition = m_module.getTypeDefinition(typeType);
+                    const auto& bodyStatements = typeDefinitionStatement->bodyNode()->statements();
+                    for (const auto& bodyStatement : bodyStatements)
+                    {
+                        if (bodyStatement->kind() == NodeKind::MethodDefinitionStatement)
+                        {
+                            auto methodStatement = (MethodDefinitionStatement*)bodyStatement.get();
+                            const auto& methodName = methodStatement->methodNameNode()->methodName();
+
+                            // creating scope for type-checking parameters
+                            pushScope(ScopeKind::Method);
+                            auto parameters = typeCheckParametersNode(methodStatement->parametersNode().get());
+                            auto returns = typeCheckReturnTypesNode(methodStatement->returnTypesNode().get());
+                            popScope();
+
+                            auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
+                            if (methodType == Type::Undefined())
+                            {
+                                TODO("This shouldn't happen");
+                            }
+
+                            auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+                            methodDefinition.setParameters(parameters);
+                            methodDefinition.setReturnTypes(returns);
+                        }
+                    }
+
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
     }
 
     void TypeChecker::typeCheckStatement(Statement* statement)
@@ -203,21 +355,31 @@ namespace Caracal
         auto parentScope = currentScope();
         pushScope(ScopeKind::Function);
     
-        // TODO check if function with same name and parameters exists already
+        auto functionType = statement->type();
+        if(functionType == Type::Undefined())
+        {
+            TODO("This shouldn't happen");
+        }
 
-        auto functionName = statement->name();
-        auto parametersTypes = typeCheckParametersNode(statement->parametersNode().get());
-        auto returnTypes = typeCheckReturnTypesNode(statement->returnTypesNode().get());
+        auto& functionDefinition = m_module.getFunctionDefinition(functionType);
+        auto& parameters = functionDefinition.parameters();
+        for(const auto& parameter : parameters)
+        {
+            currentScope()->addVariableBinding(parameter.name(), parameter.type());
+        }
 
-        auto& functionDefinition = m_module.createFunction(functionName, parametersTypes, returnTypes);
-        auto functionType = functionDefinition.type();
+        auto& returnTypes = functionDefinition.returnTypes();
+        if(returnTypes.size() == 1)
+        {
+            m_currentReturnType = returnTypes[0];
+        }
+        else if(returnTypes.size() > 1)
+        {
+            TODO("Handle multiple return types in function definition");
+        }
 
         typeCheckBlockNode(statement->bodyNode().get());
         
-        // TODO check if return type matches declared return types
-
-        statement->setType(functionType);
-    
         popScope();
         m_currentReturnType = Type::Void();
     }
@@ -227,8 +389,13 @@ namespace Caracal
         const auto& enumName = statement->name();
         auto baseType = Type::Undefined();
         auto defaultBaseType = m_options.defaultEnumBaseType;
-        auto& enumDefinition = m_module.createEnum(enumName);
-        auto enumType = enumDefinition.type();
+        auto enumType = statement->type();
+        if (enumType == Type::Undefined())
+        {
+            TODO("This shouldn't happen");
+        }
+
+        auto& enumDefinition = m_module.getEnumDefinition(enumType);
         const auto isFlag = statement->isFlag();
         auto currentFieldValue = isFlag ? 1 : 0;
         auto step = 1;
@@ -316,15 +483,18 @@ namespace Caracal
         {
             enumDefinition.setBaseType(defaultBaseType);
         }
-
-        statement->setType(enumType);
     }
 
     void TypeChecker::typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement)
     {
         const auto& typeName = statement->name();
-        auto& typeDefinition = m_module.createType(typeName);
-        auto typeType = typeDefinition.type();
+        auto typeType = statement->type();
+        if (typeType == Type::Undefined())
+        {
+            TODO("This shouldn't happen");
+        }
+
+        auto& typeDefinition = m_module.getTypeDefinition(typeType);
 
         //auto constructorParameters = typeCheckParametersNode(statement->constructorParameters().value().get());
         
@@ -340,7 +510,7 @@ namespace Caracal
                 }
                 case NodeKind::MethodDefinitionStatement:
                 {
-                    typeCheckMethodDefinitionStatement(typeDefinition, (MethodDefinitionStatement*)definitionStatement.get());
+                    typeCheckMethodDefinitionStatement((MethodDefinitionStatement*)definitionStatement.get());
                     break;
                 }
                 default:
@@ -348,34 +518,39 @@ namespace Caracal
             }
         }
 
-        // TODO check if type with same name exists already
-    
         //typeCheckBlockNode(statement->bodyNode().get());
-    
-        statement->setType(typeType);
     }
 
-    void TypeChecker::typeCheckMethodDefinitionStatement(TypeDefinition& typeDefinition, MethodDefinitionStatement* statement)
+    void TypeChecker::typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement)
     {
         m_currentReturnType = Type::Void();
         auto parentScope = currentScope();
         pushScope(ScopeKind::Method);
 
-        // TODO check if method with same name and parameters exists already
+        auto methodType = statement->type();
+        if (methodType == Type::Undefined())
+        {
+            TODO("This shouldn't happen");
+        }
 
-        auto modifier = statement->modifier();
-        auto methodName = statement->methodNameNode()->methodName();
-        auto parametersTypes = typeCheckParametersNode(statement->parametersNode().get());
-        auto returnTypes = typeCheckReturnTypesNode(statement->returnTypesNode().get());
+        auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+        auto& parameters = methodDefinition.parameters();
+        for (const auto& parameter : parameters)
+        {
+            currentScope()->addVariableBinding(parameter.name(), parameter.type());
+        }
 
-        auto& methodDefinition = m_module.createMethod(typeDefinition, modifier, methodName, parametersTypes, returnTypes);
-        auto methodType = methodDefinition.type();
+        auto& returnTypes = methodDefinition.returnTypes();
+        if (returnTypes.size() == 1)
+        {
+            m_currentReturnType = returnTypes[0];
+        }
+        else if (returnTypes.size() > 1)
+        {
+            TODO("Handle multiple return types in function definition");
+        }
 
         typeCheckBlockNode(statement->bodyNode().get());
-
-        // TODO check if return type matches declared return types
-
-        statement->setType(methodType);
 
         popScope();
         m_currentReturnType = Type::Void();
@@ -475,7 +650,7 @@ namespace Caracal
         }
         return Type::Undefined();
     }
-    
+
     Type TypeChecker::typeCheckGroupingExpression(GroupingExpression* groupingExpression)
     {
         auto type = typeCheckExpression(groupingExpression->expression().get());
@@ -538,10 +713,9 @@ namespace Caracal
                         const auto& name = functionCallExpression->nameExpression()->name();
 
                         auto& typeDefinition = m_module.getTypeDefinition(leftType);
-                        auto optionalMethodType = typeDefinition.tryGetMethodTypeByName(name);
-                        if (optionalMethodType.has_value())
+                        auto methodType = typeDefinition.tryGetMethodTypeByName(name);
+                        if (methodType != Type::Undefined())
                         {
-                            auto methodType = optionalMethodType.value();
                             auto& methodDefinition = m_module.getFunctionDefinition(methodType);
                             const auto& returnTypes = methodDefinition.returnTypes();
                             Type returnType = Type::Void();
@@ -874,95 +1048,6 @@ namespace Caracal
     }
 }
 
-//TypedStatement* TypeChecker::typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement)
-//{
-//    auto& nameToken = statement->name();
-//    auto typeName = m_parseTree.tokens().getLexeme(nameToken);
-//    // TODO check if there is already a type with the name
-//    // TODO create all type variations
-//    auto refName = QString("ref ") + typeName.toString();
-//    auto newRefType = m_module.createType(refName, TypeKind::Type);
-//    auto newType = m_module.createType(typeName, TypeKind::Type);
-//    currentScope()->addTypeBinding(typeName, newType);
-//
-//    pushScope(ScopeKind::Type);
-//    auto typeFields = typeCheckTypeFieldDefinitionNodes(newType, statement->body());
-//    auto typedMethods = typeCheckTypeMethodDefinitions(newRefType, newType, statement->body());
-//    popScope();
-//
-//    return new TypedTypeDefinitionStatement(typeName, newType, typeFields, typedMethods, statement);
-//}
-//
-//TypedMethodDefinitionStatement* TypeChecker::typeCheckTypeMethodDefinitionStatement(Type newRefType, Type newType, MethodDefinitionStatement* statement)
-//{
-//    auto parentScope = currentScope();
-//    pushScope(ScopeKind::Method);
-//
-//    auto& nameToken = statement->name();
-//    auto methodName = m_parseTree.tokens().getLexeme(nameToken);
-//    // TODO check if method with same name and parameters exists already
-//    auto newMethodType = m_module.createFunction(methodName);
-//    parentScope->addFunctionBinding(methodName, newMethodType);
-//    auto& typeDefinition = m_module.getTypeDefinition(newType);
-//    typeDefinition.addFunction(newMethodType, methodName);
-//    auto& methodDefinition = typeDefinition.getFunctionDefinition(newMethodType);
-//
-//    // TODO this is wrong but works for now, change to ref type once we register fields and methods in all type variants
-//    currentScope()->addTypeBinding(QStringView(u"this"), newType);
-//    // TODO add method to type
-//    auto thisParameter = new Parameter(QStringView(u"this"), nullptr, newRefType);
-//    auto parameters = typeCheckFunctionParameters(statement->parameters());
-//    parameters.prepend(thisParameter);
-//    methodDefinition.setParameters(parameters);
-//
-//    auto [typedBody, returnType] = typeCheckFunctionBodyNode(statement->body());
-//    methodDefinition.setReturnType(returnType);
-//
-//    popScope();
-//
-//    return new TypedMethodDefinitionStatement(methodName, newType, newMethodType, parameters, returnType, typedBody, statement);
-//}
-//QList<TypedFieldDefinitionNode*> TypeChecker::typeCheckEnumFieldDefinitionNodes(
-//    Type newType,
-//    Type baseType,
-//    const QList<EnumFieldDefinitionStatement*>& fieldDefinitions)
-//{
-//    auto& enumDefinition = m_module.getEnumDefinition(newType);
-//
-//    QList<TypedFieldDefinitionNode*> enumFields;
-//    int nextValue = 0;
-//    for (const auto definition : fieldDefinitions)
-//    {
-//        auto& nameToken = definition->name()->identifier();
-//        auto name = m_parseTree.tokens().getLexeme(nameToken);
-//
-//        if (definition->value().has_value())
-//        {
-//            auto numberLiteral = definition->value().value();
-//            auto& numberToken = numberLiteral->token();
-//            auto valueLexeme = m_parseTree.tokens().getLexeme(numberToken);
-//
-//            auto [typedLiteral, value] = convertValueToTypedLiteral(valueLexeme, baseType, definition);
-//            if (typedLiteral != nullptr)
-//            {
-//                nextValue = value + 1;
-//                enumFields.append(new TypedFieldDefinitionNode(name, baseType, typedLiteral));
-//                enumDefinition.addField(newType, name, typedLiteral);
-//            }
-//        }
-//        else
-//        {
-//            auto [typedLiteral, value] = convertValueToTypedLiteral(nextValue++, baseType, definition);
-//            if (typedLiteral != nullptr)
-//            {
-//                enumFields.append(new TypedFieldDefinitionNode(name, baseType, typedLiteral));
-//                enumDefinition.addField(newType, name, typedLiteral);
-//            }
-//        }
-//    }
-//    return enumFields;
-//}
-//
 //QList<TypedFieldDefinitionNode*> TypeChecker::typeCheckTypeFieldDefinitionNodes(Type newType, BlockNode* body)
 //{
 //    auto& typeDefinition = m_module.getTypeDefinition(newType);
@@ -1014,34 +1099,6 @@ namespace Caracal
 //    return typeFields;
 //}
 //
-//QList<TypedMethodDefinitionStatement*> TypeChecker::typeCheckTypeMethodDefinitions(Type newRefType, Type newType, BlockNode* body)
-//{
-//    QList<TypedMethodDefinitionStatement*> methods;
-//    for (const auto statement : body->statements())
-//    {
-//        if (statement->kind() != NodeKind::MethodDefinitionStatement)
-//            continue;
-//
-//        methods.append(typeCheckTypeMethodDefinitionStatement(newRefType, newType, (MethodDefinitionStatement*)statement));
-//    }
-//    return methods;
-//}
-//
-//QList<Parameter*> TypeChecker::typeCheckFunctionParameters(ParametersNode* parametersNode)
-//{
-//    QList<Parameter*> parameters;
-//
-//    for (const auto parameterNode : parametersNode->parameters())
-//    {
-//        auto parameterName = m_parseTree.tokens().getLexeme(parameterNode->name()->identifier());
-//        auto parameterType = convertTypeNameToType(parameterNode->type());
-//        currentScope()->addVariableBinding(parameterName, parameterType);
-//
-//        parameters.append(new Parameter(parameterName, parameterNode, parameterType));
-//    }
-//    return parameters;
-//}
-//
 //TypedExpression* TypeChecker::typeCheckMemberAccessExpression(MemberAccessExpression* expression)
 //{
 //    auto thisType = currentScope()->tryGetTypeBinding(QStringView(u"this"));
@@ -1085,83 +1142,3 @@ namespace Caracal
 //        }
 //    }
 //}
-//
-//TypedExpression* TypeChecker::typeCheckDiscardLiteral(DiscardLiteral* literal)
-//{
-//    return new Discard(literal);
-//}
-//
-//TypedExpression* TypeChecker::typeCheckBoolLiteral(BoolLiteral* literal)
-//{
-//    return new BoolValue(literal);
-//}
-
-//QList<TypedExpression*> TypeChecker::typeCheckFunctionCallArguments(ArgumentsNode* argumentsNode)
-//{
-//    QList<TypedExpression*> arguments;
-//
-//    for (const auto argument : argumentsNode->arguments())
-//    {
-//        arguments.append(typeCheckExpression(argument));
-//    }
-//
-//    return arguments;
-//}
-
-//Type TypeChecker::convertTypeNameToType(const TypeName& typeName)
-//{
-//    auto& nameToken = typeName.name()->identifier();
-//    auto nameLexeme = m_parseTree.tokens().getLexeme(nameToken);
-//
-//    auto ref = (typeName.isReference() ? QString("ref ") : QString());
-//    auto name = ref + nameLexeme.toString();
-//
-//    return m_module.getTypeByName(name);
-//}
-//
-//std::tuple<TypedExpression*, i32> TypeChecker::convertValueToTypedLiteral(QStringView valueLexeme, Type type, Node* source)
-//{
-//    if (type == Type::U8())
-//    {
-//        bool ok;
-//        auto value = valueLexeme.toInt(&ok);
-//        assert(ok);
-//
-//        // TODO add error for values outside of the u8 range
-//        assert(value >= 0);
-//        assert(value <= UINT8_MAX);
-//
-//        return { new U8Value((u8)value, source, type), value };
-//    }
-//    else if (type == Type::I32())
-//    {
-//        bool ok;
-//        auto value = valueLexeme.toInt(&ok);
-//        assert(ok);
-//
-//        // TODO add error for values outside of the i32 range
-//
-//        return { new I32Value(value, source, type), value };
-//    }
-//
-//    return { nullptr, 0 };
-//}
-//
-//std::tuple<TypedExpression*, i32> TypeChecker::convertValueToTypedLiteral(i32 value, Type type, Node* source)
-//{
-//    if (type == Type::U8())
-//    {
-//        // TODO add error for values outside of the u8 range
-//        assert(value >= 0);
-//        assert(value <= UINT8_MAX);
-//
-//        return { new U8Value((u8)value, source, type), value };
-//    }
-//    else if (type == Type::I32())
-//    {
-//        return { new I32Value(value, source, type), value };
-//    }
-//
-//    return { nullptr, 0 };
-//}
-//

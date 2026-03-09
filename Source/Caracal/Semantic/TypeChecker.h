@@ -42,6 +42,9 @@ namespace Caracal
         bool typeCheck();
         
         private:
+            void collectDeclarations();
+            void typeCheckSignatures();
+
             void typeCheckStatement(Statement* statement);
             void typeCheckConstantDeclaration(ConstantDeclaration* statement);
             void typeCheckVariableDeclaration(VariableDeclaration* statement);
@@ -51,7 +54,7 @@ namespace Caracal
             void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
             void typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
             void typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement);
-            void typeCheckMethodDefinitionStatement(TypeDefinition& typeDefinition, MethodDefinitionStatement* statement);
+            void typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement);
             void typeCheckIfStatement(IfStatement* statement);
             void typeCheckWhileStatement(WhileStatement* statement);
             void typeCheckReturnStatement(ReturnStatement* statement);

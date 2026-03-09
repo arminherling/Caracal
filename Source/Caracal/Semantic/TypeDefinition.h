@@ -14,7 +14,7 @@ namespace Caracal
         [[nodiscard]] Type type() const noexcept { return m_type; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
         void addMethod(Type methodType, const std::string& methodName) noexcept;
-        [[nodiscard]] std::optional<Type> tryGetMethodTypeByName(std::string_view methodName) const noexcept;
+        [[nodiscard]] Type tryGetMethodTypeByName(std::string_view methodName) const noexcept;
         
     private:
         Type m_type;

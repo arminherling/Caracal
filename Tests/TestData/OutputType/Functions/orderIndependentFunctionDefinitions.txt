@@ -1,5 +1,5 @@
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> void
     Name: main
     ParametersNode(0): {
     }
@@ -8,16 +8,16 @@ FunctionDefinitionStatement: {
     BlockNode(1): {
         ExpressionStatement: {
             FunctionCallExpression: {
-                Type: undefined
-                Function type: undefined
+                Type: void
+                Function type: (string) -> void
                 NameExpression: {
                     Type: undefined
                     Name: print
                 }
                 ArgumentsNode(1): {
                     FunctionCallExpression: {
-                        Type: undefined
-                        Function type: undefined
+                        Type: string
+                        Function type: () -> string
                         NameExpression: {
                             Type: undefined
                             Name: value
@@ -31,19 +31,19 @@ FunctionDefinitionStatement: {
     }
 }
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> string
     Name: value
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
+            Type: string
             Lexeme: string
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: undefined
+            Type: string
             StringLiteral: "val"
         }
     }

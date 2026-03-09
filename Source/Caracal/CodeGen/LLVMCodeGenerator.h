@@ -74,11 +74,12 @@ namespace Caracal
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
 
         void generateBlockNode(BlockNode* body) noexcept;
-        void declareExternFunction(FunctionDefinitionStatement* node) noexcept;
+        void declareFunction(const FunctionDefinition& functionDefinition) noexcept;
+        void declareAllFunctions() noexcept;
         llvm::GlobalValue* createGlobalValue(const std::string& name, llvm::Constant* constant, bool isConst) noexcept;
         llvm::Value* createLocalValue(const std::string& name, llvm::Type* type) noexcept;
-        llvm::Function* getOrCreateFunctionDeclaration(FunctionDefinition& functionDefinition);
-        llvm::FunctionType* buildFunctionType(FunctionDefinition& functionDefinition) noexcept;
+        llvm::Function* getFunctionDeclaration(const FunctionDefinition& functionDefinition);
+        llvm::FunctionType* buildFunctionType(const FunctionDefinition& functionDefinition) noexcept;
         llvm::Value* dereferenceIfNeeded(Expression* expr, llvm::Value* val, llvm::Type* desiredTy) noexcept;
         llvm::Value* getPointerForAssignment(Expression* expr, llvm::Value* val) noexcept;
 

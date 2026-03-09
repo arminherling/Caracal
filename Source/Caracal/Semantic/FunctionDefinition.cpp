@@ -21,4 +21,19 @@ namespace Caracal
         , m_returnTypes{ returnTypes }
     {
     }
+
+    void FunctionDefinition::setParameters(const std::vector<Parameter>& parameters) noexcept
+    {
+        m_parameters = parameters;
+    }
+
+    void FunctionDefinition::setReturnTypes(const std::vector<Type>& returnTypes) noexcept
+    {
+        m_returnTypes = returnTypes;
+    }
+    
+    void FunctionDefinition::setIsVariadic(bool isVariadic) noexcept
+    {
+        m_isVariadic = isVariadic;
+    }
 }

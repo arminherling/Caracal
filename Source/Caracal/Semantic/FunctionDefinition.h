@@ -40,6 +40,10 @@ namespace Caracal
         [[nodiscard]] const std::vector<Parameter>& parameters() const noexcept { return m_parameters; }
         [[nodiscard]] const std::vector<Type>& returnTypes() const noexcept { return m_returnTypes; }
 
+        void setParameters(const std::vector<Parameter>& parameters) noexcept;
+        void setReturnTypes(const std::vector<Type>& returnTypes) noexcept;
+        void setIsVariadic(bool isVariadic) noexcept;
+
     private:
         Type m_type;
         Type m_parentType;
