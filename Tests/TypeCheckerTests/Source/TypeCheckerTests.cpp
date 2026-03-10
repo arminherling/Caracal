@@ -12,9 +12,9 @@
 using namespace CaraTest;
 
 static void FileTests(
-    const std::string& fileName, 
-    const std::filesystem::path& inputFilePath, 
-    const std::filesystem::path& outputFilePath, 
+    const std::string& fileName,
+    const std::filesystem::path& inputFilePath,
+    const std::filesystem::path& outputFilePath,
     const std::filesystem::path& errorFilePath)
 {
     if (!std::filesystem::exists(inputFilePath))
@@ -31,6 +31,8 @@ static void FileTests(
 
     const auto tokens = Caracal::lex(source, diagnostics);
     auto parseTree = Caracal::parse(tokens, diagnostics);
+    std::vector<Caracal::ParseTreeUPtr> parseTrees;
+    parseTrees.push_back(std::move(parseTree));
 
     Caracal::Module module = Caracal::Module::WithBuiltins();
     Caracal::TypeCheckerOptions options{
@@ -40,7 +42,7 @@ static void FileTests(
     };
 
     auto startTime = std::chrono::high_resolution_clock::now();
-    auto wasSuccessful = Caracal::typeCheck(parseTree, options, module, diagnostics);
+    auto wasSuccessful = Caracal::typeCheck(parseTrees, options, module, diagnostics);
     auto endTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "      Type check(): " << CaraTest::stringify(endTime - startTime) << std::endl;
@@ -49,7 +51,7 @@ static void FileTests(
         CaraTest::fail();// ("Type checking failed");
     }
 
-    Caracal::ParseTreePrinter printer{ parseTree, &module };
+    Caracal::ParseTreePrinter printer{ *parseTrees[0], &module};
     const auto output = printer.prettyPrint();
 
     CaraTest::isTrue(diagnostics.Diagnostics().empty());

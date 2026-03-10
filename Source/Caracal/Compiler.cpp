@@ -39,6 +39,8 @@ namespace Caracal
 
         auto tokens = Caracal::lex(source, diagnostics);
         auto parseTree = Caracal::parse(tokens, diagnostics);
+        std::vector<Caracal::ParseTreeUPtr> parseTrees;
+        parseTrees.push_back(std::move(parseTree));
 
         if (!diagnostics.Diagnostics().empty())
         {
@@ -53,7 +55,7 @@ namespace Caracal
             .defaultEnumBaseType = Caracal::Type::U8()
         };
 
-        auto wasSuccessful = Caracal::typeCheck(parseTree, options, caracalModule, diagnostics);
+        auto wasSuccessful = Caracal::typeCheck(parseTrees, options, caracalModule, diagnostics);
         if (!wasSuccessful)
         {
             std::cout << "Type checking failed!";
@@ -85,7 +87,7 @@ namespace Caracal
         llvmModule->setDataLayout(targetMachine->createDataLayout());
         llvmModule->setTargetTriple(triple);
 
-        wasSuccessful = Caracal::generateLLVMModule(parseTree, caracalModule, *llvmModule);
+        wasSuccessful = Caracal::generateLLVMModule(caracalModule, *llvmModule);
         if (!wasSuccessful)
         {
             std::cout << "Module not generated!";
@@ -179,7 +181,7 @@ namespace Caracal
         module->setDataLayout(targetMachine->createDataLayout());
         module->setTargetTriple(triple);
 
-        auto wasSuccessful = Caracal::generateLLVMModule(parseTree, caracalModule, *module);
+        auto wasSuccessful = Caracal::generateLLVMModule(caracalModule, *module);
         if (!wasSuccessful)
         {
             std::cout << "Module not generated!";

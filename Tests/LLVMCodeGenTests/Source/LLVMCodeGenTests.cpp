@@ -30,6 +30,9 @@ static void FileTests(
 
     const auto tokens = Caracal::lex(source, diagnostics);
     auto parseTree = Caracal::parse(tokens, diagnostics);
+    std::vector<Caracal::ParseTreeUPtr> parseTrees;
+    parseTrees.push_back(std::move(parseTree));
+
     CaraTest::isTrue(diagnostics.Diagnostics().empty());
 
     Caracal::Module caracalModule = Caracal::Module::WithBuiltins();
@@ -39,7 +42,7 @@ static void FileTests(
         .defaultEnumBaseType = Caracal::Type::U8()
     };
 
-    auto wasSuccessful = Caracal::typeCheck(parseTree, options, caracalModule, diagnostics);
+    auto wasSuccessful = Caracal::typeCheck(parseTrees, options, caracalModule, diagnostics);
     if (!wasSuccessful)
     {
         std::cout << "Type checking failed!";

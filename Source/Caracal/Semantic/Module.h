@@ -6,6 +6,9 @@
 #include <Caracal/Semantic/EnumDefinition.h>
 #include <Caracal/Semantic/TypeDefinition.h>
 #include <Caracal/Semantic/FunctionDefinition.h>
+#include <Caracal/Syntax/EnumDefinitionStatement.h>
+#include <Caracal/Syntax/TypeDefinitionStatement.h>
+#include <Caracal/Syntax/FunctionDefinitionStatement.h>
 #include <Caracal/Syntax/MethodDefinitionStatement.h>
 #include <Caracal/Semantic/Parameter.h>
 #include <string_view>
@@ -27,18 +30,24 @@ namespace Caracal
         [[nodiscard]] Type tryGetTypeByName(std::string_view name) const noexcept;
         [[nodiscard]] std::string_view getNameByType(Type type) noexcept;
 
-        [[nodiscard]] EnumDefinition& createEnum(std::string_view name) noexcept;
-        [[nodiscard]] TypeDefinition& createType(std::string_view name) noexcept;
-        [[nodiscard]] FunctionDefinition& createFunction(
+        [[nodiscard]] EnumDefinition& createEnum(
             std::string_view name, 
-            const std::vector<Parameter>& parameters, 
-            const std::vector<Type>& returnTypes) noexcept;
+            const EnumDefinitionStatement* statement) noexcept;
+        [[nodiscard]] TypeDefinition& createType(
+            std::string_view name, 
+            const TypeDefinitionStatement* statement) noexcept;
+        [[nodiscard]] FunctionDefinition& createFunction(
+            std::string_view name,
+            const std::vector<Parameter>& parameters,
+            const std::vector<Type>& returnTypes,
+            const FunctionDefinitionStatement* statement) noexcept;
         [[nodiscard]] FunctionDefinition& createMethod(
             TypeDefinition& typeDefinition,
             MethodModifier modifier,
             const std::string& methodName,
             const std::vector<Parameter>& parameters,
-            const std::vector<Type>& returnTypes) noexcept;
+            const std::vector<Type>& returnTypes,
+            const MethodDefinitionStatement* statement) noexcept;
         void createBuiltinType(Type type, std::string_view name, bool addVariants = false);
 
         [[nodiscard]] const std::unordered_map<i32, FunctionDefinition>& functionDefinitions() const noexcept { return m_functionDefinitions; }

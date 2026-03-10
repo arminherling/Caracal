@@ -25,7 +25,7 @@ namespace Caracal
     public:
         Parser(const TokenBuffer& tokens, DiagnosticsBag& diagnostics);
 
-        ParseTree parse();
+        ParseTreeUPtr parse();
 
     private:
         enum class StatementScope
@@ -90,5 +90,5 @@ namespace Caracal
         std::optional<AnnotationNodeUPtr> m_currentAnnotation;
     };
 
-    CARACAL_API ParseTree parse(const TokenBuffer& tokens, DiagnosticsBag& diagnostics) noexcept;
+    CARACAL_API ParseTreeUPtr parse(const TokenBuffer& tokens, DiagnosticsBag& diagnostics) noexcept;
 }

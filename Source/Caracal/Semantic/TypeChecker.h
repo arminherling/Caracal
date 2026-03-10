@@ -32,7 +32,7 @@ namespace Caracal
     {
     public:
         TypeChecker(
-            ParseTree& parseTree,
+            const std::vector<ParseTreeUPtr>& parseTrees,
             const TypeCheckerOptions& options,
             Module& module,
             DiagnosticsBag& diagnostics);
@@ -41,58 +41,58 @@ namespace Caracal
 
         bool typeCheck();
         
-        private:
-            void collectDeclarations();
-            void typeCheckSignatures();
+    private:
+        void collectDeclarations();
+        void typeCheckSignatures();
 
-            void typeCheckStatement(Statement* statement);
-            void typeCheckConstantDeclaration(ConstantDeclaration* statement);
-            void typeCheckVariableDeclaration(VariableDeclaration* statement);
+        void typeCheckStatement(Statement* statement);
+        void typeCheckConstantDeclaration(ConstantDeclaration* statement);
+        void typeCheckVariableDeclaration(VariableDeclaration* statement);
 
-            void typeCheckExpressionStatement(ExpressionStatement* statement);
-            void typeCheckAssignmentStatement(AssignmentStatement* statement);
-            void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
-            void typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
-            void typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement);
-            void typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement);
-            void typeCheckIfStatement(IfStatement* statement);
-            void typeCheckWhileStatement(WhileStatement* statement);
-            void typeCheckReturnStatement(ReturnStatement* statement);
+        void typeCheckExpressionStatement(ExpressionStatement* statement);
+        void typeCheckAssignmentStatement(AssignmentStatement* statement);
+        void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
+        void typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
+        void typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement);
+        void typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement);
+        void typeCheckIfStatement(IfStatement* statement);
+        void typeCheckWhileStatement(WhileStatement* statement);
+        void typeCheckReturnStatement(ReturnStatement* statement);
             
-            [[nodiscard]] Type typeCheckExpression(Expression* expression);
-            [[nodiscard]] Type typeCheckGroupingExpression(GroupingExpression* expression);
-            [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
-            [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression);
-            [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression);
-            [[nodiscard]] Type typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression);
+        [[nodiscard]] Type typeCheckExpression(Expression* expression);
+        [[nodiscard]] Type typeCheckGroupingExpression(GroupingExpression* expression);
+        [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
+        [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression);
+        [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression);
+        [[nodiscard]] Type typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression);
 
-            [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
+        [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
 
-            [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
-            [[nodiscard]] std::vector<Parameter> typeCheckParametersNode(ParametersNode* parametersNode);
-            [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);
-            [[nodiscard]] std::vector<Type> typeCheckArgumentsNode(ArgumentsNode* argumentsNode);
+        [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
+        [[nodiscard]] std::vector<Parameter> typeCheckParametersNode(ParametersNode* parametersNode);
+        [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);
+        [[nodiscard]] std::vector<Type> typeCheckArgumentsNode(ArgumentsNode* argumentsNode);
 
-            void typeCheckBlockNode(BlockNode* body);
-            [[nodiscard]] i32 convertToI32(NumberLiteral* literal);
+        void typeCheckBlockNode(BlockNode* body);
+        [[nodiscard]] i32 convertToI32(NumberLiteral* literal);
         
-            void pushScope(ScopeKind kind);
-            void popScope();
-            [[nodiscard]] Scope* currentScope() const noexcept;
+        void pushScope(ScopeKind kind);
+        void popScope();
+        [[nodiscard]] Scope* currentScope() const noexcept;
         
-            ParseTree& m_parseTree;
-            TypeCheckerOptions m_options;
-            Module& m_module;
-            DiagnosticsBag& m_diagnostics;
-            Type m_currentReturnType;
-            std::vector<std::unique_ptr<Scope>> m_scopes;
+        const std::vector<ParseTreeUPtr>& m_parseTrees;
+        const ParseTree* m_currentParseTree;
+        TypeCheckerOptions m_options;
+        Module& m_module;
+        DiagnosticsBag& m_diagnostics;
+        Type m_currentReturnType;
+        std::vector<std::unique_ptr<Scope>> m_scopes;
     };
 
-    // we modify the parse tree in place and add type information to the nodes
+    // we modify the parse trees in place and add type information to the nodes
     CARACAL_API bool typeCheck(
-        ParseTree& parseTree, 
+        const std::vector<ParseTreeUPtr>& parseTrees, 
         const TypeCheckerOptions& options, 
         Module& module, 
         DiagnosticsBag& diagnostics) noexcept;
 };
-

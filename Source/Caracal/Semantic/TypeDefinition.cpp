@@ -2,9 +2,13 @@
 
 namespace Caracal 
 {
-    TypeDefinition::TypeDefinition(Type type, const std::string& name)
+    TypeDefinition::TypeDefinition(
+        const TypeDefinitionStatement* statement,
+        Type type, 
+        const std::string& name)
         : m_type{ type }
         , m_name{ name }
+        , m_statement{ statement }
     {
     }
 

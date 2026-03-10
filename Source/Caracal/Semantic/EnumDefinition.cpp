@@ -2,10 +2,14 @@
 
 namespace Caracal 
 {
-    EnumDefinition::EnumDefinition(Type type, const std::string& name)
+    EnumDefinition::EnumDefinition(
+        const EnumDefinitionStatement* statement,
+        Type type, 
+        const std::string& name)
         : m_type{ type }
         , m_baseType{ Type::Undefined() }
         , m_name{ name }
+        , m_statement{ statement }
     {
     }
     

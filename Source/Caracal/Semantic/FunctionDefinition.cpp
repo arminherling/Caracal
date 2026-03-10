@@ -3,6 +3,7 @@
 namespace Caracal
 {
     FunctionDefinition::FunctionDefinition(
+        const Statement* statement,
         Type type,
         Type parentType,
         FunctionType functionType,
@@ -19,6 +20,7 @@ namespace Caracal
         , m_isVariadic{ isVariadic }
         , m_parameters{ parameters }
         , m_returnTypes{ returnTypes }
+        , m_statement{ statement }
     {
     }
 

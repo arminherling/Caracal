@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <Caracal/API.h>
-#include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
@@ -41,7 +40,6 @@ namespace Caracal
     {
     public:
         LLVMCodeGenerator(
-            const ParseTree& parseTree, 
             Module& caracalModule, 
             llvm::Module& llvmModule);
 
@@ -73,6 +71,7 @@ namespace Caracal
         llvm::Value* generateNumberLiteral(NumberLiteral* node) noexcept;
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
 
+        void generateFunctionBodies() noexcept;
         void generateBlockNode(BlockNode* body) noexcept;
         void declareFunction(const FunctionDefinition& functionDefinition) noexcept;
         void declareAllFunctions() noexcept;
@@ -88,7 +87,6 @@ namespace Caracal
         [[nodiscard]] LLVMScope* currentScope() const noexcept;
 
     private:
-        const ParseTree& m_parseTree;
         Module& m_caracalModule;
         llvm::Module& m_llvmModule;
         llvm::Function* m_currentFunction;
@@ -98,5 +96,5 @@ namespace Caracal
         std::vector<std::unique_ptr<LLVMScope>> m_scopes;
     };
 
-    bool generateLLVMModule(const ParseTree& parseTree, Module& caracalModule, llvm::Module& llvmModule) noexcept;
+    bool generateLLVMModule(Module& caracalModule, llvm::Module& llvmModule) noexcept;
 }

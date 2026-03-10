@@ -83,11 +83,9 @@ namespace Caracal
     }
 
     LLVMCodeGenerator::LLVMCodeGenerator(
-        const ParseTree& parseTree, 
         Module& caracalModule,
         llvm::Module& llvmModule)
-        : m_parseTree{ parseTree }
-        , m_caracalModule{ caracalModule }
+        : m_caracalModule{ caracalModule }
         , m_llvmModule{ llvmModule }
         , m_currentFunction{ nullptr }
         , m_currentConditionBlock{ nullptr }
@@ -100,11 +98,7 @@ namespace Caracal
     bool LLVMCodeGenerator::generate()
     {
         declareAllFunctions();
-
-        for (const auto& statement : m_parseTree.statements())
-        {
-            generateNode(statement.get());
-        }
+        generateFunctionBodies();
 
         return true;
     }
@@ -980,19 +974,19 @@ namespace Caracal
     {
         auto& context = m_llvmModule.getContext();
         const auto literalType = node->type();
-        const auto lexeme = m_parseTree.tokens().getLexeme(node->literalToken());
+        const auto& lexeme = node->literalLexeme();
 
         if (literalType == Type::I32())
         {
             auto llvmType = GetLLVMTypeForCaraType(literalType, context);
-            auto value = std::stoi(lexeme.data());
+            auto value = std::stoi(lexeme);
             auto returnValue = llvm::ConstantInt::get(llvmType, value);
             return returnValue;
         }
         else if (literalType == Type::F32())
         {
             auto llvmType = GetLLVMTypeForCaraType(literalType, context);
-            auto value = std::stof(lexeme.data());
+            auto value = std::stof(lexeme);
             auto returnValue = llvm::ConstantFP::get(context, llvm::APFloat(value));
             return returnValue;
         }
@@ -1037,6 +1031,35 @@ namespace Caracal
         }
 
         return llvm::FunctionType::get(llvmReturnType, llvmParameterTypes, isVariadic);
+    }
+
+    void LLVMCodeGenerator::generateFunctionBodies() noexcept
+    {
+        for (const auto& definitionPair : m_caracalModule.functionDefinitions())
+        {
+            const auto& functionDefinition = definitionPair.second;
+            // skip builtin functions like print until we got a prelude
+            if (functionDefinition.statement() == nullptr)
+                continue;
+
+            auto statement = functionDefinition.statement();
+            if (statement->kind() == NodeKind::FunctionDefinitionStatement)
+            {
+                const auto functionStatement = static_cast<const FunctionDefinitionStatement*>(statement);
+                if (!functionStatement->isExtern())
+                {
+                    generateFunction(functionDefinition.type(), functionStatement->bodyNode().get());
+                }
+            }
+            else if (statement->kind() == NodeKind::MethodDefinitionStatement)
+            {
+                const auto methodStatement = static_cast<const MethodDefinitionStatement*>(statement);
+                if (methodStatement->specialFunctionType() == SpecialFunctionType::None)
+                {
+                    generateFunction(functionDefinition.type(), methodStatement->bodyNode().get());
+                }
+            }
+        }
     }
 
     void LLVMCodeGenerator::generateBlockNode(BlockNode* body) noexcept
@@ -1124,9 +1147,9 @@ namespace Caracal
         return m_scopes.back().get();
     }
 
-    bool generateLLVMModule(const ParseTree& parseTree, Module& caracalModule, llvm::Module& llvmModule) noexcept
+    bool generateLLVMModule(Module& caracalModule, llvm::Module& llvmModule) noexcept
     {
-        LLVMCodeGenerator generator{ parseTree, caracalModule, llvmModule };
+        LLVMCodeGenerator generator{ caracalModule, llvmModule };
         return generator.generate();
     }
 

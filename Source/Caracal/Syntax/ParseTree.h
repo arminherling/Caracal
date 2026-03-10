@@ -3,6 +3,7 @@
 #include <Caracal/API.h>
 #include <Caracal/Syntax/TokenBuffer.h>
 #include <Caracal/Syntax/Statement.h>
+#include <memory>
 
 namespace Caracal
 {
@@ -22,4 +23,6 @@ namespace Caracal
         TokenBuffer m_tokens;
         std::vector<StatementUPtr> m_statements;
     };
+
+    using ParseTreeUPtr = std::unique_ptr<ParseTree>;
 }

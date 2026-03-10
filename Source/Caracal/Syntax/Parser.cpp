@@ -62,7 +62,7 @@ namespace Caracal
     {
     }
 
-    ParseTree Parser::parse()
+    ParseTreeUPtr Parser::parse()
     {
         auto statements = parseStatements(StatementScope::Global);
         if (m_currentIndex < m_tokens.size() - 1)
@@ -71,7 +71,7 @@ namespace Caracal
             m_diagnostics.AddError(DiagnosticKind::_0004_ExtraTokensRemaining, location);
         }
 
-        return ParseTree(m_tokens, std::move(statements));
+        return std::make_unique<ParseTree>(m_tokens, std::move(statements));
     }
 
     std::vector<StatementUPtr> Parser::parseStatements(StatementScope scope)
@@ -526,7 +526,8 @@ namespace Caracal
             explicitType = parseTypeNameNode();
         }
 
-        return std::make_unique<NumberLiteral>(literal, uptick, std::move(explicitType));
+        const auto lexeme = m_tokens.getLexeme(literal);
+        return std::make_unique<NumberLiteral>(literal, lexeme, uptick, std::move(explicitType));
     }
 
     StringLiteralUPtr Parser::parseStringLiteral()
@@ -958,7 +959,7 @@ namespace Caracal
         return m_tokens.getToken(index);
     }
 
-    ParseTree parse(const TokenBuffer& tokens, DiagnosticsBag& diagnostics) noexcept
+    ParseTreeUPtr parse(const TokenBuffer& tokens, DiagnosticsBag& diagnostics) noexcept
     {
         Parser parser{ tokens, diagnostics };
         return parser.parse();
