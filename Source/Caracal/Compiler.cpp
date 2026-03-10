@@ -25,8 +25,45 @@ namespace Caracal
         return std::system(command.c_str());
     }
 
-    int compileFile(std::filesystem::path filePath)
+    static std::vector<std::filesystem::path> collectCaraFiles(
+        const std::filesystem::path& directoryPath) noexcept
     {
+        std::vector<std::filesystem::path> caraFilePaths{};
+
+        if (!std::filesystem::exists(directoryPath) || !std::filesystem::is_directory(directoryPath))
+            return caraFilePaths;
+
+        for (const auto& file : std::filesystem::recursive_directory_iterator(directoryPath))
+        {
+            if (file.is_regular_file() && file.path().extension() == ".cara")
+                caraFilePaths.push_back(file.path());
+        }
+
+        return caraFilePaths;
+    }
+
+    int compileFile(const std::filesystem::path& filePath)
+    {
+        const auto coreDirectoryPath = std::filesystem::path("Core");
+        auto caraFiles = collectCaraFiles(coreDirectoryPath);
+
+        Caracal::DiagnosticsBag diagnostics;
+        std::vector<Caracal::ParseTreeUPtr> parseTrees;
+        for (const auto& caraFilePath : caraFiles)
+        {
+            auto content = Caracal::File::readText(caraFilePath);
+            if (!content.has_value())
+            {
+                std::cout << "Failed to read file: " << caraFilePath << "\n";
+                continue;
+            }
+
+            auto source = std::make_shared<Caracal::SourceText>(content.value());
+            const auto tokens = Caracal::lex(source, diagnostics);
+            auto parseTree = Caracal::parse(tokens, diagnostics);
+            parseTrees.push_back(std::move(parseTree));
+        }
+
         auto fileContent = Caracal::File::readText(filePath);
         if (!fileContent.has_value())
         {
@@ -35,11 +72,8 @@ namespace Caracal
         }
 
         auto source = std::make_shared<Caracal::SourceText>(fileContent.value());
-        Caracal::DiagnosticsBag diagnostics;
-
-        auto tokens = Caracal::lex(source, diagnostics);
+        const auto tokens = Caracal::lex(source, diagnostics);
         auto parseTree = Caracal::parse(tokens, diagnostics);
-        std::vector<Caracal::ParseTreeUPtr> parseTrees;
         parseTrees.push_back(std::move(parseTree));
 
         if (!diagnostics.Diagnostics().empty())

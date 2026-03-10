@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
+set(CARA_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE INTERNAL "Caracal root directory")
+
 include(GNUInstallDirs)
 if(WIN32)
     if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
@@ -15,6 +17,7 @@ endif()
 
 include(LLVM)
 include(CaraTest)
+include(CopyBuildTarget)
 
 add_subdirectory(Source)
 add_subdirectory(Driver)

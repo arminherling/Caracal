@@ -5,7 +5,7 @@
 
 namespace Caracal
 {
-    CARACAL_API int compileFile(std::filesystem::path filePath);
+    CARACAL_API int compileFile(const std::filesystem::path& filePath);
 
     CARACAL_API std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, Module& caracalModule);
 };
