@@ -3,6 +3,7 @@
 #include <Caracal/Defines.h>
 #include <Caracal/API.h>
 #include <Caracal/Semantic/Type.h>
+#include <Caracal/Semantic/ConstantDefinition.h>
 #include <Caracal/Semantic/EnumDefinition.h>
 #include <Caracal/Semantic/TypeDefinition.h>
 #include <Caracal/Semantic/FunctionDefinition.h>
@@ -27,14 +28,15 @@ namespace Caracal
         [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;
         [[nodiscard]] TypeDefinition& getTypeDefinition(Type type) noexcept;
         [[nodiscard]] FunctionDefinition& getFunctionDefinition(Type type) noexcept;
+        [[nodiscard]] ConstantDefinition* tryGetConstantDefinitionByName(std::string_view name) noexcept;
         [[nodiscard]] Type tryGetTypeByName(std::string_view name) const noexcept;
         [[nodiscard]] std::string_view getNameByType(Type type) noexcept;
 
         [[nodiscard]] EnumDefinition& createEnum(
-            std::string_view name, 
+            std::string_view name,
             const EnumDefinitionStatement* statement) noexcept;
         [[nodiscard]] TypeDefinition& createType(
-            std::string_view name, 
+            std::string_view name,
             const TypeDefinitionStatement* statement) noexcept;
         [[nodiscard]] FunctionDefinition& createFunction(
             std::string_view name,
@@ -48,14 +50,19 @@ namespace Caracal
             const std::vector<Parameter>& parameters,
             const std::vector<Type>& returnTypes,
             const MethodDefinitionStatement* statement) noexcept;
+        [[nodiscard]] ConstantDefinition& createConstant(
+            std::string_view name,
+            Expression* expression) noexcept;
         void createBuiltinType(Type type, std::string_view name, bool addVariants = false);
 
+        [[nodiscard]] const std::unordered_map<std::string, ConstantDefinition>& constantDefinitions() const noexcept { return m_constantDefinitions; }
         [[nodiscard]] const std::unordered_map<i32, FunctionDefinition>& functionDefinitions() const noexcept { return m_functionDefinitions; }
 
     private:
         std::unordered_map<i32, TypeDefinition> m_typeDefinitions;
         std::unordered_map<i32, EnumDefinition> m_enumDefinitions;
         std::unordered_map<i32, FunctionDefinition> m_functionDefinitions;
+        std::unordered_map<std::string, ConstantDefinition> m_constantDefinitions;
         std::unordered_map<i32, std::string> m_typeNames;
         std::unordered_map<std::string, Type> m_nameToTypes;
         i32 m_nextId = 0;

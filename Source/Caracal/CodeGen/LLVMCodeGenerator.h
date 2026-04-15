@@ -62,7 +62,7 @@ namespace Caracal
         void generateSkipStatement() noexcept;
         void generateReturnStatement(ReturnStatement* node) noexcept;
 
-        llvm::Value* generateExpression(Expression* node) noexcept;
+        llvm::Value* generateExpression(const Expression* node) noexcept;
         llvm::Value* generateBinaryExpression(BinaryExpression* node) noexcept;
         llvm::Value* generateUnaryExpression(UnaryExpression* node) noexcept;
         llvm::Value* generateNameExpression(NameExpression* node) noexcept; 
@@ -74,7 +74,9 @@ namespace Caracal
         void generateFunctionBodies() noexcept;
         void generateBlockNode(BlockNode* body) noexcept;
         void declareFunction(const FunctionDefinition& functionDefinition) noexcept;
-        void declareAllFunctions() noexcept;
+        void generateTopLevelDeclarations() noexcept;
+        void generateConstantDeclarations() noexcept;
+        void generateFunctionDeclarations() noexcept;
         llvm::GlobalValue* createGlobalValue(const std::string& name, llvm::Constant* constant, bool isConst) noexcept;
         llvm::Value* createLocalValue(const std::string& name, llvm::Type* type) noexcept;
         llvm::Function* getFunctionDeclaration(const FunctionDefinition& functionDefinition);

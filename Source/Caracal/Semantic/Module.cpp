@@ -3,8 +3,8 @@
 namespace Caracal
 {
     // value, reference, optional value, optional reference
-    constexpr int VariantCount = 4; 
-    
+    constexpr int VariantCount = 4;
+
     [[nodiscard]] static FunctionType ToFunctionType(MethodModifier modifier)
     {
         switch (modifier)
@@ -55,7 +55,7 @@ namespace Caracal
     EnumDefinition& Module::getEnumDefinition(Type type) noexcept
     {
         static auto invalidEnum = EnumDefinition{ nullptr, Type::Undefined(), std::string("???") };
-    
+
         auto baseType = type.toBaseType();
         auto id = baseType.id();
         if (m_enumDefinitions.contains(id))
@@ -67,7 +67,7 @@ namespace Caracal
     TypeDefinition& Module::getTypeDefinition(Type type) noexcept
     {
         static auto invalidType = TypeDefinition{ nullptr, Type::Undefined(), std::string("???") };
-        
+
         auto baseType = type.toBaseType();
         auto id = baseType.id();
         if (m_typeDefinitions.contains(id))
@@ -75,7 +75,7 @@ namespace Caracal
         else
             return invalidType;
     }
-    
+
     FunctionDefinition& Module::getFunctionDefinition(Type type) noexcept
     {
         static auto invalidFunction = FunctionDefinition{ nullptr, Type::Undefined(), Type::Undefined(), FunctionType::None, std::string("???"), std::string("???"), false };
@@ -85,6 +85,14 @@ namespace Caracal
             return m_functionDefinitions.at(id);
         else
             return invalidFunction;
+    }
+
+    ConstantDefinition* Module::tryGetConstantDefinitionByName(std::string_view name) noexcept
+    {
+        if (const auto result = m_constantDefinitions.find(std::string(name)); result != m_constantDefinitions.end())
+            return &result->second;
+
+        return nullptr;
     }
 
     Type Module::tryGetTypeByName(std::string_view name) const noexcept
@@ -106,7 +114,7 @@ namespace Caracal
     }
 
     EnumDefinition& Module::createEnum(
-        std::string_view name, 
+        std::string_view name,
         const EnumDefinitionStatement* statement) noexcept
     {
         auto enumName = std::string(name);
@@ -120,7 +128,7 @@ namespace Caracal
     }
 
     TypeDefinition& Module::createType(
-        std::string_view name, 
+        std::string_view name,
         const TypeDefinitionStatement* statement) noexcept
     {
         auto typeName = std::string(name);
@@ -169,10 +177,20 @@ namespace Caracal
         return m_functionDefinitions.at(methodId);
     }
 
+    ConstantDefinition& Module::createConstant(
+        std::string_view name,
+        Expression* expression) noexcept
+    {
+        auto constantName = std::string(name);
+        m_constantDefinitions.try_emplace(constantName, ConstantDefinition{ constantName, expression });
+
+        return m_constantDefinitions.at(constantName);
+    }
+
     void Module::createBuiltinType(Type type, std::string_view name, bool addVariants)
     {
         m_nameToTypes.try_emplace(std::string(name), type);
-        
+
         if (type == Type::CVariadic())
         {
             m_typeNames.try_emplace(type.id(), std::string("C Variadic"));

@@ -97,7 +97,7 @@ namespace Caracal
 
     bool LLVMCodeGenerator::generate()
     {
-        declareAllFunctions();
+        generateTopLevelDeclarations();
         generateFunctionBodies();
 
         return true;
@@ -489,7 +489,7 @@ namespace Caracal
         }
     }
 
-    llvm::Value* LLVMCodeGenerator::generateExpression(Expression* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateExpression(const Expression* node) noexcept
     {
         switch (node->kind())
         {
@@ -1093,7 +1093,40 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::declareAllFunctions() noexcept
+    void LLVMCodeGenerator::generateTopLevelDeclarations() noexcept
+    {
+        generateConstantDeclarations();
+        generateFunctionDeclarations();
+    }
+
+    void LLVMCodeGenerator::generateConstantDeclarations() noexcept
+    {
+        for (const auto& definitionPair : m_caracalModule.constantDefinitions())
+        {
+            const auto& constantDefinition = definitionPair.second;
+            const auto expression = constantDefinition.expression();
+            if (expression == nullptr)
+                continue;
+
+            auto llvmValue = generateExpression(expression);
+            if (!llvmValue)
+            {
+                TODO("Constant expression produced null during codegen");
+                continue;
+            }
+
+            if (auto llvmConstant = llvm::dyn_cast<llvm::Constant>(llvmValue))
+            {
+                createGlobalValue(constantDefinition.name(), llvmConstant, true);
+            }
+            else
+            {
+                TODO("Global constant must be an llvm::Constant");
+            }
+        }
+    }
+
+    void LLVMCodeGenerator::generateFunctionDeclarations() noexcept
     {
         for (const auto& definitionPair : m_caracalModule.functionDefinitions())
         {
