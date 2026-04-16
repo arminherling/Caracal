@@ -18,7 +18,5 @@ declare void @print(ptr %0)
 
 define void @inner(i32 %x) {
 entry:
-  %x1 = alloca i32, align 4
-  store i32 %x, ptr %x1, align 4
   ret void
 }

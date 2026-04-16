@@ -74,10 +74,7 @@ namespace Caracal
             }
             else
             {
-                llvm::IRBuilder<> entryBuilder(&llvmFunction->getEntryBlock(), llvmFunction->getEntryBlock().getFirstInsertionPt());
-                auto allocated = entryBuilder.CreateAlloca(argument.getType(), 0, parameter.name());
-                scope->addVariableBinding(parameter.name(), allocated);
-                irBuilderBase->CreateStore(&argument, allocated);
+                scope->addVariableBinding(parameter.name(), &argument);
             }
         }
     }

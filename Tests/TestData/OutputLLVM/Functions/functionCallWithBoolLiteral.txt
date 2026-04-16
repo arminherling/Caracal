@@ -4,8 +4,6 @@ target triple = "x86_64-unknown-none"
 
 define void @inner(i1 %x) {
 entry:
-  %x1 = alloca i1, align 1
-  store i1 %x, ptr %x1, align 1
   ret void
 }
 

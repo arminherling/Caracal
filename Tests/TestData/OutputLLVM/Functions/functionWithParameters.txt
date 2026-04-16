@@ -4,13 +4,7 @@ target triple = "x86_64-unknown-none"
 
 define i32 @sum(i32 %a, i32 %b) {
 entry:
-  %b2 = alloca i32, align 4
-  %a1 = alloca i32, align 4
-  store i32 %a, ptr %a1, align 4
-  store i32 %b, ptr %b2, align 4
-  %a3 = load i32, ptr %a1, align 4
-  %b4 = load i32, ptr %b2, align 4
-  %addtmp = add i32 %a3, %b4
+  %addtmp = add i32 %a, %b
   ret i32 %addtmp
 }
 
