@@ -525,7 +525,7 @@ namespace Caracal
             {
                 case NodeKind::TypeFieldDeclaration:
                 {
-                    TODO("Handle type field declaration in type definition");
+                    typeCheckTypeFieldDeclaration(typeDefinition, (TypeFieldDeclaration*)definitionStatement.get());
                     break;
                 }
                 case NodeKind::MethodDefinitionStatement:
@@ -537,8 +537,47 @@ namespace Caracal
                     break;
             }
         }
+    }
 
-        //typeCheckBlockNode(statement->bodyNode().get());
+    void TypeChecker::typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement)
+    {
+        const auto& fieldName = statement->nameExpression()->name();
+        if (typeDefinition.tryGetFieldByName(fieldName).type() != Type::Undefined())
+        {
+            TODO("Add error diagnostics for duplicate type field declaration");
+            return;
+        }
+
+        auto fieldType = Type::Undefined();
+        Expression* fieldExpression = nullptr;
+        if (statement->explicitType().has_value())
+        {
+            fieldType = typeCheckTypeNameNode(statement->explicitType().value().get());
+        }
+
+        if (statement->rightExpression().has_value())
+        {
+            fieldExpression = statement->rightExpression().value().get();
+            auto expressionType = typeCheckExpression(fieldExpression);
+            if (fieldType == Type::Undefined())
+            {
+                fieldType = expressionType;
+            }
+            else if (fieldType != expressionType)
+            {
+                TODO("Type mismatch error diagnostics");
+            }
+        }
+
+        if (fieldType == Type::Undefined())
+        {
+            TODO("Add error diagnostics for missing type field type");
+            return;
+        }
+
+        statement->nameExpression()->setType(fieldType);
+        statement->setType(fieldType);
+        typeDefinition.addField(fieldType, fieldName, fieldExpression);
     }
 
     void TypeChecker::typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement)

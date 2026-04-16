@@ -25,6 +25,7 @@
 #include <Caracal/Syntax/EnumDefinitionStatement.h>
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
 #include <Caracal/Syntax/MethodDefinitionStatement.h>
+#include <Caracal/Syntax/TypeFieldDeclaration.h>
 
 namespace Caracal
 {
@@ -54,6 +55,7 @@ namespace Caracal
         void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
         void typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
         void typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement);
+        void typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement);
         void typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement);
         void typeCheckIfStatement(IfStatement* statement);
         void typeCheckWhileStatement(WhileStatement* statement);

@@ -1,24 +1,25 @@
-﻿//#pragma once
-//
-//#include <Caracal/API.h>
-//#include <Semantic/Type.h>
-//#include <Semantic/TypedExpression.h>
-//#include <QStringView>
-//
-//class CARACAL_API FieldDefinition
-//{
-//public:
-//    FieldDefinition(Type type, QStringView name, TypedExpression* expression);
-//
-//    [[nodiscard]] Type type() const noexcept { return m_type; }
-//    [[nodiscard]] QStringView name() const noexcept { return m_name; }
-//    [[nodiscard]] TypedExpression* value() const noexcept { return m_expression; }
-//
-//private:
-//    Type m_type; 
-//    QStringView m_name; 
-//    TypedExpression* m_expression;
-//};
-//
-//CARACAL_API bool operator==(FieldDefinition lhs, FieldDefinition rhs) noexcept;
-//CARACAL_API bool operator!=(FieldDefinition lhs, FieldDefinition rhs) noexcept;
+﻿#pragma once
+
+#include <Caracal/API.h>
+#include <Caracal/Semantic/Type.h>
+#include <Caracal/Syntax/Expression.h>
+#include <optional>
+#include <string>
+
+namespace Caracal
+{
+    class CARACAL_API FieldDefinition
+    {
+    public:
+        FieldDefinition(Type type, const std::string& name, Expression* expression) noexcept;
+
+        [[nodiscard]] Type type() const noexcept { return m_type; }
+        [[nodiscard]] const std::string& name() const noexcept { return m_name; }
+        [[nodiscard]] Expression* expression() const noexcept { return m_expression; }
+
+    private:
+        Type m_type;
+        std::string m_name;
+        Expression* m_expression;
+    };
+}

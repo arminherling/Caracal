@@ -1,0 +1,30 @@
+TypeDefinitionStatement: {
+    Type: Fields
+    Name: Fields
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: true
+            Left: {
+                NameExpression: {
+                    Type: bool
+                    Name: a
+                }
+            }
+            Right: {
+                BoolLiteral: true
+            }
+        }
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: bool
+                    Name: b
+                }
+            }
+            Right: {
+                BoolLiteral: false
+            }
+        }
+    }
+}
