@@ -188,32 +188,11 @@ namespace Caracal
         return exeResult;
     }
 
-    std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, Module& caracalModule)
+    std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, Module& caracalModule, std::string targetTriple)
     {
-        llvm::InitializeNativeTarget();
-        llvm::InitializeNativeTargetAsmPrinter();
-
         llvm::LLVMContext context;
         auto module = std::make_unique<llvm::Module>("CaracalModule", context);
-
-        auto defaultTargetTriple = llvm::sys::getDefaultTargetTriple();
-        llvm::outs() << "TargetTriple: " << defaultTargetTriple << '\n';
-        std::string targetError;
-        auto target = llvm::TargetRegistry::lookupTarget(defaultTargetTriple, targetError);
-        auto triple = llvm::Triple(defaultTargetTriple);
-        if (!target)
-        {
-            llvm::errs() << "Error: " << targetError << "\n";
-            return std::make_pair(false, "");
-        }
-
-        auto CPU = "generic";
-        auto features = "";
-        llvm::TargetOptions targetOptions{};
-        auto relocModel = std::optional<llvm::Reloc::Model>();
-        auto targetMachine = target->createTargetMachine(triple, CPU, features, targetOptions, relocModel);
-        module->setDataLayout(targetMachine->createDataLayout());
-        module->setTargetTriple(triple);
+        module->setTargetTriple(llvm::Triple(targetTriple));
 
         auto wasSuccessful = Caracal::generateLLVMModule(caracalModule, *module);
         if (!wasSuccessful)
@@ -224,7 +203,7 @@ namespace Caracal
 
         std::string irOutput;
         llvm::raw_string_ostream irStream(irOutput);
-        module->print(irStream, nullptr);
+        module->print(irStream, nullptr, true, true);
         irStream.flush();
 
         return std::make_pair(true, irOutput);

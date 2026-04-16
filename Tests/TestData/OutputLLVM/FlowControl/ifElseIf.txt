@@ -1,0 +1,25 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @func() {
+entry:
+  br i1 true, label %if_true, label %if_false
+
+if_true:                                          ; preds = %entry
+  ret i32 1
+
+if_false:                                         ; preds = %entry
+  br i1 false, label %if_true1, label %if_end
+
+if_true1:                                         ; preds = %if_false
+  ret i32 2
+
+if_end:                                           ; preds = %if_false
+  br label %if_end2
+
+if_end2:                                          ; preds = %if_end
+  ret i32 3
+}
+
+declare void @print(ptr %0)

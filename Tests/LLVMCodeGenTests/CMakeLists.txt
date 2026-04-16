@@ -1,9 +1,8 @@
 ﻿project(LLVMCodeGenTests)
 
 file(GLOB SOURCES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/*.cpp")
-file(GLOB HEADERS CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/*.h")
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Caracal CaraTest)
 

@@ -1,0 +1,7 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+@a = constant i32 0, align 4
+
+declare void @print(ptr %0)

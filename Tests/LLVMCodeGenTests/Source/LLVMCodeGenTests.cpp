@@ -1,14 +1,17 @@
 ﻿#include <CaraTest.h>
-#include <Caracal/CodeGen/LLVMCodeGenerator.h>
+#include <Caracal/Compiler.h>
 #include <Caracal/Debug/DiagnosticsBag.h>
 #include <Caracal/Text/File.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <iostream>
-//#include <llvm/IR/LLVMContext.h>
-//#include <llvm/IR/Module.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/TypeChecker.h>
+
+namespace
+{
+    const std::string TestTargetTriple = "x86_64-unknown-none";
+}
 
 static void FileTests(
     const std::string& /*fileName*/, 
@@ -49,22 +52,15 @@ static void FileTests(
         CaraTest::fail();
     }
 
-    //llvm::LLVMContext context;
-    //llvm::Module llvmModule("file_test", context);
+    const auto startTime = std::chrono::high_resolution_clock::now();
+    const auto [irGenerated, output] = Caracal::generateLLVMIR(*parseTrees[0], caracalModule, TestTargetTriple);
+    const auto endTime = std::chrono::high_resolution_clock::now();
 
-    //const auto startTime = std::chrono::high_resolution_clock::now();
-    //wasSuccessful = Caracal::generateLLVMModule(parseTree, caracalModule, llvmModule);
-    //const auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "      generateLLVMModule(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
-    //std::cout << "      generateLLVMModule(): " << CaraTest::stringify(endTime - startTime) << std::endl;
-
-    //CaraTest::isTrue(diagnostics.Diagnostics().empty());
-
-    //std::string output;
-    //llvm::raw_string_ostream irStream(output);
-    //llvmModule.print(irStream, nullptr);
-    //irStream.flush();
-    //CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
+    CaraTest::isTrue(irGenerated);
+    CaraTest::isTrue(diagnostics.Diagnostics().empty());
+    CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
 }
 
 static std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> FileTests_Data()

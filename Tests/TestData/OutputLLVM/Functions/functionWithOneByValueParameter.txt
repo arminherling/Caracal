@@ -1,0 +1,15 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define void @square(i32 %x) {
+entry:
+  %x1 = alloca i32, align 4
+  store i32 %x, ptr %x1, align 4
+  %x2 = load i32, ptr %x1, align 4
+  %x3 = load i32, ptr %x1, align 4
+  %multmp = mul i32 %x2, %x3
+  ret i32 %multmp
+}
+
+declare void @print(ptr %0)

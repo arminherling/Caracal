@@ -26,7 +26,7 @@ namespace Caracal
             return llvm::PointerType::getUnqual(context);
         }
 
-        static const auto llvmTypes = InitializeTypeToLLVMType(context);
+        const auto llvmTypes = InitializeTypeToLLVMType(context);
         if (const auto result = llvmTypes.find(type); result != llvmTypes.end())
             return result->second;
 
@@ -327,9 +327,9 @@ namespace Caracal
         generateBlockNode(body);
 
         auto llvmReturnType = m_currentFunction->getReturnType();
-        if (llvmReturnType->isVoidTy())
+        if (llvmReturnType->isVoidTy() && !m_irBuilder->GetInsertBlock()->getTerminator())
         {
-            // we need to add a return void
+            // we need to add a return void if there isnt one yet
             m_irBuilder->CreateRetVoid();
         }
         
@@ -1029,7 +1029,7 @@ namespace Caracal
             auto llvmParameterType = GetLLVMTypeForCaraType(parameters[i].type(), context);
             llvmParameterTypes.push_back(llvmParameterType);
         }
-
+        
         return llvm::FunctionType::get(llvmReturnType, llvmParameterTypes, isVariadic);
     }
 
