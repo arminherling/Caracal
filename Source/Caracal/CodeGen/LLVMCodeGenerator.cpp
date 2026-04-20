@@ -1749,6 +1749,19 @@ namespace Caracal
         {
             objectPointer = objectLoad->getPointerOperand();
         }
+        else if (llvm::isa<llvm::Argument>(objectValue) || objectValue->getType()->isStructTy())
+        {
+            auto objectType = node->leftExpression()->type().toValue();
+            auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+            if (llvmObjectType == nullptr)
+            {
+                return nullptr;
+            }
+
+            auto* temporaryObject = createLocalValue("member_access_tmp", llvmObjectType);
+            m_irBuilder->CreateStore(objectValue, temporaryObject);
+            objectPointer = temporaryObject;
+        }
 
         if (objectPointer == nullptr)
         {
