@@ -822,6 +822,30 @@ namespace Caracal
                 {
                     return generateExpression(node->rightExpression().get());
                 }
+                else if (node->rightExpression()->kind() == NodeKind::NameExpression)
+                {
+                    auto* fieldPointer = generateFieldAccessPointer(node);
+                    if (fieldPointer == nullptr)
+                    {
+                        TODO("Could not generate field access pointer");
+                        return nullptr;
+                    }
+
+                    auto fieldType = node->type();
+                    if (fieldType.isReference())
+                    {
+                        return fieldPointer;
+                    }
+
+                    auto* llvmFieldType = GetLLVMTypeForCaraType(fieldType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+                    if (llvmFieldType == nullptr)
+                    {
+                        TODO("Field access type not found");
+                        return nullptr;
+                    }
+
+                    return m_irBuilder->CreateLoad(llvmFieldType, fieldPointer, "field_load");
+                }
 
                 TODO("Member access operator not implemented yet");
                 break;
@@ -1701,5 +1725,38 @@ namespace Caracal
         }
 
         return nullptr;
+    }
+
+    llvm::Value* LLVMCodeGenerator::generateFieldAccessPointer(BinaryExpression* node) noexcept
+    {
+        if (node->rightExpression()->kind() != NodeKind::NameExpression)
+        {
+            return nullptr;
+        }
+
+        auto* objectValue = generateExpression(node->leftExpression().get());
+        if (objectValue == nullptr)
+        {
+            return nullptr;
+        }
+
+        llvm::Value* objectPointer = nullptr;
+        if (node->leftExpression()->type().isReference())
+        {
+            objectPointer = getPointerForAssignment(node->leftExpression().get(), objectValue);
+        }
+        else if (auto* objectLoad = llvm::dyn_cast<llvm::LoadInst>(objectValue))
+        {
+            objectPointer = objectLoad->getPointerOperand();
+        }
+
+        if (objectPointer == nullptr)
+        {
+            return nullptr;
+        }
+
+        auto objectType = node->leftExpression()->type().toValue();
+        auto* fieldNameExpression = static_cast<NameExpression*>(node->rightExpression().get());
+        return getPointerToField(objectPointer, objectType, fieldNameExpression->name());
     }
 }

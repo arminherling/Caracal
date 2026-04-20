@@ -790,12 +790,13 @@ namespace Caracal
                 }
                 else if (leftType.kind() == TypeKind::Type)
                 {
+                    auto& typeDefinition = m_module.getTypeDefinition(leftType);
+
                     if (binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression)
                     {
                         auto functionCallExpression = (FunctionCallExpression*)binaryExpression->rightExpression().get();
                         const auto& name = functionCallExpression->nameExpression()->name();
 
-                        auto& typeDefinition = m_module.getTypeDefinition(leftType);
                         auto methodType = typeDefinition.tryGetMethodTypeByName(name);
                         if (methodType != Type::Undefined())
                         {
@@ -838,6 +839,21 @@ namespace Caracal
                         {
                             TODO("Add error diagnostics for unknown method");
                         }
+                    }
+                    else if (binaryExpression->rightExpression()->kind() == NodeKind::NameExpression)
+                    {
+                        auto* fieldNameExpression = static_cast<NameExpression*>(binaryExpression->rightExpression().get());
+                        const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldNameExpression->name());
+                        if (fieldDefinition.type() == Type::Undefined())
+                        {
+                            TODO("Add error diagnostics for unknown field");
+                            return Type::Undefined();
+                        }
+
+                        auto fieldType = fieldDefinition.type();
+                        fieldNameExpression->setType(fieldType);
+                        binaryExpression->setType(fieldType);
+                        return fieldType;
                     }
                     else
                     {
@@ -1006,16 +1022,27 @@ namespace Caracal
             }
         }
 
-        for (size_t i = 0; i < expectedArgumentCount; ++i)
+        for (size_t i = 0; i < arguments.size(); ++i)
         {
             auto* argument = arguments[i].get();
-            const auto expectedType = parameterTypes[i + parameterOffset].type();
-
             auto argumentType = typeCheckExpression(argument);
-            if (argumentType != expectedType)
+
+            if (i < expectedArgumentCount)
             {
-                TODO("Add error diagnostics for argument type mismatch");
-                return false;
+                const auto expectedType = parameterTypes[i + parameterOffset].type();
+                if (argumentType != expectedType)
+                {
+                    TODO("Add error diagnostics for argument type mismatch");
+                    return false;
+                }
+            }
+            else
+            {
+                if (argumentType == Type::Undefined() || argumentType == Type::Void())
+                {
+                    TODO("Add error diagnostics for invalid variadic argument type");
+                    return false;
+                }
             }
         }
 

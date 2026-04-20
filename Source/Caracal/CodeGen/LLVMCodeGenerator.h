@@ -72,6 +72,7 @@ namespace Caracal
         llvm::Value* generateNumberLiteral(NumberLiteral* node) noexcept;
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
         llvm::Value* getPointerToField(llvm::Value* objectPtr, Type objectType, std::string_view fieldName) noexcept;
+        llvm::Value* generateFieldAccessPointer(BinaryExpression* node) noexcept;
         bool tryGenerateConstructorCallInto(BinaryExpression* binaryExpression, llvm::Value* destinationPtr) noexcept;
         bool tryGenerateGlobalConstructorCall(const std::string& name, BinaryExpression* binaryExpression) noexcept;
         llvm::Function* getOrCreateGlobalInitFunction() noexcept;
