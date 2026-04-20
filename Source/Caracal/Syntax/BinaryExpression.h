@@ -9,6 +9,8 @@ namespace Caracal
     enum class BinaryOperatorKind
     {
         Invalid,
+        ConstructorCall,
+        MethodCall,
         MemberAccess,
         Addition,
         Subtraction,
@@ -38,6 +40,7 @@ namespace Caracal
         [[nodiscard]] const Token& binaryOperatorToken() const noexcept { return m_binaryOperatorToken; }
         [[nodiscard]] const ExpressionUPtr& rightExpression() const noexcept { return m_rightExpression; }
         [[nodiscard]] BinaryOperatorKind binaryOperator() const noexcept { return m_binaryOperator; }
+        void setBinaryOperatorKind(BinaryOperatorKind binaryOperator) noexcept { m_binaryOperator = binaryOperator; }
 
     private:
         ExpressionUPtr m_leftExpression;

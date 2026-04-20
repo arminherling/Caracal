@@ -516,8 +516,15 @@ namespace Caracal
 
         auto& typeDefinition = m_module.getTypeDefinition(typeType);
 
-        //auto constructorParameters = typeCheckParametersNode(statement->constructorParameters().value().get());
+        std::vector<Parameter> declaredConstructorParameters{};
+        const auto hasConstructorParameters = statement->constructorParameters().has_value();
+        if (hasConstructorParameters)
+        {
+            pushScope(ScopeKind::Type);
+            declaredConstructorParameters = typeCheckParametersNode(statement->constructorParameters().value().get());
+        }
 
+        auto fieldIndex = 0;
         const auto& definitionStatements = statement->bodyNode()->statements();
         for (auto& definitionStatement : definitionStatements)
         {
@@ -525,7 +532,8 @@ namespace Caracal
             {
                 case NodeKind::TypeFieldDeclaration:
                 {
-                    typeCheckTypeFieldDeclaration(typeDefinition, (TypeFieldDeclaration*)definitionStatement.get());
+                    typeCheckTypeFieldDeclaration(typeDefinition, (TypeFieldDeclaration*)definitionStatement.get(), fieldIndex);
+                    ++fieldIndex;
                     break;
                 }
                 case NodeKind::MethodDefinitionStatement:
@@ -537,9 +545,26 @@ namespace Caracal
                     break;
             }
         }
+
+        if (hasConstructorParameters)
+        {
+            popScope();
+        }
+
+        if (typeDefinition.tryGetMethodTypeByName("new") != Type::Undefined())
+        {
+            TODO("Add diagnostics for duplicate constructor declaration");
+            return;
+        }
+
+        std::vector<Parameter> constructorParameters{};
+        constructorParameters.emplace_back("self", typeType.toReference());
+        constructorParameters.insert(constructorParameters.end(), declaredConstructorParameters.begin(), declaredConstructorParameters.end());
+
+        static_cast<void>(m_module.createConstructor(typeDefinition, constructorParameters));
     }
 
-    void TypeChecker::typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement)
+    void TypeChecker::typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex)
     {
         const auto& fieldName = statement->nameExpression()->name();
         if (typeDefinition.tryGetFieldByName(fieldName).type() != Type::Undefined())
@@ -577,7 +602,7 @@ namespace Caracal
 
         statement->nameExpression()->setType(fieldType);
         statement->setType(fieldType);
-        typeDefinition.addField(fieldType, fieldName, fieldExpression);
+        typeDefinition.addField(fieldType, fieldName, fieldIndex, fieldExpression);
     }
 
     void TypeChecker::typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement)
@@ -767,7 +792,6 @@ namespace Caracal
                 {
                     if (binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression)
                     {
-                        // TODO refactor with typeCheckFunctionCallExpression
                         auto functionCallExpression = (FunctionCallExpression*)binaryExpression->rightExpression().get();
                         const auto& name = functionCallExpression->nameExpression()->name();
 
@@ -776,6 +800,11 @@ namespace Caracal
                         if (methodType != Type::Undefined())
                         {
                             auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+                            if (!typeCheckCallArguments(functionCallExpression, methodDefinition))
+                            {
+                                return Type::Undefined();
+                            }
+
                             const auto& returnTypes = methodDefinition.returnTypes();
                             Type returnType = Type::Void();
                             if (returnTypes.size() == 1)
@@ -787,7 +816,20 @@ namespace Caracal
                                 TODO("Handle multiple return types");
                             }
 
-                            binaryExpression->setType(returnType);
+                            if(methodDefinition.functionType() == FunctionType::Constructor)
+                            {
+                                binaryExpression->setBinaryOperatorKind(BinaryOperatorKind::ConstructorCall);
+                                binaryExpression->setType(leftType);
+                                functionCallExpression->setType(leftType);
+                                functionCallExpression->setFunctionType(methodType);
+                                return leftType;
+                            }
+                            else
+                            {
+                                TODO("Handle methods");
+                                binaryExpression->setType(returnType);
+                            }
+
                             functionCallExpression->setType(returnType);
                             functionCallExpression->setFunctionType(methodType);
                             return returnType;
@@ -908,37 +950,9 @@ namespace Caracal
         }
         const auto& functionDefinition = m_module.getFunctionDefinition(functionType);
 
-        auto argumentsNode = functionCallExpression->argumentsNode().get();
-        auto argumentTypes = typeCheckArgumentsNode(argumentsNode);
-
-        const auto& parameterTypes = functionDefinition.parameters();
-        auto isVariadic = functionDefinition.isVariadic();
-        auto parameterCount = (isVariadic ? parameterTypes.size() - 1 : parameterTypes.size());
-        if (isVariadic)
+        if (!typeCheckCallArguments(functionCallExpression, functionDefinition))
         {
-            // we need at least the nonvariadic parameters, the others are optional
-            if (argumentTypes.size() < parameterCount)
-            {
-                TODO("Add error diagnostics for argument count mismatch in variadic function call");
-                return Type::Undefined();
-            }
-        }
-        else
-        {
-            if (parameterTypes.size() != argumentTypes.size())
-            {
-                TODO("Add error diagnostics for argument count mismatch");
-                return Type::Undefined();
-            }
-        }
-
-        for (size_t i = 0; i < parameterCount; ++i)
-        {
-            if (parameterTypes[i].type() != argumentTypes[i])
-            {
-                TODO("Add error diagnostics for argument type mismatch");
-                return Type::Undefined();
-            }
+            return Type::Undefined();
         }
 
         const auto& returnTypes = functionDefinition.returnTypes();
@@ -955,6 +969,57 @@ namespace Caracal
         functionCallExpression->setFunctionType(functionType);
         functionCallExpression->setType(returnType);
         return returnType;
+    }
+
+    bool TypeChecker::typeCheckCallArguments(
+        FunctionCallExpression* functionCallExpression,
+        const FunctionDefinition& functionDefinition)
+    {
+        const auto& parameterTypes = functionDefinition.parameters();
+        auto isVariadic = functionDefinition.isVariadic();
+        auto parameterCount = (isVariadic ? parameterTypes.size() - 1 : parameterTypes.size());
+        const size_t parameterOffset = functionDefinition.functionType() == FunctionType::Constructor ? 1 : 0;
+        if (parameterCount < parameterOffset)
+        {
+            TODO("This shouldn't happen");
+            return false;
+        }
+
+        auto argumentsNode = functionCallExpression->argumentsNode().get();
+        const auto& arguments = argumentsNode->arguments();
+        const auto expectedArgumentCount = parameterCount - parameterOffset;
+
+        if (isVariadic)
+        {
+            if (arguments.size() < expectedArgumentCount)
+            {
+                TODO("Add error diagnostics for argument count mismatch in variadic function call");
+                return false;
+            }
+        }
+        else
+        {
+            if (arguments.size() != expectedArgumentCount)
+            {
+                TODO("Add error diagnostics for argument count mismatch");
+                return false;
+            }
+        }
+
+        for (size_t i = 0; i < expectedArgumentCount; ++i)
+        {
+            auto* argument = arguments[i].get();
+            const auto expectedType = parameterTypes[i + parameterOffset].type();
+
+            auto argumentType = typeCheckExpression(argument);
+            if (argumentType != expectedType)
+            {
+                TODO("Add error diagnostics for argument type mismatch");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     Type TypeChecker::typeCheckNumberLiteral(NumberLiteral* literal)

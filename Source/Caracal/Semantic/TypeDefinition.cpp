@@ -12,17 +12,20 @@ namespace Caracal
     {
     }
 
-    void TypeDefinition::addField(Type fieldType, const std::string& fieldName, Expression* expression) noexcept
+    void TypeDefinition::addField(Type fieldType, const std::string& fieldName, i32 fieldIndex, Expression* expression) noexcept
     {
-        m_fields.try_emplace(fieldName, fieldType, fieldName, expression);
+        m_fields.emplace_back(fieldType, fieldName, fieldIndex, expression);
     }
 
     const FieldDefinition& TypeDefinition::tryGetFieldByName(std::string_view fieldName) const noexcept
     {
-        static auto invalidField = FieldDefinition{ Type::Undefined(), std::string("???"), nullptr };
+        static auto invalidField = FieldDefinition{ Type::Undefined(), std::string("???"), 0, nullptr };
 
-        if (const auto result = m_fields.find(std::string(fieldName)); result != m_fields.end())
-            return result->second;
+        for (const auto& field : m_fields)
+        {
+            if (field.name() == fieldName)
+                return field;
+        }
 
         return invalidField;
     }

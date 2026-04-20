@@ -5,12 +5,16 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/ADT/APFloat.h>
 #include <Caracal/Syntax/GroupingExpression.h>
+#include <Caracal/Syntax/TypeFieldDeclaration.h>
 
 namespace Caracal
 {
+    constexpr auto GlobalInitFunctionName = "__caracal_global_init";
+
     [[nodiscard]] static auto InitializeTypeToLLVMType(llvm::LLVMContext& context) noexcept
     {
         return std::unordered_map<Type, llvm::Type*>{
+            { Type::Void(), llvm::Type::getVoidTy(context) },
             { Type::Bool(), llvm::Type::getInt1Ty(context) },
             { Type::U8(), llvm::Type::getInt8Ty(context) },
             { Type::I32(), llvm::Type::getInt32Ty(context) },
@@ -33,11 +37,54 @@ namespace Caracal
         return nullptr;
     }
 
+    [[nodiscard]] static llvm::Type* GetLLVMTypeForCaraType(
+        Type type,
+        llvm::LLVMContext& context,
+        llvm::Module& llvmModule,
+        Module& caracalModule) noexcept
+    {
+        if (auto* llvmType = GetLLVMTypeForCaraType(type, context))
+            return llvmType;
+
+        if (type.kind() == TypeKind::Type)
+        {
+            const auto typeName = caracalModule.getNameByType(type);
+            if (!typeName.empty())
+            {
+                if (auto* structType = llvm::StructType::getTypeByName(context, typeName))
+                    return structType;
+            }
+        }
+
+        return nullptr;
+    }
+
     [[nodiscard]] static auto InitializeBuiltinFunctions() noexcept
     {
         return std::unordered_map<std::string_view, std::string_view>{
             { std::string_view("print"), std::string_view("printf") },
         };
+    }
+
+    [[nodiscard]] static llvm::Value* PromoteVariadicArgumentIfNeeded(
+        llvm::Value* llvmArgumentValue,
+        llvm::IRBuilderBase* irBuilder,
+        llvm::Module& llvmModule,
+        bool functionIsVariadic) noexcept
+    {
+        if (!functionIsVariadic || llvmArgumentValue == nullptr)
+            return llvmArgumentValue;
+
+        if (llvmArgumentValue->getType()->isIntegerTy(1) || llvmArgumentValue->getType()->isIntegerTy(8))
+        {
+            return irBuilder->CreateZExt(llvmArgumentValue, llvm::Type::getInt32Ty(llvmModule.getContext()));
+        }
+        else if (llvmArgumentValue->getType()->isFloatTy())
+        {
+            return irBuilder->CreateFPExt(llvmArgumentValue, llvm::Type::getDoubleTy(llvmModule.getContext()));
+        }
+
+        return llvmArgumentValue;
     }
 
     [[nodiscard]] static std::string_view MapFunctionNameToExternFunction(std::string_view functionName) noexcept
@@ -50,7 +97,7 @@ namespace Caracal
     }
 
     [[nodiscard]] static void SetupFunctionParameters(
-        FunctionDefinition& functionDefinition,
+        const FunctionDefinition& functionDefinition,
         llvm::Function* llvmFunction,
         LLVMScope* scope,
         llvm::IRBuilderBase* irBuilderBase) noexcept
@@ -190,8 +237,21 @@ namespace Caracal
         }
         const auto nameExpression = (NameExpression*)leftExpression;
         const auto& name = nameExpression->name();
+
+        const auto* rightExpression = node->rightExpression().get();
+        if (node->isGlobalConstant() && rightExpression->kind() == NodeKind::BinaryExpression)
+        {
+            auto* binaryExpression = (BinaryExpression*)rightExpression;
+            if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
+            {
+                if (tryGenerateGlobalConstructorCall(name, binaryExpression))
+                {
+                    return;
+                }
+            }
+        }
         
-        auto llvmValue = generateExpression(node->rightExpression().get());
+        auto llvmValue = generateExpression(rightExpression);
         if (!llvmValue)
         {
             TODO("Right-hand side of constant declaration produced null during codegen");
@@ -229,7 +289,22 @@ namespace Caracal
         const auto nameExpression = (NameExpression*)leftExpression;
         const auto& name = nameExpression->name();
 
-        auto llvmValue = generateExpression(node->rightExpression().get());
+        const auto* rightExpression = node->rightExpression().get();
+        if (rightExpression->kind() == NodeKind::BinaryExpression)
+        {
+            auto* binaryExpression = (BinaryExpression*)rightExpression;
+            if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
+            {
+                auto* llvmType = GetLLVMTypeForCaraType(binaryExpression->type(), m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+                auto* localValue = createLocalValue(name, llvmType);
+                if (tryGenerateConstructorCallInto(binaryExpression, localValue))
+                {
+                    return;
+                }
+            }
+        }
+
+        auto llvmValue = generateExpression(rightExpression);
         if (!llvmValue)
         {
             TODO("Right-hand side of variable declaration produced null during codegen");
@@ -252,6 +327,41 @@ namespace Caracal
     {
         const auto leftExpression = node->leftExpression().get();
         const auto rightExpression = node->rightExpression().get();
+
+        if (rightExpression->kind() == NodeKind::BinaryExpression)
+        {
+            auto* binaryExpression = (BinaryExpression*)rightExpression;
+            if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
+            {
+                auto llvmLeftValue = generateExpression(leftExpression);
+                if (llvmLeftValue == nullptr)
+                {
+                    TODO("Left expression return nullptr");
+                    return;
+                }
+
+                llvm::Value* destinationPtr = nullptr;
+                if (leftExpression->type().isReference())
+                {
+                    destinationPtr = getPointerForAssignment(leftExpression, llvmLeftValue);
+                }
+                else if (auto localLoad = llvm::dyn_cast<llvm::LoadInst>(llvmLeftValue))
+                {
+                    destinationPtr = localLoad->getPointerOperand();
+                }
+
+                if (destinationPtr == nullptr)
+                {
+                    TODO("Left expression of assignment statement must be assignable");
+                    return;
+                }
+
+                if (tryGenerateConstructorCallInto(binaryExpression, destinationPtr))
+                {
+                    return;
+                }
+            }
+        }
 
         auto llvmLeftValue = generateExpression(leftExpression);
         if (llvmLeftValue == nullptr)
@@ -330,6 +440,74 @@ namespace Caracal
             m_irBuilder->CreateRetVoid();
         }
         
+        popScope();
+        m_currentFunction = nullptr;
+    }
+
+    void LLVMCodeGenerator::generateSynthesizedConstructor(const FunctionDefinition& functionDefinition) noexcept
+    {
+        auto& typeDefinition = m_caracalModule.getTypeDefinition(functionDefinition.parentType());
+
+        m_currentFunction = getFunctionDeclaration(functionDefinition);
+
+        pushScope();
+
+        auto* entry = llvm::BasicBlock::Create(m_llvmModule.getContext(), "entry", m_currentFunction);
+        m_irBuilder->SetInsertPoint(entry);
+
+        SetupFunctionParameters(functionDefinition, m_currentFunction, currentScope(), m_irBuilder.get());
+
+        auto* selfValue = currentScope()->getVariableBinding("self");
+        if (selfValue == nullptr)
+        {
+            TODO("Synthesized constructor requires self parameter");
+            popScope();
+            m_currentFunction = nullptr;
+            return;
+        }
+
+        auto* selfPointer = getPointerForAssignment(nullptr, selfValue);
+        if (selfPointer == nullptr)
+        {
+            TODO("Could not get self pointer for synthesized constructor");
+            popScope();
+            m_currentFunction = nullptr;
+            return;
+        }
+
+        for (const auto& fieldDefinition : typeDefinition.fields())
+        {
+            const auto& fieldName = fieldDefinition.name();
+            auto* fieldPointer = getPointerToField(selfPointer, functionDefinition.parentType(), fieldName);
+            if (fieldPointer == nullptr)
+            {
+                TODO("Could not get pointer to field in synthesized constructor");
+                continue;
+            }
+
+            llvm::Value* fieldValue = nullptr;
+            if (auto* parameterValue = currentScope()->getVariableBinding(fieldName))
+            {
+                fieldValue = parameterValue;
+            }
+            else if (fieldDefinition.expression() != nullptr)
+            {
+                fieldValue = generateExpression(fieldDefinition.expression());
+            }
+
+            if (fieldValue != nullptr)
+            {
+                auto* llvmFieldType = GetLLVMTypeForCaraType(fieldDefinition.type(), m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+                fieldValue = dereferenceIfNeeded(fieldDefinition.expression(), fieldValue, llvmFieldType);
+                m_irBuilder->CreateStore(fieldValue, fieldPointer);
+            }
+        }
+
+        if (!m_irBuilder->GetInsertBlock()->getTerminator())
+        {
+            m_irBuilder->CreateRetVoid();
+        }
+
         popScope();
         m_currentFunction = nullptr;
     }
@@ -580,6 +758,46 @@ namespace Caracal
     {
         switch (node->binaryOperator())
         {
+            case BinaryOperatorKind::ConstructorCall:
+            {
+                const auto objectType = node->type();
+                auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+                if (llvmObjectType == nullptr)
+                {
+                    TODO("Constructor call target type not found");
+                    return nullptr;
+                }
+
+                auto* tempObject = createLocalValue("ctor_tmp", llvmObjectType);
+                auto* constructorCall = static_cast<FunctionCallExpression*>(node->rightExpression().get());
+                auto constructorType = constructorCall->functionType();
+                auto& constructorDefinition = m_caracalModule.getFunctionDefinition(constructorType);
+                auto* llvmConstructor = getFunctionDeclaration(constructorDefinition);
+                if (llvmConstructor == nullptr)
+                {
+                    TODO("Constructor function not found in module during constructor call generation");
+                    return nullptr;
+                }
+
+                std::vector<llvm::Value*> llvmArguments;
+                llvmArguments.push_back(tempObject);
+
+                const auto& arguments = constructorCall->argumentsNode()->arguments();
+                for (const auto& argument : arguments)
+                {
+                    auto* llvmArgumentValue = generateExpression(argument.get());
+                    if (llvmArgumentValue == nullptr)
+                    {
+                        TODO("Argument expression produced null during constructor call generation");
+                        return nullptr;
+                    }
+
+                    llvmArguments.push_back(llvmArgumentValue);
+                }
+
+                m_irBuilder->CreateCall(llvmConstructor, llvmArguments);
+                return m_irBuilder->CreateLoad(llvmObjectType, tempObject, "ctor_result");
+            }
             case BinaryOperatorKind::MemberAccess:
             {
                 const auto type = node->type();
@@ -935,19 +1153,13 @@ namespace Caracal
                 TODO("Argument expression produced null during call generation");
                 continue;
             }
-            if (functionIsVariadic)
-            {
-                // we need to promote bool to int32 for variadic functions like printf
-                if (llvmArgumentValue->getType()->isIntegerTy(1) || llvmArgumentValue->getType()->isIntegerTy(8))
-                {
-                    llvmArgumentValue = m_irBuilder->CreateZExt(llvmArgumentValue, llvm::Type::getInt32Ty(m_llvmModule.getContext()));
-                }
-                // we need to promote float to double for variadic functions like printf
-                else if (llvmArgumentValue->getType()->isFloatTy())
-                {
-                    llvmArgumentValue = m_irBuilder->CreateFPExt(llvmArgumentValue, llvm::Type::getDoubleTy(m_llvmModule.getContext()));
-                }
-            }
+
+            llvmArgumentValue = PromoteVariadicArgumentIfNeeded(
+                llvmArgumentValue,
+                m_irBuilder.get(),
+                m_llvmModule,
+                functionIsVariadic);
+
             llvmArguments.push_back(llvmArgumentValue);
         }
 
@@ -999,6 +1211,25 @@ namespace Caracal
         return m_irBuilder->CreateGlobalString(stringContent, "", 0, &m_llvmModule);
     }
 
+    llvm::Value* LLVMCodeGenerator::getPointerToField(llvm::Value* objectPtr, Type objectType, std::string_view fieldName) noexcept
+    {
+        auto& typeDefinition = m_caracalModule.getTypeDefinition(objectType);
+        const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldName);
+        if (fieldDefinition.type() == Type::Undefined())
+        {
+            return nullptr;
+        }
+
+        auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+        auto* llvmStructType = llvm::dyn_cast<llvm::StructType>(llvmObjectType);
+        if (llvmStructType == nullptr)
+        {
+            return nullptr;
+        }
+
+        return m_irBuilder->CreateStructGEP(llvmStructType, objectPtr, static_cast<unsigned>(fieldDefinition.index()), std::string(fieldName));
+    }
+
     llvm::FunctionType* LLVMCodeGenerator::buildFunctionType(const FunctionDefinition& functionDefinition) noexcept
     {
         auto& context = m_llvmModule.getContext();
@@ -1009,7 +1240,7 @@ namespace Caracal
             {
                 TODO("Handle multiple return types in function type generation");
             }
-            llvmReturnType = GetLLVMTypeForCaraType(functionDefinition.returnTypes()[0], context);
+            llvmReturnType = GetLLVMTypeForCaraType(functionDefinition.returnTypes()[0], context, m_llvmModule, m_caracalModule);
         }
         else
         {
@@ -1023,11 +1254,126 @@ namespace Caracal
         
         for (size_t i = 0; i < parameterCount; i++)
         {
-            auto llvmParameterType = GetLLVMTypeForCaraType(parameters[i].type(), context);
+            auto llvmParameterType = GetLLVMTypeForCaraType(parameters[i].type(), context, m_llvmModule, m_caracalModule);
             llvmParameterTypes.push_back(llvmParameterType);
         }
         
         return llvm::FunctionType::get(llvmReturnType, llvmParameterTypes, isVariadic);
+    }
+
+    bool LLVMCodeGenerator::tryGenerateConstructorCallInto(BinaryExpression* binaryExpression, llvm::Value* destinationPtr) noexcept
+    {
+        auto* constructorCall = static_cast<FunctionCallExpression*>(binaryExpression->rightExpression().get());
+        auto constructorType = constructorCall->functionType();
+        auto& constructorDefinition = m_caracalModule.getFunctionDefinition(constructorType);
+        auto* llvmConstructor = getFunctionDeclaration(constructorDefinition);
+        if (llvmConstructor == nullptr)
+        {
+            TODO("Constructor function not found during constructor call generation");
+            return false;
+        }
+
+        std::vector<llvm::Value*> llvmArguments;
+        llvmArguments.push_back(destinationPtr);
+
+        const auto& arguments = constructorCall->argumentsNode()->arguments();
+        for (const auto& argument : arguments)
+        {
+            auto* llvmArgumentValue = generateExpression(argument.get());
+            if (llvmArgumentValue == nullptr)
+            {
+                TODO("Argument expression produced null during constructor call generation");
+                return false;
+            }
+
+            llvmArguments.push_back(llvmArgumentValue);
+        }
+
+        m_irBuilder->CreateCall(llvmConstructor, llvmArguments);
+        return true;
+    }
+
+    bool LLVMCodeGenerator::tryGenerateGlobalConstructorCall(const std::string& name, BinaryExpression* binaryExpression) noexcept
+    {
+        auto objectType = binaryExpression->type();
+        auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+        if (llvmObjectType == nullptr)
+        {
+            TODO("Global constructor call target type not found");
+            return false;
+        }
+
+        auto* llvmStructType = llvm::dyn_cast<llvm::StructType>(llvmObjectType);
+        if (llvmStructType == nullptr)
+        {
+            TODO("Global constructor call target must be a struct type");
+            return false;
+        }
+
+        auto* zeroInitializer = llvm::Constant::getNullValue(llvmStructType);
+        auto* globalValue = createGlobalValue(name, zeroInitializer, false);
+        auto* globalVariable = llvm::dyn_cast<llvm::GlobalVariable>(globalValue);
+        if (globalVariable == nullptr)
+        {
+            TODO("Expected global variable for global constructor call");
+            return false;
+        }
+
+        auto* initFunction = getOrCreateGlobalInitFunction();
+        if (initFunction == nullptr)
+        {
+            return false;
+        }
+
+        auto* previousFunction = m_currentFunction;
+        auto* previousConditionBlock = m_currentConditionBlock;
+        auto* previousEndBlock = m_currentEndBlock;
+        auto* previousInsertBlock = m_irBuilder->GetInsertBlock();
+
+        m_currentFunction = initFunction;
+        m_currentConditionBlock = nullptr;
+        m_currentEndBlock = nullptr;
+
+        auto& entryBlock = initFunction->getEntryBlock();
+        if (entryBlock.empty())
+        {
+            m_irBuilder->SetInsertPoint(&entryBlock);
+        }
+        else if (entryBlock.getTerminator() != nullptr)
+        {
+            m_irBuilder->SetInsertPoint(entryBlock.getTerminator());
+        }
+        else
+        {
+            m_irBuilder->SetInsertPoint(&entryBlock);
+        }
+
+        const auto generated = tryGenerateConstructorCallInto(binaryExpression, globalVariable);
+
+        m_currentFunction = previousFunction;
+        m_currentConditionBlock = previousConditionBlock;
+        m_currentEndBlock = previousEndBlock;
+        if (previousInsertBlock != nullptr)
+        {
+            m_irBuilder->SetInsertPoint(previousInsertBlock);
+        }
+
+        return generated;
+    }
+
+    llvm::Function* LLVMCodeGenerator::getOrCreateGlobalInitFunction() noexcept
+    {
+        auto* initFunction = m_llvmModule.getFunction(GlobalInitFunctionName);
+        if (initFunction != nullptr)
+        {
+            return initFunction;
+        }
+
+        auto* initFunctionType = llvm::FunctionType::get(llvm::Type::getVoidTy(m_llvmModule.getContext()), false);
+        initFunction = llvm::Function::Create(initFunctionType, llvm::Function::InternalLinkage, GlobalInitFunctionName, &m_llvmModule);
+        llvm::BasicBlock::Create(m_llvmModule.getContext(), "entry", initFunction);
+
+        return initFunction;
     }
 
     void LLVMCodeGenerator::generateFunctionBodies() noexcept
@@ -1035,6 +1381,12 @@ namespace Caracal
         for (const auto& definitionPair : m_caracalModule.functionDefinitions())
         {
             const auto& functionDefinition = definitionPair.second;
+            if (functionDefinition.functionType() == FunctionType::Constructor)
+            {
+                generateSynthesizedConstructor(functionDefinition);
+                continue;
+            }
+
             // skip builtin functions like print until we got a prelude
             if (functionDefinition.statement() == nullptr)
                 continue;
@@ -1055,6 +1407,21 @@ namespace Caracal
                 {
                     generateFunction(functionDefinition.type(), methodStatement->bodyNode().get());
                 }
+            }
+        }
+
+        finishGlobalInitFunctionGeneration();
+    }
+
+    void LLVMCodeGenerator::finishGlobalInitFunctionGeneration()
+    {
+        if (auto* globalInitFunction = m_llvmModule.getFunction(GlobalInitFunctionName))
+        {
+            auto& entryBlock = globalInitFunction->getEntryBlock();
+            if (!entryBlock.getTerminator())
+            {
+                llvm::IRBuilder<> builder(&entryBlock);
+                builder.CreateRetVoid();
             }
         }
     }
@@ -1092,8 +1459,50 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateTopLevelDeclarations() noexcept
     {
-        generateConstantDeclarations();
+        generateTypeDeclarations();
         generateFunctionDeclarations();
+        generateConstantDeclarations();
+    }
+
+    void LLVMCodeGenerator::generateTypeDeclarations() noexcept
+    {
+        auto& context = m_llvmModule.getContext();
+
+        for (const auto& definitionPair : m_caracalModule.typeDefinitions())
+        {
+            const auto& typeDefinition = definitionPair.second;
+
+            auto* llvmStructType = llvm::StructType::getTypeByName(context, typeDefinition.name());
+            if (llvmStructType == nullptr)
+            {
+                llvmStructType = llvm::StructType::create(context, typeDefinition.name());
+            }
+
+            if (!llvmStructType->isOpaque())
+                continue;
+
+            std::vector<llvm::Type*> fieldTypes;
+            const auto& fields = typeDefinition.fields();
+            fieldTypes.reserve(fields.size());
+            for (const auto& fieldDefinition : fields)
+            {
+                llvm::Type* llvmFieldType = GetLLVMTypeForCaraType(
+                    fieldDefinition.type(),
+                    context,
+                    m_llvmModule,
+                    m_caracalModule);
+
+                if (llvmFieldType == nullptr)
+                {
+                    TODO("Unsupported field type in type declaration generation");
+                    continue;
+                }
+
+                fieldTypes.push_back(llvmFieldType);
+            }
+
+            llvmStructType->setBody(fieldTypes, false);
+        }
     }
 
     void LLVMCodeGenerator::generateConstantDeclarations() noexcept
@@ -1104,6 +1513,18 @@ namespace Caracal
             const auto expression = constantDefinition.expression();
             if (expression == nullptr)
                 continue;
+
+            if (expression->kind() == NodeKind::BinaryExpression)
+            {
+                auto* binaryExpression = const_cast<BinaryExpression*>(static_cast<const BinaryExpression*>(expression));
+                if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
+                {
+                    if (tryGenerateGlobalConstructorCall(constantDefinition.name(), binaryExpression))
+                    {
+                        continue;
+                    }
+                }
+            }
 
             auto llvmValue = generateExpression(expression);
             if (!llvmValue)
@@ -1148,8 +1569,14 @@ namespace Caracal
 
     llvm::Value* LLVMCodeGenerator::createLocalValue(const std::string& name, llvm::Type* type) noexcept
     {
-        llvm::IRBuilder<> builder(&m_currentFunction->getEntryBlock(), 
-                              m_currentFunction->getEntryBlock().getFirstInsertionPt());
+        auto& entryBlock = m_currentFunction->getEntryBlock();
+        auto insertPoint = entryBlock.getFirstInsertionPt();
+        while (insertPoint != entryBlock.end() && llvm::isa<llvm::AllocaInst>(&*insertPoint))
+        {
+            ++insertPoint;
+        }
+
+        llvm::IRBuilder<> builder(&entryBlock, insertPoint);
 
         auto value = builder.CreateAlloca(type, 0, name);
         currentScope()->addVariableBinding(name, value);

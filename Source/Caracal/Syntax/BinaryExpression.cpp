@@ -52,6 +52,9 @@ namespace Caracal
     std::string stringify(BinaryOperatorKind operation)
     {
         static const std::unordered_map<BinaryOperatorKind, std::string> opToString{
+            { BinaryOperatorKind::Invalid,         std::string("Invalid") },
+            { BinaryOperatorKind::ConstructorCall, std::string("ConstructorCall") },
+            { BinaryOperatorKind::MethodCall,      std::string("MethodCall") },
             { BinaryOperatorKind::MemberAccess,    std::string("MemberAccess") },
             { BinaryOperatorKind::Addition,        std::string("Addition") },
             { BinaryOperatorKind::Subtraction,     std::string("Subtraction") },

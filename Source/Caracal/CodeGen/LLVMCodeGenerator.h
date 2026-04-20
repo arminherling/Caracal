@@ -55,6 +55,7 @@ namespace Caracal
         void generateAssignmentStatement(AssignmentStatement* node) noexcept;
         void generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept;
         void generateFunction(Type functionType, BlockNode* body) noexcept;
+        void generateSynthesizedConstructor(const FunctionDefinition& functionDefinition) noexcept;
         void generateTypeDefinition(TypeDefinitionStatement* node) noexcept;
         void generateIfStatement(IfStatement* node) noexcept;
         void generateWhileStatement(WhileStatement* node) noexcept;
@@ -70,11 +71,17 @@ namespace Caracal
         llvm::Value* generateBoolLiteral(BoolLiteral* node) noexcept;
         llvm::Value* generateNumberLiteral(NumberLiteral* node) noexcept;
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
+        llvm::Value* getPointerToField(llvm::Value* objectPtr, Type objectType, std::string_view fieldName) noexcept;
+        bool tryGenerateConstructorCallInto(BinaryExpression* binaryExpression, llvm::Value* destinationPtr) noexcept;
+        bool tryGenerateGlobalConstructorCall(const std::string& name, BinaryExpression* binaryExpression) noexcept;
+        llvm::Function* getOrCreateGlobalInitFunction() noexcept;
 
         void generateFunctionBodies() noexcept;
+        void finishGlobalInitFunctionGeneration();
         void generateBlockNode(BlockNode* body) noexcept;
         void declareFunction(const FunctionDefinition& functionDefinition) noexcept;
         void generateTopLevelDeclarations() noexcept;
+        void generateTypeDeclarations() noexcept;
         void generateConstantDeclarations() noexcept;
         void generateFunctionDeclarations() noexcept;
         llvm::GlobalValue* createGlobalValue(const std::string& name, llvm::Constant* constant, bool isConst) noexcept;

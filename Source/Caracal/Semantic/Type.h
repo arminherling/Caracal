@@ -13,7 +13,8 @@ namespace Caracal
         Enum,
         Type,
         Function,
-        Method
+        Method,
+        Constructor
     };
 
     class CARACAL_API Type

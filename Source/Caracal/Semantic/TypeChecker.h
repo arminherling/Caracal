@@ -55,7 +55,7 @@ namespace Caracal
         void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
         void typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
         void typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement);
-        void typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement);
+        void typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex);
         void typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement);
         void typeCheckIfStatement(IfStatement* statement);
         void typeCheckWhileStatement(WhileStatement* statement);
@@ -67,9 +67,8 @@ namespace Caracal
         [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression);
         [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression);
         [[nodiscard]] Type typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression);
-
+        [[nodiscard]] bool typeCheckCallArguments(FunctionCallExpression* functionCallExpression, const FunctionDefinition& functionDefinition);
         [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
-
         [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
         [[nodiscard]] std::vector<Parameter> typeCheckParametersNode(ParametersNode* parametersNode);
         [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);

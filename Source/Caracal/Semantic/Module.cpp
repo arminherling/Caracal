@@ -87,14 +87,6 @@ namespace Caracal
             return invalidFunction;
     }
 
-    ConstantDefinition* Module::tryGetConstantDefinitionByName(std::string_view name) noexcept
-    {
-        if (const auto result = m_constantDefinitions.find(std::string(name)); result != m_constantDefinitions.end())
-            return &result->second;
-
-        return nullptr;
-    }
-
     Type Module::tryGetTypeByName(std::string_view name) const noexcept
     {
         if (const auto result = m_nameToTypes.find(std::string(name)); result != m_nameToTypes.end())
@@ -168,13 +160,28 @@ namespace Caracal
         auto parentType = typeDefinition.type();
         auto fullMethodName = typeDefinition.name() + "." + methodName;
         auto methodId = m_nextId += VariantCount;
-        auto valueType = Type{ methodId, TypeKind::Method };
+        auto methodType = Type{ methodId, TypeKind::Method };
         auto functionType = ToFunctionType(modifier);
         const Statement* statement = static_cast<const Statement*>(methodStatement);
-        m_functionDefinitions.try_emplace(methodId, FunctionDefinition{ statement, valueType, parentType, functionType, methodName, fullMethodName, false, parameters, returnTypes });
-        typeDefinition.addMethod(valueType, methodName);
+        m_functionDefinitions.try_emplace(methodId, FunctionDefinition{ statement, methodType, parentType, functionType, methodName, fullMethodName, false, parameters, returnTypes });
+        typeDefinition.addMethod(methodType, methodName);
 
         return m_functionDefinitions.at(methodId);
+    }
+
+    FunctionDefinition& Module::createConstructor(
+        TypeDefinition& typeDefinition,
+        const std::vector<Parameter>& parameters) noexcept
+    {
+        auto parentType = typeDefinition.type();
+        auto constructorName = std::string("new");
+        auto fullConstructorName = typeDefinition.name() + "." + constructorName;
+        auto constructorId = m_nextId += VariantCount;
+        auto methodType = Type{ constructorId, TypeKind::Constructor };
+        m_functionDefinitions.try_emplace(constructorId, FunctionDefinition{ nullptr, methodType, parentType, FunctionType::Constructor, constructorName, fullConstructorName, false, parameters, { Type::Void() } });
+        typeDefinition.addMethod(methodType, constructorName);
+
+        return m_functionDefinitions.at(constructorId);
     }
 
     ConstantDefinition& Module::createConstant(

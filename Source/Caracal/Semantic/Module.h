@@ -28,7 +28,6 @@ namespace Caracal
         [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;
         [[nodiscard]] TypeDefinition& getTypeDefinition(Type type) noexcept;
         [[nodiscard]] FunctionDefinition& getFunctionDefinition(Type type) noexcept;
-        [[nodiscard]] ConstantDefinition* tryGetConstantDefinitionByName(std::string_view name) noexcept;
         [[nodiscard]] Type tryGetTypeByName(std::string_view name) const noexcept;
         [[nodiscard]] std::string_view getNameByType(Type type) noexcept;
 
@@ -50,11 +49,15 @@ namespace Caracal
             const std::vector<Parameter>& parameters,
             const std::vector<Type>& returnTypes,
             const MethodDefinitionStatement* statement) noexcept;
+        [[nodiscard]] FunctionDefinition& createConstructor(
+            TypeDefinition& typeDefinition,
+            const std::vector<Parameter>& parameters) noexcept;
         [[nodiscard]] ConstantDefinition& createConstant(
             std::string_view name,
             Expression* expression) noexcept;
         void createBuiltinType(Type type, std::string_view name, bool addVariants = false);
 
+        [[nodiscard]] const std::unordered_map<i32, TypeDefinition>& typeDefinitions() const noexcept { return m_typeDefinitions; }
         [[nodiscard]] const std::unordered_map<std::string, ConstantDefinition>& constantDefinitions() const noexcept { return m_constantDefinitions; }
         [[nodiscard]] const std::unordered_map<i32, FunctionDefinition>& functionDefinitions() const noexcept { return m_functionDefinitions; }
 
