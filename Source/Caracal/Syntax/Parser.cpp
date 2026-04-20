@@ -221,26 +221,25 @@ namespace Caracal
             case TokenKind::Underscore:
             case TokenKind::Identifier:
             {
-                auto expression = parsePrimaryExpression(scope);
+                auto expression = parseExpression(scope);
                 if (currentToken().kind == TokenKind::Colon)
                 {
                     if (scope == StatementScope::Global || scope == StatementScope::Function || scope == StatementScope::Method)
                     {
                         return parseConstantOrVariableDeclaration(std::move(expression), scope);
                     }
-                    else if(scope == StatementScope::Type && expression->kind() == NodeKind::NameExpression)
+                    else if (scope == StatementScope::Type && expression->kind() == NodeKind::NameExpression)
                     {
                         return parseTypeFieldDeclaration(std::move(expression));
                     }
                     TODO("Constant or variable declaration in other scopes");
                     break;
                 }
-                if ((expression->kind() == NodeKind::NameExpression || expression->kind() == NodeKind::MemberAccessExpression) && currentToken().kind == TokenKind::Equal)
+                if ((expression->kind() == NodeKind::NameExpression || expression->kind() == NodeKind::BinaryExpression) && currentToken().kind == TokenKind::Equal)
                 {
                     if (scope == StatementScope::Function || scope == StatementScope::Method)
                     {
                         return parseAssignmentStatement(std::move(expression), scope);
-                        break;
                     }
                     TODO("Assignment statement in other scopes");
                     break;
