@@ -23,6 +23,7 @@ namespace Caracal
         , m_module{ module }
         , m_diagnostics{ diagnostics }
         , m_currentReturnType{ Type::Void() }
+        , m_currentType{ Type::Undefined() }
         , m_scopes{}
     {
         m_scopes.emplace_back(std::make_unique<Scope>(nullptr, ScopeKind::Global));
@@ -80,6 +81,11 @@ namespace Caracal
                                 const auto& methodName = methodStatement->methodNameNode()->methodName();
 
                                 std::vector<Parameter> parameters{};
+                                if (modifier != MethodModifier::Static)
+                                {
+                                    parameters.emplace_back("this", typeDefinition.type().toReference());
+                                }
+
                                 const auto& parametersNodes = methodStatement->parametersNode()->parameters();
                                 for (const auto& parameterNode : parametersNodes)
                                 {
@@ -187,6 +193,10 @@ namespace Caracal
                                 }
 
                                 auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+                                if (methodStatement->modifier() != MethodModifier::Static)
+                                {
+                                    parameters.insert(parameters.begin(), Parameter{ "this", typeType.toReference() });
+                                }
                                 methodDefinition.setParameters(parameters);
                                 methodDefinition.setReturnTypes(returns);
                             }
@@ -515,6 +525,7 @@ namespace Caracal
         }
 
         auto& typeDefinition = m_module.getTypeDefinition(typeType);
+        m_currentType = typeType;
 
         std::vector<Parameter> declaredConstructorParameters{};
         const auto hasConstructorParameters = statement->constructorParameters().has_value();
@@ -554,14 +565,16 @@ namespace Caracal
         if (typeDefinition.tryGetMethodTypeByName("new") != Type::Undefined())
         {
             TODO("Add diagnostics for duplicate constructor declaration");
+            m_currentType = Type::Undefined();
             return;
         }
 
         std::vector<Parameter> constructorParameters{};
-        constructorParameters.emplace_back("self", typeType.toReference());
+        constructorParameters.emplace_back("this", typeType.toReference());
         constructorParameters.insert(constructorParameters.end(), declaredConstructorParameters.begin(), declaredConstructorParameters.end());
 
         static_cast<void>(m_module.createConstructor(typeDefinition, constructorParameters));
+        m_currentType = Type::Undefined();
     }
 
     void TypeChecker::typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex)
@@ -718,11 +731,11 @@ namespace Caracal
             {
                 return typeCheckFunctionCallExpression((FunctionCallExpression*)expression);
             }
-            /*
             case NodeKind::MemberAccessExpression:
             {
                 return typeCheckMemberAccessExpression((MemberAccessExpression*)expression);
             }
+            /*
             case NodeKind::DiscardLiteral:
             {
                 return typeCheckDiscardLiteral((DiscardLiteral*)expression);
@@ -817,7 +830,7 @@ namespace Caracal
                                 TODO("Handle multiple return types");
                             }
 
-                            if(methodDefinition.functionType() == FunctionType::Constructor)
+                            if (methodDefinition.functionType() == FunctionType::Constructor)
                             {
                                 binaryExpression->setBinaryOperatorKind(BinaryOperatorKind::ConstructorCall);
                                 binaryExpression->setType(leftType);
@@ -825,12 +838,8 @@ namespace Caracal
                                 functionCallExpression->setFunctionType(methodType);
                                 return leftType;
                             }
-                            else
-                            {
-                                TODO("Handle methods");
-                                binaryExpression->setType(returnType);
-                            }
 
+                            binaryExpression->setType(returnType);
                             functionCallExpression->setType(returnType);
                             functionCallExpression->setFunctionType(methodType);
                             return returnType;
@@ -987,6 +996,21 @@ namespace Caracal
         return returnType;
     }
 
+    Type TypeChecker::typeCheckMemberAccessExpression(MemberAccessExpression* memberAccessExpression)
+    {
+        if (m_currentType == Type::Undefined())
+        {
+            TODO("Member access expression only supported in type scope");
+            return Type::Undefined();
+        }
+
+        auto& typeDefinition = m_module.getTypeDefinition(m_currentType);
+        auto type = typeCheckExpression(memberAccessExpression->expression().get());
+        memberAccessExpression->setType(type);
+
+        return type;
+    }
+
     bool TypeChecker::typeCheckCallArguments(
         FunctionCallExpression* functionCallExpression,
         const FunctionDefinition& functionDefinition)
@@ -994,7 +1018,11 @@ namespace Caracal
         const auto& parameterTypes = functionDefinition.parameters();
         auto isVariadic = functionDefinition.isVariadic();
         auto parameterCount = (isVariadic ? parameterTypes.size() - 1 : parameterTypes.size());
-        const size_t parameterOffset = functionDefinition.functionType() == FunctionType::Constructor ? 1 : 0;
+        const bool hasImplicitThis =
+            functionDefinition.functionType() == FunctionType::Constructor ||
+            functionDefinition.functionType() == FunctionType::PublicMethod ||
+            functionDefinition.functionType() == FunctionType::PrivateMethod;
+        const size_t parameterOffset = hasImplicitThis ? 1 : 0;
         if (parameterCount < parameterOffset)
         {
             TODO("This shouldn't happen");

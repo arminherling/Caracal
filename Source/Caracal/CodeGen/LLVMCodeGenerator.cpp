@@ -130,6 +130,7 @@ namespace Caracal
         Module& caracalModule,
         llvm::Module& llvmModule)
         : m_caracalModule{ caracalModule }
+        , m_currentType{ Type::Undefined() }
         , m_llvmModule{ llvmModule }
         , m_currentFunction{ nullptr }
         , m_currentConditionBlock{ nullptr }
@@ -457,19 +458,19 @@ namespace Caracal
 
         SetupFunctionParameters(functionDefinition, m_currentFunction, currentScope(), m_irBuilder.get());
 
-        auto* selfValue = currentScope()->getVariableBinding("self");
-        if (selfValue == nullptr)
+        auto* thisValue = currentScope()->getVariableBinding("this");
+        if (thisValue == nullptr)
         {
-            TODO("Synthesized constructor requires self parameter");
+            TODO("Synthesized constructor requires this parameter");
             popScope();
             m_currentFunction = nullptr;
             return;
         }
 
-        auto* selfPointer = getPointerForAssignment(nullptr, selfValue);
-        if (selfPointer == nullptr)
+        auto* thisPointer = getPointerForAssignment(nullptr, thisValue);
+        if (thisPointer == nullptr)
         {
-            TODO("Could not get self pointer for synthesized constructor");
+            TODO("Could not get this pointer for synthesized constructor");
             popScope();
             m_currentFunction = nullptr;
             return;
@@ -478,7 +479,7 @@ namespace Caracal
         for (const auto& fieldDefinition : typeDefinition.fields())
         {
             const auto& fieldName = fieldDefinition.name();
-            auto* fieldPointer = getPointerToField(selfPointer, functionDefinition.parentType(), fieldName);
+            auto* fieldPointer = getPointerToField(thisPointer, functionDefinition.parentType(), fieldName);
             if (fieldPointer == nullptr)
             {
                 TODO("Could not get pointer to field in synthesized constructor");
@@ -655,7 +656,9 @@ namespace Caracal
     {
         if (node->expression().has_value())
         {
-            auto llvmReturnValue = generateExpression(node->expression().value().get());
+            auto* expression = node->expression().value().get();
+            auto llvmReturnValue = generateExpression(expression);
+
             m_irBuilder->CreateRet(llvmReturnValue);
         }
         else
@@ -675,6 +678,10 @@ namespace Caracal
             case NodeKind::BinaryExpression:
             {
                 return generateBinaryExpression((BinaryExpression*)node);
+            }
+            case NodeKind::MemberAccessExpression:
+            {
+                return generateMemberAccessExpression((MemberAccessExpression*)node);
             }
             case NodeKind::UnaryExpression:
             {
@@ -820,7 +827,50 @@ namespace Caracal
                 }
                 else if (node->rightExpression()->kind() == NodeKind::FunctionCallExpression)
                 {
-                    return generateExpression(node->rightExpression().get());
+                    auto* functionCallExpression = static_cast<FunctionCallExpression*>(node->rightExpression().get());
+                    auto functionType = functionCallExpression->functionType();
+                    auto& methodDefinition = m_caracalModule.getFunctionDefinition(functionType);
+                    auto* llvmMethod = getFunctionDeclaration(methodDefinition);
+                    if (llvmMethod == nullptr)
+                    {
+                        TODO("Method not found in module during member access call generation");
+                        return nullptr;
+                    }
+
+                    std::vector<llvm::Value*> llvmArguments;
+                    if (methodDefinition.functionType() == FunctionType::PublicMethod || methodDefinition.functionType() == FunctionType::PrivateMethod)
+                    {
+                        auto* thisPointer = getThisPointer(node->leftExpression().get());
+                        if (thisPointer == nullptr)
+                        {
+                            TODO("This expression produced null during method call generation");
+                            return nullptr;
+                        }
+
+                        llvmArguments.push_back(thisPointer);
+                    }
+
+                    const auto functionIsVariadic = llvmMethod->isVarArg();
+                    const auto& arguments = functionCallExpression->argumentsNode()->arguments();
+                    for (const auto& argument : arguments)
+                    {
+                        auto* llvmArgumentValue = generateExpression(argument.get());
+                        if (llvmArgumentValue == nullptr)
+                        {
+                            TODO("Argument expression produced null during method call generation");
+                            return nullptr;
+                        }
+
+                        llvmArgumentValue = PromoteVariadicArgumentIfNeeded(
+                            llvmArgumentValue,
+                            m_irBuilder.get(),
+                            m_llvmModule,
+                            functionIsVariadic);
+
+                        llvmArguments.push_back(llvmArgumentValue);
+                    }
+
+                    return m_irBuilder->CreateCall(llvmMethod, llvmArguments);
                 }
                 else if (node->rightExpression()->kind() == NodeKind::NameExpression)
                 {
@@ -1405,6 +1455,8 @@ namespace Caracal
         for (const auto& definitionPair : m_caracalModule.functionDefinitions())
         {
             const auto& functionDefinition = definitionPair.second;
+            m_currentType = functionDefinition.parentType();
+
             if (functionDefinition.functionType() == FunctionType::Constructor)
             {
                 generateSynthesizedConstructor(functionDefinition);
@@ -1433,6 +1485,7 @@ namespace Caracal
                 }
             }
         }
+        m_currentType = Type::Undefined();
 
         finishGlobalInitFunctionGeneration();
     }
@@ -1636,7 +1689,7 @@ namespace Caracal
 
     llvm::Value* LLVMCodeGenerator::dereferenceIfNeeded(Expression* expression, llvm::Value* value, llvm::Type* targetType) noexcept
     {
-        if (!expression->type().isReference())
+        if (expression != nullptr && !expression->type().isReference())
             return value;
 
         // we need to deref the pointer for the values, and we need to handle 
@@ -1727,6 +1780,103 @@ namespace Caracal
         return nullptr;
     }
 
+    llvm::Value* LLVMCodeGenerator::getThisPointer(Expression* thisExpression) noexcept
+    {
+        if (thisExpression == nullptr)
+        {
+            return nullptr;
+        }
+
+        if (thisExpression->type().isReference())
+        {
+            auto* thisValue = generateExpression(thisExpression);
+            if (thisValue == nullptr)
+            {
+                return nullptr;
+            }
+
+            return getPointerForAssignment(thisExpression, thisValue);
+        }
+
+        if (thisExpression->kind() == NodeKind::NameExpression)
+        {
+            auto* nameExpression = static_cast<NameExpression*>(thisExpression);
+            auto* binding = currentScope()->getVariableBinding(nameExpression->name());
+            if (binding != nullptr)
+            {
+                if (auto* allocaInstruction = llvm::dyn_cast<llvm::AllocaInst>(binding))
+                {
+                    return allocaInstruction;
+                }
+
+                if (auto* globalVariable = llvm::dyn_cast<llvm::GlobalVariable>(binding))
+                {
+                    return globalVariable;
+                }
+
+                if (auto* argument = llvm::dyn_cast<llvm::Argument>(binding))
+                {
+                    if (argument->getType()->isPointerTy())
+                    {
+                        return argument;
+                    }
+
+                    const auto temporaryThisName = std::string(nameExpression->name()) + ".addr";
+                    if (m_currentFunction != nullptr)
+                    {
+                        auto& entryBlock = m_currentFunction->getEntryBlock();
+                        for (auto& instruction : entryBlock)
+                        {
+                            auto* existingAlloca = llvm::dyn_cast<llvm::AllocaInst>(&instruction);
+                            if (existingAlloca == nullptr)
+                            {
+                                continue;
+                            }
+
+                            if (existingAlloca->getName() == temporaryThisName)
+                            {
+                                return existingAlloca;
+                            }
+                        }
+                    }
+
+                    auto thisType = thisExpression->type().toValue();
+                    auto* llvmThisType = GetLLVMTypeForCaraType(thisType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+                    if (llvmThisType == nullptr)
+                    {
+                        return nullptr;
+                    }
+
+                    auto* temporaryThis = createLocalValue(temporaryThisName, llvmThisType);
+                    m_irBuilder->CreateStore(argument, temporaryThis);
+                    return temporaryThis;
+                }
+            }
+        }
+
+        auto* thisValue = generateExpression(thisExpression);
+        if (thisValue == nullptr)
+        {
+            return nullptr;
+        }
+
+        if (auto* thisLoad = llvm::dyn_cast<llvm::LoadInst>(thisValue))
+        {
+            return thisLoad->getPointerOperand();
+        }
+
+        auto thisType = thisExpression->type().toValue();
+        auto* llvmThisType = GetLLVMTypeForCaraType(thisType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+        if (llvmThisType == nullptr)
+        {
+            return nullptr;
+        }
+
+        auto* temporaryThis = createLocalValue("method_this_tmp", llvmThisType);
+        m_irBuilder->CreateStore(thisValue, temporaryThis);
+        return temporaryThis;
+    }
+
     llvm::Value* LLVMCodeGenerator::generateFieldAccessPointer(BinaryExpression* node) noexcept
     {
         if (node->rightExpression()->kind() != NodeKind::NameExpression)
@@ -1734,35 +1884,7 @@ namespace Caracal
             return nullptr;
         }
 
-        auto* objectValue = generateExpression(node->leftExpression().get());
-        if (objectValue == nullptr)
-        {
-            return nullptr;
-        }
-
-        llvm::Value* objectPointer = nullptr;
-        if (node->leftExpression()->type().isReference())
-        {
-            objectPointer = getPointerForAssignment(node->leftExpression().get(), objectValue);
-        }
-        else if (auto* objectLoad = llvm::dyn_cast<llvm::LoadInst>(objectValue))
-        {
-            objectPointer = objectLoad->getPointerOperand();
-        }
-        else if (llvm::isa<llvm::Argument>(objectValue) || objectValue->getType()->isStructTy())
-        {
-            auto objectType = node->leftExpression()->type().toValue();
-            auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
-            if (llvmObjectType == nullptr)
-            {
-                return nullptr;
-            }
-
-            auto* temporaryObject = createLocalValue("member_access_tmp", llvmObjectType);
-            m_irBuilder->CreateStore(objectValue, temporaryObject);
-            objectPointer = temporaryObject;
-        }
-
+        auto* objectPointer = getThisPointer(node->leftExpression().get());
         if (objectPointer == nullptr)
         {
             return nullptr;
@@ -1771,5 +1893,109 @@ namespace Caracal
         auto objectType = node->leftExpression()->type().toValue();
         auto* fieldNameExpression = static_cast<NameExpression*>(node->rightExpression().get());
         return getPointerToField(objectPointer, objectType, fieldNameExpression->name());
+    }
+
+    llvm::Value* LLVMCodeGenerator::generateMemberAccessExpression(MemberAccessExpression* node) noexcept
+    {
+        if (m_currentFunction == nullptr)
+        {
+            TODO("Member access expression requires current function");
+            return nullptr;
+        }
+
+        auto* innerExpression = node->expression().get();
+        if (innerExpression->kind() == NodeKind::NameExpression)
+        {
+            auto* thisValue = currentScope()->getVariableBinding("this");
+            if (thisValue == nullptr)
+            {
+                TODO("Method member access requires this binding");
+                return nullptr;
+            }
+
+            auto* thisPointer = getPointerForAssignment(nullptr, thisValue);
+            if (thisPointer == nullptr)
+            {
+                TODO("Could not get this pointer for member access expression");
+                return nullptr;
+            }
+
+            auto* fieldNameExpression = static_cast<NameExpression*>(innerExpression);
+            auto* fieldPointer = getPointerToField(thisPointer, m_currentType, fieldNameExpression->name());
+            if (fieldPointer == nullptr)
+            {
+                TODO("Could not get field pointer for member access expression");
+                return nullptr;
+            }
+
+            auto fieldType = node->type();
+            if (fieldType.isReference())
+            {
+                return fieldPointer;
+            }
+
+            auto* llvmFieldType = GetLLVMTypeForCaraType(fieldType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+            if (llvmFieldType == nullptr)
+            {
+                TODO("Member access field type not found");
+                return nullptr;
+            }
+
+            return m_irBuilder->CreateLoad(llvmFieldType, fieldPointer, "member_field_load");
+        }
+        else if (innerExpression->kind() == NodeKind::FunctionCallExpression)
+        {
+            auto* thisValue = currentScope()->getVariableBinding("this");
+            if (thisValue == nullptr)
+            {
+                TODO("Method member call requires this binding");
+                return nullptr;
+            }
+
+            auto* thisPointer = getPointerForAssignment(nullptr, thisValue);
+            if (thisPointer == nullptr)
+            {
+                TODO("Could not get this pointer for member call expression");
+                return nullptr;
+            }
+
+            auto* functionCallExpression = static_cast<FunctionCallExpression*>(innerExpression);
+            auto functionType = functionCallExpression->functionType();
+            auto& methodDefinition = m_caracalModule.getFunctionDefinition(functionType);
+            auto* llvmMethod = getFunctionDeclaration(methodDefinition);
+            if (llvmMethod == nullptr)
+            {
+                TODO("Method not found in module during member access call generation");
+                return nullptr;
+            }
+
+            std::vector<llvm::Value*> llvmArguments;
+            llvmArguments.push_back(thisPointer);
+
+            const auto functionIsVariadic = llvmMethod->isVarArg();
+            const auto& arguments = functionCallExpression->argumentsNode()->arguments();
+            for (const auto& argument : arguments)
+            {
+                auto* llvmArgumentValue = generateExpression(argument.get());
+                if (llvmArgumentValue == nullptr)
+                {
+                    TODO("Argument expression produced null during member call generation");
+                    return nullptr;
+                }
+
+                llvmArgumentValue = PromoteVariadicArgumentIfNeeded(
+                    llvmArgumentValue,
+                    m_irBuilder.get(),
+                    m_llvmModule,
+                    functionIsVariadic);
+
+                llvmArguments.push_back(llvmArgumentValue);
+            }
+
+            return m_irBuilder->CreateCall(llvmMethod, llvmArguments);
+        }
+
+        TODO("Unsupported member access expression kind in code generation");
+        return nullptr;
     }
 }

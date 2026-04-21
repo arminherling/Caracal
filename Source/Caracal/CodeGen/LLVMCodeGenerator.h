@@ -13,6 +13,7 @@
 #include <Caracal/Syntax/NumberLiteral.h>
 #include <Caracal/Syntax/StringLiteral.h>
 #include <Caracal/Syntax/BinaryExpression.h>
+#include <Caracal/Syntax/MemberAccessExpression.h>
 #include <Caracal/Syntax/FunctionCallExpression.h>
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
@@ -65,6 +66,7 @@ namespace Caracal
 
         llvm::Value* generateExpression(const Expression* node) noexcept;
         llvm::Value* generateBinaryExpression(BinaryExpression* node) noexcept;
+        llvm::Value* generateMemberAccessExpression(MemberAccessExpression* node) noexcept;
         llvm::Value* generateUnaryExpression(UnaryExpression* node) noexcept;
         llvm::Value* generateNameExpression(NameExpression* node) noexcept; 
         llvm::Value* generateFunctionCallExpression(FunctionCallExpression* node) noexcept;
@@ -73,6 +75,7 @@ namespace Caracal
         llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
         llvm::Value* getPointerToField(llvm::Value* objectPtr, Type objectType, std::string_view fieldName) noexcept;
         llvm::Value* generateFieldAccessPointer(BinaryExpression* node) noexcept;
+        llvm::Value* getThisPointer(Expression* thisExpression) noexcept;
         bool tryGenerateConstructorCallInto(BinaryExpression* binaryExpression, llvm::Value* destinationPtr) noexcept;
         bool tryGenerateGlobalConstructorCall(const std::string& name, BinaryExpression* binaryExpression) noexcept;
         llvm::Function* getOrCreateGlobalInitFunction() noexcept;
@@ -98,6 +101,7 @@ namespace Caracal
 
     private:
         Module& m_caracalModule;
+        Type m_currentType;
         llvm::Module& m_llvmModule;
         llvm::Function* m_currentFunction;
         llvm::BasicBlock* m_currentConditionBlock;

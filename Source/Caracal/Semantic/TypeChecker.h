@@ -14,6 +14,7 @@
 #include <Caracal/Syntax/GroupingExpression.h>
 #include <Caracal/Syntax/UnaryExpression.h>
 #include <Caracal/Syntax/BinaryExpression.h>
+#include <Caracal/Syntax/MemberAccessExpression.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/NameExpression.h>
@@ -67,6 +68,7 @@ namespace Caracal
         [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression);
         [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression);
         [[nodiscard]] Type typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression);
+        [[nodiscard]] Type typeCheckMemberAccessExpression(MemberAccessExpression* memberAccessExpression);
         [[nodiscard]] bool typeCheckCallArguments(FunctionCallExpression* functionCallExpression, const FunctionDefinition& functionDefinition);
         [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
         [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
@@ -87,6 +89,7 @@ namespace Caracal
         Module& m_module;
         DiagnosticsBag& m_diagnostics;
         Type m_currentReturnType;
+        Type m_currentType;
         std::vector<std::unique_ptr<Scope>> m_scopes;
     };
 
