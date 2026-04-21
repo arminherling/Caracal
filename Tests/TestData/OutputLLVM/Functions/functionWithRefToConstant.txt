@@ -4,8 +4,8 @@ target triple = "x86_64-unknown-none"
 
 define void @main() {
 entry:
-  %b = alloca ptr, align 8
   %a = alloca i1, align 1
+  %b = alloca ptr, align 8
   store i1 true, ptr %a, align 1
   store ptr %a, ptr %b, align 8
   ret void
