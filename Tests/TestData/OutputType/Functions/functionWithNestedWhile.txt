@@ -1,0 +1,168 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(4): {
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: i
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: total
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        WhileStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: i
+                        }
+                    }
+                    Operation: LessThan
+                    Right: {
+                        NumberLiteral: 2
+                    }
+                }
+            }
+            True: {
+                BlockNode(3): {
+                    VariableDeclaration: {
+                        Type: i32
+                        Left: {
+                            NameExpression: {
+                                Type: i32
+                                Name: j
+                            }
+                        }
+                        Right: {
+                            NumberLiteral: 0
+                        }
+                    }
+                    WhileStatement: {
+                        Condition: {
+                            BinaryExpression: {
+                                Type: bool
+                                Left: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: j
+                                    }
+                                }
+                                Operation: LessThan
+                                Right: {
+                                    NumberLiteral: 2
+                                }
+                            }
+                        }
+                        True: {
+                            BlockNode(2): {
+                                AssignmentStatement: {
+                                    Left: {
+                                        NameExpression: {
+                                            Type: i32
+                                            Name: total
+                                        }
+                                    }
+                                    Right: {
+                                        BinaryExpression: {
+                                            Type: i32
+                                            Left: {
+                                                NameExpression: {
+                                                    Type: i32
+                                                    Name: total
+                                                }
+                                            }
+                                            Operation: Addition
+                                            Right: {
+                                                NumberLiteral: 1
+                                            }
+                                        }
+                                    }
+                                }
+                                AssignmentStatement: {
+                                    Left: {
+                                        NameExpression: {
+                                            Type: i32
+                                            Name: j
+                                        }
+                                    }
+                                    Right: {
+                                        BinaryExpression: {
+                                            Type: i32
+                                            Left: {
+                                                NameExpression: {
+                                                    Type: i32
+                                                    Name: j
+                                                }
+                                            }
+                                            Operation: Addition
+                                            Right: {
+                                                NumberLiteral: 1
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: i32
+                                Name: i
+                            }
+                        }
+                        Right: {
+                            BinaryExpression: {
+                                Type: i32
+                                Left: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: i
+                                    }
+                                }
+                                Operation: Addition
+                                Right: {
+                                    NumberLiteral: 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: total
+            }
+        }
+    }
+}

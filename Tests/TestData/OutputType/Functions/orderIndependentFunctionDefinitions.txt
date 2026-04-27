@@ -11,7 +11,7 @@ FunctionDefinitionStatement: {
                 Type: void
                 Function type: (string) -> void
                 NameExpression: {
-                    Type: undefined
+                    Type: (string) -> void
                     Name: print
                 }
                 ArgumentsNode(1): {
@@ -19,7 +19,7 @@ FunctionDefinitionStatement: {
                         Type: string
                         Function type: () -> string
                         NameExpression: {
-                            Type: undefined
+                            Type: () -> string
                             Name: value
                         }
                         ArgumentsNode(0): {

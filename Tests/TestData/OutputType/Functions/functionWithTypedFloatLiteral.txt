@@ -1,0 +1,37 @@
+FunctionDefinitionStatement: {
+    Type: () -> f32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: f32
+            Lexeme: f32
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: f32
+            Left: {
+                NameExpression: {
+                    Type: f32
+                    Name: value
+                }
+            }
+            Right: {
+                NumberLiteral: 1.5
+                TypeNameNode: {
+                    Type: f32
+                    Lexeme: f32
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: f32
+            NameExpression: {
+                Type: f32
+                Name: value
+            }
+        }
+    }
+}

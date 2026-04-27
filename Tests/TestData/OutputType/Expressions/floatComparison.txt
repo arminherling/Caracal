@@ -1,0 +1,27 @@
+FunctionDefinitionStatement: {
+    Type: () -> bool
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    NumberLiteral: 1.5
+                }
+                Operation: LessThan
+                Right: {
+                    NumberLiteral: 2.5
+                }
+            }
+        }
+    }
+}

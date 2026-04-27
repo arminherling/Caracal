@@ -1,0 +1,120 @@
+TypeDefinitionStatement: {
+    Type: Pair
+    Name: Pair
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: left
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+        ParameterNode: {
+            Name: right
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: left
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: left
+                }
+            }
+        }
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: right
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: right
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: Pair
+            Left: {
+                NameExpression: {
+                    Type: Pair
+                    Name: pair
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: Pair
+                    Left: {
+                        NameExpression: {
+                            Type: Pair
+                            Name: Pair
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: Pair
+                            Function type: (ref Pair, i32, i32) -> void
+                            NameExpression: {
+                                Type: (ref Pair, i32, i32) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(2): {
+                                NumberLiteral: 1
+                                NumberLiteral: 2
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: Pair
+                        Name: pair
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: right
+                    }
+                }
+            }
+        }
+    }
+}

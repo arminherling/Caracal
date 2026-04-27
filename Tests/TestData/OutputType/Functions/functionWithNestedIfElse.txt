@@ -1,0 +1,52 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        IfStatement: {
+            Condition: {
+                BoolLiteral: true
+            }
+            True: {
+                BlockNode(1): {
+                    IfStatement: {
+                        Condition: {
+                            BoolLiteral: false
+                        }
+                        True: {
+                            BlockNode(1): {
+                                ReturnStatement: {
+                                    Type: i32
+                                    NumberLiteral: 0
+                                }
+                            }
+                        }
+                        False: {
+                            BlockNode(1): {
+                                ReturnStatement: {
+                                    Type: i32
+                                    NumberLiteral: 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            False: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+    }
+}

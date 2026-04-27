@@ -1,0 +1,42 @@
+EnumDefinitionStatement: {
+    Type: Numbers(i32)
+    Name: Numbers
+    TypeNameNode: {
+        Type: i32
+        Lexeme: i32
+    }
+    FieldNodes(1): {
+        EnumFieldDeclaration: {
+            Name: One
+            NumberLiteral: 1
+            Value: 1
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: Numbers(i32)
+    Left: {
+        NameExpression: {
+            Type: Numbers(i32)
+            Name: value
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: Numbers(i32)
+            Left: {
+                NameExpression: {
+                    Type: Numbers(i32)
+                    Name: Numbers
+                }
+            }
+            Operation: MemberAccess
+            Right: {
+                NameExpression: {
+                    Type: Numbers(i32)
+                    Name: One
+                }
+            }
+        }
+    }
+}

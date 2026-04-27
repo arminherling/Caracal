@@ -1,0 +1,54 @@
+FunctionDefinitionStatement: {
+    Type: (string) -> i32
+    Name: puts
+    Annotation: {
+        Name: Extern
+        ArgumentsNode(0): {
+        }
+    }
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: message
+            TypeNameNode: {
+                Type: string
+                Lexeme: string
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(0): {
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            FunctionCallExpression: {
+                Type: i32
+                Function type: (string) -> i32
+                NameExpression: {
+                    Type: (string) -> i32
+                    Name: puts
+                }
+                ArgumentsNode(1): {
+                    StringLiteral: "hello"
+                }
+            }
+        }
+    }
+}

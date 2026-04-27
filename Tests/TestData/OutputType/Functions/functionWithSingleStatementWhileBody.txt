@@ -1,0 +1,75 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: i
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        WhileStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: i
+                        }
+                    }
+                    Operation: LessThan
+                    Right: {
+                        NumberLiteral: 3
+                    }
+                }
+            }
+            True: {
+                AssignmentStatement: {
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: i
+                        }
+                    }
+                    Right: {
+                        BinaryExpression: {
+                            Type: i32
+                            Left: {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: i
+                                }
+                            }
+                            Operation: Addition
+                            Right: {
+                                NumberLiteral: 1
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: i
+            }
+        }
+    }
+}

@@ -1,0 +1,201 @@
+TypeDefinitionStatement: {
+    Type: Number
+    Name: Number
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref Number) -> void
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: double
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(1): {
+                AssignmentStatement: {
+                    Left: {
+                        MemberAccessExpression: {
+                            NameExpression: {
+                                Type: i32
+                                Name: value
+                            }
+                        }
+                    }
+                    Right: {
+                        BinaryExpression: {
+                            Type: i32
+                            Left: {
+                                MemberAccessExpression: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: value
+                                    }
+                                }
+                            }
+                            Operation: Multiplication
+                            Right: {
+                                NumberLiteral: 2
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (ref Number) -> void
+    Name: mutate
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: n
+            TypeNameNode: {
+                Type: ref Number
+                Lexeme: Number
+                Ref: true
+            }
+        }
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        ExpressionStatement: {
+            BinaryExpression: {
+                Type: void
+                Left: {
+                    NameExpression: {
+                        Type: ref Number
+                        Name: n
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: void
+                        Function type: (ref Number) -> void
+                        NameExpression: {
+                            Type: (ref Number) -> void
+                            Name: double
+                        }
+                        ArgumentsNode(0): {
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: Number
+            Left: {
+                NameExpression: {
+                    Type: Number
+                    Name: n
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: Number
+                    Left: {
+                        NameExpression: {
+                            Type: Number
+                            Name: Number
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: Number
+                            Function type: (ref Number, i32) -> void
+                            NameExpression: {
+                                Type: (ref Number, i32) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(1): {
+                                NumberLiteral: 5
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                Type: void
+                Function type: (ref Number) -> void
+                NameExpression: {
+                    Type: (ref Number) -> void
+                    Name: mutate
+                }
+                ArgumentsNode(1): {
+                    UnaryExpression: {
+                        Type: ref Number
+                        Operation: ReferenceOf
+                        Expression: {
+                            NameExpression: {
+                                Type: Number
+                                Name: n
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: Number
+                        Name: n
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}

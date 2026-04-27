@@ -1,0 +1,161 @@
+TypeDefinitionStatement: {
+    Type: Number
+    Name: Number
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref Number) -> void
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: double
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(1): {
+                AssignmentStatement: {
+                    Left: {
+                        MemberAccessExpression: {
+                            NameExpression: {
+                                Type: i32
+                                Name: value
+                            }
+                        }
+                    }
+                    Right: {
+                        BinaryExpression: {
+                            Type: i32
+                            Left: {
+                                MemberAccessExpression: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: value
+                                    }
+                                }
+                            }
+                            Operation: Multiplication
+                            Right: {
+                                NumberLiteral: 2
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: Number
+    Left: {
+        NameExpression: {
+            Type: Number
+            Name: number
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: Number
+            Left: {
+                NameExpression: {
+                    Type: Number
+                    Name: Number
+                }
+            }
+            Operation: ConstructorCall
+            Right: {
+                FunctionCallExpression: {
+                    Type: Number
+                    Function type: (ref Number, i32) -> void
+                    NameExpression: {
+                        Type: (ref Number, i32) -> void
+                        Name: new
+                    }
+                    ArgumentsNode(1): {
+                        NumberLiteral: 4
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        ExpressionStatement: {
+            BinaryExpression: {
+                Type: void
+                Left: {
+                    NameExpression: {
+                        Type: Number
+                        Name: number
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: void
+                        Function type: (ref Number) -> void
+                        NameExpression: {
+                            Type: (ref Number) -> void
+                            Name: double
+                        }
+                        ArgumentsNode(0): {
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: Number
+                        Name: number
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}

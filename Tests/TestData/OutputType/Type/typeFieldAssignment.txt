@@ -1,0 +1,120 @@
+TypeDefinitionStatement: {
+    Type: Number
+    Name: Number
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    BlockNode(1): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: Number
+            Left: {
+                NameExpression: {
+                    Type: Number
+                    Name: n
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: Number
+                    Left: {
+                        NameExpression: {
+                            Type: Number
+                            Name: Number
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: Number
+                            Function type: (ref Number, i32) -> void
+                            NameExpression: {
+                                Type: (ref Number, i32) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(1): {
+                                NumberLiteral: 7
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        AssignmentStatement: {
+            Left: {
+                BinaryExpression: {
+                    Type: i32
+                    Left: {
+                        NameExpression: {
+                            Type: Number
+                            Name: n
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        NameExpression: {
+                            Type: i32
+                            Name: value
+                        }
+                    }
+                }
+            }
+            Right: {
+                NumberLiteral: 9
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: Number
+                        Name: n
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}

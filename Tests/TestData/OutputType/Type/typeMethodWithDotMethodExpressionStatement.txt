@@ -1,0 +1,70 @@
+TypeDefinitionStatement: {
+    Type: Number
+    Name: Number
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    BlockNode(3): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref Number) -> void
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: ping
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(0): {
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref Number) -> void
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: callPing
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(1): {
+                ExpressionStatement: {
+                    MemberAccessExpression: {
+                        FunctionCallExpression: {
+                            Type: void
+                            Function type: (ref Number) -> void
+                            NameExpression: {
+                                Type: (ref Number) -> void
+                                Name: ping
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

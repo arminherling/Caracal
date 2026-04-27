@@ -1,0 +1,27 @@
+TypeDefinitionStatement: {
+    Type: Zero
+    Name: Zero
+    BlockNode(1): {
+        MethodDefinitionStatement: {
+            Type: (ref Zero) -> i32
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: value
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    Type: i32
+                    NumberLiteral: 0
+                }
+            }
+        }
+    }
+}

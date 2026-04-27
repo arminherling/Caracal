@@ -1,0 +1,95 @@
+FunctionDefinitionStatement: {
+    Type: (string, C Variadic) -> i32
+    Name: printf
+    Annotation: {
+        Name: Extern
+        ArgumentsNode(0): {
+        }
+    }
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: message
+            TypeNameNode: {
+                Type: string
+                Lexeme: string
+            }
+        }
+        ParameterNode: {
+            Name: varargs
+            TypeNameNode: {
+                Type: C Variadic
+                Lexeme: ...
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(0): {
+    }
+}
+EnumDefinitionStatement: {
+    Type: Numbers(i32)
+    Name: Numbers
+    TypeNameNode: {
+        Type: i32
+        Lexeme: i32
+    }
+    FieldNodes(1): {
+        EnumFieldDeclaration: {
+            Name: One
+            NumberLiteral: 1
+            Value: 1
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                Type: i32
+                Function type: (string, C Variadic) -> i32
+                NameExpression: {
+                    Type: (string, C Variadic) -> i32
+                    Name: printf
+                }
+                ArgumentsNode(2): {
+                    StringLiteral: "%d\n"
+                    BinaryExpression: {
+                        Type: Numbers(i32)
+                        Left: {
+                            NameExpression: {
+                                Type: Numbers(i32)
+                                Name: Numbers
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            NameExpression: {
+                                Type: Numbers(i32)
+                                Name: One
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 0
+        }
+    }
+}

@@ -1,0 +1,26 @@
+FunctionDefinitionStatement: {
+    Type: (C Variadic) -> i32
+    Name: printf
+    Annotation: {
+        Name: Extern
+        ArgumentsNode(0): {
+        }
+    }
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: varargs
+            TypeNameNode: {
+                Type: C Variadic
+                Lexeme: ...
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(0): {
+    }
+}

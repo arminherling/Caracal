@@ -28,7 +28,7 @@ FunctionDefinitionStatement: {
                 Type: void
                 Function type: (i32) -> void
                 NameExpression: {
-                    Type: undefined
+                    Type: (i32) -> void
                     Name: inner
                 }
                 ArgumentsNode(1): {

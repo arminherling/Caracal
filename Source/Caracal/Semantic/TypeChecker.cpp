@@ -836,12 +836,14 @@ namespace Caracal
                                 binaryExpression->setType(leftType);
                                 functionCallExpression->setType(leftType);
                                 functionCallExpression->setFunctionType(methodType);
+                                functionCallExpression->nameExpression()->setType(methodType);
                                 return leftType;
                             }
 
                             binaryExpression->setType(returnType);
                             functionCallExpression->setType(returnType);
                             functionCallExpression->setFunctionType(methodType);
+                            functionCallExpression->nameExpression()->setType(methodType);
                             return returnType;
                         }
                         else
@@ -991,8 +993,9 @@ namespace Caracal
             TODO("Handle multiple return types");
         }
 
-        functionCallExpression->setFunctionType(functionType);
         functionCallExpression->setType(returnType);
+        functionCallExpression->setFunctionType(functionType);
+        functionCallExpression->nameExpression()->setType(functionType);
         return returnType;
     }
 

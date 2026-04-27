@@ -46,7 +46,7 @@ FunctionDefinitionStatement: {
                 Type: void
                 Function type: (i32) -> void
                 NameExpression: {
-                    Type: undefined
+                    Type: (i32) -> void
                     Name: inner
                 }
                 ArgumentsNode(1): {
@@ -54,7 +54,7 @@ FunctionDefinitionStatement: {
                         Type: i32
                         Function type: () -> i32
                         NameExpression: {
-                            Type: undefined
+                            Type: () -> i32
                             Name: one
                         }
                         ArgumentsNode(0): {

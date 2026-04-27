@@ -1,0 +1,18 @@
+FunctionDefinitionStatement: {
+    Type: () -> string
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: string
+            Lexeme: string
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: string
+            StringLiteral: "line1\nline2\t\"quoted\"\\"
+        }
+    }
+}

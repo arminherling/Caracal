@@ -48,7 +48,7 @@ ConstantDeclaration: {
                     Type: i32
                     Function type: () -> i32
                     NameExpression: {
-                        Type: undefined
+                        Type: () -> i32
                         Name: value
                     }
                     ArgumentsNode(0): {

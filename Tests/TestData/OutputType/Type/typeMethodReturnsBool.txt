@@ -1,0 +1,138 @@
+TypeDefinitionStatement: {
+    Type: Number
+    Name: Number
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref Number) -> bool
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: isPositive
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: bool
+                    Lexeme: bool
+                }
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    Type: bool
+                    BinaryExpression: {
+                        Type: bool
+                        Left: {
+                            MemberAccessExpression: {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: value
+                                }
+                            }
+                        }
+                        Operation: GreaterThan
+                        Right: {
+                            NumberLiteral: 0
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> bool
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: Number
+            Left: {
+                NameExpression: {
+                    Type: Number
+                    Name: n
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: Number
+                    Left: {
+                        NameExpression: {
+                            Type: Number
+                            Name: Number
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: Number
+                            Function type: (ref Number, i32) -> void
+                            NameExpression: {
+                                Type: (ref Number, i32) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(1): {
+                                NumberLiteral: 1
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    NameExpression: {
+                        Type: Number
+                        Name: n
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: bool
+                        Function type: (ref Number) -> bool
+                        NameExpression: {
+                            Type: (ref Number) -> bool
+                            Name: isPositive
+                        }
+                        ArgumentsNode(0): {
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

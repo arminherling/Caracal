@@ -1,0 +1,72 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(4): {
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NumberLiteral: 42
+            }
+        }
+        VariableDeclaration: {
+            Type: ref i32
+            Left: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: other
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: ref i32
+                    Lexeme: i32
+                    Ref: true
+                }
+            }
+            Right: {
+                UnaryExpression: {
+                    Type: ref i32
+                    Operation: ReferenceOf
+                    Expression: {
+                        NameExpression: {
+                            Type: i32
+                            Name: value
+                        }
+                    }
+                }
+            }
+        }
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: other
+                }
+            }
+            Right: {
+                NumberLiteral: 7
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: value
+            }
+        }
+    }
+}

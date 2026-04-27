@@ -1,0 +1,180 @@
+TypeDefinitionStatement: {
+    Type: Number
+    Name: Number
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref Number, ref i32) -> void
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: setFrom
+            }
+            ParametersNode(1): {
+                ParameterNode: {
+                    Name: other
+                    TypeNameNode: {
+                        Type: ref i32
+                        Lexeme: i32
+                        Ref: true
+                    }
+                }
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(1): {
+                AssignmentStatement: {
+                    Left: {
+                        MemberAccessExpression: {
+                            NameExpression: {
+                                Type: i32
+                                Name: value
+                            }
+                        }
+                    }
+                    Right: {
+                        NameExpression: {
+                            Type: ref i32
+                            Name: other
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(4): {
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: source
+                }
+            }
+            Right: {
+                NumberLiteral: 9
+            }
+        }
+        VariableDeclaration: {
+            Type: Number
+            Left: {
+                NameExpression: {
+                    Type: Number
+                    Name: n
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: Number
+                    Left: {
+                        NameExpression: {
+                            Type: Number
+                            Name: Number
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: Number
+                            Function type: (ref Number, i32) -> void
+                            NameExpression: {
+                                Type: (ref Number, i32) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(1): {
+                                NumberLiteral: 1
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ExpressionStatement: {
+            BinaryExpression: {
+                Type: void
+                Left: {
+                    NameExpression: {
+                        Type: Number
+                        Name: n
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: void
+                        Function type: (ref Number, ref i32) -> void
+                        NameExpression: {
+                            Type: (ref Number, ref i32) -> void
+                            Name: setFrom
+                        }
+                        ArgumentsNode(1): {
+                            UnaryExpression: {
+                                Type: ref i32
+                                Operation: ReferenceOf
+                                Expression: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: source
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: Number
+                        Name: n
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,137 @@
+EnumDefinitionStatement: {
+    Type: Answer(bool)
+    Name: Answer
+    FieldNodes(2): {
+        EnumFieldDeclaration: {
+            Name: Yes
+            BoolLiteral: true
+        }
+        EnumFieldDeclaration: {
+            Name: No
+            BoolLiteral: false
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (Answer) -> Answer
+    Name: choose
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: Answer(bool)
+                Lexeme: Answer
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: Answer(bool)
+            Lexeme: Answer
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: Answer(bool)
+            NameExpression: {
+                Type: Answer(bool)
+                Name: a
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: Answer(bool)
+            Left: {
+                NameExpression: {
+                    Type: Answer(bool)
+                    Name: value
+                }
+            }
+            Right: {
+                FunctionCallExpression: {
+                    Type: Answer(bool)
+                    Function type: (Answer) -> Answer
+                    NameExpression: {
+                        Type: (Answer) -> Answer
+                        Name: choose
+                    }
+                    ArgumentsNode(1): {
+                        BinaryExpression: {
+                            Type: Answer(bool)
+                            Left: {
+                                NameExpression: {
+                                    Type: Answer(bool)
+                                    Name: Answer
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                NameExpression: {
+                                    Type: Answer(bool)
+                                    Name: Yes
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: Answer(bool)
+                            Name: value
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        BinaryExpression: {
+                            Type: Answer(bool)
+                            Left: {
+                                NameExpression: {
+                                    Type: Answer(bool)
+                                    Name: Answer
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                NameExpression: {
+                                    Type: Answer(bool)
+                                    Name: Yes
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 1
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 0
+        }
+    }
+}

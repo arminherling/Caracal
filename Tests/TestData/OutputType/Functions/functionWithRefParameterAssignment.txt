@@ -1,6 +1,6 @@
 FunctionDefinitionStatement: {
     Type: (ref i32) -> void
-    Name: inner
+    Name: setTen
     ParametersNode(1): {
         ParameterNode: {
             Name: x
@@ -13,27 +13,42 @@ FunctionDefinitionStatement: {
     }
     ReturnTypesNode(0): {
     }
-    BlockNode(0): {
+    BlockNode(1): {
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: x
+                }
+            }
+            Right: {
+                NumberLiteral: 10
+            }
+        }
     }
 }
 FunctionDefinitionStatement: {
-    Type: () -> void
-    Name: outer
+    Type: () -> i32
+    Name: func
     ParametersNode(0): {
     }
-    ReturnTypesNode(0): {
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
     }
-    BlockNode(2): {
+    BlockNode(3): {
         VariableDeclaration: {
             Type: i32
             Left: {
                 NameExpression: {
                     Type: i32
-                    Name: x
+                    Name: value
                 }
             }
             Right: {
-                NumberLiteral: 20
+                NumberLiteral: 1
             }
         }
         ExpressionStatement: {
@@ -42,7 +57,7 @@ FunctionDefinitionStatement: {
                 Function type: (ref i32) -> void
                 NameExpression: {
                     Type: (ref i32) -> void
-                    Name: inner
+                    Name: setTen
                 }
                 ArgumentsNode(1): {
                     UnaryExpression: {
@@ -51,11 +66,18 @@ FunctionDefinitionStatement: {
                         Expression: {
                             NameExpression: {
                                 Type: i32
-                                Name: x
+                                Name: value
                             }
                         }
                     }
                 }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: value
             }
         }
     }

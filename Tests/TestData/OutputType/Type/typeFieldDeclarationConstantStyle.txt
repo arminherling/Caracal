@@ -1,0 +1,20 @@
+TypeDefinitionStatement: {
+    Type: Number
+    Name: Number
+    ParametersNode(0): {
+    }
+    BlockNode(1): {
+        TypeFieldDeclaration: {
+            IsConstant: true
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NumberLiteral: 42
+            }
+        }
+    }
+}

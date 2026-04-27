@@ -847,7 +847,7 @@ namespace Caracal
                 .appendLine(name);
             return;
         }
-        else if (type.kind() == TypeKind::Function || type.kind() == TypeKind::Method)
+        else if (type.kind() == TypeKind::Function || type.kind() == TypeKind::Method || type.kind() == TypeKind::Constructor)
         {
             const auto& functionDefinition = m_module->getFunctionDefinition(type);
             const auto& parameters = functionDefinition.parameters();

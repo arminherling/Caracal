@@ -1,0 +1,135 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(4): {
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: i
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: sum
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        WhileStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: i
+                        }
+                    }
+                    Operation: LessThan
+                    Right: {
+                        NumberLiteral: 4
+                    }
+                }
+            }
+            True: {
+                BlockNode(3): {
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: i32
+                                Name: i
+                            }
+                        }
+                        Right: {
+                            BinaryExpression: {
+                                Type: i32
+                                Left: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: i
+                                    }
+                                }
+                                Operation: Addition
+                                Right: {
+                                    NumberLiteral: 1
+                                }
+                            }
+                        }
+                    }
+                    IfStatement: {
+                        Condition: {
+                            BinaryExpression: {
+                                Type: bool
+                                Left: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: i
+                                    }
+                                }
+                                Operation: Equal
+                                Right: {
+                                    NumberLiteral: 2
+                                }
+                            }
+                        }
+                        True: {
+                            SkipStatement
+                        }
+                    }
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: i32
+                                Name: sum
+                            }
+                        }
+                        Right: {
+                            BinaryExpression: {
+                                Type: i32
+                                Left: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: sum
+                                    }
+                                }
+                                Operation: Addition
+                                Right: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: i
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: sum
+            }
+        }
+    }
+}

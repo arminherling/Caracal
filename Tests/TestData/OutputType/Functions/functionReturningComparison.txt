@@ -1,0 +1,47 @@
+FunctionDefinitionStatement: {
+    Type: (i32, i32) -> bool
+    Name: isEqual
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    NameExpression: {
+                        Type: i32
+                        Name: a
+                    }
+                }
+                Operation: Equal
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}

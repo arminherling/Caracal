@@ -8,7 +8,7 @@ ConstantDeclaration: {
             Type: void
             Function type: (string) -> void
             NameExpression: {
-                Type: undefined
+                Type: (string) -> void
                 Name: print
             }
             ArgumentsNode(1): {

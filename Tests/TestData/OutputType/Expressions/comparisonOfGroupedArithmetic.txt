@@ -1,0 +1,51 @@
+FunctionDefinitionStatement: {
+    Type: () -> bool
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    GroupingExpression: {
+                        Type: i32
+                        BinaryExpression: {
+                            Type: i32
+                            Left: {
+                                NumberLiteral: 1
+                            }
+                            Operation: Addition
+                            Right: {
+                                NumberLiteral: 2
+                            }
+                        }
+                    }
+                }
+                Operation: Equal
+                Right: {
+                    GroupingExpression: {
+                        Type: i32
+                        BinaryExpression: {
+                            Type: i32
+                            Left: {
+                                NumberLiteral: 6
+                            }
+                            Operation: Division
+                            Right: {
+                                NumberLiteral: 2
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
