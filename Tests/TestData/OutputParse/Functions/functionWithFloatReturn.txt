@@ -1,0 +1,37 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: half
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: x
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: f32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: f32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: x
+                    }
+                }
+                Operation: Division
+                Right: {
+                    NumberLiteral: 2.0
+                }
+            }
+        }
+    }
+}

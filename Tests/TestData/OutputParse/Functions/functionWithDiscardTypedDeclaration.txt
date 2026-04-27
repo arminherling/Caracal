@@ -1,0 +1,33 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                Discard: _
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: undefined
+                    Lexeme: i32
+                }
+            }
+            Right: {
+                NumberLiteral: 42
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 0
+        }
+    }
+}

@@ -1,0 +1,94 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: printf
+    Annotation: {
+        Name: Extern
+        ArgumentsNode(0): {
+        }
+    }
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: message
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: string
+            }
+        }
+        ParameterNode: {
+            Name: varargs
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: ...
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(0): {
+    }
+}
+EnumDefinitionStatement: {
+    Type: undefined
+    Name: Numbers
+    TypeNameNode: {
+        Type: undefined
+        Lexeme: i32
+    }
+    FieldNodes(1): {
+        EnumFieldDeclaration: {
+            Name: One
+            NumberLiteral: 1
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                Type: undefined
+                Function type: undefined
+                NameExpression: {
+                    Type: undefined
+                    Name: printf
+                }
+                ArgumentsNode(2): {
+                    StringLiteral: "%d\n"
+                    BinaryExpression: {
+                        Type: undefined
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: Numbers
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: One
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 0
+        }
+    }
+}

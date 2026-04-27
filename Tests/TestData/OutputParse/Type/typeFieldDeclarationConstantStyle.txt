@@ -1,0 +1,20 @@
+TypeDefinitionStatement: {
+    Type: undefined
+    Name: Number
+    ParametersNode(0): {
+    }
+    BlockNode(1): {
+        TypeFieldDeclaration: {
+            IsConstant: true
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: value
+                }
+            }
+            Right: {
+                NumberLiteral: 42
+            }
+        }
+    }
+}

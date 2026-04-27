@@ -1,0 +1,15 @@
+﻿enum Answer
+{
+    Yes :: true
+    No :: false
+}
+
+def func() i32
+{
+    if Answer.Yes
+    {
+        return 1;
+    }
+
+    return 0;
+}

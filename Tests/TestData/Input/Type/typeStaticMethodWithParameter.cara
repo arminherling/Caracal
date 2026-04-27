@@ -1,0 +1,12 @@
+﻿type Math()
+{
+    def Math.id(x: i32) i32
+    {
+        return x;
+    }
+}
+
+def func() i32
+{
+    return Math.id(7);
+}

@@ -1,0 +1,54 @@
+EnumDefinitionStatement: {
+    Type: undefined
+    Name: Numbers
+    Annotation: {
+        Name: Step
+        ArgumentsNode(1): {
+            NumberLiteral: 2
+        }
+    }
+    FieldNodes(3): {
+        EnumFieldDeclaration: {
+            Name: Zero
+        }
+        EnumFieldDeclaration: {
+            Name: Two
+        }
+        EnumFieldDeclaration: {
+            Name: Four
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: Numbers
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: Four
+                    }
+                }
+            }
+        }
+    }
+}

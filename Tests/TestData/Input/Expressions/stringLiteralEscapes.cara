@@ -1,0 +1,4 @@
+﻿def func() string
+{
+    return "line1\nline2\t\"quoted\"\\";
+}

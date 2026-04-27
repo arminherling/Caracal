@@ -1,0 +1,20 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        IfStatement: {
+            Condition: {
+                BoolLiteral: true
+            }
+            True: {
+                ReturnStatement: {
+                    Type: undefined
+                }
+            }
+        }
+    }
+}

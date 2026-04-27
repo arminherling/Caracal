@@ -1,4 +1,4 @@
-def main() 
+﻿def func() 
 {
     foo := true;
     foo = false;

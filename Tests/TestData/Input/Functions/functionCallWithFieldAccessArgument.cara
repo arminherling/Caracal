@@ -1,0 +1,15 @@
+﻿type Number(value: i32)
+{
+    value := value
+}
+
+def id(x: i32) i32
+{
+    return x;
+}
+
+def func() i32
+{
+    n := Number.new(9);
+    return id(n.value);
+}

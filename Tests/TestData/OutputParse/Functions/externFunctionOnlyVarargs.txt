@@ -1,0 +1,26 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: printf
+    Annotation: {
+        Name: Extern
+        ArgumentsNode(0): {
+        }
+    }
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: varargs
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: ...
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(0): {
+    }
+}

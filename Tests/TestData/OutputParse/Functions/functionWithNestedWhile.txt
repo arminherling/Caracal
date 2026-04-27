@@ -1,0 +1,168 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(4): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: i
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: total
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        WhileStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: i
+                        }
+                    }
+                    Operation: LessThan
+                    Right: {
+                        NumberLiteral: 2
+                    }
+                }
+            }
+            True: {
+                BlockNode(3): {
+                    VariableDeclaration: {
+                        Type: undefined
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: j
+                            }
+                        }
+                        Right: {
+                            NumberLiteral: 0
+                        }
+                    }
+                    WhileStatement: {
+                        Condition: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: j
+                                    }
+                                }
+                                Operation: LessThan
+                                Right: {
+                                    NumberLiteral: 2
+                                }
+                            }
+                        }
+                        True: {
+                            BlockNode(2): {
+                                AssignmentStatement: {
+                                    Left: {
+                                        NameExpression: {
+                                            Type: undefined
+                                            Name: total
+                                        }
+                                    }
+                                    Right: {
+                                        BinaryExpression: {
+                                            Type: undefined
+                                            Left: {
+                                                NameExpression: {
+                                                    Type: undefined
+                                                    Name: total
+                                                }
+                                            }
+                                            Operation: Addition
+                                            Right: {
+                                                NumberLiteral: 1
+                                            }
+                                        }
+                                    }
+                                }
+                                AssignmentStatement: {
+                                    Left: {
+                                        NameExpression: {
+                                            Type: undefined
+                                            Name: j
+                                        }
+                                    }
+                                    Right: {
+                                        BinaryExpression: {
+                                            Type: undefined
+                                            Left: {
+                                                NameExpression: {
+                                                    Type: undefined
+                                                    Name: j
+                                                }
+                                            }
+                                            Operation: Addition
+                                            Right: {
+                                                NumberLiteral: 1
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: i
+                            }
+                        }
+                        Right: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: i
+                                    }
+                                }
+                                Operation: Addition
+                                Right: {
+                                    NumberLiteral: 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: total
+            }
+        }
+    }
+}

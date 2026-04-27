@@ -1,0 +1,4 @@
+﻿def func() bool
+{
+    return (1 + 2) == (6 / 2);
+}

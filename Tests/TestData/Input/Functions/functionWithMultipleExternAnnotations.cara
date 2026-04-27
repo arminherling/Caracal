@@ -1,0 +1,11 @@
+﻿#extern()
+def puts(message: string) i32 {}
+
+#extern()
+def clock() i32 {}
+
+def func() i32
+{
+    puts("hi");
+    return clock();
+}

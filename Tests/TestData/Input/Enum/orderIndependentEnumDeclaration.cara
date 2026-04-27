@@ -1,0 +1,10 @@
+﻿def func() i32
+{
+    return Numbers.Two;
+}
+
+enum Numbers : i32
+{
+    One :: 1
+    Two :: 2
+}

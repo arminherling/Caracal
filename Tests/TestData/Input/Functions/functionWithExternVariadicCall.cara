@@ -1,0 +1,8 @@
+﻿#extern()
+def printf(message: string, ...) i32 {}
+
+def func() i32
+{
+    printf("value: %d\n", 42);
+    return 0;
+}

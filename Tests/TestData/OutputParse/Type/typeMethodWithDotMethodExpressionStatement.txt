@@ -1,0 +1,70 @@
+TypeDefinitionStatement: {
+    Type: undefined
+    Name: Number
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: i32
+            }
+        }
+    }
+    BlockNode(3): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: value
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: undefined
+                    Name: value
+                }
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: undefined
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: ping
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(0): {
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: undefined
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: callPing
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(0): {
+            }
+            BlockNode(1): {
+                ExpressionStatement: {
+                    MemberAccessExpression: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: ping
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

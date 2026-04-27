@@ -1,0 +1,14 @@
+﻿type Number(value: i32)
+{
+    value := value
+}
+
+def read(n: Number) i32
+{
+    return n.value;
+}
+
+def func() i32
+{
+    return read(Number.new(6));
+}

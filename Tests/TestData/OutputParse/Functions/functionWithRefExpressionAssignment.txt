@@ -1,0 +1,103 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(5): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: value
+                }
+            }
+            Right: {
+                NumberLiteral: 5
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: first
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: undefined
+                    Lexeme: i32
+                    Ref: true
+                }
+            }
+            Right: {
+                UnaryExpression: {
+                    Type: undefined
+                    Operation: ReferenceOf
+                    Expression: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: value
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: other
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: undefined
+                    Lexeme: i32
+                    Ref: true
+                }
+            }
+            Right: {
+                UnaryExpression: {
+                    Type: undefined
+                    Operation: ReferenceOf
+                    Expression: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: value
+                        }
+                    }
+                }
+            }
+        }
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: first
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: undefined
+                    Name: other
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: value
+            }
+        }
+    }
+}

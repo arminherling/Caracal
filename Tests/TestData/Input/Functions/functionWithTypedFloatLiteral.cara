@@ -1,0 +1,5 @@
+﻿def func() f32
+{
+    value := 1.5'f32;
+    return value;
+}

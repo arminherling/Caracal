@@ -1,0 +1,137 @@
+EnumDefinitionStatement: {
+    Type: undefined
+    Name: Answer
+    FieldNodes(2): {
+        EnumFieldDeclaration: {
+            Name: Yes
+            BoolLiteral: true
+        }
+        EnumFieldDeclaration: {
+            Name: No
+            BoolLiteral: false
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: choose
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: Answer
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: Answer
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: a
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: value
+                }
+            }
+            Right: {
+                FunctionCallExpression: {
+                    Type: undefined
+                    Function type: undefined
+                    NameExpression: {
+                        Type: undefined
+                        Name: choose
+                    }
+                    ArgumentsNode(1): {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: Answer
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: Yes
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: value
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: Answer
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: Yes
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 1
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 0
+        }
+    }
+}

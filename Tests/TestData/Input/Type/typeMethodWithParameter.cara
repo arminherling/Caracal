@@ -1,0 +1,16 @@
+﻿type Counter(value: i32)
+{
+    value := value
+
+    def add(amount: i32)
+    {
+        .value = .value + amount;
+    }
+}
+
+def func() i32
+{
+    counter := Counter.new(1);
+    counter.add(4);
+    return counter.value;
+}

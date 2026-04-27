@@ -1,0 +1,96 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: double
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: x
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: i32
+                Ref: true
+            }
+        }
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: x
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: x
+                        }
+                    }
+                    Operation: Multiplication
+                    Right: {
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: value
+                }
+            }
+            Right: {
+                NumberLiteral: 5
+            }
+        }
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                Type: undefined
+                Function type: undefined
+                NameExpression: {
+                    Type: undefined
+                    Name: double
+                }
+                ArgumentsNode(1): {
+                    UnaryExpression: {
+                        Type: undefined
+                        Operation: ReferenceOf
+                        Expression: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: value
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: value
+            }
+        }
+    }
+}

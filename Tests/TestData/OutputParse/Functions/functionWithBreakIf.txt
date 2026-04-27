@@ -1,0 +1,85 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: i
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        WhileStatement: {
+            Condition: {
+                BoolLiteral: true
+            }
+            True: {
+                BlockNode(2): {
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: i
+                            }
+                        }
+                        Right: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: i
+                                    }
+                                }
+                                Operation: Addition
+                                Right: {
+                                    NumberLiteral: 1
+                                }
+                            }
+                        }
+                    }
+                    IfStatement: {
+                        Condition: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: i
+                                    }
+                                }
+                                Operation: GreaterOrEqual
+                                Right: {
+                                    NumberLiteral: 3
+                                }
+                            }
+                        }
+                        True: {
+                            BreakStatement
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: i
+            }
+        }
+    }
+}

@@ -1,0 +1,84 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: setTen
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: x
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: i32
+                Ref: true
+            }
+        }
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: x
+                }
+            }
+            Right: {
+                NumberLiteral: 10
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: value
+                }
+            }
+            Right: {
+                NumberLiteral: 1
+            }
+        }
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                Type: undefined
+                Function type: undefined
+                NameExpression: {
+                    Type: undefined
+                    Name: setTen
+                }
+                ArgumentsNode(1): {
+                    UnaryExpression: {
+                        Type: undefined
+                        Operation: ReferenceOf
+                        Expression: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: value
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: value
+            }
+        }
+    }
+}

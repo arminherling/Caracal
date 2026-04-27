@@ -1,0 +1,15 @@
+﻿type Number(value: i32)
+{
+    value := value
+
+    def isPositive() bool
+    {
+        return .value > 0;
+    }
+}
+
+def func() bool
+{
+    n := Number.new(1);
+    return n.isPositive();
+}

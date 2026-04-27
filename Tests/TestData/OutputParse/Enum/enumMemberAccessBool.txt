@@ -1,0 +1,60 @@
+EnumDefinitionStatement: {
+    Type: undefined
+    Name: Answer
+    FieldNodes(2): {
+        EnumFieldDeclaration: {
+            Name: Yes
+            BoolLiteral: true
+        }
+        EnumFieldDeclaration: {
+            Name: No
+            BoolLiteral: false
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: Answer
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: Yes
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 1
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 0
+        }
+    }
+}

@@ -1,0 +1,7 @@
+﻿def func() i32
+{
+    i := 0;
+    while true
+        break if i == 0;
+    return i;
+}

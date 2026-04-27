@@ -1,0 +1,11 @@
+﻿number :: Number.new(8);
+
+def func() i32
+{
+    return number.value;
+}
+
+type Number(value: i32)
+{
+    value := value
+}

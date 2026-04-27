@@ -18,7 +18,7 @@ FunctionDefinitionStatement: {
 }
 FunctionDefinitionStatement: {
     Type: undefined
-    Name: main
+    Name: func
     ParametersNode(0): {
     }
     ReturnTypesNode(0): {

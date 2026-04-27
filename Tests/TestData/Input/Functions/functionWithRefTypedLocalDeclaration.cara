@@ -1,0 +1,7 @@
+﻿def func() i32
+{
+    value := 42;
+    other: ref i32 = ref value;
+    other = 7;
+    return value;
+}

@@ -1,0 +1,7 @@
+﻿#extern()
+def puts(message: string) i32 {}
+
+def func() i32
+{
+    return puts("hello");
+}

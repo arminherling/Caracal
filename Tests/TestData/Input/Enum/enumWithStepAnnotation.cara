@@ -1,0 +1,12 @@
+﻿#step(2)
+enum Numbers
+{
+    Zero
+    Two
+    Four
+}
+
+def func() i32
+{
+    return Numbers.Four;
+}

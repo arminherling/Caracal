@@ -1,0 +1,4 @@
+﻿def isEqual(a: i32, b: i32) bool
+{
+    return a == b;
+}

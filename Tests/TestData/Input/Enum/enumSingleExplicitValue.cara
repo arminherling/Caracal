@@ -1,0 +1,9 @@
+﻿enum Numbers
+{
+    Zero :: 0
+}
+
+def func() i32
+{
+    return Numbers.Zero;
+}

@@ -1,0 +1,14 @@
+﻿def make() Number
+{
+    return Number.new(7);
+}
+
+def func() i32
+{
+    return make().value;
+}
+
+type Number(value: i32)
+{
+    value := value
+}

@@ -1,0 +1,9 @@
+﻿enum Numbers : i32
+{
+    One :: 1'i32
+}
+
+def func() i32
+{
+    return Numbers.One;
+}

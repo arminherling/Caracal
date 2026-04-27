@@ -1,0 +1,5 @@
+﻿def func() i32
+{
+    _ = 42;
+    return 0;
+}

@@ -1,0 +1,11 @@
+﻿def double(x: ref i32)
+{
+    x = x * 2;
+}
+
+def func() i32
+{
+    value := 5;
+    double(ref value);
+    return value;
+}

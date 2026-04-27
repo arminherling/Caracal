@@ -1,4 +1,4 @@
-def main() 
+﻿def func() 
 {
     a := true;
     b := ref a;

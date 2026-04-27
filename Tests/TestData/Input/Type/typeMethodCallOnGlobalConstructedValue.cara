@@ -1,0 +1,17 @@
+﻿type Number(value: i32)
+{
+    value := value
+
+    def double()
+    {
+        .value = .value * 2;
+    }
+}
+
+number :: Number.new(4);
+
+def func() i32
+{
+    number.double();
+    return number.value;
+}

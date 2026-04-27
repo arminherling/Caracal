@@ -1,0 +1,85 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: puts
+    Annotation: {
+        Name: Extern
+        ArgumentsNode(0): {
+        }
+    }
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: message
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: string
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(0): {
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: clock
+    Annotation: {
+        Name: Extern
+        ArgumentsNode(0): {
+        }
+    }
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(0): {
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                Type: undefined
+                Function type: undefined
+                NameExpression: {
+                    Type: undefined
+                    Name: puts
+                }
+                ArgumentsNode(1): {
+                    StringLiteral: "hi"
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            FunctionCallExpression: {
+                Type: undefined
+                Function type: undefined
+                NameExpression: {
+                    Type: undefined
+                    Name: clock
+                }
+                ArgumentsNode(0): {
+                }
+            }
+        }
+    }
+}

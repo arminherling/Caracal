@@ -1,0 +1,17 @@
+﻿type Number(value: i32)
+{
+    value := value
+
+    def clamp()
+    {
+        if .value < 0
+            .value = 0;
+    }
+}
+
+def func() i32
+{
+    n := Number.new(-1);
+    n.clamp();
+    return n.value;
+}

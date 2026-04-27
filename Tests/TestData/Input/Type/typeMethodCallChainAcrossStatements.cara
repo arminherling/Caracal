@@ -1,0 +1,17 @@
+﻿type Counter(value: i32)
+{
+    value := value
+
+    def inc()
+    {
+        .value = .value + 1;
+    }
+}
+
+def func() i32
+{
+    counter := Counter.new(0);
+    counter.inc();
+    counter.inc();
+    return counter.value;
+}

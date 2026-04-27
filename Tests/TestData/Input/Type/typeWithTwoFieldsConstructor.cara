@@ -1,0 +1,11 @@
+﻿type Pair(left: i32, right: i32)
+{
+    left := left
+    right := right
+}
+
+def func() i32
+{
+    pair := Pair.new(1, 2);
+    return pair.right;
+}

@@ -1,0 +1,55 @@
+EnumDefinitionStatement: {
+    Type: undefined
+    Name: Numbers
+    FieldNodes(1): {
+        EnumFieldDeclaration: {
+            Name: Three
+            GroupingExpression: {
+                Type: undefined
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NumberLiteral: 1
+                    }
+                    Operation: Addition
+                    Right: {
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: Numbers
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: Three
+                    }
+                }
+            }
+        }
+    }
+}

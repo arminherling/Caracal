@@ -1,0 +1,23 @@
+﻿def func() i32
+{
+    i := 0;
+    sum := 0;
+    while i < 6
+    {
+        i = i + 1;
+
+        if i == 2
+        {
+            skip;
+        }
+
+        if i >= 5
+        {
+            break;
+        }
+
+        sum = sum + i;
+    }
+
+    return sum;
+}

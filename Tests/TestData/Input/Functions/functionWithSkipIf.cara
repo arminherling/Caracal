@@ -1,0 +1,12 @@
+﻿def func() i32
+{
+    i := 0;
+    sum := 0;
+    while i < 4
+    {
+        i = i + 1;
+        skip if i == 2;
+        sum = sum + i;
+    }
+    return sum;
+}

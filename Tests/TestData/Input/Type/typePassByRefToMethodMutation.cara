@@ -1,0 +1,21 @@
+﻿type Number(value: i32)
+{
+    value := value
+
+    def double()
+    {
+        .value = .value * 2;
+    }
+}
+
+def mutate(n: ref Number)
+{
+    n.double();
+}
+
+def func() i32
+{
+    n := Number.new(5);
+    mutate(ref n);
+    return n.value;
+}

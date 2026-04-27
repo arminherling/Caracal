@@ -1,0 +1,17 @@
+﻿type Number(value: i32)
+{
+    value := value
+
+    def setFrom(other: ref i32)
+    {
+        .value = other;
+    }
+}
+
+def func() i32
+{
+    source := 9;
+    n := Number.new(1);
+    n.setFrom(ref source);
+    return n.value;
+}

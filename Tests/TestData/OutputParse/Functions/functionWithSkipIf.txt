@@ -1,0 +1,135 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(4): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: i
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: sum
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        WhileStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: i
+                        }
+                    }
+                    Operation: LessThan
+                    Right: {
+                        NumberLiteral: 4
+                    }
+                }
+            }
+            True: {
+                BlockNode(3): {
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: i
+                            }
+                        }
+                        Right: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: i
+                                    }
+                                }
+                                Operation: Addition
+                                Right: {
+                                    NumberLiteral: 1
+                                }
+                            }
+                        }
+                    }
+                    IfStatement: {
+                        Condition: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: i
+                                    }
+                                }
+                                Operation: Equal
+                                Right: {
+                                    NumberLiteral: 2
+                                }
+                            }
+                        }
+                        True: {
+                            SkipStatement
+                        }
+                    }
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: sum
+                            }
+                        }
+                        Right: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: sum
+                                    }
+                                }
+                                Operation: Addition
+                                Right: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: i
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: sum
+            }
+        }
+    }
+}

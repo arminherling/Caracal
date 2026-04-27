@@ -1,0 +1,21 @@
+﻿enum Answer
+{
+    Yes :: true
+    No :: false
+}
+
+def choose(a: Answer) Answer
+{
+    return a;
+}
+
+def func() i32
+{
+    value := choose(Answer.Yes);
+    if value == Answer.Yes
+    {
+        return 1;
+    }
+
+    return 0;
+}

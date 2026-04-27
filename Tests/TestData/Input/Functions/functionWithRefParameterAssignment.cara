@@ -1,0 +1,11 @@
+﻿def setTen(x: ref i32)
+{
+    x = 10;
+}
+
+def func() i32
+{
+    value := 1;
+    setTen(ref value);
+    return value;
+}

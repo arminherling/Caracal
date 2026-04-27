@@ -1,0 +1,10 @@
+﻿type Number()
+{
+    value: i32 = 42
+}
+
+def func() i32
+{
+    n := Number.new();
+    return n.value;
+}

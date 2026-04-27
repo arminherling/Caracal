@@ -1,0 +1,14 @@
+﻿enum MegaBool
+{
+    True
+    False
+    Neither
+    Both
+    Maybe
+    Trueish
+    Falseish
+    ItDepends
+    Oscillating
+    ItsComplicated
+    DoubleTrue
+}

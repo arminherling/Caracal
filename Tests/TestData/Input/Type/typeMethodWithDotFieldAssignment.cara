@@ -1,0 +1,16 @@
+﻿type Number(value: i32)
+{
+    value := value
+
+    def setToFive()
+    {
+        .value = 5;
+    }
+}
+
+def func() i32
+{
+    n := Number.new(1);
+    n.setToFive();
+    return n.value;
+}

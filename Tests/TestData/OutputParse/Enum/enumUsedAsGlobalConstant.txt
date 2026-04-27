@@ -1,0 +1,41 @@
+EnumDefinitionStatement: {
+    Type: undefined
+    Name: Numbers
+    TypeNameNode: {
+        Type: undefined
+        Lexeme: i32
+    }
+    FieldNodes(1): {
+        EnumFieldDeclaration: {
+            Name: One
+            NumberLiteral: 1
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: value
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: Numbers
+                }
+            }
+            Operation: MemberAccess
+            Right: {
+                NameExpression: {
+                    Type: undefined
+                    Name: One
+                }
+            }
+        }
+    }
+}

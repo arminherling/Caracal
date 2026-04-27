@@ -1,0 +1,11 @@
+﻿type Number(value: i32)
+{
+    value := value
+}
+
+def func() i32
+{
+    a := Number.new(3);
+    b := a;
+    return b.value;
+}
