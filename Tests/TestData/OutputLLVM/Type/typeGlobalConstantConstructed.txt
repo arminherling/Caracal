@@ -1,0 +1,31 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%Number = type { i32 }
+
+@number = global %Number zeroinitializer, align 4
+
+define void @Number.new(ptr nonnull %this, i32 %value) {
+entry:
+  %value1 = getelementptr inbounds nuw %Number, ptr %this, i32 0, i32 0
+  store i32 %value, ptr %value1, align 4
+  ret void
+}
+
+declare void @print(ptr %0)
+
+define i32 @func() {
+entry:
+  %field_load = load i32, ptr @number, align 4
+  ret i32 %field_load
+}
+
+define internal void @__caracal_global_init() {
+entry:
+  call void @Number.new(ptr @number, i32 8)
+  ret void
+}
+
+; uselistorder directives
+uselistorder ptr @number, { 1, 0 }

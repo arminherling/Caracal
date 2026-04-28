@@ -1,0 +1,35 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%Counter = type { i32 }
+
+define i32 @func() {
+entry:
+  %counter = alloca %Counter, align 8
+  call void @Counter.new(ptr %counter, i32 1)
+  call void @Counter.add(ptr %counter, i32 4)
+  %value = getelementptr inbounds nuw %Counter, ptr %counter, i32 0, i32 0
+  %field_load = load i32, ptr %value, align 4
+  ret i32 %field_load
+}
+
+declare void @print(ptr %0)
+
+define void @Counter.new(ptr nonnull %this, i32 %value) {
+entry:
+  %value1 = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
+  store i32 %value, ptr %value1, align 4
+  ret void
+}
+
+define void @Counter.add(ptr nonnull %this, i32 %amount) {
+entry:
+  %value = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
+  %member_field_load = load i32, ptr %value, align 4
+  %value1 = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
+  %member_field_load2 = load i32, ptr %value1, align 4
+  %addtmp = add i32 %member_field_load2, %amount
+  store i32 %addtmp, ptr %value, align 4
+  ret void
+}

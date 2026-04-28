@@ -1,0 +1,15 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define void @Zero.new(ptr nonnull %this) {
+entry:
+  ret void
+}
+
+declare void @print(ptr %0)
+
+define i32 @Zero._value(ptr nonnull %this) {
+entry:
+  ret i32 0
+}

@@ -1,0 +1,14 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%Number = type { i32 }
+
+declare void @print(ptr %0)
+
+define void @Number.new(ptr nonnull %this) {
+entry:
+  %value = getelementptr inbounds nuw %Number, ptr %this, i32 0, i32 0
+  store i32 42, ptr %value, align 4
+  ret void
+}

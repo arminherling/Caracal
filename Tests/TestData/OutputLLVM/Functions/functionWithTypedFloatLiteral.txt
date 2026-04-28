@@ -1,0 +1,13 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define float @func() {
+entry:
+  %value = alloca float, align 4
+  store float 1.500000e+00, ptr %value, align 4
+  %value1 = load float, ptr %value, align 4
+  ret float %value1
+}
+
+declare void @print(ptr %0)

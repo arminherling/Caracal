@@ -1,0 +1,22 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define void @double(ptr nonnull %x) {
+entry:
+  %ref_load = load i32, ptr %x, align 4
+  %multmp = mul i32 %ref_load, 2
+  store i32 %multmp, ptr %x, align 4
+  ret void
+}
+
+declare void @print(ptr %0)
+
+define i32 @func() {
+entry:
+  %value = alloca i32, align 4
+  store i32 5, ptr %value, align 4
+  call void @double(ptr %value)
+  %value1 = load i32, ptr %value, align 4
+  ret i32 %value1
+}

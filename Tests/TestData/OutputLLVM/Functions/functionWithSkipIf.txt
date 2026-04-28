@@ -1,0 +1,43 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @func() {
+entry:
+  %i = alloca i32, align 4
+  %sum = alloca i32, align 4
+  store i32 0, ptr %i, align 4
+  store i32 0, ptr %sum, align 4
+  br label %while_condition
+
+while_condition:                                  ; preds = %if_end, %if_true, %entry
+  %i1 = load i32, ptr %i, align 4
+  %lttmp = icmp slt i32 %i1, 4
+  br i1 %lttmp, label %while_loop, label %while_end
+
+while_loop:                                       ; preds = %while_condition
+  %i2 = load i32, ptr %i, align 4
+  %i3 = load i32, ptr %i, align 4
+  %addtmp = add i32 %i3, 1
+  store i32 %addtmp, ptr %i, align 4
+  %i4 = load i32, ptr %i, align 4
+  %eqtmp = icmp eq i32 %i4, 2
+  br i1 %eqtmp, label %if_true, label %if_end
+
+if_true:                                          ; preds = %while_loop
+  br label %while_condition
+
+if_end:                                           ; preds = %while_loop
+  %sum5 = load i32, ptr %sum, align 4
+  %sum6 = load i32, ptr %sum, align 4
+  %i7 = load i32, ptr %i, align 4
+  %addtmp8 = add i32 %sum6, %i7
+  store i32 %addtmp8, ptr %sum, align 4
+  br label %while_condition
+
+while_end:                                        ; preds = %while_condition
+  %sum9 = load i32, ptr %sum, align 4
+  ret i32 %sum9
+}
+
+declare void @print(ptr %0)

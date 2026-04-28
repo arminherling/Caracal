@@ -1,0 +1,25 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%Pair = type { i32, i32 }
+
+define void @Pair.new(ptr nonnull %this, i32 %left, i32 %right) {
+entry:
+  %left1 = getelementptr inbounds nuw %Pair, ptr %this, i32 0, i32 0
+  store i32 %left, ptr %left1, align 4
+  %right2 = getelementptr inbounds nuw %Pair, ptr %this, i32 0, i32 1
+  store i32 %right, ptr %right2, align 4
+  ret void
+}
+
+declare void @print(ptr %0)
+
+define i32 @func() {
+entry:
+  %pair = alloca %Pair, align 8
+  call void @Pair.new(ptr %pair, i32 1, i32 2)
+  %right = getelementptr inbounds nuw %Pair, ptr %pair, i32 0, i32 1
+  %field_load = load i32, ptr %right, align 4
+  ret i32 %field_load
+}

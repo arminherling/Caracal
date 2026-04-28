@@ -1,0 +1,12 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+@0 = private unnamed_addr constant [22 x i8] c"line1\0Aline2\09\22quoted\22\\\00", align 1
+
+define ptr @func() {
+entry:
+  ret ptr @0
+}
+
+declare void @print(ptr %0)
