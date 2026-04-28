@@ -2,6 +2,8 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
+declare void @print(ptr %0)
+
 define void @func() {
 entry:
   %x = alloca i32, align 4
@@ -19,5 +21,3 @@ if_true:                                          ; preds = %entry
 if_end:                                           ; preds = %entry
   ret void
 }
-
-declare void @print(ptr %0)

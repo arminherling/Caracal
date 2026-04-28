@@ -2,11 +2,11 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
+declare void @print(ptr %0)
+
 define void @func() {
 entry:
   %x = alloca i1, align 1
   store i1 true, ptr %x, align 1
   ret void
 }
-
-declare void @print(ptr %0)

@@ -35,7 +35,8 @@ namespace Caracal
         module.createBuiltinType(Type::I32(), "i32");
         module.createBuiltinType(Type::F32(), "f32");
         module.createBuiltinType(Type::String(), "string");
-        module.m_functionDefinitions.try_emplace(1000, FunctionDefinition{ nullptr, Type{ 1000, TypeKind::Function }, Type::Undefined(), FunctionType::FreeFunction, "print", "print", false, {Parameter{"msg", Type::String()}} });
+        module.m_functionDefinitions.emplace_back(nullptr, Type{ 1000, TypeKind::Function }, Type::Undefined(), FunctionType::FreeFunction, "print", "print", false, std::vector<Parameter>{Parameter{"msg", Type::String()}});
+        module.m_functionDefinitionIndexById.try_emplace(1000, module.m_functionDefinitions.size() - 1);
         module.m_nextId = 2000;
 
         return module;
@@ -43,10 +44,10 @@ namespace Caracal
 
     Type Module::tryGetFunctionTypeByName(std::string_view typeName) const noexcept
     {
-        for (const auto& [id, functionDef] : m_functionDefinitions)
+        for (const auto& functionDefinition : m_functionDefinitions)
         {
-            if (functionDef.name() == typeName)
-                return functionDef.type();
+            if (functionDefinition.name() == typeName)
+                return functionDefinition.type();
         }
 
         return Type::Undefined();
@@ -58,8 +59,8 @@ namespace Caracal
 
         auto baseType = type.toBaseType();
         auto id = baseType.id();
-        if (m_enumDefinitions.contains(id))
-            return m_enumDefinitions.at(id);
+        if (const auto index = m_enumDefinitionIndexById.find(id); index != m_enumDefinitionIndexById.end())
+            return m_enumDefinitions.at(index->second);
         else
             return invalidEnum;
     }
@@ -70,8 +71,8 @@ namespace Caracal
 
         auto baseType = type.toBaseType();
         auto id = baseType.id();
-        if (m_typeDefinitions.contains(id))
-            return m_typeDefinitions.at(id);
+        if (const auto index = m_typeDefinitionIndexById.find(id); index != m_typeDefinitionIndexById.end())
+            return m_typeDefinitions.at(index->second);
         else
             return invalidType;
     }
@@ -81,8 +82,8 @@ namespace Caracal
         static auto invalidFunction = FunctionDefinition{ nullptr, Type::Undefined(), Type::Undefined(), FunctionType::None, std::string("???"), std::string("???"), false };
 
         auto id = type.id();
-        if (m_functionDefinitions.contains(id))
-            return m_functionDefinitions.at(id);
+        if (const auto index = m_functionDefinitionIndexById.find(id); index != m_functionDefinitionIndexById.end())
+            return m_functionDefinitions.at(index->second);
         else
             return invalidFunction;
     }
@@ -114,9 +115,10 @@ namespace Caracal
         auto valueType = Type{ enumId, TypeKind::Enum };
         m_typeNames.try_emplace(enumId, enumName);
         m_nameToTypes.try_emplace(enumName, valueType);
-        m_enumDefinitions.try_emplace(enumId, EnumDefinition{ statement, valueType, enumName });
+        m_enumDefinitions.emplace_back(statement, valueType, enumName);
+        m_enumDefinitionIndexById.try_emplace(enumId, m_enumDefinitions.size() - 1);
 
-        return m_enumDefinitions.at(enumId);
+        return m_enumDefinitions.back();
     }
 
     TypeDefinition& Module::createType(
@@ -128,9 +130,10 @@ namespace Caracal
         auto valueType = Type{ typeId, TypeKind::Type };
         m_typeNames.try_emplace(typeId, typeName);
         m_nameToTypes.try_emplace(typeName, valueType);
-        m_typeDefinitions.try_emplace(typeId, TypeDefinition{ statement, valueType, typeName });
+        m_typeDefinitions.emplace_back(statement, valueType, typeName);
+        m_typeDefinitionIndexById.try_emplace(typeId, m_typeDefinitions.size() - 1);
 
-        return m_typeDefinitions.at(typeId);
+        return m_typeDefinitions.back();
     }
 
     FunctionDefinition& Module::createFunction(
@@ -144,9 +147,10 @@ namespace Caracal
         auto functionType = Type{ functionId, TypeKind::Function };
         auto isVariadic = !parameters.empty() && parameters.back().type() == Type::CVariadic();
         const Statement* statement = static_cast<const Statement*>(functionStatement);
-        m_functionDefinitions.try_emplace(functionId, FunctionDefinition{ statement, functionType, Type::Undefined(), FunctionType::FreeFunction, functionName, functionName, isVariadic, parameters, returnTypes });
+        m_functionDefinitions.emplace_back(statement, functionType, Type::Undefined(), FunctionType::FreeFunction, functionName, functionName, isVariadic, parameters, returnTypes);
+        m_functionDefinitionIndexById.try_emplace(functionId, m_functionDefinitions.size() - 1);
 
-        return m_functionDefinitions.at(functionId);
+        return m_functionDefinitions.back();
     }
 
     FunctionDefinition& Module::createMethod(
@@ -163,10 +167,11 @@ namespace Caracal
         auto methodType = Type{ methodId, TypeKind::Method };
         auto functionType = ToFunctionType(modifier);
         const Statement* statement = static_cast<const Statement*>(methodStatement);
-        m_functionDefinitions.try_emplace(methodId, FunctionDefinition{ statement, methodType, parentType, functionType, methodName, fullMethodName, false, parameters, returnTypes });
+        m_functionDefinitions.emplace_back(statement, methodType, parentType, functionType, methodName, fullMethodName, false, parameters, returnTypes);
+        m_functionDefinitionIndexById.try_emplace(methodId, m_functionDefinitions.size() - 1);
         typeDefinition.addMethod(methodType, methodName);
 
-        return m_functionDefinitions.at(methodId);
+        return m_functionDefinitions.back();
     }
 
     FunctionDefinition& Module::createConstructor(
@@ -178,10 +183,11 @@ namespace Caracal
         auto fullConstructorName = typeDefinition.name() + "." + constructorName;
         auto constructorId = m_nextId += VariantCount;
         auto methodType = Type{ constructorId, TypeKind::Constructor };
-        m_functionDefinitions.try_emplace(constructorId, FunctionDefinition{ nullptr, methodType, parentType, FunctionType::Constructor, constructorName, fullConstructorName, false, parameters, { Type::Void() } });
+        m_functionDefinitions.emplace_back(nullptr, methodType, parentType, FunctionType::Constructor, constructorName, fullConstructorName, false, parameters, std::vector<Type>{ Type::Void() });
+        m_functionDefinitionIndexById.try_emplace(constructorId, m_functionDefinitions.size() - 1);
         typeDefinition.addMethod(methodType, constructorName);
 
-        return m_functionDefinitions.at(constructorId);
+        return m_functionDefinitions.back();
     }
 
     ConstantDefinition& Module::createConstant(
@@ -189,9 +195,10 @@ namespace Caracal
         Expression* expression) noexcept
     {
         auto constantName = std::string(name);
-        m_constantDefinitions.try_emplace(constantName, ConstantDefinition{ constantName, expression });
+        m_constantDefinitions.emplace_back(constantName, expression);
+        m_constantDefinitionIndexByName.try_emplace(constantName, m_constantDefinitions.size() - 1);
 
-        return m_constantDefinitions.at(constantName);
+        return m_constantDefinitions.back();
     }
 
     void Module::createBuiltinType(Type type, std::string_view name, bool addVariants)

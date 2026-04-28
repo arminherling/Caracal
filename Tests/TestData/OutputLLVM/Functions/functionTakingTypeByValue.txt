@@ -4,6 +4,17 @@ target triple = "x86_64-unknown-none"
 
 %Number = type { i32 }
 
+declare void @print(ptr %0)
+
+define i32 @read(%Number %n) {
+entry:
+  %n.addr = alloca %Number, align 8
+  store %Number %n, ptr %n.addr, align 4
+  %value = getelementptr inbounds nuw %Number, ptr %n.addr, i32 0, i32 0
+  %field_load = load i32, ptr %value, align 4
+  ret i32 %field_load
+}
+
 define i32 @func() {
 entry:
   %ctor_tmp = alloca %Number, align 8
@@ -13,20 +24,9 @@ entry:
   ret i32 %0
 }
 
-declare void @print(ptr %0)
-
 define void @Number.new(ptr nonnull %this, i32 %value) {
 entry:
   %value1 = getelementptr inbounds nuw %Number, ptr %this, i32 0, i32 0
   store i32 %value, ptr %value1, align 4
   ret void
-}
-
-define i32 @read(%Number %n) {
-entry:
-  %n.addr = alloca %Number, align 8
-  store %Number %n, ptr %n.addr, align 4
-  %value = getelementptr inbounds nuw %Number, ptr %n.addr, i32 0, i32 0
-  %field_load = load i32, ptr %value, align 4
-  ret i32 %field_load
 }

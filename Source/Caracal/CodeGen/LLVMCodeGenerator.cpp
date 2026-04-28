@@ -1452,9 +1452,8 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateFunctionBodies() noexcept
     {
-        for (const auto& definitionPair : m_caracalModule.functionDefinitions())
+        for (const auto& functionDefinition : m_caracalModule.functionDefinitions())
         {
-            const auto& functionDefinition = definitionPair.second;
             m_currentType = functionDefinition.parentType();
 
             if (functionDefinition.functionType() == FunctionType::Constructor)
@@ -1545,10 +1544,8 @@ namespace Caracal
     {
         auto& context = m_llvmModule.getContext();
 
-        for (const auto& definitionPair : m_caracalModule.typeDefinitions())
+        for (const auto& typeDefinition : m_caracalModule.typeDefinitions())
         {
-            const auto& typeDefinition = definitionPair.second;
-
             auto* llvmStructType = llvm::StructType::getTypeByName(context, typeDefinition.name());
             if (llvmStructType == nullptr)
             {
@@ -1584,9 +1581,8 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateConstantDeclarations() noexcept
     {
-        for (const auto& definitionPair : m_caracalModule.constantDefinitions())
+        for (const auto& constantDefinition : m_caracalModule.constantDefinitions())
         {
-            const auto& constantDefinition = definitionPair.second;
             const auto expression = constantDefinition.expression();
             if (expression == nullptr)
                 continue;
@@ -1623,9 +1619,8 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateFunctionDeclarations() noexcept
     {
-        for (const auto& definitionPair : m_caracalModule.functionDefinitions())
+        for (const auto& functionDefinition : m_caracalModule.functionDefinitions())
         {
-            const auto& functionDefinition = definitionPair.second;
             declareFunction(functionDefinition);
         }
     }

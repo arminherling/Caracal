@@ -2,21 +2,21 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
-define void @outer() {
-entry:
-  %0 = call i32 @one()
-  call void @inner(i32 %0)
-  ret void
-}
+declare void @print(ptr %0)
 
 define i32 @one() {
 entry:
   ret i32 1
 }
 
-declare void @print(ptr %0)
-
 define void @inner(i32 %x) {
 entry:
+  ret void
+}
+
+define void @outer() {
+entry:
+  %0 = call i32 @one()
+  call void @inner(i32 %0)
   ret void
 }

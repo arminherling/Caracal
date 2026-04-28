@@ -4,6 +4,17 @@ target triple = "x86_64-unknown-none"
 
 %Number = type { i32 }
 
+declare void @print(ptr %0)
+
+define void @Number.setFrom(ptr nonnull %this, ptr nonnull %other) {
+entry:
+  %value = getelementptr inbounds nuw %Number, ptr %this, i32 0, i32 0
+  %member_field_load = load i32, ptr %value, align 4
+  %ref_load = load i32, ptr %other, align 4
+  store i32 %ref_load, ptr %value, align 4
+  ret void
+}
+
 define i32 @func() {
 entry:
   %source = alloca i32, align 4
@@ -16,20 +27,9 @@ entry:
   ret i32 %field_load
 }
 
-declare void @print(ptr %0)
-
 define void @Number.new(ptr nonnull %this, i32 %value) {
 entry:
   %value1 = getelementptr inbounds nuw %Number, ptr %this, i32 0, i32 0
   store i32 %value, ptr %value1, align 4
-  ret void
-}
-
-define void @Number.setFrom(ptr nonnull %this, ptr nonnull %other) {
-entry:
-  %value = getelementptr inbounds nuw %Number, ptr %this, i32 0, i32 0
-  %member_field_load = load i32, ptr %value, align 4
-  %ref_load = load i32, ptr %other, align 4
-  store i32 %ref_load, ptr %value, align 4
   ret void
 }

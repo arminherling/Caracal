@@ -4,25 +4,7 @@ target triple = "x86_64-unknown-none"
 
 %Counter = type { i32 }
 
-define i32 @func() {
-entry:
-  %counter = alloca %Counter, align 8
-  call void @Counter.new(ptr %counter, i32 0)
-  call void @Counter.inc(ptr %counter)
-  call void @Counter.inc(ptr %counter)
-  %value = getelementptr inbounds nuw %Counter, ptr %counter, i32 0, i32 0
-  %field_load = load i32, ptr %value, align 4
-  ret i32 %field_load
-}
-
 declare void @print(ptr %0)
-
-define void @Counter.new(ptr nonnull %this, i32 %value) {
-entry:
-  %value1 = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
-  store i32 %value, ptr %value1, align 4
-  ret void
-}
 
 define void @Counter.inc(ptr nonnull %this) {
 entry:
@@ -35,5 +17,20 @@ entry:
   ret void
 }
 
-; uselistorder directives
-uselistorder ptr @Counter.inc, { 1, 0 }
+define i32 @func() {
+entry:
+  %counter = alloca %Counter, align 8
+  call void @Counter.new(ptr %counter, i32 0)
+  call void @Counter.inc(ptr %counter)
+  call void @Counter.inc(ptr %counter)
+  %value = getelementptr inbounds nuw %Counter, ptr %counter, i32 0, i32 0
+  %field_load = load i32, ptr %value, align 4
+  ret i32 %field_load
+}
+
+define void @Counter.new(ptr nonnull %this, i32 %value) {
+entry:
+  %value1 = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
+  store i32 %value, ptr %value1, align 4
+  ret void
+}

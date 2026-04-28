@@ -4,6 +4,19 @@ target triple = "x86_64-unknown-none"
 
 %Counter = type { i32 }
 
+declare void @print(ptr %0)
+
+define void @Counter.inc(ptr nonnull %this) {
+entry:
+  %value = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
+  %member_field_load = load i32, ptr %value, align 4
+  %value1 = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
+  %member_field_load2 = load i32, ptr %value1, align 4
+  %addtmp = add i32 %member_field_load2, 1
+  store i32 %addtmp, ptr %value, align 4
+  ret void
+}
+
 define i32 @func() {
 entry:
   %c = alloca %Counter, align 8
@@ -14,22 +27,9 @@ entry:
   ret i32 %field_load
 }
 
-declare void @print(ptr %0)
-
 define void @Counter.new(ptr nonnull %this, i32 %value) {
 entry:
   %value1 = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
   store i32 %value, ptr %value1, align 4
-  ret void
-}
-
-define void @Counter.inc(ptr nonnull %this) {
-entry:
-  %value = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
-  %member_field_load = load i32, ptr %value, align 4
-  %value1 = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
-  %member_field_load2 = load i32, ptr %value1, align 4
-  %addtmp = add i32 %member_field_load2, 1
-  store i32 %addtmp, ptr %value, align 4
   ret void
 }

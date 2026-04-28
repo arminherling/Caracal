@@ -2,6 +2,8 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
+declare void @print(ptr %0)
+
 define i32 @func() {
 entry:
   %i = alloca i32, align 4
@@ -47,5 +49,3 @@ while_end:                                        ; preds = %if_true6, %while_co
   %sum12 = load i32, ptr %sum, align 4
   ret i32 %sum12
 }
-
-declare void @print(ptr %0)
