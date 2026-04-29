@@ -28,132 +28,132 @@ namespace Caracal
         {
             case NodeKind::ConstantDeclaration:
             {
-                prettyPrintConstantDeclaration((ConstantDeclaration*)node);
+                prettyPrintConstantDeclaration(static_cast<ConstantDeclaration*>(node));
                 break;
             }
             case NodeKind::VariableDeclaration:
             {
-                prettyPrintVariableDeclaration((VariableDeclaration*)node);
+                prettyPrintVariableDeclaration(static_cast<VariableDeclaration*>(node));
                 break;
             }
             case NodeKind::TypeFieldDeclaration:
             {
-                prettyPrintTypeFieldDeclaration((TypeFieldDeclaration*)node);
+                prettyPrintTypeFieldDeclaration(static_cast<TypeFieldDeclaration*>(node));
                 break;
             }
             case NodeKind::ExpressionStatement:
             {
-                prettyPrintExpressionStatement((ExpressionStatement*)node);
+                prettyPrintExpressionStatement(static_cast<ExpressionStatement*>(node));
                 break;
             }
             case NodeKind::AssignmentStatement:
             {
-                prettyPrintAssignmentStatement((AssignmentStatement*)node);
+                prettyPrintAssignmentStatement(static_cast<AssignmentStatement*>(node));
                 break;
             }
             case NodeKind::FunctionDefinitionStatement:
             {
-                prettyPrintFunctionDefinitionStatement((FunctionDefinitionStatement*)node);
+                prettyPrintFunctionDefinitionStatement(static_cast<FunctionDefinitionStatement*>(node));
                 break;
             }
             case NodeKind::EnumDefinitionStatement:
             {
-                prettyPrintEnumDefinitionStatement((EnumDefinitionStatement*)node);
+                prettyPrintEnumDefinitionStatement(static_cast<EnumDefinitionStatement*>(node));
                 break;
             }
             case NodeKind::TypeDefinitionStatement:
             {
-                prettyPrintTypeDefinitionStatement((TypeDefinitionStatement*)node);
+                prettyPrintTypeDefinitionStatement(static_cast<TypeDefinitionStatement*>(node));
                 break;
             }
             case NodeKind::MethodDefinitionStatement:
             {
-                prettyPrintMethodDefinitionStatement((MethodDefinitionStatement*)node);
+                prettyPrintMethodDefinitionStatement(static_cast<MethodDefinitionStatement*>(node));
                 break;
             }
             case NodeKind::IfStatement:
             {
-                prettyPrintIfStatement((IfStatement*)node);
+                prettyPrintIfStatement(static_cast<IfStatement*>(node));
                 break;
             }
             case NodeKind::WhileStatement:
             {
-                prettyPrintWhileStatement((WhileStatement*)node);
+                prettyPrintWhileStatement(static_cast<WhileStatement*>(node));
                 break;
             }
             case NodeKind::BreakStatement:
             {
-                prettyPrintBreakStatement((BreakStatement*)node);
+                prettyPrintBreakStatement(static_cast<BreakStatement*>(node));
                 break;
             }
             case NodeKind::SkipStatement:
             {
-                prettyPrintSkipStatement((SkipStatement*)node);
+                prettyPrintSkipStatement(static_cast<SkipStatement*>(node));
                 break;
             }
             case NodeKind::ReturnStatement:
             {
-                prettyPrintReturnStatement((ReturnStatement*)node);
+                prettyPrintReturnStatement(static_cast<ReturnStatement*>(node));
                 break;
             }
             case NodeKind::GroupingExpression:
             {
-                prettyPrintGroupingExpression((GroupingExpression*)node);
+                prettyPrintGroupingExpression(static_cast<GroupingExpression*>(node));
                 break;
             }
             case NodeKind::UnaryExpression:
             {
-                prettyPrintUnaryExpression((UnaryExpression*)node);
+                prettyPrintUnaryExpression(static_cast<UnaryExpression*>(node));
                 break;
             }
             case NodeKind::BinaryExpression:
             {
-                prettyPrintBinaryExpression((BinaryExpression*)node);
+                prettyPrintBinaryExpression(static_cast<BinaryExpression*>(node));
                 break;
             }
             case NodeKind::NameExpression:
             {
-                prettyPrintNameExpression((NameExpression*)node);
+                prettyPrintNameExpression(static_cast<NameExpression*>(node));
                 break;
             }
             case NodeKind::FunctionCallExpression:
             {
-                prettyPrintFunctionCallExpression((FunctionCallExpression*)node);
+                prettyPrintFunctionCallExpression(static_cast<FunctionCallExpression*>(node));
                 break;
             }
             case NodeKind::MemberAccessExpression:
             {
-                prettyPrintMemberAccessExpression((MemberAccessExpression*)node);
+                prettyPrintMemberAccessExpression(static_cast<MemberAccessExpression*>(node));
                 break;
             }
             case NodeKind::DiscardLiteral:
             {
-                prettyPrintDiscardLiteral((DiscardLiteral*)node);
+                prettyPrintDiscardLiteral(static_cast<DiscardLiteral*>(node));
                 break;
             }
             case NodeKind::BoolLiteral:
             {
-                prettyPrintBoolLiteral((BoolLiteral*)node);
+                prettyPrintBoolLiteral(static_cast<BoolLiteral*>(node));
                 break;
             }
             case NodeKind::NumberLiteral:
             {
-                prettyPrintNumberLiteral((NumberLiteral*)node);
+                prettyPrintNumberLiteral(static_cast<NumberLiteral*>(node));
                 break;
             }
             case NodeKind::StringLiteral:
             {
-                prettyPrintStringLiteral((StringLiteral*)node);
+                prettyPrintStringLiteral(static_cast<StringLiteral*>(node));
                 break;
             }
             case NodeKind::TypeNameNode:
             {
-                prettyPrintTypeNameNode((TypeNameNode*)node);
+                prettyPrintTypeNameNode(static_cast<TypeNameNode*>(node));
                 break;
             }
             case NodeKind::BlockNode:
             {
-                prettyPrintBlockNode((BlockNode*)node);
+                prettyPrintBlockNode(static_cast<BlockNode*>(node));
                 break;
             }
             default:
@@ -753,17 +753,17 @@ namespace Caracal
         {
             case AnnotationKind::Extern:
             {
-                prettyPrintExternAnnotation((ExternAnnotation*)annotation);
+                prettyPrintExternAnnotation(static_cast<ExternAnnotation*>(annotation));
                 break;
             }
             case AnnotationKind::Flag:
             {
-                prettyPrintFlagAnnotation((FlagAnnotation*)annotation);
+                prettyPrintFlagAnnotation(static_cast<FlagAnnotation*>(annotation));
                 break;
             }
             case AnnotationKind::Step:
             {
-                prettyPrintStepAnnotation((StepAnnotation*)annotation);
+                prettyPrintStepAnnotation(static_cast<StepAnnotation*>(annotation));
                 break;
             }
             default:

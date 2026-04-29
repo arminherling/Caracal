@@ -65,18 +65,18 @@ namespace Caracal
         void generateReturnStatement(ReturnStatement* node) noexcept;
 
         llvm::Value* generateExpression(const Expression* node) noexcept;
-        llvm::Value* generateBinaryExpression(BinaryExpression* node) noexcept;
-        llvm::Value* generateMemberAccessExpression(MemberAccessExpression* node) noexcept;
-        llvm::Value* generateUnaryExpression(UnaryExpression* node) noexcept;
-        llvm::Value* generateNameExpression(NameExpression* node) noexcept; 
-        llvm::Value* generateFunctionCallExpression(FunctionCallExpression* node) noexcept;
-        llvm::Value* generateBoolLiteral(BoolLiteral* node) noexcept;
-        llvm::Value* generateNumberLiteral(NumberLiteral* node) noexcept;
-        llvm::Value* generateStringLiteral(StringLiteral* node) noexcept;
+        llvm::Value* generateBinaryExpression(const BinaryExpression* node) noexcept;
+        llvm::Value* generateMemberAccessExpression(const MemberAccessExpression* node) noexcept;
+        llvm::Value* generateUnaryExpression(const UnaryExpression* node) noexcept;
+        llvm::Value* generateNameExpression(const NameExpression* node) noexcept; 
+        llvm::Value* generateFunctionCallExpression(const FunctionCallExpression* node) noexcept;
+        llvm::Value* generateBoolLiteral(const BoolLiteral* node) noexcept;
+        llvm::Value* generateNumberLiteral(const NumberLiteral* node) noexcept;
+        llvm::Value* generateStringLiteral(const StringLiteral* node) noexcept;
         llvm::Value* getPointerToField(llvm::Value* objectPtr, Type objectType, std::string_view fieldName) noexcept;
-        llvm::Value* generateFieldAccessPointer(BinaryExpression* node) noexcept;
+        llvm::Value* generateFieldAccessPointer(const BinaryExpression* node) noexcept;
         llvm::Value* getThisPointer(Expression* thisExpression) noexcept;
-        bool tryGenerateConstructorCallInto(BinaryExpression* binaryExpression, llvm::Value* destinationPtr) noexcept;
+        bool tryGenerateConstructorCallInto(const BinaryExpression* binaryExpression, llvm::Value* destinationPtr) noexcept;
         bool tryGenerateGlobalConstructorCall(const std::string& name, BinaryExpression* binaryExpression) noexcept;
         llvm::Function* getOrCreateGlobalInitFunction() noexcept;
 

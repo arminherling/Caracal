@@ -154,22 +154,22 @@ namespace Caracal
         {
             case NodeKind::ConstantDeclaration:
             {
-                generateConstantDeclaration((ConstantDeclaration*)node);
+                generateConstantDeclaration(static_cast<ConstantDeclaration*>(node));
                 break;
             }
             case NodeKind::VariableDeclaration:
             {
-                generateVariableDeclaration((VariableDeclaration*)node);
+                generateVariableDeclaration(static_cast<VariableDeclaration*>(node));
                 break;
             }
             case NodeKind::AssignmentStatement:
             {
-                generateAssignmentStatement((AssignmentStatement*)node);
+                generateAssignmentStatement(static_cast<AssignmentStatement*>(node));
                 break;
             }
             case NodeKind::FunctionDefinitionStatement:
             {
-                auto functionDefinitionNode = (FunctionDefinitionStatement*)node;
+                auto functionDefinitionNode = static_cast<FunctionDefinitionStatement*>(node);
                 if (!functionDefinitionNode->isExtern())
                 {
                     generateFunctionDefinition(functionDefinitionNode);
@@ -183,17 +183,17 @@ namespace Caracal
             }
             case NodeKind::TypeDefinitionStatement:
             {
-                generateTypeDefinition((TypeDefinitionStatement*)node);
+                generateTypeDefinition(static_cast<TypeDefinitionStatement*>(node));
                 break;
             }
             case NodeKind::IfStatement:
             {
-                generateIfStatement((IfStatement*)node);
+                generateIfStatement(static_cast<IfStatement*>(node));
                 break;
             }
             case NodeKind::WhileStatement:
             {
-                generateWhileStatement((WhileStatement*)node);
+                generateWhileStatement(static_cast<WhileStatement*>(node));
                 break;
             }
             case NodeKind::BreakStatement:
@@ -208,17 +208,17 @@ namespace Caracal
             }
             case NodeKind::ExpressionStatement:
             {
-                generateExpressionStatement((ExpressionStatement*)node);
+                generateExpressionStatement(static_cast<ExpressionStatement*>(node));
                 break;
             }
             case NodeKind::ReturnStatement:
             {
-                generateReturnStatement((ReturnStatement*)node);
+                generateReturnStatement(static_cast<ReturnStatement*>(node));
                 break;
             }
             case NodeKind::BlockNode:
             {
-                generateBlockNode((BlockNode*)node);
+                generateBlockNode(static_cast<BlockNode*>(node));
                 break;
             }
             default:
@@ -236,13 +236,13 @@ namespace Caracal
         {
             TODO("Left expression of constant declaration must be a name expression");
         }
-        const auto nameExpression = (NameExpression*)leftExpression;
+        const auto nameExpression = static_cast<NameExpression*>(leftExpression);
         const auto& name = nameExpression->name();
 
-        const auto* rightExpression = node->rightExpression().get();
+        auto* rightExpression = node->rightExpression().get();
         if (node->isGlobalConstant() && rightExpression->kind() == NodeKind::BinaryExpression)
         {
-            auto* binaryExpression = (BinaryExpression*)rightExpression;
+            auto* binaryExpression = static_cast<BinaryExpression*>(rightExpression);
             if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
             {
                 if (tryGenerateGlobalConstructorCall(name, binaryExpression))
@@ -287,13 +287,13 @@ namespace Caracal
         {
             TODO("Left expression of variable declaration must be a name expression");
         }
-        const auto nameExpression = (NameExpression*)leftExpression;
+        const auto nameExpression = static_cast<NameExpression*>(leftExpression);
         const auto& name = nameExpression->name();
 
         const auto* rightExpression = node->rightExpression().get();
         if (rightExpression->kind() == NodeKind::BinaryExpression)
         {
-            auto* binaryExpression = (BinaryExpression*)rightExpression;
+            const auto* binaryExpression = static_cast<const BinaryExpression*>(rightExpression);
             if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
             {
                 auto* llvmType = GetLLVMTypeForCaraType(binaryExpression->type(), m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
@@ -331,7 +331,7 @@ namespace Caracal
 
         if (rightExpression->kind() == NodeKind::BinaryExpression)
         {
-            auto* binaryExpression = (BinaryExpression*)rightExpression;
+            auto* binaryExpression = static_cast<BinaryExpression*>(rightExpression);
             if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
             {
                 auto llvmLeftValue = generateExpression(leftExpression);
@@ -543,7 +543,7 @@ namespace Caracal
         {
             if(statement->kind() == NodeKind::MethodDefinitionStatement)
             {
-                auto method = (MethodDefinitionStatement*)statement.get();
+                auto method = static_cast<MethodDefinitionStatement*>(statement.get());
                 auto methodType = method->type();
                 auto methodBody = method->bodyNode().get();
                 generateFunction(methodType, methodBody);
@@ -673,40 +673,40 @@ namespace Caracal
         {
             case NodeKind::FunctionCallExpression:
             {
-                return generateFunctionCallExpression((FunctionCallExpression*)node);
+                return generateFunctionCallExpression(static_cast<const FunctionCallExpression*>(node));
             }
             case NodeKind::BinaryExpression:
             {
-                return generateBinaryExpression((BinaryExpression*)node);
+                return generateBinaryExpression(static_cast<const BinaryExpression*>(node));
             }
             case NodeKind::MemberAccessExpression:
             {
-                return generateMemberAccessExpression((MemberAccessExpression*)node);
+                return generateMemberAccessExpression(static_cast<const MemberAccessExpression*>(node));
             }
             case NodeKind::UnaryExpression:
             {
-                return generateUnaryExpression((UnaryExpression*)node);
+                return generateUnaryExpression(static_cast<const UnaryExpression*>(node));
             }
             case NodeKind::NameExpression:
             {
-                return generateNameExpression((NameExpression*)node);
+                return generateNameExpression(static_cast<const NameExpression*>(node));
             }
             case NodeKind::BoolLiteral:
             {
-                return generateBoolLiteral((BoolLiteral*)node);
+                return generateBoolLiteral(static_cast<const BoolLiteral*>(node));
             }
             case NodeKind::NumberLiteral:
             {
-                return generateNumberLiteral((NumberLiteral*)node);
+                return generateNumberLiteral(static_cast<const NumberLiteral*>(node));
             }
             case NodeKind::StringLiteral:
             {
-                return generateStringLiteral((StringLiteral*)node);
+                return generateStringLiteral(static_cast<const StringLiteral*>(node));
             }
             case NodeKind::GroupingExpression:
             {
                 // TODO move this to a rewriter later
-                const auto groupingExpression = (GroupingExpression*)node;
+                const auto groupingExpression = static_cast<const GroupingExpression*>(node);
                 return generateExpression(groupingExpression->expression().get());
             }
             default:
@@ -717,7 +717,7 @@ namespace Caracal
         }
     }
 
-    llvm::Value* LLVMCodeGenerator::generateUnaryExpression(UnaryExpression* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateUnaryExpression(const UnaryExpression* node) noexcept
     {
         switch (node->unaryOperator())
         {
@@ -725,7 +725,7 @@ namespace Caracal
             {
                 if (node->expression()->kind() == NodeKind::NameExpression)
                 {
-                    const auto nameExpression = (NameExpression*)node->expression().get();
+                    const auto nameExpression = static_cast<NameExpression*>(node->expression().get());
                     const auto& name = nameExpression->name();
                     auto value = currentScope()->getVariableBinding(name);
 
@@ -761,7 +761,7 @@ namespace Caracal
         }
     }
 
-    llvm::Value* LLVMCodeGenerator::generateBinaryExpression(BinaryExpression* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateBinaryExpression(const BinaryExpression* node) noexcept
     {
         switch (node->binaryOperator())
         {
@@ -814,7 +814,7 @@ namespace Caracal
                     const auto baseType = enumDefinition.baseType();
                     const auto llvmType = GetLLVMTypeForCaraType(baseType, m_llvmModule.getContext());
 
-                    const auto nameExpression = (NameExpression*)node->rightExpression().get();
+                    const auto nameExpression = static_cast<NameExpression*>(node->rightExpression().get());
                     const auto& name = nameExpression->name();
                     const auto& enumField = enumDefinition.getFieldByName(name);
 
@@ -1181,7 +1181,7 @@ namespace Caracal
         return nullptr;
     }
 
-    llvm::Value* LLVMCodeGenerator::generateNameExpression(NameExpression* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateNameExpression(const NameExpression* node) noexcept
     {
         const auto& name = node->name();
         auto value = currentScope()->getVariableBinding(name);
@@ -1202,7 +1202,7 @@ namespace Caracal
         return nullptr;
     }
 
-    llvm::Value* LLVMCodeGenerator::generateFunctionCallExpression(FunctionCallExpression* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateFunctionCallExpression(const FunctionCallExpression* node) noexcept
     {
         auto functionType = node->functionType();
         auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
@@ -1240,7 +1240,7 @@ namespace Caracal
         return m_irBuilder->CreateCall(llvmFunction, llvmArguments);
     }
 
-    llvm::Value* LLVMCodeGenerator::generateBoolLiteral(BoolLiteral* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateBoolLiteral(const BoolLiteral* node) noexcept
     {
         auto& context = m_llvmModule.getContext();
         if (node->value())
@@ -1253,7 +1253,7 @@ namespace Caracal
         }
     }
 
-    llvm::Value* LLVMCodeGenerator::generateNumberLiteral(NumberLiteral* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateNumberLiteral(const NumberLiteral* node) noexcept
     {
         auto& context = m_llvmModule.getContext();
         const auto literalType = node->type();
@@ -1278,7 +1278,7 @@ namespace Caracal
         return nullptr;
     }
 
-    llvm::Value* LLVMCodeGenerator::generateStringLiteral(StringLiteral* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateStringLiteral(const StringLiteral* node) noexcept
     {
         auto& context = m_llvmModule.getContext();
         const auto& stringContent = node->escapedContent();
@@ -1335,7 +1335,7 @@ namespace Caracal
         return llvm::FunctionType::get(llvmReturnType, llvmParameterTypes, isVariadic);
     }
 
-    bool LLVMCodeGenerator::tryGenerateConstructorCallInto(BinaryExpression* binaryExpression, llvm::Value* destinationPtr) noexcept
+    bool LLVMCodeGenerator::tryGenerateConstructorCallInto(const BinaryExpression* binaryExpression, llvm::Value* destinationPtr) noexcept
     {
         auto* constructorCall = static_cast<FunctionCallExpression*>(binaryExpression->rightExpression().get());
         auto constructorType = constructorCall->functionType();
@@ -1872,7 +1872,7 @@ namespace Caracal
         return temporaryThis;
     }
 
-    llvm::Value* LLVMCodeGenerator::generateFieldAccessPointer(BinaryExpression* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateFieldAccessPointer(const BinaryExpression* node) noexcept
     {
         if (node->rightExpression()->kind() != NodeKind::NameExpression)
         {
@@ -1890,7 +1890,7 @@ namespace Caracal
         return getPointerToField(objectPointer, objectType, fieldNameExpression->name());
     }
 
-    llvm::Value* LLVMCodeGenerator::generateMemberAccessExpression(MemberAccessExpression* node) noexcept
+    llvm::Value* LLVMCodeGenerator::generateMemberAccessExpression(const MemberAccessExpression* node) noexcept
     {
         if (m_currentFunction == nullptr)
         {

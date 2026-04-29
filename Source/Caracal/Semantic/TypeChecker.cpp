@@ -305,7 +305,7 @@ namespace Caracal
                 continue;
             }
 
-            typeCheckTypeFieldDeclaration(typeDefinition, (TypeFieldDeclaration*)definitionStatement.get(), fieldIndex);
+            typeCheckTypeFieldDeclaration(typeDefinition, static_cast<TypeFieldDeclaration*>(definitionStatement.get()), fieldIndex);
             ++fieldIndex;
         }
 
@@ -342,7 +342,7 @@ namespace Caracal
                 continue;
             }
 
-            typeCheckMethodDefinitionStatement((MethodDefinitionStatement*)definitionStatement.get());
+            typeCheckMethodDefinitionStatement(static_cast<MethodDefinitionStatement*>(definitionStatement.get()));
         }
 
         popScope();
@@ -407,52 +407,52 @@ namespace Caracal
         {
             case NodeKind::ConstantDeclaration:
             {
-                typeCheckConstantDeclaration((ConstantDeclaration*)statement);
+                typeCheckConstantDeclaration(static_cast<ConstantDeclaration*>(statement));
                 break;
             }
             case NodeKind::VariableDeclaration:
             {
-                typeCheckVariableDeclaration((VariableDeclaration*)statement);
+                typeCheckVariableDeclaration(static_cast<VariableDeclaration*>(statement));
                 break;
             }
             case NodeKind::ExpressionStatement:
             {
-                typeCheckExpressionStatement((ExpressionStatement*)statement);
+                typeCheckExpressionStatement(static_cast<ExpressionStatement*>(statement));
                 break;
             }
             case NodeKind::AssignmentStatement:
             {
-                typeCheckAssignmentStatement((AssignmentStatement*)statement);
+                typeCheckAssignmentStatement(static_cast<AssignmentStatement*>(statement));
                 break;
             }
             case NodeKind::FunctionDefinitionStatement:
             {
-                typeCheckFunctionDefinitionStatement((FunctionDefinitionStatement*)statement);
+                typeCheckFunctionDefinitionStatement(static_cast<FunctionDefinitionStatement*>(statement));
                 break;
             }
             case NodeKind::EnumDefinitionStatement:
             {
-                typeCheckEnumDefinitionStatement((EnumDefinitionStatement*)statement);
+                typeCheckEnumDefinitionStatement(static_cast<EnumDefinitionStatement*>(statement));
                 break;
             }
             case NodeKind::IfStatement:
             {
-                typeCheckIfStatement((IfStatement*)statement);
+                typeCheckIfStatement(static_cast<IfStatement*>(statement));
                 break;
             }
             case NodeKind::WhileStatement:
             {
-                typeCheckWhileStatement((WhileStatement*)statement);
+                typeCheckWhileStatement(static_cast<WhileStatement*>(statement));
                 break;
             }
             case NodeKind::ReturnStatement:
             {
-                typeCheckReturnStatement((ReturnStatement*)statement);
+                typeCheckReturnStatement(static_cast<ReturnStatement*>(statement));
                 break;
             }
             case NodeKind::BlockNode:
             {
-                typeCheckBlockNode((BlockNode*)statement);
+                typeCheckBlockNode(static_cast<BlockNode*>(statement));
                 break;
             }
             default:
@@ -470,7 +470,7 @@ namespace Caracal
         auto leftExpression = statement->leftExpression().get();
         if (leftExpression->kind() == NodeKind::NameExpression)
         {
-            auto nameExpression = (NameExpression*)leftExpression;
+            auto nameExpression = static_cast<NameExpression*>(leftExpression);
             const auto& name = nameExpression->name();
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
@@ -509,7 +509,7 @@ namespace Caracal
         auto leftExpression = statement->leftExpression().get();
         if (leftExpression->kind() == NodeKind::NameExpression)
         {
-            auto nameExpression = (NameExpression*)leftExpression;
+            auto nameExpression = static_cast<NameExpression*>(leftExpression);
             const auto& name = nameExpression->name();
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
@@ -627,7 +627,7 @@ namespace Caracal
             auto stepParameter = arguments->arguments().at(0).get();
             if (stepParameter->kind() == NodeKind::NumberLiteral)
             {
-                step = convertToI32((NumberLiteral*)stepParameter);
+                step = convertToI32(static_cast<NumberLiteral*>(stepParameter));
             }
         }
 
@@ -675,7 +675,7 @@ namespace Caracal
 
                 if (expression->kind() == NodeKind::NumberLiteral && expression->type() == Type::I32())
                 {
-                    auto value = convertToI32((NumberLiteral*)expression);
+                    auto value = convertToI32(static_cast<NumberLiteral*>(expression));
                     enumDefinition.addField(fieldName, value);
                     fieldNode->setValue(value);
                     currentFieldValue = value + step;
@@ -830,36 +830,36 @@ namespace Caracal
             }
             case NodeKind::NumberLiteral:
             {
-                return typeCheckNumberLiteral((NumberLiteral*)expression);
+                return typeCheckNumberLiteral(static_cast<NumberLiteral*>(expression));
             }
             case NodeKind::GroupingExpression:
             {
-                return typeCheckGroupingExpression((GroupingExpression*)expression);
+                return typeCheckGroupingExpression(static_cast<GroupingExpression*>(expression));
             }
             case NodeKind::UnaryExpression:
             {
-                return typeCheckUnaryExpressionExpression((UnaryExpression*)expression);
+                return typeCheckUnaryExpressionExpression(static_cast<UnaryExpression*>(expression));
             }
             case NodeKind::BinaryExpression:
             {
-                return typeCheckBinaryExpressionExpression((BinaryExpression*)expression);
+                return typeCheckBinaryExpressionExpression(static_cast<BinaryExpression*>(expression));
             }
             case NodeKind::NameExpression:
             {
-                return typeCheckNameExpression((NameExpression*)expression);
+                return typeCheckNameExpression(static_cast<NameExpression*>(expression));
             }
             case NodeKind::FunctionCallExpression:
             {
-                return typeCheckFunctionCallExpression((FunctionCallExpression*)expression);
+                return typeCheckFunctionCallExpression(static_cast<FunctionCallExpression*>(expression));
             }
             case NodeKind::MemberAccessExpression:
             {
-                return typeCheckMemberAccessExpression((MemberAccessExpression*)expression);
+                return typeCheckMemberAccessExpression(static_cast<MemberAccessExpression*>(expression));
             }
             /*
             case NodeKind::DiscardLiteral:
             {
-                return typeCheckDiscardLiteral((DiscardLiteral*)expression);
+                return typeCheckDiscardLiteral(static_cast<DiscardLiteral*>(expression));
             }*/
             default:
             {
@@ -928,7 +928,7 @@ namespace Caracal
 
                     if (binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression)
                     {
-                        auto functionCallExpression = (FunctionCallExpression*)binaryExpression->rightExpression().get();
+                        auto functionCallExpression = static_cast<FunctionCallExpression*>(binaryExpression->rightExpression().get());
                         const auto& name = functionCallExpression->nameExpression()->name();
 
                         auto methodType = typeDefinition.tryGetMethodTypeByName(name);
