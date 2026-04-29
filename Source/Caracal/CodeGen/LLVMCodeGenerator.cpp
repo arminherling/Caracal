@@ -87,15 +87,6 @@ namespace Caracal
         return llvmArgumentValue;
     }
 
-    [[nodiscard]] static std::string_view MapFunctionNameToExternFunction(std::string_view functionName) noexcept
-    {
-        static const auto builtinFunctions = InitializeBuiltinFunctions();
-        if (const auto result = builtinFunctions.find(functionName); result != builtinFunctions.end())
-            return result->second;
-
-        return functionName;
-    }
-
     [[nodiscard]] static void SetupFunctionParameters(
         const FunctionDefinition& functionDefinition,
         llvm::Function* llvmFunction,
@@ -520,14 +511,9 @@ namespace Caracal
         if (llvmFunction != nullptr)
             return llvmFunction;
 
-        // try mapped name (print -> printf)
-        const auto maybeMappedFunctionName = MapFunctionNameToExternFunction(functionName);
-        if (maybeMappedFunctionName != functionName)
-        {
-            llvmFunction = m_llvmModule.getFunction(maybeMappedFunctionName);
-            if (llvmFunction != nullptr)
-                return llvmFunction;
-        }
+        llvmFunction = m_llvmModule.getFunction(functionName);
+        if (llvmFunction != nullptr)
+            return llvmFunction;
 
         TODO("This shouldn't happen");
         return nullptr;
@@ -1207,8 +1193,7 @@ namespace Caracal
         auto functionType = node->functionType();
         auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
         auto functionName = functionDefinition.fullName();
-        const auto maybeMappedFunctionName = MapFunctionNameToExternFunction(functionName);
-        auto llvmFunction = m_llvmModule.getFunction(maybeMappedFunctionName);
+        auto llvmFunction = m_llvmModule.getFunction(functionName);
         if (llvmFunction == nullptr)
         {
             TODO("Function not found in module during function call generation");
