@@ -1,5 +1,3 @@
 ; ModuleID = 'CaracalModule'
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
-
-declare void @print(ptr %0)

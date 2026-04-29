@@ -1,4 +1,7 @@
-﻿def func() 
+﻿#extern()
+def print(message: cstring) {}
+
+def func() 
 {
     print("hello, world!");
 }

@@ -3,5 +3,3 @@ source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
 @value = constant i32 1, align 4
-
-declare void @print(ptr %0)

@@ -1,1 +1,4 @@
+﻿#extern()
+def print(message: cstring) {}
+
 _ :: print("hello, world!");

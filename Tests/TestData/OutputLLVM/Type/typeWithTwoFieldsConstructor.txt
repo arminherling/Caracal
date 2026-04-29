@@ -4,8 +4,6 @@ target triple = "x86_64-unknown-none"
 
 %Pair = type { i32, i32 }
 
-declare void @print(ptr %0)
-
 define i32 @func() {
 entry:
   %pair = alloca %Pair, align 8

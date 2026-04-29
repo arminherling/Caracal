@@ -1,3 +1,25 @@
+FunctionDefinitionStatement: {
+    Type: (cstring) -> void
+    Name: print
+    Annotation: {
+        Name: Extern
+        ArgumentsNode(0): {
+        }
+    }
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: message
+            TypeNameNode: {
+                Type: cstring
+                Lexeme: cstring
+            }
+        }
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(0): {
+    }
+}
 ConstantDeclaration: {
     Type: void
     Left: {

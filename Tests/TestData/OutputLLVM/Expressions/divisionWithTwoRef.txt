@@ -4,5 +4,3 @@ target triple = "x86_64-unknown-none"
 
 @x = constant i32 1, align 4
 @y = constant i32 2, align 4
-
-declare void @print(ptr %0)

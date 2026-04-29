@@ -3,5 +3,3 @@ source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
 @PI = constant float 0x400921FB60000000, align 4
-
-declare void @print(ptr %0)

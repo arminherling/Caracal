@@ -2,6 +2,4 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
-declare void @print(ptr %0)
-
 declare i32 @printf(...)

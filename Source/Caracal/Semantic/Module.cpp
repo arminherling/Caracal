@@ -35,8 +35,6 @@ namespace Caracal
         module.createBuiltinType(Type::I32(), "i32");
         module.createBuiltinType(Type::F32(), "f32");
         module.createBuiltinType(Type::String(), "cstring");
-        module.m_functionDefinitions.emplace_back(nullptr, Type{ 1000, TypeKind::Function }, Type::Undefined(), FunctionType::FreeFunction, "print", "print", false, std::vector<Parameter>{Parameter{"msg", Type::String()}});
-        module.m_functionDefinitionIndexById.try_emplace(1000, module.m_functionDefinitions.size() - 1);
         module.m_nextId = 2000;
 
         return module;

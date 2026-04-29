@@ -2,8 +2,6 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
-declare void @print(ptr %0)
-
 define void @double(ptr nonnull %x) {
 entry:
   %ref_load = load i32, ptr %x, align 4
