@@ -1,17 +1,17 @@
 FunctionDefinitionStatement: {
-    Type: () -> string
+    Type: () -> cstring
     Name: func
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: string
-            Lexeme: string
+            Type: cstring
+            Lexeme: cstring
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: string
+            Type: cstring
             StringLiteral: "line1\nline2\t\"quoted\"\\"
         }
     }

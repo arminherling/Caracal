@@ -60,10 +60,10 @@ We can also declare external C functions with the ``extern`` annotation. This fo
 
 ```odin
 #extern()
-def puts(message: string) i32 {}
+def puts(message: cstring) i32 {}
 
 #extern()
-def printf(message: string, ...) i32 {}
+def printf(message: cstring, ...) i32 {}
 ```
 
 

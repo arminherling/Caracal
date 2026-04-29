@@ -9,17 +9,17 @@ FunctionDefinitionStatement: {
         ExpressionStatement: {
             FunctionCallExpression: {
                 Type: void
-                Function type: (string) -> void
+                Function type: (cstring) -> void
                 NameExpression: {
-                    Type: (string) -> void
+                    Type: (cstring) -> void
                     Name: print
                 }
                 ArgumentsNode(1): {
                     FunctionCallExpression: {
-                        Type: string
-                        Function type: () -> string
+                        Type: cstring
+                        Function type: () -> cstring
                         NameExpression: {
-                            Type: () -> string
+                            Type: () -> cstring
                             Name: value
                         }
                         ArgumentsNode(0): {
@@ -31,19 +31,19 @@ FunctionDefinitionStatement: {
     }
 }
 FunctionDefinitionStatement: {
-    Type: () -> string
+    Type: () -> cstring
     Name: value
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: string
-            Lexeme: string
+            Type: cstring
+            Lexeme: cstring
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: string
+            Type: cstring
             StringLiteral: "val"
         }
     }

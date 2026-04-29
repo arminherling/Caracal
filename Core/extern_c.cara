@@ -2,11 +2,11 @@
 
 // writes the message to stdout and adds a newline at the end
 #extern()
-def puts(message: string) i32 {}
+def puts(message: cstring) i32 {}
 
 // formats the message using C-style format strings and writes to stdout
 #extern()
-def printf(format: string, ...) i32 {}
+def printf(format: cstring, ...) i32 {}
 
 // returns the time since program start in clock ticks
 #extern()

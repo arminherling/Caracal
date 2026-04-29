@@ -1,4 +1,4 @@
-def func() string
+def func() cstring
 {
     return "hello";
 }

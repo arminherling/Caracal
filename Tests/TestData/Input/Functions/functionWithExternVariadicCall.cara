@@ -1,5 +1,5 @@
 ﻿#extern()
-def printf(message: string, ...) i32 {}
+def printf(message: cstring, ...) i32 {}
 
 def func() i32
 {

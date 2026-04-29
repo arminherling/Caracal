@@ -1,5 +1,5 @@
 ﻿#extern()
-def puts(message: string) i32 {}
+def puts(message: cstring) i32 {}
 
 #extern()
 def clock() i32 {}

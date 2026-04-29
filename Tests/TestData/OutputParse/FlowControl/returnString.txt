@@ -6,7 +6,7 @@ FunctionDefinitionStatement: {
     ReturnTypesNode(1): {
         TypeNameNode: {
             Type: undefined
-            Lexeme: string
+            Lexeme: cstring
         }
     }
     BlockNode(1): {

@@ -3,7 +3,7 @@
     print(value());
 }
 
-def value() string
+def value() cstring
 { 
     return "val";
 }

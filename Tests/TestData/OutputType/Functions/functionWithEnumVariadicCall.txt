@@ -1,5 +1,5 @@
 FunctionDefinitionStatement: {
-    Type: (string, C Variadic) -> i32
+    Type: (cstring, C Variadic) -> i32
     Name: printf
     Annotation: {
         Name: Extern
@@ -10,8 +10,8 @@ FunctionDefinitionStatement: {
         ParameterNode: {
             Name: message
             TypeNameNode: {
-                Type: string
-                Lexeme: string
+                Type: cstring
+                Lexeme: cstring
             }
         }
         ParameterNode: {
@@ -61,9 +61,9 @@ FunctionDefinitionStatement: {
         ExpressionStatement: {
             FunctionCallExpression: {
                 Type: i32
-                Function type: (string, C Variadic) -> i32
+                Function type: (cstring, C Variadic) -> i32
                 NameExpression: {
-                    Type: (string, C Variadic) -> i32
+                    Type: (cstring, C Variadic) -> i32
                     Name: printf
                 }
                 ArgumentsNode(2): {

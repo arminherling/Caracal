@@ -1,4 +1,4 @@
-﻿def func() string
+﻿def func() cstring
 {
     return "line1\nline2\t\"quoted\"\\";
 }

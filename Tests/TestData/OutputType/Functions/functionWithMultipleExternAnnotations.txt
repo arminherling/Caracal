@@ -1,5 +1,5 @@
 FunctionDefinitionStatement: {
-    Type: (string) -> i32
+    Type: (cstring) -> i32
     Name: puts
     Annotation: {
         Name: Extern
@@ -10,8 +10,8 @@ FunctionDefinitionStatement: {
         ParameterNode: {
             Name: message
             TypeNameNode: {
-                Type: string
-                Lexeme: string
+                Type: cstring
+                Lexeme: cstring
             }
         }
     }
@@ -58,9 +58,9 @@ FunctionDefinitionStatement: {
         ExpressionStatement: {
             FunctionCallExpression: {
                 Type: i32
-                Function type: (string) -> i32
+                Function type: (cstring) -> i32
                 NameExpression: {
-                    Type: (string) -> i32
+                    Type: (cstring) -> i32
                     Name: puts
                 }
                 ArgumentsNode(1): {

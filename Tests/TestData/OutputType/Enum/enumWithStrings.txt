@@ -1,5 +1,5 @@
 EnumDefinitionStatement: {
-    Type: Month(string)
+    Type: Month(cstring)
     Name: Month
     FieldNodes(12): {
         EnumFieldDeclaration: {

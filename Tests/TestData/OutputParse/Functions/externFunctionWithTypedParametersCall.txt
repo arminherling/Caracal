@@ -11,7 +11,7 @@ FunctionDefinitionStatement: {
             Name: message
             TypeNameNode: {
                 Type: undefined
-                Lexeme: string
+                Lexeme: cstring
             }
         }
     }

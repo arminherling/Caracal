@@ -6,9 +6,9 @@ ConstantDeclaration: {
     Right: {
         FunctionCallExpression: {
             Type: void
-            Function type: (string) -> void
+            Function type: (cstring) -> void
             NameExpression: {
-                Type: (string) -> void
+                Type: (cstring) -> void
                 Name: print
             }
             ArgumentsNode(1): {

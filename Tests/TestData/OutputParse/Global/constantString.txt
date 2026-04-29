@@ -1,5 +1,5 @@
 ConstantDeclaration: {
-    Type: string
+    Type: cstring
     Left: {
         NameExpression: {
             Type: undefined

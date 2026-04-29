@@ -1,8 +1,8 @@
 ConstantDeclaration: {
-    Type: string
+    Type: cstring
     Left: {
         NameExpression: {
-            Type: string
+            Type: cstring
             Name: world
         }
     }
