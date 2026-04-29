@@ -1,0 +1,50 @@
+TypeDefinitionStatement: {
+    Type: One
+    Name: One
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: true
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: one
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            Right: {
+                NumberLiteral: 1
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref One) -> i32
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: value
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    Type: i32
+                    MemberAccessExpression: {
+                        NameExpression: {
+                            Type: i32
+                            Name: one
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

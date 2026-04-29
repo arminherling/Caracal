@@ -3,7 +3,7 @@
     One :: 1'i32
 }
 
-def func() i32
+def func() Numbers
 {
     return Numbers.One;
 }

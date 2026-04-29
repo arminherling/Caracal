@@ -24,7 +24,7 @@ FunctionDefinitionStatement: {
     ReturnTypesNode(1): {
         TypeNameNode: {
             Type: undefined
-            Lexeme: i32
+            Lexeme: Numbers
         }
     }
     BlockNode(1): {

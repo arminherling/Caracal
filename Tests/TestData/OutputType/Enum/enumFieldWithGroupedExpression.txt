@@ -1,13 +1,13 @@
 EnumDefinitionStatement: {
-    Type: undefined
+    Type: Numbers(i32)
     Name: Numbers
     FieldNodes(1): {
         EnumFieldDeclaration: {
             Name: Three
             GroupingExpression: {
-                Type: undefined
+                Type: i32
                 BinaryExpression: {
-                    Type: undefined
+                    Type: i32
                     Left: {
                         NumberLiteral: 1
                     }
@@ -21,31 +21,31 @@ EnumDefinitionStatement: {
     }
 }
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> Numbers
     Name: func
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
+            Type: Numbers(i32)
             Lexeme: Numbers
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: undefined
+            Type: Numbers(i32)
             BinaryExpression: {
-                Type: undefined
+                Type: Numbers(i32)
                 Left: {
                     NameExpression: {
-                        Type: undefined
+                        Type: Numbers(i32)
                         Name: Numbers
                     }
                 }
                 Operation: MemberAccess
                 Right: {
                     NameExpression: {
-                        Type: undefined
+                        Type: Numbers(i32)
                         Name: Three
                     }
                 }

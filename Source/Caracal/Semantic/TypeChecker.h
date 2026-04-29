@@ -45,17 +45,28 @@ namespace Caracal
         
     private:
         void collectDeclarations();
-        void typeCheckSignatures();
+        void collectMethodDeclarations();
+        void typeCheckFunctionSignatures();
+        void typeCheckTypeSignatures();
+        void typeCheckGlobalConstants();
+        void typeCheckFunctionDefinitions();
+        void typeCheckEnumDefinitions();
+        void typeCheckTypeFieldDefinitions();
+        void typeCheckTypeMethodDefinitions();
 
+        void typeCheckFunctionSignature(FunctionDefinitionStatement* statement);
+        void typeCheckTypeSignature(TypeDefinitionStatement* statement);
+        void typeCheckTypeFieldDefinition(TypeDefinitionStatement* statement);
+        void typeCheckTypeMethodDefinition(TypeDefinitionStatement* statement);
+        void typeCheckMethodSignature(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType);
+        void typeCheckConstructorSignature(const TypeDefinitionStatement* typeDefinitionStatement, TypeDefinition& typeDefinition, Type typeType);
         void typeCheckStatement(Statement* statement);
         void typeCheckConstantDeclaration(ConstantDeclaration* statement);
         void typeCheckVariableDeclaration(VariableDeclaration* statement);
-
         void typeCheckExpressionStatement(ExpressionStatement* statement);
         void typeCheckAssignmentStatement(AssignmentStatement* statement);
         void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
         void typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
-        void typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement);
         void typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex);
         void typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement);
         void typeCheckIfStatement(IfStatement* statement);
@@ -84,13 +95,16 @@ namespace Caracal
         [[nodiscard]] Scope* currentScope() const noexcept;
         
         const std::vector<ParseTreeUPtr>& m_parseTrees;
-        const ParseTree* m_currentParseTree;
         TypeCheckerOptions m_options;
         Module& m_module;
         DiagnosticsBag& m_diagnostics;
         Type m_currentReturnType;
         Type m_currentType;
         std::vector<std::unique_ptr<Scope>> m_scopes;
+        std::vector<const ConstantDeclaration*> m_globalConstantDeclarations;
+        std::vector<const EnumDefinitionStatement*> m_enumDeclarations;
+        std::vector<const TypeDefinitionStatement*> m_typeDeclarations;
+        std::vector<const FunctionDefinitionStatement*> m_functionDeclarations;
     };
 
     // we modify the parse trees in place and add type information to the nodes

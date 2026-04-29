@@ -1,5 +1,5 @@
 EnumDefinitionStatement: {
-    Type: undefined
+    Type: Numbers(u8)
     Name: Numbers
     Annotation: {
         Name: Step
@@ -10,41 +10,44 @@ EnumDefinitionStatement: {
     FieldNodes(3): {
         EnumFieldDeclaration: {
             Name: Zero
+            Value: 0
         }
         EnumFieldDeclaration: {
             Name: Two
+            Value: 2
         }
         EnumFieldDeclaration: {
             Name: Four
+            Value: 4
         }
     }
 }
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> Numbers
     Name: func
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
+            Type: Numbers(u8)
             Lexeme: Numbers
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: undefined
+            Type: Numbers(u8)
             BinaryExpression: {
-                Type: undefined
+                Type: Numbers(u8)
                 Left: {
                     NameExpression: {
-                        Type: undefined
+                        Type: Numbers(u8)
                         Name: Numbers
                     }
                 }
                 Operation: MemberAccess
                 Right: {
                     NameExpression: {
-                        Type: undefined
+                        Type: Numbers(u8)
                         Name: Four
                     }
                 }

@@ -18,7 +18,6 @@ namespace Caracal
         Module& module,
         DiagnosticsBag& diagnostics)
         : m_parseTrees(parseTrees)
-        , m_currentParseTree{ nullptr }
         , m_options{ options }
         , m_module{ module }
         , m_diagnostics{ diagnostics }
@@ -32,16 +31,16 @@ namespace Caracal
     bool TypeChecker::typeCheck()
     {
         collectDeclarations();
-        typeCheckSignatures();
+        collectMethodDeclarations();
 
-        for (const auto& parseTree : m_parseTrees)
-        {
-            m_currentParseTree = parseTree.get();
-            for (const auto& globalStatement : parseTree->statements())
-            {
-                typeCheckStatement(globalStatement.get());
-            }
-        }
+        typeCheckFunctionSignatures();
+        typeCheckTypeSignatures();
+        typeCheckGlobalConstants();
+        typeCheckTypeFieldDefinitions();
+        typeCheckEnumDefinitions();
+        typeCheckFunctionDefinitions();
+        typeCheckTypeMethodDefinitions();
+        
         return true;
     }
 
@@ -49,59 +48,41 @@ namespace Caracal
     {
         for (const auto& parseTree : m_parseTrees)
         {
-            m_currentParseTree = parseTree.get();
             for (const auto& statement : parseTree->statements())
             {
                 switch (statement->kind())
                 {
+                    case NodeKind::ConstantDeclaration:
+                    {
+                        auto* constantDeclaration = static_cast<ConstantDeclaration*>(statement.get());
+                        m_globalConstantDeclarations.push_back(constantDeclaration);
+
+                        break;
+                    }
                     case NodeKind::EnumDefinitionStatement:
                     {
-                        auto enumStatement = (EnumDefinitionStatement*)statement.get();
+                        auto* enumStatement = static_cast<EnumDefinitionStatement*>(statement.get());
                         const auto& enumName = enumStatement->name();
                         // TODO check if type with same name exists already
                         auto& enumDefinition = m_module.createEnum(enumName, enumStatement);
                         enumStatement->setType(enumDefinition.type());
+                        m_enumDeclarations.push_back(enumStatement);
 
                         break;
                     }
                     case NodeKind::TypeDefinitionStatement:
                     {
-                        auto typeStatement = (TypeDefinitionStatement*)statement.get();
+                        auto* typeStatement = static_cast<TypeDefinitionStatement*>(statement.get());
                         // TODO check if type with same name exists already
                         auto& typeDefinition = m_module.createType(typeStatement->name(), typeStatement);
                         typeStatement->setType(typeDefinition.type());
-
-                        const auto& bodyStatements = typeStatement->bodyNode()->statements();
-                        for (const auto& bodyStatement : bodyStatements)
-                        {
-                            if (bodyStatement->kind() == NodeKind::MethodDefinitionStatement)
-                            {
-                                auto methodStatement = (MethodDefinitionStatement*)bodyStatement.get();
-                                auto modifier = methodStatement->modifier();
-                                const auto& methodName = methodStatement->methodNameNode()->methodName();
-
-                                std::vector<Parameter> parameters{};
-                                if (modifier != MethodModifier::Static)
-                                {
-                                    parameters.emplace_back("this", typeDefinition.type().toReference());
-                                }
-
-                                const auto& parametersNodes = methodStatement->parametersNode()->parameters();
-                                for (const auto& parameterNode : parametersNodes)
-                                {
-                                    parameters.emplace_back(parameterNode->name(), Type::Undefined());
-                                }
-
-                                auto& methodDefinition = m_module.createMethod(typeDefinition, modifier, methodName, parameters, std::vector<Type>(), methodStatement);
-                                methodStatement->setType(methodDefinition.type());
-                            }
-                        }
+                        m_typeDeclarations.push_back(typeStatement);
 
                         break;
                     }
                     case NodeKind::FunctionDefinitionStatement:
                     {
-                        auto functionStatement = (FunctionDefinitionStatement*)statement.get();
+                        auto* functionStatement = static_cast<FunctionDefinitionStatement*>(statement.get());
                         const auto& functionName = functionStatement->name();
 
                         std::vector<Parameter> parameters{};
@@ -114,101 +95,310 @@ namespace Caracal
                         // TODO check if type with same name exists already
                         auto& functionDefinition = m_module.createFunction(functionName, parameters, std::vector<Type>(), functionStatement);
                         functionStatement->setType(functionDefinition.type());
+                        m_functionDeclarations.push_back(functionStatement);
 
                         break;
                     }
                     default:
+                    {
                         break;
+                    }
                 }
             }
         }
     }
 
-    void TypeChecker::typeCheckSignatures()
+    void TypeChecker::collectMethodDeclarations()
     {
-        for (const auto& parseTree : m_parseTrees)
+        for (const auto* typeDefinitionStatement : m_typeDeclarations)
         {
-            m_currentParseTree = parseTree.get();
-            for (const auto& statement : parseTree->statements())
+            auto typeType = m_module.tryGetTypeByName(typeDefinitionStatement->name());
+            if (typeType == Type::Undefined())
             {
-                switch (statement->kind())
+                TODO("This shouldn't happen");
+            }
+
+            auto& typeDefinition = m_module.getTypeDefinition(typeType);
+            const auto& bodyStatements = typeDefinitionStatement->bodyNode()->statements();
+            for (const auto& bodyStatement : bodyStatements)
+            {
+                if (bodyStatement->kind() != NodeKind::MethodDefinitionStatement)
                 {
-                    case NodeKind::FunctionDefinitionStatement:
-                    {
-                        auto functionDefinitionStatement = (FunctionDefinitionStatement*)statement.get();
-                        const auto& functionName = functionDefinitionStatement->name();
+                    continue;
+                }
 
-                        // creating scope for type-checking parameters
-                        pushScope(ScopeKind::Function);
-                        auto parameters = typeCheckParametersNode(functionDefinitionStatement->parametersNode().get());
-                        auto returns = typeCheckReturnTypesNode(functionDefinitionStatement->returnTypesNode().get());
-                        popScope();
+                auto* methodStatement = static_cast<MethodDefinitionStatement*>(bodyStatement.get());
+                auto modifier = methodStatement->modifier();
+                const auto& methodName = methodStatement->methodNameNode()->methodName();
 
-                        auto functionType = m_module.tryGetFunctionTypeByName(functionName);
-                        if (functionType == Type::Undefined())
-                        {
-                            TODO("This shouldn't happen");
-                        }
+                std::vector<Parameter> declarationParameters{};
+                if (modifier != MethodModifier::Static)
+                {
+                    declarationParameters.emplace_back("this", typeDefinition.type().toReference());
+                }
 
-                        auto& functionDefinition = m_module.getFunctionDefinition(functionType);
-                        auto isVariadic = !parameters.empty() && parameters.back().type() == Type::CVariadic();
-                        if (isVariadic && !functionDefinitionStatement->isExtern())
-                        {
-                            TODO("Add diagnostics for non-extern variadic function");
-                        }
-                        functionDefinition.setParameters(parameters);
-                        functionDefinition.setReturnTypes(returns);
-                        functionDefinition.setIsVariadic(isVariadic);
+                const auto& parameterNodes = methodStatement->parametersNode()->parameters();
+                for (const auto& parameterNode : parameterNodes)
+                {
+                    declarationParameters.emplace_back(parameterNode->name(), Type::Undefined());
+                }
 
-                        break;
-                    }
-                    case NodeKind::TypeDefinitionStatement:
-                    {
-                        auto typeDefinitionStatement = (TypeDefinitionStatement*)statement.get();
-                        auto typeType = m_module.tryGetTypeByName(typeDefinitionStatement->name());
-                        if (typeType == Type::Undefined())
-                        {
-                            TODO("This shouldn't happen");
-                        }
+                auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
+                if (methodType != Type::Undefined())
+                {
+                    continue;
+                }
 
-                        auto& typeDefinition = m_module.getTypeDefinition(typeType);
-                        const auto& bodyStatements = typeDefinitionStatement->bodyNode()->statements();
-                        for (const auto& bodyStatement : bodyStatements)
-                        {
-                            if (bodyStatement->kind() == NodeKind::MethodDefinitionStatement)
-                            {
-                                auto methodStatement = (MethodDefinitionStatement*)bodyStatement.get();
-                                const auto& methodName = methodStatement->methodNameNode()->methodName();
+                auto& methodDefinition = m_module.createMethod(typeDefinition, modifier, methodName, declarationParameters, std::vector<Type>(), methodStatement);
+                methodStatement->setType(methodDefinition.type());
+            }
 
-                                // creating scope for type-checking parameters
-                                pushScope(ScopeKind::Method);
-                                auto parameters = typeCheckParametersNode(methodStatement->parametersNode().get());
-                                auto returns = typeCheckReturnTypesNode(methodStatement->returnTypesNode().get());
-                                popScope();
+            if (typeDefinition.tryGetMethodTypeByName("new") != Type::Undefined())
+            {
+                TODO("Add diagnostics for duplicate constructor declaration");
+                continue;
+            }
 
-                                auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
-                                if (methodType == Type::Undefined())
-                                {
-                                    TODO("This shouldn't happen");
-                                }
+            std::vector<Parameter> constructorParameters{};
+            constructorParameters.emplace_back("this", typeType.toReference());
 
-                                auto& methodDefinition = m_module.getFunctionDefinition(methodType);
-                                if (methodStatement->modifier() != MethodModifier::Static)
-                                {
-                                    parameters.insert(parameters.begin(), Parameter{ "this", typeType.toReference() });
-                                }
-                                methodDefinition.setParameters(parameters);
-                                methodDefinition.setReturnTypes(returns);
-                            }
-                        }
-
-                        break;
-                    }
-                    default:
-                        break;
+            if (typeDefinitionStatement->constructorParameters().has_value())
+            {
+                const auto& parameterNodes = typeDefinitionStatement->constructorParameters().value()->parameters();
+                for (const auto& parameterNode : parameterNodes)
+                {
+                    constructorParameters.emplace_back(parameterNode->name(), Type::Undefined());
                 }
             }
+
+            static_cast<void>(m_module.createConstructor(typeDefinition, constructorParameters));
         }
+    }
+
+    void TypeChecker::typeCheckFunctionSignatures()
+    {
+        for (const auto* functionDefinitionStatement : m_functionDeclarations)
+        {
+            typeCheckFunctionSignature(const_cast<FunctionDefinitionStatement*>(functionDefinitionStatement));
+        }
+    }
+
+    void TypeChecker::typeCheckTypeSignatures()
+    {
+        for (const auto* typeDefinitionStatement : m_typeDeclarations)
+        {
+            typeCheckTypeSignature(const_cast<TypeDefinitionStatement*>(typeDefinitionStatement));
+        }
+    }
+
+    void TypeChecker::typeCheckGlobalConstants()
+    {
+        for (const auto* constantDeclaration : m_globalConstantDeclarations)
+        {
+            typeCheckConstantDeclaration(const_cast<ConstantDeclaration*>(constantDeclaration));
+        }
+    }
+
+    void TypeChecker::typeCheckFunctionDefinitions()
+    {
+        for (const auto* functionDefinitionStatement : m_functionDeclarations)
+        {
+            typeCheckFunctionDefinitionStatement(const_cast<FunctionDefinitionStatement*>(functionDefinitionStatement));
+        }
+    }
+
+    void TypeChecker::typeCheckEnumDefinitions()
+    {
+        for (const auto* enumDefinitionStatement : m_enumDeclarations)
+        {
+            typeCheckEnumDefinitionStatement(const_cast<EnumDefinitionStatement*>(enumDefinitionStatement));
+        }
+    }
+
+    void TypeChecker::typeCheckTypeFieldDefinitions()
+    {
+        for (const auto* typeDefinitionStatement : m_typeDeclarations)
+        {
+            typeCheckTypeFieldDefinition(const_cast<TypeDefinitionStatement*>(typeDefinitionStatement));
+        }
+    }
+
+    void TypeChecker::typeCheckTypeMethodDefinitions()
+    {
+        for (const auto* typeDefinitionStatement : m_typeDeclarations)
+        {
+            typeCheckTypeMethodDefinition(const_cast<TypeDefinitionStatement*>(typeDefinitionStatement));
+        }
+    }
+
+    void TypeChecker::typeCheckFunctionSignature(FunctionDefinitionStatement* statement)
+    {
+        pushScope(ScopeKind::Function);
+        auto parameters = typeCheckParametersNode(statement->parametersNode().get());
+        auto returns = typeCheckReturnTypesNode(statement->returnTypesNode().get());
+        popScope();
+
+        const auto& functionName = statement->name();
+        auto functionType = m_module.tryGetFunctionTypeByName(functionName);
+        if (functionType == Type::Undefined())
+        {
+            TODO("This shouldn't happen");
+        }
+
+        auto& functionDefinition = m_module.getFunctionDefinition(functionType);
+        auto isVariadic = !parameters.empty() && parameters.back().type() == Type::CVariadic();
+        if (isVariadic && !statement->isExtern())
+        {
+            TODO("Add diagnostics for non-extern variadic function");
+        }
+        functionDefinition.setParameters(parameters);
+        functionDefinition.setReturnTypes(returns);
+        functionDefinition.setIsVariadic(isVariadic);
+    }
+
+    void TypeChecker::typeCheckTypeSignature(TypeDefinitionStatement* statement)
+    {
+        auto typeType = m_module.tryGetTypeByName(statement->name());
+        if (typeType == Type::Undefined())
+        {
+            TODO("This shouldn't happen");
+        }
+
+        auto& typeDefinition = m_module.getTypeDefinition(typeType);
+        typeCheckConstructorSignature(statement, typeDefinition, typeType);
+
+        const auto& bodyStatements = statement->bodyNode()->statements();
+        for (const auto& bodyStatement : bodyStatements)
+        {
+            if (bodyStatement->kind() != NodeKind::MethodDefinitionStatement)
+            {
+                continue;
+            }
+
+            const auto* methodStatement = static_cast<const MethodDefinitionStatement*>(bodyStatement.get());
+            typeCheckMethodSignature(methodStatement, typeDefinition, typeType);
+        }
+    }
+
+    void TypeChecker::typeCheckTypeFieldDefinition(TypeDefinitionStatement* statement)
+    {
+        auto typeType = statement->type();
+        if (typeType == Type::Undefined())
+        {
+            TODO("This shouldn't happen");
+        }
+
+        pushScope(ScopeKind::Type);
+
+        if (statement->constructorParameters().has_value())
+        {
+            static_cast<void>(typeCheckParametersNode(statement->constructorParameters().value().get()));
+        }
+
+        auto& typeDefinition = m_module.getTypeDefinition(typeType);
+        auto fieldIndex = 0;
+        const auto& definitionStatements = statement->bodyNode()->statements();
+        for (auto& definitionStatement : definitionStatements)
+        {
+            if (definitionStatement->kind() != NodeKind::TypeFieldDeclaration)
+            {
+                continue;
+            }
+
+            typeCheckTypeFieldDeclaration(typeDefinition, (TypeFieldDeclaration*)definitionStatement.get(), fieldIndex);
+            ++fieldIndex;
+        }
+
+        popScope();
+    }
+
+    void TypeChecker::typeCheckTypeMethodDefinition(TypeDefinitionStatement* statement)
+    {
+        auto typeType = statement->type();
+        if (typeType == Type::Undefined())
+        {
+            TODO("This shouldn't happen");
+        }
+
+        m_currentType = typeType;
+        pushScope(ScopeKind::Type);
+
+        if (statement->constructorParameters().has_value())
+        {
+            static_cast<void>(typeCheckParametersNode(statement->constructorParameters().value().get()));
+        }
+
+        auto& typeDefinition = m_module.getTypeDefinition(typeType);
+        for (const auto& fieldDefinition : typeDefinition.fields())
+        {
+            currentScope()->addVariableBinding(fieldDefinition.name(), fieldDefinition.type());
+        }
+
+        const auto& definitionStatements = statement->bodyNode()->statements();
+        for (auto& definitionStatement : definitionStatements)
+        {
+            if (definitionStatement->kind() != NodeKind::MethodDefinitionStatement)
+            {
+                continue;
+            }
+
+            typeCheckMethodDefinitionStatement((MethodDefinitionStatement*)definitionStatement.get());
+        }
+
+        popScope();
+        m_currentType = Type::Undefined();
+    }
+
+    void TypeChecker::typeCheckMethodSignature(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType)
+    {
+        const auto& methodName = methodStatement->methodNameNode()->methodName();
+
+        pushScope(ScopeKind::Method);
+        auto parameters = typeCheckParametersNode(methodStatement->parametersNode().get());
+        auto returns = typeCheckReturnTypesNode(methodStatement->returnTypesNode().get());
+        popScope();
+
+        auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
+        if (methodType == Type::Undefined())
+        {
+            TODO("This shouldn't happen");
+        }
+
+        auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+        if (methodStatement->modifier() != MethodModifier::Static)
+        {
+            parameters.insert(parameters.begin(), Parameter{ "this", typeType.toReference() });
+        }
+        methodDefinition.setParameters(parameters);
+        methodDefinition.setReturnTypes(returns);
+    }
+
+    void TypeChecker::typeCheckConstructorSignature(const TypeDefinitionStatement* typeDefinitionStatement, TypeDefinition& typeDefinition, Type typeType)
+    {
+        auto constructorType = typeDefinition.tryGetMethodTypeByName("new");
+        if (constructorType == Type::Undefined())
+        {
+            TODO("This shouldn't happen");
+        }
+
+        std::vector<Parameter> constructorParameters{};
+        constructorParameters.emplace_back("this", typeType.toReference());
+
+        if (typeDefinitionStatement->constructorParameters().has_value())
+        {
+            pushScope(ScopeKind::Type);
+            auto declaredConstructorParameters = typeCheckParametersNode(typeDefinitionStatement->constructorParameters().value().get());
+            popScope();
+
+            constructorParameters.insert(
+                constructorParameters.end(),
+                declaredConstructorParameters.begin(),
+                declaredConstructorParameters.end());
+        }
+
+        auto& constructorDefinition = m_module.getFunctionDefinition(constructorType);
+        constructorDefinition.setParameters(constructorParameters);
+        constructorDefinition.setReturnTypes(std::vector<Type>{});
     }
 
     void TypeChecker::typeCheckStatement(Statement* statement)
@@ -243,11 +433,6 @@ namespace Caracal
             case NodeKind::EnumDefinitionStatement:
             {
                 typeCheckEnumDefinitionStatement((EnumDefinitionStatement*)statement);
-                break;
-            }
-            case NodeKind::TypeDefinitionStatement:
-            {
-                typeCheckTypeDefinitionStatement((TypeDefinitionStatement*)statement);
                 break;
             }
             case NodeKind::IfStatement:
@@ -325,12 +510,11 @@ namespace Caracal
         if (leftExpression->kind() == NodeKind::NameExpression)
         {
             auto nameExpression = (NameExpression*)leftExpression;
-            auto nameToken = nameExpression->nameToken();
-            auto nameLexeme = m_currentParseTree->tokens().getLexeme(nameToken);
+            const auto& name = nameExpression->name();
             auto scope = currentScope();
-            if (!scope->hasVariableBinding(nameLexeme))
+            if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(nameLexeme, rightType);
+                scope->addVariableBinding(name, rightType);
             }
             else
             {
@@ -515,68 +699,6 @@ namespace Caracal
         }
     }
 
-    void TypeChecker::typeCheckTypeDefinitionStatement(TypeDefinitionStatement* statement)
-    {
-        const auto& typeName = statement->name();
-        auto typeType = statement->type();
-        if (typeType == Type::Undefined())
-        {
-            TODO("This shouldn't happen");
-        }
-
-        auto& typeDefinition = m_module.getTypeDefinition(typeType);
-        m_currentType = typeType;
-
-        std::vector<Parameter> declaredConstructorParameters{};
-        const auto hasConstructorParameters = statement->constructorParameters().has_value();
-        if (hasConstructorParameters)
-        {
-            pushScope(ScopeKind::Type);
-            declaredConstructorParameters = typeCheckParametersNode(statement->constructorParameters().value().get());
-        }
-
-        auto fieldIndex = 0;
-        const auto& definitionStatements = statement->bodyNode()->statements();
-        for (auto& definitionStatement : definitionStatements)
-        {
-            switch (definitionStatement->kind())
-            {
-                case NodeKind::TypeFieldDeclaration:
-                {
-                    typeCheckTypeFieldDeclaration(typeDefinition, (TypeFieldDeclaration*)definitionStatement.get(), fieldIndex);
-                    ++fieldIndex;
-                    break;
-                }
-                case NodeKind::MethodDefinitionStatement:
-                {
-                    typeCheckMethodDefinitionStatement((MethodDefinitionStatement*)definitionStatement.get());
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-
-        if (hasConstructorParameters)
-        {
-            popScope();
-        }
-
-        if (typeDefinition.tryGetMethodTypeByName("new") != Type::Undefined())
-        {
-            TODO("Add diagnostics for duplicate constructor declaration");
-            m_currentType = Type::Undefined();
-            return;
-        }
-
-        std::vector<Parameter> constructorParameters{};
-        constructorParameters.emplace_back("this", typeType.toReference());
-        constructorParameters.insert(constructorParameters.end(), declaredConstructorParameters.begin(), declaredConstructorParameters.end());
-
-        static_cast<void>(m_module.createConstructor(typeDefinition, constructorParameters));
-        m_currentType = Type::Undefined();
-    }
-
     void TypeChecker::typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex)
     {
         const auto& fieldName = statement->nameExpression()->name();
@@ -621,14 +743,13 @@ namespace Caracal
     void TypeChecker::typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement)
     {
         m_currentReturnType = Type::Void();
-        auto parentScope = currentScope();
-        pushScope(ScopeKind::Method);
-
         auto methodType = statement->type();
         if (methodType == Type::Undefined())
         {
             TODO("This shouldn't happen");
         }
+
+        pushScope(ScopeKind::Method);
 
         auto& methodDefinition = m_module.getFunctionDefinition(methodType);
         auto& parameters = methodDefinition.parameters();
@@ -967,9 +1088,8 @@ namespace Caracal
 
     Type TypeChecker::typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression)
     {
-        const auto& name = functionCallExpression->nameExpression()->nameToken();
-        auto lexeme = m_currentParseTree->tokens().getLexeme(name);
-        auto functionType = m_module.tryGetFunctionTypeByName(lexeme);
+        const auto& name = functionCallExpression->nameExpression()->name();
+        auto functionType = m_module.tryGetFunctionTypeByName(name);
         if (functionType == Type::Undefined())
         {
             TODO("Add error diagnostics for unknown function call");
@@ -1089,9 +1209,7 @@ namespace Caracal
         }
         else
         {
-            const auto& literalToken = literal->literalToken();
-            const auto lexeme = m_currentParseTree->tokens().getLexeme(literalToken);
-
+            const auto& lexeme = literal->literalLexeme();
             if (lexeme.find('.') != std::string_view::npos)
             {
                 numberType = m_options.defaultFloatingType;
@@ -1194,9 +1312,8 @@ namespace Caracal
             return 0;
         }
 
-        const auto& literalToken = literal->literalToken();
-        const auto lexeme = m_currentParseTree->tokens().getLexeme(literalToken);
-        auto value = std::stoll(std::string(lexeme));
+        const auto& lexeme = literal->literalLexeme();
+        auto value = std::stoll(lexeme);
 
         return static_cast<i32>(value);
     }
@@ -1229,98 +1346,3 @@ namespace Caracal
         return m_scopes.back().get();
     }
 }
-
-//QList<TypedFieldDefinitionNode*> TypeChecker::typeCheckTypeFieldDefinitionNodes(Type newType, BlockNode* body)
-//{
-//    auto& typeDefinition = m_module.getTypeDefinition(newType);
-//
-//    QList<TypedFieldDefinitionNode*> typeFields;
-//
-//    for (const auto statement : body->statements())
-//    {
-//        if (statement->kind() != NodeKind::FieldDefinitionStatement)
-//            continue;
-//
-//        auto fieldDeclaration = (FieldDefinitionStatement*)statement;
-//        auto& nameToken = fieldDeclaration->name()->identifier();
-//        auto name = m_parseTree.tokens().getLexeme(nameToken);
-//
-//        auto type = Type::Undefined();
-//        if (fieldDeclaration->type().has_value())
-//        {
-//            auto& fieldTypeName = fieldDeclaration->type().value();
-//            type = convertTypeNameToType(fieldTypeName);
-//        }
-//
-//        TypedExpression* expression = nullptr;
-//        if (fieldDeclaration->expression().has_value())
-//        {
-//            auto fieldExpression = fieldDeclaration->expression().value();
-//            expression = typeCheckExpression(fieldExpression);
-//
-//            if (type == Type::Undefined())
-//            {
-//                type = expression->type();
-//            }
-//            else if (type != expression->type())
-//            {
-//                TODO("error type mismatch!!");
-//            }
-//        }
-//
-//        if (type == Type::Undefined())
-//        {
-//            // TODO Maybe we want to infer the types in the constructor in the future?
-//            TODO("error missing type for field!!");
-//        }
-//
-//        typeFields.append(new TypedFieldDefinitionNode(name, type, expression));
-//        typeDefinition.addField(type, name, expression);
-//    }
-//
-//    return typeFields;
-//}
-//
-//TypedExpression* TypeChecker::typeCheckMemberAccessExpression(MemberAccessExpression* expression)
-//{
-//    auto thisType = currentScope()->tryGetTypeBinding(QStringView(u"this"));
-//    auto& typeDefinition = m_module.getTypeDefinition(thisType);
-//    auto innerExpression = expression->expression();
-//
-//    switch (innerExpression->kind())
-//    {
-//        // Field access
-//        case NodeKind::NameExpression:
-//        {
-//            auto nameExpression = (NameExpression*)innerExpression;
-//            auto& identifier = nameExpression->identifier();
-//            auto name = m_parseTree.tokens().getLexeme(identifier);
-//            auto field = typeDefinition.getFieldByName(name);
-//
-//            if (field == nullptr)
-//            {
-//                // TODO print diagnostic if the field wasnt defined before
-//                return nullptr;
-//            }
-//
-//            return new TypedFieldAccessExpression(thisType, field, expression);
-//        }
-//        case NodeKind::FunctionCallExpression:
-//        {
-//            auto functionCallExpression = (FunctionCallExpression*)innerExpression;
-//            auto& identifier = functionCallExpression->name();
-//            auto name = m_parseTree.tokens().getLexeme(identifier);
-//            auto& functionDefinition = typeDefinition.getFunctionDefinitionByName(name);
-//            auto functionType = functionDefinition.type();
-//            auto arguments = typeCheckFunctionCallArguments(functionCallExpression->arguments());
-//
-//            auto returnType = functionDefinition.returnType();
-//            return new TypedMethodCallExpression(name, thisType, functionType, arguments, functionCallExpression, returnType);
-//        }
-//        default:
-//        {
-//            TODO("Missing MemberAccessExpression kind");
-//            return nullptr;
-//        }
-//    }
-//}

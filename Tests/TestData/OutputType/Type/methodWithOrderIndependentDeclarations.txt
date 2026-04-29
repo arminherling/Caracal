@@ -1,0 +1,102 @@
+TypeDefinitionStatement: {
+    Type: Two
+    Name: Two
+    BlockNode(3): {
+        TypeFieldDeclaration: {
+            IsConstant: true
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: one
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            Right: {
+                NumberLiteral: 1
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref Two) -> i32
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: value
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    Type: i32
+                    BinaryExpression: {
+                        Type: i32
+                        Left: {
+                            MemberAccessExpression: {
+                                FunctionCallExpression: {
+                                    Type: i32
+                                    Function type: (ref Two) -> i32
+                                    NameExpression: {
+                                        Type: (ref Two) -> i32
+                                        Name: one
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                        Operation: Addition
+                        Right: {
+                            MemberAccessExpression: {
+                                FunctionCallExpression: {
+                                    Type: i32
+                                    Function type: (ref Two) -> i32
+                                    NameExpression: {
+                                        Type: (ref Two) -> i32
+                                        Name: one
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref Two) -> i32
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: one
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    Type: i32
+                    MemberAccessExpression: {
+                        NameExpression: {
+                            Type: i32
+                            Name: one
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,51 +1,49 @@
 EnumDefinitionStatement: {
-    Type: undefined
+    Type: Numbers(i32)
     Name: Numbers
-    Annotation: {
-        Name: Step
-        ArgumentsNode(1): {
-            NumberLiteral: 2
-        }
+    TypeNameNode: {
+        Type: i32
+        Lexeme: i32
     }
-    FieldNodes(3): {
+    FieldNodes(1): {
         EnumFieldDeclaration: {
-            Name: Zero
-        }
-        EnumFieldDeclaration: {
-            Name: Two
-        }
-        EnumFieldDeclaration: {
-            Name: Four
+            Name: One
+            NumberLiteral: 1
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+            Value: 1
         }
     }
 }
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> Numbers
     Name: func
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
+            Type: Numbers(i32)
             Lexeme: Numbers
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: undefined
+            Type: Numbers(i32)
             BinaryExpression: {
-                Type: undefined
+                Type: Numbers(i32)
                 Left: {
                     NameExpression: {
-                        Type: undefined
+                        Type: Numbers(i32)
                         Name: Numbers
                     }
                 }
                 Operation: MemberAccess
                 Right: {
                     NameExpression: {
-                        Type: undefined
-                        Name: Four
+                        Type: Numbers(i32)
+                        Name: One
                     }
                 }
             }

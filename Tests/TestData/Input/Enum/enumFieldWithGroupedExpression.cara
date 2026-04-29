@@ -3,7 +3,7 @@
     Three :: (1 + 2)
 }
 
-def func() i32
+def func() Numbers
 {
     return Numbers.Three;
 }

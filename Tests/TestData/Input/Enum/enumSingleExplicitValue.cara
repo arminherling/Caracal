@@ -3,7 +3,7 @@
     Zero :: 0
 }
 
-def func() i32
+def func() Numbers
 {
     return Numbers.Zero;
 }

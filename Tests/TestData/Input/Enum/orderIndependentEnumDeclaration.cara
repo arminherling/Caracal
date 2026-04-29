@@ -1,4 +1,4 @@
-﻿def func() i32
+﻿def func() Numbers
 {
     return Numbers.Two;
 }

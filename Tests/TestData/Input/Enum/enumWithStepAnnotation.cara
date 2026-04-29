@@ -6,7 +6,7 @@ enum Numbers
     Four
 }
 
-def func() i32
+def func() Numbers
 {
     return Numbers.Four;
 }

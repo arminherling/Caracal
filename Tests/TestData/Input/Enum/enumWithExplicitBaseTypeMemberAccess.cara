@@ -4,7 +4,7 @@
     Two :: 2
 }
 
-def func() i32
+def func() Numbers
 {
     return Numbers.Two;
 }

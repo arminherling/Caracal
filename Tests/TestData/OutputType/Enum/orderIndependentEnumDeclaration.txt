@@ -1,29 +1,29 @@
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> Numbers
     Name: func
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
+            Type: Numbers(i32)
             Lexeme: Numbers
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: undefined
+            Type: Numbers(i32)
             BinaryExpression: {
-                Type: undefined
+                Type: Numbers(i32)
                 Left: {
                     NameExpression: {
-                        Type: undefined
+                        Type: Numbers(i32)
                         Name: Numbers
                     }
                 }
                 Operation: MemberAccess
                 Right: {
                     NameExpression: {
-                        Type: undefined
+                        Type: Numbers(i32)
                         Name: Two
                     }
                 }
@@ -32,20 +32,22 @@ FunctionDefinitionStatement: {
     }
 }
 EnumDefinitionStatement: {
-    Type: undefined
+    Type: Numbers(i32)
     Name: Numbers
     TypeNameNode: {
-        Type: undefined
+        Type: i32
         Lexeme: i32
     }
     FieldNodes(2): {
         EnumFieldDeclaration: {
             Name: One
             NumberLiteral: 1
+            Value: 1
         }
         EnumFieldDeclaration: {
             Name: Two
             NumberLiteral: 2
+            Value: 2
         }
     }
 }
