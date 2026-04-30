@@ -777,6 +777,7 @@ namespace Caracal
     void TypeChecker::typeCheckIfStatement(IfStatement* statement)
     {
         auto conditionType = typeCheckExpression(statement->condition().get());
+        conditionType = coerceConditionType(conditionType, statement->condition().get());
         if (conditionType != Type::Bool())
         {
             TODO("Add an error because only bool is allowed");
@@ -793,6 +794,7 @@ namespace Caracal
     void TypeChecker::typeCheckWhileStatement(WhileStatement* statement)
     {
         auto conditionType = typeCheckExpression(statement->condition().get());
+        conditionType = coerceConditionType(conditionType, statement->condition().get());
         if (conditionType != Type::Bool())
         {
             TODO("Add an error because only bool is allowed");
@@ -1315,6 +1317,26 @@ namespace Caracal
         auto value = std::stoll(lexeme);
 
         return static_cast<i32>(value);
+    }
+
+    Type TypeChecker::coerceConditionType(Type conditionType, Expression* conditionExpression)
+    {
+        if (conditionType == Type::Bool())
+        {
+            return conditionType;
+        }
+
+        if (conditionType.kind() == TypeKind::Enum)
+        {
+            auto& enumDefinition = m_module.getEnumDefinition(conditionType);
+            if (enumDefinition.baseType() == Type::Bool())
+            {
+                conditionExpression->setType(Type::Bool());
+                return Type::Bool();
+            }
+        }
+
+        return conditionType;
     }
 
     void TypeChecker::typeCheckBlockNode(BlockNode* body)

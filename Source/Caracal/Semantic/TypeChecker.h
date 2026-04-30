@@ -89,6 +89,7 @@ namespace Caracal
 
         void typeCheckBlockNode(BlockNode* body);
         [[nodiscard]] i32 convertToI32(NumberLiteral* literal);
+        [[nodiscard]] Type coerceConditionType(Type conditionType, Expression* conditionExpression);
         
         void pushScope(ScopeKind kind);
         void popScope();
