@@ -235,7 +235,7 @@ namespace Caracal
                     TODO("Constant or variable declaration in other scopes");
                     break;
                 }
-                if ((expression->kind() == NodeKind::NameExpression || expression->kind() == NodeKind::BinaryExpression || expression->kind() == NodeKind::MemberAccessExpression) && currentToken().kind == TokenKind::Equal)
+                if ((expression->kind() == NodeKind::NameExpression || expression->kind() == NodeKind::BinaryExpression || expression->kind() == NodeKind::MemberAccessExpression || expression->kind() == NodeKind::DiscardLiteral) && currentToken().kind == TokenKind::Equal)
                 {
                     if (scope == StatementScope::Function || scope == StatementScope::Method)
                     {
