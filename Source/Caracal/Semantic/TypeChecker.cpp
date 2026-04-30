@@ -856,11 +856,10 @@ namespace Caracal
             {
                 return typeCheckMemberAccessExpression(static_cast<MemberAccessExpression*>(expression));
             }
-            /*
             case NodeKind::DiscardLiteral:
             {
-                return typeCheckDiscardLiteral(static_cast<DiscardLiteral*>(expression));
-            }*/
+                return Type::Discard();
+            }
             default:
             {
                 TODO("Missing Expression!!");
