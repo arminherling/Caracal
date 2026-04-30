@@ -1,0 +1,60 @@
+EnumDefinitionStatement: {
+    Type: undefined
+    Name: Numbers
+    TypeNameNode: {
+        Type: undefined
+        Lexeme: i32
+    }
+    FieldNodes(2): {
+        EnumFieldDeclaration: {
+            Name: One
+            NumberLiteral: 1
+        }
+        EnumFieldDeclaration: {
+            Name: Two
+            NumberLiteral: 2
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    BinaryExpression: {
+                        Type: undefined
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: Numbers
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: Two
+                            }
+                        }
+                    }
+                }
+                Operation: Equal
+                Right: {
+                    NumberLiteral: 2
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,62 @@
+EnumDefinitionStatement: {
+    Type: Numbers(i32)
+    Name: Numbers
+    TypeNameNode: {
+        Type: i32
+        Lexeme: i32
+    }
+    FieldNodes(2): {
+        EnumFieldDeclaration: {
+            Name: One
+            NumberLiteral: 1
+            Value: 1
+        }
+        EnumFieldDeclaration: {
+            Name: Two
+            NumberLiteral: 2
+            Value: 2
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> bool
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    BinaryExpression: {
+                        Type: Numbers(i32)
+                        Left: {
+                            NameExpression: {
+                                Type: Numbers(i32)
+                                Name: Numbers
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            NameExpression: {
+                                Type: Numbers(i32)
+                                Name: Two
+                            }
+                        }
+                    }
+                }
+                Operation: Equal
+                Right: {
+                    NumberLiteral: 2
+                }
+            }
+        }
+    }
+}

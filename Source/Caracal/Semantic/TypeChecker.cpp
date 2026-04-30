@@ -1043,9 +1043,7 @@ namespace Caracal
                     rightType = rightType.toValue();
                 }
 
-                // TODO we need to be able look up the resulting type for a binary expression,
-                // for now we'll just make sure left and right have the same type and use that one
-                if (leftType != rightType)
+                if (!areComparableTypes(leftType, rightType))
                 {
                     TODO("Type mismatch error diagnostics");
                 }
@@ -1337,6 +1335,34 @@ namespace Caracal
         }
 
         return conditionType;
+    }
+
+    bool TypeChecker::areComparableTypes(Type leftType, Type rightType)
+    {
+        if (leftType == rightType)
+        {
+            return true;
+        }
+
+        if (leftType.kind() == TypeKind::Enum)
+        {
+            auto& enumDefinition = m_module.getEnumDefinition(leftType);
+            if (enumDefinition.baseType() == rightType)
+            {
+                return true;
+            }
+        }
+
+        if (rightType.kind() == TypeKind::Enum)
+        {
+            auto& enumDefinition = m_module.getEnumDefinition(rightType);
+            if (enumDefinition.baseType() == leftType)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void TypeChecker::typeCheckBlockNode(BlockNode* body)

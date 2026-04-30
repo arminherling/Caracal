@@ -90,7 +90,8 @@ namespace Caracal
         void typeCheckBlockNode(BlockNode* body);
         [[nodiscard]] i32 convertToI32(NumberLiteral* literal);
         [[nodiscard]] Type coerceConditionType(Type conditionType, Expression* conditionExpression);
-        
+        [[nodiscard]] bool areComparableTypes(Type leftType, Type rightType);
+
         void pushScope(ScopeKind kind);
         void popScope();
         [[nodiscard]] Scope* currentScope() const noexcept;
