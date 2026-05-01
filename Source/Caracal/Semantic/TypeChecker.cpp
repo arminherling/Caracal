@@ -808,9 +808,15 @@ namespace Caracal
         if (statement->expression().has_value())
         {
             auto type = typeCheckExpression(statement->expression().value().get());
+            if(type.isReference())
+            {
+                // returning a ref is now allowed, so we need to coerce it to a value
+                type = type.toValue();
+            }
+
             if (m_currentReturnType != Type::Void() && m_currentReturnType != type)
             {
-                TODO("this isnt correct when the function has multiple returns but works for now");
+                TODO("Add error diagnostics for return type mismatch");
             }
             statement->setType(type);
             m_currentReturnType = type;
