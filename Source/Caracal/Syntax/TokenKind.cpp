@@ -83,8 +83,6 @@ i32 binaryOperatorPrecedence(TokenKind kind)
 {
     switch (kind)
     {
-        case TokenKind::Dot:
-            return 5;
         case TokenKind::Star:
         case TokenKind::Slash:
             return 4;

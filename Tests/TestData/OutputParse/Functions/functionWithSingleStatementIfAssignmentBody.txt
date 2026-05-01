@@ -1,0 +1,69 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: n
+                }
+            }
+            Right: {
+                UnaryExpression: {
+                    Type: undefined
+                    Operation: ValueNegation
+                    Expression: {
+                        NumberLiteral: 1
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: n
+                        }
+                    }
+                    Operation: LessThan
+                    Right: {
+                        NumberLiteral: 0
+                    }
+                }
+            }
+            True: {
+                AssignmentStatement: {
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: n
+                        }
+                    }
+                    Right: {
+                        NumberLiteral: 0
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: n
+            }
+        }
+    }
+}

@@ -53,8 +53,9 @@ namespace Caracal
         StatementUPtr parseBreakStatement();
         StatementUPtr parseSkipStatement();
         StatementUPtr parseReturnStatement(StatementScope scope);
-        ExpressionUPtr parseExpression(StatementScope scope);
-        ExpressionUPtr parseBinaryExpression(i32 parentPrecedence, StatementScope scope);
+        ExpressionUPtr parseExpression(StatementScope scope, bool stopAtLineBreak = false, bool allowLineBreakBeforeDot = true);
+        ExpressionUPtr parseBinaryExpression(i32 parentPrecedence, StatementScope scope, bool stopAtLineBreak, bool allowLineBreakBeforeDot);
+        ExpressionUPtr parsePostfixExpression(StatementScope scope, bool allowLineBreakBeforeDot);
         ExpressionUPtr parsePrimaryExpression(StatementScope scope);
         ExpressionUPtr parseGroupingExpression(StatementScope scope);
         ExpressionUPtr parseMemberAccessExpression();
@@ -79,6 +80,7 @@ namespace Caracal
         Token currentToken() { return peek(0); }
         Token nextToken() { return peek(1); }
         void advanceCurrentIndex() { m_currentIndex++; }
+        bool hasLeadingLineBreak(const Token& token) const noexcept;
         Token advanceOnMatch(TokenKind kind);
         Token advanceOnMatch(TokenKind kind1, TokenKind kind2);
         std::optional<Token> tryMatchKind(TokenKind kind);

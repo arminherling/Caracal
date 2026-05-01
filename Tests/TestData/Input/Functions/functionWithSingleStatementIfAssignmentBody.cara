@@ -1,0 +1,8 @@
+﻿def func() i32
+{
+    n := -1;
+    if n < 0
+        n = 0;
+
+    return n;
+}

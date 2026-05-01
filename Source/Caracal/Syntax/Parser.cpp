@@ -543,7 +543,7 @@ namespace Caracal
     StatementUPtr Parser::parseIfStatement(StatementScope scope)
     {
         auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
-        auto condition = parseExpression(scope);
+        auto condition = parseExpression(scope, true, false);
         auto trueStatement = parseStatement(scope);
 
         if (currentToken().kind == TokenKind::ElseKeyword)
@@ -559,7 +559,7 @@ namespace Caracal
     StatementUPtr Parser::parseWhileStatement(StatementScope scope)
     {
         auto whileKeyword = advanceOnMatch(TokenKind::WhileKeyword);
-        auto condition = parseExpression(scope);
+        auto condition = parseExpression(scope, true, false);
         auto trueStatement = parseStatement(scope);
 
         return std::make_unique<WhileStatement>(whileKeyword, std::move(condition), std::move(trueStatement));
@@ -573,7 +573,7 @@ namespace Caracal
         if(currentToken().kind == TokenKind::IfKeyword)
         {
             auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
-            auto condition = parseExpression(StatementScope::Function);
+            auto condition = parseExpression(StatementScope::Function, true, false);
             auto semicolon = advanceOnMatch(TokenKind::Semicolon);
             auto breakStatement = std::make_unique<BreakStatement>(keyword, semicolon);
             return std::make_unique<IfStatement>(ifKeyword, std::move(condition), std::move(breakStatement));
@@ -591,7 +591,7 @@ namespace Caracal
         if(currentToken().kind == TokenKind::IfKeyword)
         {
             auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
-            auto condition = parseExpression(StatementScope::Function);
+            auto condition = parseExpression(StatementScope::Function, true, false);
             auto semicolon = advanceOnMatch(TokenKind::Semicolon);
             auto skipStatement = std::make_unique<SkipStatement>(keyword, semicolon);
 
@@ -615,7 +615,7 @@ namespace Caracal
         if (currentToken().kind == TokenKind::IfKeyword)
         {
             auto ifKeyword = advanceOnMatch(TokenKind::IfKeyword);
-            auto condition = parseExpression(scope);
+            auto condition = parseExpression(scope, true, false);
             auto semicolon = advanceOnMatch(TokenKind::Semicolon);
             auto returnStatement = std::make_unique<ReturnStatement>(returnKeyword, std::move(expression), semicolon);
 
@@ -626,12 +626,12 @@ namespace Caracal
         return std::make_unique<ReturnStatement>(returnKeyword, std::move(expression), semicolon);
     }
 
-    ExpressionUPtr Parser::parseExpression(StatementScope scope)
+    ExpressionUPtr Parser::parseExpression(StatementScope scope, bool stopAtLineBreak, bool allowLineBreakBeforeDot)
     {
-        return parseBinaryExpression(0, scope);
+        return parseBinaryExpression(0, scope, stopAtLineBreak, allowLineBreakBeforeDot);
     }
 
-    ExpressionUPtr Parser::parseBinaryExpression(i32 parentPrecedence, StatementScope scope)
+    ExpressionUPtr Parser::parseBinaryExpression(i32 parentPrecedence, StatementScope scope, bool stopAtLineBreak, bool allowLineBreakBeforeDot)
     {
         ExpressionUPtr left{};
         auto unaryOperatorToken = currentToken();
@@ -639,12 +639,12 @@ namespace Caracal
         auto unaryPrecedence = unaryOperatorPrecedence(unaryOperatorToken.kind);
         if (unaryPrecedence == 0 || unaryPrecedence < parentPrecedence)
         {
-            left = parsePrimaryExpression(scope);
+            left = parsePostfixExpression(scope, allowLineBreakBeforeDot);
         }
         else
         {
             advanceCurrentIndex();
-            auto expression = parseBinaryExpression(unaryPrecedence, scope);
+            auto expression = parseBinaryExpression(unaryPrecedence, scope, stopAtLineBreak, allowLineBreakBeforeDot);
             left = std::make_unique<UnaryExpression>(unaryOperatorToken, std::move(expression));
         }
 
@@ -654,13 +654,34 @@ namespace Caracal
             if (binaryOperatorToken.kind == TokenKind::EndOfFile)
                 break;
 
+            if (stopAtLineBreak && hasLeadingLineBreak(binaryOperatorToken))
+                break;
+
             auto binaryPrecedence = binaryOperatorPrecedence(binaryOperatorToken.kind);
             if (binaryPrecedence == 0 || binaryPrecedence <= parentPrecedence)
                 break;
 
             advanceCurrentIndex();
-            auto right = parseBinaryExpression(binaryPrecedence, scope);
+            auto right = parseBinaryExpression(binaryPrecedence, scope, stopAtLineBreak, allowLineBreakBeforeDot);
             left = std::make_unique<BinaryExpression>(std::move(left), binaryOperatorToken, std::move(right));
+        }
+
+        return left;
+    }
+
+    ExpressionUPtr Parser::parsePostfixExpression(StatementScope scope, bool allowLineBreakBeforeDot)
+    {
+        auto left = parsePrimaryExpression(scope);
+
+        while (currentToken().kind == TokenKind::Dot)
+        {
+            auto dotToken = currentToken();
+            if (hasLeadingLineBreak(dotToken) && !allowLineBreakBeforeDot)
+                break;
+
+            advanceCurrentIndex();
+            auto right = parseFunctionCallOrNameExpression(scope);
+            left = std::make_unique<BinaryExpression>(std::move(left), dotToken, std::move(right));
         }
 
         return left;
@@ -719,6 +740,12 @@ namespace Caracal
                 return std::make_unique<ErrorExpression>(current);
             }
         }
+    }
+
+    bool Parser::hasLeadingLineBreak(const Token& token) const noexcept
+    {
+        const auto trivia = m_tokens.getTrivia(token);
+        return trivia.find('\n') != std::string_view::npos || trivia.find('\r') != std::string_view::npos;
     }
     
     ExpressionUPtr Parser::parseGroupingExpression(StatementScope scope)
