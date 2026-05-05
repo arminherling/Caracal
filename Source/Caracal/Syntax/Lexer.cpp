@@ -180,14 +180,20 @@ namespace Caracal
         AddKindAndLexeme(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Number, startIndex);
     };
 
-    static void LexString(TokenBuffer& tokenBuffer, DiagnosticsBag& diagnostics, std::string_view source, i32& currentIndex, i32& triviaStartIndex) noexcept
+    static void LexString(
+        TokenBuffer& tokenBuffer,
+        DiagnosticsBag& diagnostics,
+        const SourceTextSharedPtr& sourceText,
+        std::string_view source,
+        i32& currentIndex,
+        i32& triviaStartIndex) noexcept
     {
         const auto startIndex = currentIndex;
 
         // Consume opening quotation mark
         currentIndex++;
         auto current = PeekCurrentChar(source, currentIndex);
-        while (current != '\"' && current != '\0')
+        while (current != '"' && current != '\r' && current != '\n' && current != '\0')
         {
             if (current == '\\')
             {
@@ -208,7 +214,7 @@ namespace Caracal
             AddKindAndLexeme(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Error, startIndex);
             const auto& lastToken = tokenBuffer.getLastToken();
             const auto& location = tokenBuffer.getSourceLocation(lastToken);
-            diagnostics.AddError(DiagnosticKind::_0002_UnterminatedString, location);
+            diagnostics.AddUnterminatedStringError(sourceText, location);
         }
     };
 
@@ -419,7 +425,7 @@ namespace Caracal
                 }
                 case '\"':
                 {
-                    LexString(tokenBuffer, diagnostics, source, currentIndex, triviaStartIndex);
+                    LexString(tokenBuffer, diagnostics, sourceText, source, currentIndex, triviaStartIndex);
                     break;
                 }
                 default:
@@ -443,7 +449,7 @@ namespace Caracal
                     AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Unknown);
                     const auto& lastToken = tokenBuffer.getLastToken();
                     const auto& location = tokenBuffer.getSourceLocation(lastToken);
-                    diagnostics.AddError(DiagnosticKind::_0001_FoundIllegalCharacter, location);
+                    diagnostics.AddIllegalCharacterError(sourceText, location);
                     break;
                 }
             }

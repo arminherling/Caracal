@@ -2,7 +2,7 @@
 
 #include <Caracal/API.h>
 #include <Caracal/Defines.h>
-#include <Caracal/Debug/DiagnosticsBag.h>
+#include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Syntax/ArgumentsNode.h>
 #include <Caracal/Syntax/BlockNode.h>
 #include <Caracal/Syntax/EnumFieldDeclaration.h>

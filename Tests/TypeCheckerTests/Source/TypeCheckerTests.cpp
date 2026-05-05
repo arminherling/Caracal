@@ -1,5 +1,5 @@
 ﻿#include <CaraTest.h>
-#include <Caracal/Debug/DiagnosticsBag.h>
+#include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Debug/ParseTreePrinter.h>
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>

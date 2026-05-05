@@ -1,5 +1,5 @@
 ﻿#include <CaraTest.h>
-#include <Caracal/Debug/DiagnosticsBag.h>
+#include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Debug/ParseTreePrinter.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>

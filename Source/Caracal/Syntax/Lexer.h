@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <Caracal/API.h>
-#include <Caracal/Debug/DiagnosticsBag.h>
+#include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Syntax/TokenBuffer.h>
 #include <Caracal/Text/SourceText.h>
 

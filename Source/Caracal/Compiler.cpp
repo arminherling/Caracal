@@ -2,7 +2,8 @@
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Text/File.h>
-#include <Caracal/Debug/DiagnosticsBag.h>
+#include <Caracal/Diagnostics/DiagnosticsBag.h>
+#include <Caracal/Diagnostics/DiagnosticRenderer.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/CodeGen/LLVMCodeGenerator.h>
@@ -58,8 +59,15 @@ namespace Caracal
                 continue;
             }
 
-            auto source = std::make_shared<Caracal::SourceText>(content.value());
+            auto source = std::make_shared<Caracal::SourceText>(content.value(), caraFilePath);
+            const auto diagnosticCount = diagnostics.Diagnostics().size();
             const auto tokens = Caracal::lex(source, diagnostics);
+            if (diagnostics.Diagnostics().size() != diagnosticCount)
+            {
+                // skip parsing if there were lexing errors
+                continue;
+            }
+
             auto parseTree = Caracal::parse(tokens, diagnostics);
             parseTrees.push_back(std::move(parseTree));
         }
@@ -71,14 +79,18 @@ namespace Caracal
             return 1;
         }
 
-        auto source = std::make_shared<Caracal::SourceText>(fileContent.value());
+        auto source = std::make_shared<Caracal::SourceText>(fileContent.value(), filePath);
+        const auto diagnosticCount = diagnostics.Diagnostics().size();
         const auto tokens = Caracal::lex(source, diagnostics);
-        auto parseTree = Caracal::parse(tokens, diagnostics);
-        parseTrees.push_back(std::move(parseTree));
+        if (diagnostics.Diagnostics().size() == diagnosticCount)
+        {
+            auto parseTree = Caracal::parse(tokens, diagnostics);
+            parseTrees.push_back(std::move(parseTree));
+        }
 
         if (!diagnostics.Diagnostics().empty())
         {
-            std::cout << "Errors found during parsing!";
+            Caracal::writeDiagnostics(std::cout, diagnostics, *source, true, true);
             return 1;
         }
 
