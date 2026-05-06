@@ -17,5 +17,5 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    return Caracal::compileFile(absolutePath);
+    return Caracal::compileFile(absolutePath, Caracal::DiagnosticOptions{});
 }

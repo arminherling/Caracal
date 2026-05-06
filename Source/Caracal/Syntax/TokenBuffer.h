@@ -20,6 +20,7 @@ namespace Caracal
         [[nodiscard]] i32 addTrivia(std::string_view trivia) noexcept;
         [[nodiscard]] i32 addSourceLocation(const SourceLocation& sourceLocation) noexcept;
 
+        [[nodiscard]] const SourceTextSharedPtr& source() const noexcept;
         [[nodiscard]] i32 size() const noexcept;
         [[nodiscard]] const Token& getToken(i32 position) const noexcept;
         [[nodiscard]] const Token& getLastToken() const noexcept;
@@ -28,10 +29,10 @@ namespace Caracal
         [[nodiscard]] const SourceLocation& getSourceLocation(const Token& token) const noexcept;
 
     private:
-        SourceTextSharedPtr source;
-        std::vector<Token> tokens;
-        std::vector<std::string_view> lexemes;
-        std::vector<std::string_view> trivias;
-        std::vector<SourceLocation> sourceLocations;
+        SourceTextSharedPtr m_source;
+        std::vector<Token> m_tokens;
+        std::vector<std::string_view> m_lexemes;
+        std::vector<std::string_view> m_trivias;
+        std::vector<SourceLocation> m_sourceLocations;
     };
 }

@@ -13,6 +13,11 @@ struct CARACAL_API Token
 
     [[nodiscard]] static Token ToError(const Token& token) noexcept
     {
-        return { .kind = TokenKind::Error, .locationIndex = token.locationIndex };
+        return {
+            .kind = TokenKind::Error,
+            .lexemeIndex = token.lexemeIndex,
+            .locationIndex = token.locationIndex,
+            .triviaIndex = token.triviaIndex
+        };
     }
 };

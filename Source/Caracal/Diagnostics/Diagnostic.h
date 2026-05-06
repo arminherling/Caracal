@@ -1,8 +1,8 @@
-#pragma once
+﻿#pragma once
 
 #include <Caracal/API.h>
-#include <Caracal/Debug/DiagnosticLevel.h>
-#include <Caracal/Debug/DiagnosticKind.h>
+#include <Caracal/Diagnostics/DiagnosticKind.h>
+#include <Caracal/Diagnostics/DiagnosticLevel.h>
 #include <Caracal/Text/SourceLocation.h>
 #include <Caracal/Text/SourceText.h>
 
@@ -12,8 +12,9 @@
 
 namespace Caracal
 {
-    struct CARACAL_API Diagnostic
+    class CARACAL_API Diagnostic
     {
+    public:
         struct Label
         {
             SourceTextSharedPtr source;
@@ -22,26 +23,32 @@ namespace Caracal
             bool isPrimary = false;
         };
 
-        DiagnosticLevel level = DiagnosticLevel::Unknown;
-        DiagnosticKind kind = DiagnosticKind::Unknown;
-        std::string code;
-        std::string message;
-        SourceTextSharedPtr source;
-        SourceLocation location;
-        std::vector<Label> labels;
-        std::optional<std::string> fix;
-
-        Diagnostic() = default;
-        Diagnostic(
-            DiagnosticLevel level,
-            DiagnosticKind kind,
-            const SourceLocation& location,
-            std::optional<std::string> fix = std::nullopt);
         Diagnostic(
             DiagnosticLevel level,
             DiagnosticKind kind,
             const SourceTextSharedPtr& source,
             const SourceLocation& location,
             std::optional<std::string> fix = std::nullopt);
+
+        [[nodiscard]] DiagnosticLevel level() const noexcept { return m_level; }
+        [[nodiscard]] DiagnosticKind kind() const noexcept { return m_kind; }
+        [[nodiscard]] const std::string& code() const noexcept { return m_code; }
+        [[nodiscard]] const std::string& message() const noexcept { return m_message; }
+        [[nodiscard]] const SourceTextSharedPtr& source() const noexcept { return m_source; }
+        [[nodiscard]] const SourceLocation& location() const noexcept { return m_location; }
+        [[nodiscard]] const std::vector<Label>& labels() const noexcept { return m_labels; }
+        [[nodiscard]] const std::optional<std::string>& fix() const noexcept { return m_fix; }
+
+        void addPrimaryLabel(const SourceLocation& location, std::string text);
+
+    private:
+        DiagnosticLevel m_level = DiagnosticLevel::Unknown;
+        DiagnosticKind m_kind = DiagnosticKind::Unknown;
+        std::string m_code;
+        std::string m_message;
+        SourceTextSharedPtr m_source;
+        SourceLocation m_location;
+        std::vector<Label> m_labels;
+        std::optional<std::string> m_fix;
     };
 }

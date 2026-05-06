@@ -3,7 +3,7 @@
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Text/File.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
-#include <Caracal/Diagnostics/DiagnosticRenderer.h>
+#include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/CodeGen/LLVMCodeGenerator.h>
@@ -43,7 +43,9 @@ namespace Caracal
         return caraFilePaths;
     }
 
-    int compileFile(const std::filesystem::path& filePath)
+    int compileFile(
+        const std::filesystem::path& filePath,
+        const DiagnosticOptions& diagnosticOptions)
     {
         const auto coreDirectoryPath = std::filesystem::path("Core");
         auto caraFiles = collectCaraFiles(coreDirectoryPath);
@@ -90,7 +92,7 @@ namespace Caracal
 
         if (!diagnostics.Diagnostics().empty())
         {
-            Caracal::writeDiagnostics(std::cout, diagnostics, *source, true, true);
+            Caracal::writeDiagnostics(std::cout, diagnostics, diagnosticOptions);
             return 1;
         }
 
