@@ -859,16 +859,16 @@ namespace Caracal
         if (statement->expression().has_value())
         {
             auto type = typeCheckExpression(statement->expression().value().get(), tokens);
-            statement->setType(type);
-            if (type == Type::Undefined())
-            {
-                return;
-            }
-
             if(type.isReference())
             {
                 // returning a ref is now allowed, so we need to coerce it to a value
                 type = type.toValue();
+            }
+
+            statement->setType(type);
+            if (type == Type::Undefined())
+            {
+                return;
             }
 
             if (m_currentReturnType != Type::Void() && m_currentReturnType != type)
