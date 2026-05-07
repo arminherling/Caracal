@@ -106,7 +106,7 @@ namespace Caracal
         auto wasSuccessful = Caracal::typeCheck(parseTrees, options, caracalModule, diagnostics);
         if (!wasSuccessful)
         {
-            std::cout << "Type checking failed!";
+            Caracal::writeDiagnostics(std::cout, diagnostics, diagnosticOptions);
             return 1;
         }
 

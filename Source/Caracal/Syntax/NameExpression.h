@@ -13,6 +13,7 @@ namespace Caracal
 
         [[nodiscard]] const Token& nameToken() const noexcept { return m_nameToken; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
+        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const override;
 
     private:
         Token m_nameToken;

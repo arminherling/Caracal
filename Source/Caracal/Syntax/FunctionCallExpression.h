@@ -19,6 +19,7 @@ namespace Caracal
         [[nodiscard]] const ArgumentsNodeUPtr& argumentsNode() const noexcept { return m_argumentsNode; }
         [[nodiscard]] Type functionType() const noexcept { return m_functionType; }
         void setFunctionType(Type functionType) noexcept { m_functionType = functionType; }
+        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const override;
 
     private:
         NameExpressionUPtr m_nameExpression;

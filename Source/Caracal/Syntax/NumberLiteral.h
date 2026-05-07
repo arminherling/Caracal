@@ -22,6 +22,7 @@ namespace Caracal
         [[nodiscard]] const std::optional<Token>& uptickToken() const noexcept { return m_uptickToken; }
         [[nodiscard]] const std::optional<TypeNameNodeUPtr>& explicitType() const noexcept { return m_explicitType; }
         [[nodiscard]] const std::string& literalLexeme() const noexcept { return m_lexeme; }
+        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const override;
 
     private:
         Token m_literalToken;

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <Caracal/API.h>
+#include <Caracal/Diagnostics/ArgumentTypeMismatchInfo.h>
 #include <Caracal/Diagnostics/Diagnostic.h>
 #include <Caracal/Syntax/TokenKind.h>
 
@@ -27,6 +28,14 @@ namespace Caracal
         void AddUnexpectedTopLevelTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
         void AddUnexpectedStatementTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
         void AddUnexpectedExpressionTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
+        void AddUnknownNameError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
+        void AddUnknownFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
+        void AddUnknownTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
+        void AddUnknownMethodError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName, const std::string& methodName);
+        void AddUnknownFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName, const std::string& fieldName);
+        void AddArgumentCountMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 expectedCount, i32 actualCount, bool isVariadic);
+        void AddArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::vector<ArgumentTypeMismatchInfo>& mismatches);
+        void AddInvalidVariadicArgumentTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 argumentIndex, const std::string& actualTypeName);
 
         const std::vector<Diagnostic>& Diagnostics() const;
 

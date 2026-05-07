@@ -17,6 +17,7 @@
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/SkipStatement.h>
+#include <Caracal/Syntax/StringLiteral.h>
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
 #include <Caracal/Syntax/TypeFieldDeclaration.h>
 #include <Caracal/Syntax/UnaryExpression.h>
@@ -911,9 +912,21 @@ namespace Caracal
 
             if(arguments.value()->arguments().size() != 1)
             {
-                const auto openParenthesisLocation = m_tokens.getSourceLocation(arguments.value()->openParenthesisToken());
-                const auto closeParenthesisLocation = m_tokens.getSourceLocation(arguments.value()->closeParenthesisToken());
-                const auto argumentsLocation = SourceLocation{ openParenthesisLocation.startIndex, closeParenthesisLocation.endIndex };
+                SourceLocation argumentsLocation{};
+                if (arguments.value()->arguments().empty())
+                {
+                    const auto openParenthesisLocation = m_tokens.getSourceLocation(arguments.value()->openParenthesisToken());
+                    const auto closeParenthesisLocation = m_tokens.getSourceLocation(arguments.value()->closeParenthesisToken());
+                    argumentsLocation = SourceLocation{ openParenthesisLocation.startIndex, closeParenthesisLocation.endIndex };
+                }
+                else
+                {
+                    const auto firstArgument = arguments.value()->arguments().front().get();
+                    const auto lastArgument = arguments.value()->arguments().back().get();
+                    const auto firstArgumentLocation = firstArgument->sourceLocation(m_tokens);
+                    const auto lastArgumentLocation = lastArgument->sourceLocation(m_tokens);
+                    argumentsLocation = SourceLocation{ firstArgumentLocation.startIndex, lastArgumentLocation.endIndex };
+                }
                 m_diagnostics.AddAnnotationWrongNumberOfArgumentsError(m_tokens.source(), argumentsLocation, std::string(name), static_cast<i32>(arguments.value()->arguments().size()));
                 return;
             }

@@ -27,6 +27,13 @@ namespace Caracal
     {
     }
 
+    SourceLocation UnaryExpression::sourceLocation(const TokenBuffer& tokens) const
+    {
+        const auto operatorLocation = tokens.getSourceLocation(m_unaryOperatorToken);
+        const auto expressionLocation = m_expression->sourceLocation(tokens);
+        return SourceLocation{ operatorLocation.startIndex, expressionLocation.endIndex };
+    }
+
     std::string stringify(UnaryOperatorKind kind)
     {
         switch (kind)

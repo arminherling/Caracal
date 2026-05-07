@@ -10,4 +10,9 @@ namespace Caracal
         , m_escapedContent {escapedContent}
     {
     }
+
+    SourceLocation StringLiteral::sourceLocation(const TokenBuffer& tokens) const
+    {
+        return tokens.getSourceLocation(m_literalToken);
+    }
 }

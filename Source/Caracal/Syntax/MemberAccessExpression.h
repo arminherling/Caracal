@@ -15,6 +15,7 @@ namespace Caracal
 
         [[nodiscard]] const Token& dot() const noexcept { return m_dot; }
         [[nodiscard]] const ExpressionUPtr& expression() const noexcept { return m_expression; }
+        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const override;
 
     private:
         Token m_dot;

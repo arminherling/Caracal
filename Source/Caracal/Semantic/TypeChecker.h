@@ -8,6 +8,7 @@
 #include <Caracal/Semantic/Parameter.h>
 #include <Caracal/Semantic/Scope.h>
 #include <Caracal/Syntax/ParseTree.h>
+#include <Caracal/Syntax/TokenBuffer.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
 #include <Caracal/Syntax/NumberLiteral.h>
@@ -27,6 +28,8 @@
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
 #include <Caracal/Syntax/MethodDefinitionStatement.h>
 #include <Caracal/Syntax/TypeFieldDeclaration.h>
+
+#include <unordered_map>
 
 namespace Caracal
 {
@@ -54,43 +57,44 @@ namespace Caracal
         void typeCheckTypeFieldDefinitions();
         void typeCheckTypeMethodDefinitions();
 
-        void typeCheckFunctionSignature(FunctionDefinitionStatement* statement);
-        void typeCheckTypeSignature(TypeDefinitionStatement* statement);
-        void typeCheckTypeFieldDefinition(TypeDefinitionStatement* statement);
-        void typeCheckTypeMethodDefinition(TypeDefinitionStatement* statement);
-        void typeCheckMethodSignature(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType);
-        void typeCheckConstructorSignature(const TypeDefinitionStatement* typeDefinitionStatement, TypeDefinition& typeDefinition, Type typeType);
-        void typeCheckStatement(Statement* statement);
-        void typeCheckConstantDeclaration(ConstantDeclaration* statement);
-        void typeCheckVariableDeclaration(VariableDeclaration* statement);
-        void typeCheckExpressionStatement(ExpressionStatement* statement);
-        void typeCheckAssignmentStatement(AssignmentStatement* statement);
-        void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
-        void typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement);
-        void typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex);
-        void typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement);
-        void typeCheckIfStatement(IfStatement* statement);
-        void typeCheckWhileStatement(WhileStatement* statement);
-        void typeCheckReturnStatement(ReturnStatement* statement);
+        void typeCheckFunctionSignature(FunctionDefinitionStatement* statement, const TokenBuffer& tokens);
+        void typeCheckTypeSignature(TypeDefinitionStatement* statement, const TokenBuffer& tokens);
+        void typeCheckTypeFieldDefinition(TypeDefinitionStatement* statement, const TokenBuffer& tokens);
+        void typeCheckTypeMethodDefinition(TypeDefinitionStatement* statement, const TokenBuffer& tokens);
+        void typeCheckMethodSignature(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens);
+        void typeCheckConstructorSignature(const TypeDefinitionStatement* typeDefinitionStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens);
+        void typeCheckStatement(Statement* statement, const TokenBuffer& tokens);
+        void typeCheckConstantDeclaration(ConstantDeclaration* statement, const TokenBuffer& tokens);
+        void typeCheckVariableDeclaration(VariableDeclaration* statement, const TokenBuffer& tokens);
+        void typeCheckExpressionStatement(ExpressionStatement* statement, const TokenBuffer& tokens);
+        void typeCheckAssignmentStatement(AssignmentStatement* statement, const TokenBuffer& tokens);
+        void typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement, const TokenBuffer& tokens);
+        void typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement, const TokenBuffer& tokens);
+        void typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex, const TokenBuffer& tokens);
+        void typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement, const TokenBuffer& tokens);
+        void typeCheckIfStatement(IfStatement* statement, const TokenBuffer& tokens);
+        void typeCheckWhileStatement(WhileStatement* statement, const TokenBuffer& tokens);
+        void typeCheckReturnStatement(ReturnStatement* statement, const TokenBuffer& tokens);
             
-        [[nodiscard]] Type typeCheckExpression(Expression* expression);
-        [[nodiscard]] Type typeCheckGroupingExpression(GroupingExpression* expression);
-        [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression);
-        [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression);
-        [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression);
-        [[nodiscard]] Type typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression);
-        [[nodiscard]] Type typeCheckMemberAccessExpression(MemberAccessExpression* memberAccessExpression);
-        [[nodiscard]] bool typeCheckCallArguments(FunctionCallExpression* functionCallExpression, const FunctionDefinition& functionDefinition);
-        [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal);
-        [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode);
-        [[nodiscard]] std::vector<Parameter> typeCheckParametersNode(ParametersNode* parametersNode);
-        [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode);
-        [[nodiscard]] std::vector<Type> typeCheckArgumentsNode(ArgumentsNode* argumentsNode);
+        [[nodiscard]] Type typeCheckExpression(Expression* expression, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckGroupingExpression(GroupingExpression* expression, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckMemberAccessExpression(MemberAccessExpression* memberAccessExpression, const TokenBuffer& tokens);
+        [[nodiscard]] bool typeCheckCallArguments(FunctionCallExpression* functionCallExpression, const FunctionDefinition& functionDefinition, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode, const TokenBuffer& tokens);
+        [[nodiscard]] std::vector<Parameter> typeCheckParametersNode(ParametersNode* parametersNode, const TokenBuffer& tokens);
+        [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode, const TokenBuffer& tokens);
+        [[nodiscard]] std::vector<Type> typeCheckArgumentsNode(ArgumentsNode* argumentsNode, const TokenBuffer& tokens);
 
-        void typeCheckBlockNode(BlockNode* body);
-        [[nodiscard]] i32 convertToI32(NumberLiteral* literal);
+        void typeCheckBlockNode(BlockNode* body, const TokenBuffer& tokens);
+        [[nodiscard]] i32 convertToI32(NumberLiteral* literal, const TokenBuffer& tokens);
         [[nodiscard]] Type coerceConditionType(Type conditionType, Expression* conditionExpression);
         [[nodiscard]] bool areComparableTypes(Type leftType, Type rightType);
+        [[nodiscard]] const TokenBuffer& tokensFor(const Statement* statement) const;
 
         void pushScope(ScopeKind kind);
         void popScope();
@@ -103,6 +107,7 @@ namespace Caracal
         Type m_currentReturnType;
         Type m_currentType;
         std::vector<std::unique_ptr<Scope>> m_scopes;
+        std::unordered_map<const Statement*, const TokenBuffer*> m_statementTokens;
         std::vector<const ConstantDeclaration*> m_globalConstantDeclarations;
         std::vector<const EnumDefinitionStatement*> m_enumDeclarations;
         std::vector<const TypeDefinitionStatement*> m_typeDeclarations;

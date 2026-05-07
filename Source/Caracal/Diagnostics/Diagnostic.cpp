@@ -32,6 +32,22 @@ namespace Caracal
                     return "C0011";
                 case DiagnosticKind::_0012_InvalidExpression:
                     return "C0012";
+                case DiagnosticKind::_0013_UnknownName:
+                    return "C0013";
+                case DiagnosticKind::_0014_UnknownFunction:
+                    return "C0014";
+                case DiagnosticKind::_0015_UnknownType:
+                    return "C0015";
+                case DiagnosticKind::_0016_UnknownMethod:
+                    return "C0016";
+                case DiagnosticKind::_0017_UnknownField:
+                    return "C0017";
+                case DiagnosticKind::_0018_ArgumentCountMismatch:
+                    return "C0018";
+                case DiagnosticKind::_0019_ArgumentTypeMismatch:
+                    return "C0019";
+                case DiagnosticKind::_0020_InvalidVariadicArgumentType:
+                    return "C0020";
                 case DiagnosticKind::Unknown:
                 default:
                     return "C????";
@@ -66,6 +82,22 @@ namespace Caracal
                     return "Invalid statement";
                 case DiagnosticKind::_0012_InvalidExpression:
                     return "Invalid expression";
+                case DiagnosticKind::_0013_UnknownName:
+                    return "Unknown name";
+                case DiagnosticKind::_0014_UnknownFunction:
+                    return "Unknown function";
+                case DiagnosticKind::_0015_UnknownType:
+                    return "Unknown type";
+                case DiagnosticKind::_0016_UnknownMethod:
+                    return "Unknown method";
+                case DiagnosticKind::_0017_UnknownField:
+                    return "Unknown field";
+                case DiagnosticKind::_0018_ArgumentCountMismatch:
+                    return "Argument count mismatch";
+                case DiagnosticKind::_0019_ArgumentTypeMismatch:
+                    return "Argument type mismatch";
+                case DiagnosticKind::_0020_InvalidVariadicArgumentType:
+                    return "Invalid variadic argument type";
                 case DiagnosticKind::Unknown:
                 default:
                     return "Unknown diagnostic";

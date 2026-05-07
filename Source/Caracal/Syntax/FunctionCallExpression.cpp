@@ -10,4 +10,11 @@ namespace Caracal {
         , m_functionType{ Type::Undefined() }
     {
     }
+
+    SourceLocation FunctionCallExpression::sourceLocation(const TokenBuffer& tokens) const
+    {
+        const auto nameLocation = m_nameExpression->sourceLocation(tokens);
+        const auto closeLocation = tokens.getSourceLocation(m_argumentsNode->closeParenthesisToken());
+        return SourceLocation{ nameLocation.startIndex, closeLocation.endIndex };
+    }
 }

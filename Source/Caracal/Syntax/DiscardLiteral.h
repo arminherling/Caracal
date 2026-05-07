@@ -12,6 +12,7 @@ namespace Caracal
         DiscardLiteral(const Token& underscoreToken);
 
         [[nodiscard]] const Token& underscoreToken() const noexcept { return m_underscoreToken; }
+        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const override;
 
     private:
         Token m_underscoreToken;

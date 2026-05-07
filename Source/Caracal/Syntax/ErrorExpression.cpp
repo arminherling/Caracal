@@ -7,4 +7,9 @@ namespace Caracal
         , m_errorToken{ errorToken }
     {
     }
+
+    SourceLocation ErrorExpression::sourceLocation(const TokenBuffer& tokens) const
+    {
+        return tokens.getSourceLocation(m_errorToken);
+    }
 }

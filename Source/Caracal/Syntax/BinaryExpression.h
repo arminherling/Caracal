@@ -41,6 +41,7 @@ namespace Caracal
         [[nodiscard]] const ExpressionUPtr& rightExpression() const noexcept { return m_rightExpression; }
         [[nodiscard]] BinaryOperatorKind binaryOperator() const noexcept { return m_binaryOperator; }
         void setBinaryOperatorKind(BinaryOperatorKind binaryOperator) noexcept { m_binaryOperator = binaryOperator; }
+        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const override;
 
     private:
         ExpressionUPtr m_leftExpression;

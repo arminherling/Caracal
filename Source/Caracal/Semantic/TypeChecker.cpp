@@ -2,6 +2,41 @@
 
 namespace Caracal
 {
+    static SourceLocation GetArgumentsLocation(ArgumentsNode* argumentsNode, const TokenBuffer& tokens)
+    {
+        if (argumentsNode->arguments().empty())
+        {
+            const auto openParenthesisLocation = tokens.getSourceLocation(argumentsNode->openParenthesisToken());
+            const auto closeParenthesisLocation = tokens.getSourceLocation(argumentsNode->closeParenthesisToken());
+            return SourceLocation{ openParenthesisLocation.startIndex, closeParenthesisLocation.endIndex };
+        }
+
+        const auto firstArgumentLocation = argumentsNode->arguments().front()->sourceLocation(tokens);
+        const auto lastArgumentLocation = argumentsNode->arguments().back()->sourceLocation(tokens);
+        return SourceLocation{ firstArgumentLocation.startIndex, lastArgumentLocation.endIndex };
+    }
+
+    static std::string FormatTypeName(Module& module, Type type)
+    {
+        if (type == Type::Undefined())
+        {
+            return "undefined";
+        }
+
+        if (type == Type::Void())
+        {
+            return "void";
+        }
+
+        auto name = std::string(module.getNameByType(type));
+        if (type.isReference())
+        {
+            return "ref " + name;
+        }
+
+        return name;
+    }
+
     bool typeCheck(
         const std::vector<ParseTreeUPtr>& parseTrees,
         const TypeCheckerOptions& options,
@@ -30,6 +65,11 @@ namespace Caracal
 
     bool TypeChecker::typeCheck()
     {
+        if (!m_diagnostics.Diagnostics().empty())
+        {
+            return false;
+        }
+
         collectDeclarations();
         collectMethodDeclarations();
 
@@ -41,7 +81,7 @@ namespace Caracal
         typeCheckFunctionDefinitions();
         typeCheckTypeMethodDefinitions();
         
-        return true;
+        return m_diagnostics.Diagnostics().empty();
     }
 
     void TypeChecker::collectDeclarations()
@@ -55,6 +95,7 @@ namespace Caracal
                     case NodeKind::ConstantDeclaration:
                     {
                         auto* constantDeclaration = static_cast<ConstantDeclaration*>(statement.get());
+                        m_statementTokens.emplace(constantDeclaration, &parseTree->tokens());
                         m_globalConstantDeclarations.push_back(constantDeclaration);
 
                         break;
@@ -62,6 +103,7 @@ namespace Caracal
                     case NodeKind::EnumDefinitionStatement:
                     {
                         auto* enumStatement = static_cast<EnumDefinitionStatement*>(statement.get());
+                        m_statementTokens.emplace(enumStatement, &parseTree->tokens());
                         const auto& enumName = enumStatement->name();
                         // TODO check if type with same name exists already
                         auto& enumDefinition = m_module.createEnum(enumName, enumStatement);
@@ -73,6 +115,7 @@ namespace Caracal
                     case NodeKind::TypeDefinitionStatement:
                     {
                         auto* typeStatement = static_cast<TypeDefinitionStatement*>(statement.get());
+                        m_statementTokens.emplace(typeStatement, &parseTree->tokens());
                         // TODO check if type with same name exists already
                         auto& typeDefinition = m_module.createType(typeStatement->name(), typeStatement);
                         typeStatement->setType(typeDefinition.type());
@@ -83,6 +126,7 @@ namespace Caracal
                     case NodeKind::FunctionDefinitionStatement:
                     {
                         auto* functionStatement = static_cast<FunctionDefinitionStatement*>(statement.get());
+                        m_statementTokens.emplace(functionStatement, &parseTree->tokens());
                         const auto& functionName = functionStatement->name();
 
                         std::vector<Parameter> parameters{};
@@ -179,7 +223,8 @@ namespace Caracal
     {
         for (const auto* functionDefinitionStatement : m_functionDeclarations)
         {
-            typeCheckFunctionSignature(const_cast<FunctionDefinitionStatement*>(functionDefinitionStatement));
+            auto* statement = const_cast<FunctionDefinitionStatement*>(functionDefinitionStatement);
+            typeCheckFunctionSignature(statement, tokensFor(statement));
         }
     }
 
@@ -187,7 +232,8 @@ namespace Caracal
     {
         for (const auto* typeDefinitionStatement : m_typeDeclarations)
         {
-            typeCheckTypeSignature(const_cast<TypeDefinitionStatement*>(typeDefinitionStatement));
+            auto* statement = const_cast<TypeDefinitionStatement*>(typeDefinitionStatement);
+            typeCheckTypeSignature(statement, tokensFor(statement));
         }
     }
 
@@ -195,7 +241,8 @@ namespace Caracal
     {
         for (const auto* constantDeclaration : m_globalConstantDeclarations)
         {
-            typeCheckConstantDeclaration(const_cast<ConstantDeclaration*>(constantDeclaration));
+            auto* statement = const_cast<ConstantDeclaration*>(constantDeclaration);
+            typeCheckConstantDeclaration(statement, tokensFor(statement));
         }
     }
 
@@ -203,7 +250,8 @@ namespace Caracal
     {
         for (const auto* functionDefinitionStatement : m_functionDeclarations)
         {
-            typeCheckFunctionDefinitionStatement(const_cast<FunctionDefinitionStatement*>(functionDefinitionStatement));
+            auto* statement = const_cast<FunctionDefinitionStatement*>(functionDefinitionStatement);
+            typeCheckFunctionDefinitionStatement(statement, tokensFor(statement));
         }
     }
 
@@ -211,7 +259,8 @@ namespace Caracal
     {
         for (const auto* enumDefinitionStatement : m_enumDeclarations)
         {
-            typeCheckEnumDefinitionStatement(const_cast<EnumDefinitionStatement*>(enumDefinitionStatement));
+            auto* statement = const_cast<EnumDefinitionStatement*>(enumDefinitionStatement);
+            typeCheckEnumDefinitionStatement(statement, tokensFor(statement));
         }
     }
 
@@ -219,7 +268,8 @@ namespace Caracal
     {
         for (const auto* typeDefinitionStatement : m_typeDeclarations)
         {
-            typeCheckTypeFieldDefinition(const_cast<TypeDefinitionStatement*>(typeDefinitionStatement));
+            auto* statement = const_cast<TypeDefinitionStatement*>(typeDefinitionStatement);
+            typeCheckTypeFieldDefinition(statement, tokensFor(statement));
         }
     }
 
@@ -227,15 +277,16 @@ namespace Caracal
     {
         for (const auto* typeDefinitionStatement : m_typeDeclarations)
         {
-            typeCheckTypeMethodDefinition(const_cast<TypeDefinitionStatement*>(typeDefinitionStatement));
+            auto* statement = const_cast<TypeDefinitionStatement*>(typeDefinitionStatement);
+            typeCheckTypeMethodDefinition(statement, tokensFor(statement));
         }
     }
 
-    void TypeChecker::typeCheckFunctionSignature(FunctionDefinitionStatement* statement)
+    void TypeChecker::typeCheckFunctionSignature(FunctionDefinitionStatement* statement, const TokenBuffer& tokens)
     {
         pushScope(ScopeKind::Function);
-        auto parameters = typeCheckParametersNode(statement->parametersNode().get());
-        auto returns = typeCheckReturnTypesNode(statement->returnTypesNode().get());
+        auto parameters = typeCheckParametersNode(statement->parametersNode().get(), tokens);
+        auto returns = typeCheckReturnTypesNode(statement->returnTypesNode().get(), tokens);
         popScope();
 
         const auto& functionName = statement->name();
@@ -256,7 +307,7 @@ namespace Caracal
         functionDefinition.setIsVariadic(isVariadic);
     }
 
-    void TypeChecker::typeCheckTypeSignature(TypeDefinitionStatement* statement)
+    void TypeChecker::typeCheckTypeSignature(TypeDefinitionStatement* statement, const TokenBuffer& tokens)
     {
         auto typeType = m_module.tryGetTypeByName(statement->name());
         if (typeType == Type::Undefined())
@@ -265,7 +316,7 @@ namespace Caracal
         }
 
         auto& typeDefinition = m_module.getTypeDefinition(typeType);
-        typeCheckConstructorSignature(statement, typeDefinition, typeType);
+        typeCheckConstructorSignature(statement, typeDefinition, typeType, tokens);
 
         const auto& bodyStatements = statement->bodyNode()->statements();
         for (const auto& bodyStatement : bodyStatements)
@@ -276,11 +327,11 @@ namespace Caracal
             }
 
             const auto* methodStatement = static_cast<const MethodDefinitionStatement*>(bodyStatement.get());
-            typeCheckMethodSignature(methodStatement, typeDefinition, typeType);
+            typeCheckMethodSignature(methodStatement, typeDefinition, typeType, tokens);
         }
     }
 
-    void TypeChecker::typeCheckTypeFieldDefinition(TypeDefinitionStatement* statement)
+    void TypeChecker::typeCheckTypeFieldDefinition(TypeDefinitionStatement* statement, const TokenBuffer& tokens)
     {
         auto typeType = statement->type();
         if (typeType == Type::Undefined())
@@ -292,7 +343,7 @@ namespace Caracal
 
         if (statement->constructorParameters().has_value())
         {
-            static_cast<void>(typeCheckParametersNode(statement->constructorParameters().value().get()));
+            static_cast<void>(typeCheckParametersNode(statement->constructorParameters().value().get(), tokens));
         }
 
         auto& typeDefinition = m_module.getTypeDefinition(typeType);
@@ -305,14 +356,14 @@ namespace Caracal
                 continue;
             }
 
-            typeCheckTypeFieldDeclaration(typeDefinition, static_cast<TypeFieldDeclaration*>(definitionStatement.get()), fieldIndex);
+            typeCheckTypeFieldDeclaration(typeDefinition, static_cast<TypeFieldDeclaration*>(definitionStatement.get()), fieldIndex, tokens);
             ++fieldIndex;
         }
 
         popScope();
     }
 
-    void TypeChecker::typeCheckTypeMethodDefinition(TypeDefinitionStatement* statement)
+    void TypeChecker::typeCheckTypeMethodDefinition(TypeDefinitionStatement* statement, const TokenBuffer& tokens)
     {
         auto typeType = statement->type();
         if (typeType == Type::Undefined())
@@ -325,7 +376,7 @@ namespace Caracal
 
         if (statement->constructorParameters().has_value())
         {
-            static_cast<void>(typeCheckParametersNode(statement->constructorParameters().value().get()));
+            static_cast<void>(typeCheckParametersNode(statement->constructorParameters().value().get(), tokens));
         }
 
         auto& typeDefinition = m_module.getTypeDefinition(typeType);
@@ -342,20 +393,20 @@ namespace Caracal
                 continue;
             }
 
-            typeCheckMethodDefinitionStatement(static_cast<MethodDefinitionStatement*>(definitionStatement.get()));
+            typeCheckMethodDefinitionStatement(static_cast<MethodDefinitionStatement*>(definitionStatement.get()), tokens);
         }
 
         popScope();
         m_currentType = Type::Undefined();
     }
 
-    void TypeChecker::typeCheckMethodSignature(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType)
+    void TypeChecker::typeCheckMethodSignature(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens)
     {
         const auto& methodName = methodStatement->methodNameNode()->methodName();
 
         pushScope(ScopeKind::Method);
-        auto parameters = typeCheckParametersNode(methodStatement->parametersNode().get());
-        auto returns = typeCheckReturnTypesNode(methodStatement->returnTypesNode().get());
+        auto parameters = typeCheckParametersNode(methodStatement->parametersNode().get(), tokens);
+        auto returns = typeCheckReturnTypesNode(methodStatement->returnTypesNode().get(), tokens);
         popScope();
 
         auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
@@ -373,7 +424,7 @@ namespace Caracal
         methodDefinition.setReturnTypes(returns);
     }
 
-    void TypeChecker::typeCheckConstructorSignature(const TypeDefinitionStatement* typeDefinitionStatement, TypeDefinition& typeDefinition, Type typeType)
+    void TypeChecker::typeCheckConstructorSignature(const TypeDefinitionStatement* typeDefinitionStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens)
     {
         auto constructorType = typeDefinition.tryGetMethodTypeByName("new");
         if (constructorType == Type::Undefined())
@@ -387,7 +438,7 @@ namespace Caracal
         if (typeDefinitionStatement->constructorParameters().has_value())
         {
             pushScope(ScopeKind::Type);
-            auto declaredConstructorParameters = typeCheckParametersNode(typeDefinitionStatement->constructorParameters().value().get());
+            auto declaredConstructorParameters = typeCheckParametersNode(typeDefinitionStatement->constructorParameters().value().get(), tokens);
             popScope();
 
             constructorParameters.insert(
@@ -401,58 +452,58 @@ namespace Caracal
         constructorDefinition.setReturnTypes(std::vector<Type>{});
     }
 
-    void TypeChecker::typeCheckStatement(Statement* statement)
+    void TypeChecker::typeCheckStatement(Statement* statement, const TokenBuffer& tokens)
     {
         switch (statement->kind())
         {
             case NodeKind::ConstantDeclaration:
             {
-                typeCheckConstantDeclaration(static_cast<ConstantDeclaration*>(statement));
+                typeCheckConstantDeclaration(static_cast<ConstantDeclaration*>(statement), tokens);
                 break;
             }
             case NodeKind::VariableDeclaration:
             {
-                typeCheckVariableDeclaration(static_cast<VariableDeclaration*>(statement));
+                typeCheckVariableDeclaration(static_cast<VariableDeclaration*>(statement), tokens);
                 break;
             }
             case NodeKind::ExpressionStatement:
             {
-                typeCheckExpressionStatement(static_cast<ExpressionStatement*>(statement));
+                typeCheckExpressionStatement(static_cast<ExpressionStatement*>(statement), tokens);
                 break;
             }
             case NodeKind::AssignmentStatement:
             {
-                typeCheckAssignmentStatement(static_cast<AssignmentStatement*>(statement));
+                typeCheckAssignmentStatement(static_cast<AssignmentStatement*>(statement), tokens);
                 break;
             }
             case NodeKind::FunctionDefinitionStatement:
             {
-                typeCheckFunctionDefinitionStatement(static_cast<FunctionDefinitionStatement*>(statement));
+                typeCheckFunctionDefinitionStatement(static_cast<FunctionDefinitionStatement*>(statement), tokens);
                 break;
             }
             case NodeKind::EnumDefinitionStatement:
             {
-                typeCheckEnumDefinitionStatement(static_cast<EnumDefinitionStatement*>(statement));
+                typeCheckEnumDefinitionStatement(static_cast<EnumDefinitionStatement*>(statement), tokens);
                 break;
             }
             case NodeKind::IfStatement:
             {
-                typeCheckIfStatement(static_cast<IfStatement*>(statement));
+                typeCheckIfStatement(static_cast<IfStatement*>(statement), tokens);
                 break;
             }
             case NodeKind::WhileStatement:
             {
-                typeCheckWhileStatement(static_cast<WhileStatement*>(statement));
+                typeCheckWhileStatement(static_cast<WhileStatement*>(statement), tokens);
                 break;
             }
             case NodeKind::ReturnStatement:
             {
-                typeCheckReturnStatement(static_cast<ReturnStatement*>(statement));
+                typeCheckReturnStatement(static_cast<ReturnStatement*>(statement), tokens);
                 break;
             }
             case NodeKind::BlockNode:
             {
-                typeCheckBlockNode(static_cast<BlockNode*>(statement));
+                typeCheckBlockNode(static_cast<BlockNode*>(statement), tokens);
                 break;
             }
             default:
@@ -462,10 +513,10 @@ namespace Caracal
         }
     }
 
-    void TypeChecker::typeCheckConstantDeclaration(ConstantDeclaration* statement)
+    void TypeChecker::typeCheckConstantDeclaration(ConstantDeclaration* statement, const TokenBuffer& tokens)
     {
         auto rightExpression = statement->rightExpression().get();
-        auto rightType = typeCheckExpression(rightExpression);
+        auto rightType = typeCheckExpression(rightExpression, tokens);
 
         auto leftExpression = statement->leftExpression().get();
         if (leftExpression->kind() == NodeKind::NameExpression)
@@ -492,8 +543,8 @@ namespace Caracal
 
         if (statement->explicitType().has_value())
         {
-            auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get());
-            if (rightType != explicitType)
+            auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
+            if (rightType != Type::Undefined() && explicitType != Type::Undefined() && rightType != explicitType)
             {
                 TODO("Type mismatch error diagnostics");
             }
@@ -502,9 +553,9 @@ namespace Caracal
         statement->setType(rightType);
     }
 
-    void TypeChecker::typeCheckVariableDeclaration(VariableDeclaration* statement)
+    void TypeChecker::typeCheckVariableDeclaration(VariableDeclaration* statement, const TokenBuffer& tokens)
     {
-        auto rightType = typeCheckExpression(statement->rightExpression().get());
+        auto rightType = typeCheckExpression(statement->rightExpression().get(), tokens);
 
         auto leftExpression = statement->leftExpression().get();
         if (leftExpression->kind() == NodeKind::NameExpression)
@@ -525,8 +576,8 @@ namespace Caracal
 
         if (statement->explicitType().has_value())
         {
-            auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get());
-            if (rightType != explicitType)
+            auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
+            if (rightType != Type::Undefined() && explicitType != Type::Undefined() && rightType != explicitType)
             {
                 TODO("Type mismatch error diagnostics");
             }
@@ -535,20 +586,20 @@ namespace Caracal
         statement->setType(rightType);
     }
 
-    void TypeChecker::typeCheckExpressionStatement(ExpressionStatement* statement)
+    void TypeChecker::typeCheckExpressionStatement(ExpressionStatement* statement, const TokenBuffer& tokens)
     {
-        auto expressionType = typeCheckExpression(statement->expression().get());
+        auto expressionType = typeCheckExpression(statement->expression().get(), tokens);
         statement->setType(expressionType);
     }
 
-    void TypeChecker::typeCheckAssignmentStatement(AssignmentStatement* statement)
+    void TypeChecker::typeCheckAssignmentStatement(AssignmentStatement* statement, const TokenBuffer& tokens)
     {
-        auto leftType = typeCheckExpression(statement->leftExpression().get());
+        auto leftType = typeCheckExpression(statement->leftExpression().get(), tokens);
         if (leftType.isReference())
         {
             leftType = leftType.toValue();
         }
-        auto rightType = typeCheckExpression(statement->rightExpression().get());
+        auto rightType = typeCheckExpression(statement->rightExpression().get(), tokens);
         if (rightType.isReference())
         {
             rightType = rightType.toValue();
@@ -563,7 +614,7 @@ namespace Caracal
         }
     }
 
-    void TypeChecker::typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement)
+    void TypeChecker::typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement, const TokenBuffer& tokens)
     {
         m_currentReturnType = Type::Void();
         auto parentScope = currentScope();
@@ -592,13 +643,13 @@ namespace Caracal
             TODO("Handle multiple return types in function definition");
         }
 
-        typeCheckBlockNode(statement->bodyNode().get());
+        typeCheckBlockNode(statement->bodyNode().get(), tokens);
 
         popScope();
         m_currentReturnType = Type::Void();
     }
 
-    void TypeChecker::typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement)
+    void TypeChecker::typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement, const TokenBuffer& tokens)
     {
         const auto& enumName = statement->name();
         auto baseType = Type::Undefined();
@@ -616,7 +667,7 @@ namespace Caracal
 
         if (statement->baseType().has_value())
         {
-            baseType = typeCheckTypeNameNode(statement->baseType().value().get());
+            baseType = typeCheckTypeNameNode(statement->baseType().value().get(), tokens);
             enumDefinition.setBaseType(baseType);
         }
 
@@ -627,7 +678,7 @@ namespace Caracal
             auto stepParameter = arguments->arguments().at(0).get();
             if (stepParameter->kind() == NodeKind::NumberLiteral)
             {
-                step = convertToI32(static_cast<NumberLiteral*>(stepParameter));
+                step = convertToI32(static_cast<NumberLiteral*>(stepParameter), tokens);
             }
         }
 
@@ -662,7 +713,7 @@ namespace Caracal
             else if (fieldNode->valueExpression().has_value())
             {
                 auto expression = fieldNode->valueExpression().value().get();
-                auto fieldValueType = typeCheckExpression(expression);
+                auto fieldValueType = typeCheckExpression(expression, tokens);
                 if (baseType == Type::Undefined())
                 {
                     baseType = fieldValueType;
@@ -675,7 +726,7 @@ namespace Caracal
 
                 if (expression->kind() == NodeKind::NumberLiteral && expression->type() == Type::I32())
                 {
-                    auto value = convertToI32(static_cast<NumberLiteral*>(expression));
+                    auto value = convertToI32(static_cast<NumberLiteral*>(expression), tokens);
                     enumDefinition.addField(fieldName, value);
                     fieldNode->setValue(value);
                     currentFieldValue = value + step;
@@ -699,7 +750,7 @@ namespace Caracal
         }
     }
 
-    void TypeChecker::typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex)
+    void TypeChecker::typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex, const TokenBuffer& tokens)
     {
         const auto& fieldName = statement->nameExpression()->name();
         if (typeDefinition.tryGetFieldByName(fieldName).type() != Type::Undefined())
@@ -712,13 +763,13 @@ namespace Caracal
         Expression* fieldExpression = nullptr;
         if (statement->explicitType().has_value())
         {
-            fieldType = typeCheckTypeNameNode(statement->explicitType().value().get());
+            fieldType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
         }
 
         if (statement->rightExpression().has_value())
         {
             fieldExpression = statement->rightExpression().value().get();
-            auto expressionType = typeCheckExpression(fieldExpression);
+            auto expressionType = typeCheckExpression(fieldExpression, tokens);
             if (fieldType == Type::Undefined())
             {
                 fieldType = expressionType;
@@ -740,7 +791,7 @@ namespace Caracal
         typeDefinition.addField(fieldType, fieldName, fieldIndex, fieldExpression);
     }
 
-    void TypeChecker::typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement)
+    void TypeChecker::typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement, const TokenBuffer& tokens)
     {
         m_currentReturnType = Type::Void();
         auto methodType = statement->type();
@@ -768,46 +819,52 @@ namespace Caracal
             TODO("Handle multiple return types in function definition");
         }
 
-        typeCheckBlockNode(statement->bodyNode().get());
+        typeCheckBlockNode(statement->bodyNode().get(), tokens);
 
         popScope();
         m_currentReturnType = Type::Void();
     }
 
-    void TypeChecker::typeCheckIfStatement(IfStatement* statement)
+    void TypeChecker::typeCheckIfStatement(IfStatement* statement, const TokenBuffer& tokens)
     {
-        auto conditionType = typeCheckExpression(statement->condition().get());
+        auto conditionType = typeCheckExpression(statement->condition().get(), tokens);
         conditionType = coerceConditionType(conditionType, statement->condition().get());
         if (conditionType != Type::Bool())
         {
             TODO("Add an error because only bool is allowed");
         }
 
-        typeCheckStatement(statement->trueStatement().get());
+        typeCheckStatement(statement->trueStatement().get(), tokens);
 
         if (statement->hasFalseBlock())
         {
-            typeCheckStatement(statement->falseStatement().value().get());
+            typeCheckStatement(statement->falseStatement().value().get(), tokens);
         }
     }
 
-    void TypeChecker::typeCheckWhileStatement(WhileStatement* statement)
+    void TypeChecker::typeCheckWhileStatement(WhileStatement* statement, const TokenBuffer& tokens)
     {
-        auto conditionType = typeCheckExpression(statement->condition().get());
+        auto conditionType = typeCheckExpression(statement->condition().get(), tokens);
         conditionType = coerceConditionType(conditionType, statement->condition().get());
         if (conditionType != Type::Bool())
         {
             TODO("Add an error because only bool is allowed");
         }
 
-        typeCheckStatement(statement->trueStatement().get());
+        typeCheckStatement(statement->trueStatement().get(), tokens);
     }
 
-    void TypeChecker::typeCheckReturnStatement(ReturnStatement* statement)
+    void TypeChecker::typeCheckReturnStatement(ReturnStatement* statement, const TokenBuffer& tokens)
     {
         if (statement->expression().has_value())
         {
-            auto type = typeCheckExpression(statement->expression().value().get());
+            auto type = typeCheckExpression(statement->expression().value().get(), tokens);
+            statement->setType(type);
+            if (type == Type::Undefined())
+            {
+                return;
+            }
+
             if(type.isReference())
             {
                 // returning a ref is now allowed, so we need to coerce it to a value
@@ -818,7 +875,6 @@ namespace Caracal
             {
                 TODO("Add error diagnostics for return type mismatch");
             }
-            statement->setType(type);
             m_currentReturnType = type;
         }
         else
@@ -827,7 +883,7 @@ namespace Caracal
         }
     }
 
-    Type TypeChecker::typeCheckExpression(Expression* expression)
+    Type TypeChecker::typeCheckExpression(Expression* expression, const TokenBuffer& tokens)
     {
         switch (expression->kind())
         {
@@ -838,31 +894,31 @@ namespace Caracal
             }
             case NodeKind::NumberLiteral:
             {
-                return typeCheckNumberLiteral(static_cast<NumberLiteral*>(expression));
+                return typeCheckNumberLiteral(static_cast<NumberLiteral*>(expression), tokens);
             }
             case NodeKind::GroupingExpression:
             {
-                return typeCheckGroupingExpression(static_cast<GroupingExpression*>(expression));
+                return typeCheckGroupingExpression(static_cast<GroupingExpression*>(expression), tokens);
             }
             case NodeKind::UnaryExpression:
             {
-                return typeCheckUnaryExpressionExpression(static_cast<UnaryExpression*>(expression));
+                return typeCheckUnaryExpressionExpression(static_cast<UnaryExpression*>(expression), tokens);
             }
             case NodeKind::BinaryExpression:
             {
-                return typeCheckBinaryExpressionExpression(static_cast<BinaryExpression*>(expression));
+                return typeCheckBinaryExpressionExpression(static_cast<BinaryExpression*>(expression), tokens);
             }
             case NodeKind::NameExpression:
             {
-                return typeCheckNameExpression(static_cast<NameExpression*>(expression));
+                return typeCheckNameExpression(static_cast<NameExpression*>(expression), tokens);
             }
             case NodeKind::FunctionCallExpression:
             {
-                return typeCheckFunctionCallExpression(static_cast<FunctionCallExpression*>(expression));
+                return typeCheckFunctionCallExpression(static_cast<FunctionCallExpression*>(expression), tokens);
             }
             case NodeKind::MemberAccessExpression:
             {
-                return typeCheckMemberAccessExpression(static_cast<MemberAccessExpression*>(expression));
+                return typeCheckMemberAccessExpression(static_cast<MemberAccessExpression*>(expression), tokens);
             }
             case NodeKind::DiscardLiteral:
             {
@@ -876,29 +932,29 @@ namespace Caracal
         return Type::Undefined();
     }
 
-    Type TypeChecker::typeCheckGroupingExpression(GroupingExpression* groupingExpression)
+    Type TypeChecker::typeCheckGroupingExpression(GroupingExpression* groupingExpression, const TokenBuffer& tokens)
     {
-        auto type = typeCheckExpression(groupingExpression->expression().get());
+        auto type = typeCheckExpression(groupingExpression->expression().get(), tokens);
 
         groupingExpression->setType(type);
         return type;
     }
 
-    Type TypeChecker::typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression)
+    Type TypeChecker::typeCheckUnaryExpressionExpression(UnaryExpression* unaryExpression, const TokenBuffer& tokens)
     {
         switch (unaryExpression->unaryOperator())
         {
             case UnaryOperatorKind::LogicalNegation:
             case UnaryOperatorKind::ValueNegation:
             {
-                auto type = typeCheckExpression(unaryExpression->expression().get());
+                auto type = typeCheckExpression(unaryExpression->expression().get(), tokens);
 
                 unaryExpression->setType(type);
                 return type;
             }
             case UnaryOperatorKind::ReferenceOf:
             {
-                auto type = typeCheckExpression(unaryExpression->expression().get());
+                auto type = typeCheckExpression(unaryExpression->expression().get(), tokens);
                 if (type.isReference())
                 {
                     TODO("Add error diagnostics for already being a reference");
@@ -916,13 +972,13 @@ namespace Caracal
         }
     }
 
-    Type TypeChecker::typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression)
+    Type TypeChecker::typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression, const TokenBuffer& tokens)
     {
         switch (binaryExpression->binaryOperator())
         {
             case BinaryOperatorKind::MemberAccess:
             {
-                auto leftType = typeCheckExpression(binaryExpression->leftExpression().get());
+                auto leftType = typeCheckExpression(binaryExpression->leftExpression().get(), tokens);
                 if (leftType.kind() == TypeKind::Enum)
                 {
                     binaryExpression->setType(leftType);
@@ -942,7 +998,7 @@ namespace Caracal
                         if (methodType != Type::Undefined())
                         {
                             auto& methodDefinition = m_module.getFunctionDefinition(methodType);
-                            if (!typeCheckCallArguments(functionCallExpression, methodDefinition))
+                            if (!typeCheckCallArguments(functionCallExpression, methodDefinition, tokens))
                             {
                                 return Type::Undefined();
                             }
@@ -976,7 +1032,12 @@ namespace Caracal
                         }
                         else
                         {
-                            TODO("Add error diagnostics for unknown method");
+                            m_diagnostics.AddUnknownMethodError(
+                                tokens.source(),
+                                functionCallExpression->nameExpression()->sourceLocation(tokens),
+                                typeDefinition.name(),
+                                name);
+                            return Type::Undefined();
                         }
                     }
                     else if (binaryExpression->rightExpression()->kind() == NodeKind::NameExpression)
@@ -985,7 +1046,11 @@ namespace Caracal
                         const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldNameExpression->name());
                         if (fieldDefinition.type() == Type::Undefined())
                         {
-                            TODO("Add error diagnostics for unknown field");
+                            m_diagnostics.AddUnknownFieldError(
+                                tokens.source(),
+                                fieldNameExpression->sourceLocation(tokens),
+                                typeDefinition.name(),
+                                fieldNameExpression->name());
                             return Type::Undefined();
                         }
 
@@ -1008,12 +1073,12 @@ namespace Caracal
             case BinaryOperatorKind::Multiplication:
             case BinaryOperatorKind::Division:
             {
-                auto leftType = typeCheckExpression(binaryExpression->leftExpression().get());
+                auto leftType = typeCheckExpression(binaryExpression->leftExpression().get(), tokens);
                 if (leftType.isReference())
                 {
                     leftType = leftType.toValue();
                 }
-                auto rightType = typeCheckExpression(binaryExpression->rightExpression().get());
+                auto rightType = typeCheckExpression(binaryExpression->rightExpression().get(), tokens);
                 if (rightType.isReference())
                 {
                     rightType = rightType.toValue();
@@ -1038,12 +1103,12 @@ namespace Caracal
             case BinaryOperatorKind::LogicalAnd:
             case BinaryOperatorKind::LogicalOr:
             {
-                auto leftType = typeCheckExpression(binaryExpression->leftExpression().get());
+                auto leftType = typeCheckExpression(binaryExpression->leftExpression().get(), tokens);
                 if (leftType.isReference())
                 {
                     leftType = leftType.toValue();
                 }
-                auto rightType = typeCheckExpression(binaryExpression->rightExpression().get());
+                auto rightType = typeCheckExpression(binaryExpression->rightExpression().get(), tokens);
                 if (rightType.isReference())
                 {
                     rightType = rightType.toValue();
@@ -1068,7 +1133,7 @@ namespace Caracal
         return Type::Undefined();
     }
 
-    Type TypeChecker::typeCheckNameExpression(NameExpression* expression)
+    Type TypeChecker::typeCheckNameExpression(NameExpression* expression, const TokenBuffer& tokens)
     {
         const auto& name = expression->name();
         auto optionalVariableType = currentScope()->tryGetVariableBinding(name);
@@ -1086,23 +1151,26 @@ namespace Caracal
             return type;
         }
 
-        TODO("Add error diagnostics for unknown name expression");
+        m_diagnostics.AddUnknownNameError(tokens.source(), expression->sourceLocation(tokens), name);
 
         return Type::Undefined();
     }
 
-    Type TypeChecker::typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression)
+    Type TypeChecker::typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression, const TokenBuffer& tokens)
     {
         const auto& name = functionCallExpression->nameExpression()->name();
         auto functionType = m_module.tryGetFunctionTypeByName(name);
         if (functionType == Type::Undefined())
         {
-            TODO("Add error diagnostics for unknown function call");
+            m_diagnostics.AddUnknownFunctionError(
+                tokens.source(),
+                functionCallExpression->nameExpression()->sourceLocation(tokens),
+                name);
             return Type::Undefined();
         }
         const auto& functionDefinition = m_module.getFunctionDefinition(functionType);
 
-        if (!typeCheckCallArguments(functionCallExpression, functionDefinition))
+        if (!typeCheckCallArguments(functionCallExpression, functionDefinition, tokens))
         {
             return Type::Undefined();
         }
@@ -1124,7 +1192,7 @@ namespace Caracal
         return returnType;
     }
 
-    Type TypeChecker::typeCheckMemberAccessExpression(MemberAccessExpression* memberAccessExpression)
+    Type TypeChecker::typeCheckMemberAccessExpression(MemberAccessExpression* memberAccessExpression, const TokenBuffer& tokens)
     {
         if (m_currentType == Type::Undefined())
         {
@@ -1133,7 +1201,7 @@ namespace Caracal
         }
 
         auto& typeDefinition = m_module.getTypeDefinition(m_currentType);
-        auto type = typeCheckExpression(memberAccessExpression->expression().get());
+        auto type = typeCheckExpression(memberAccessExpression->expression().get(), tokens);
         memberAccessExpression->setType(type);
 
         return type;
@@ -1141,7 +1209,8 @@ namespace Caracal
 
     bool TypeChecker::typeCheckCallArguments(
         FunctionCallExpression* functionCallExpression,
-        const FunctionDefinition& functionDefinition)
+        const FunctionDefinition& functionDefinition,
+        const TokenBuffer& tokens)
     {
         const auto& parameterTypes = functionDefinition.parameters();
         auto isVariadic = functionDefinition.isVariadic();
@@ -1160,12 +1229,19 @@ namespace Caracal
         auto argumentsNode = functionCallExpression->argumentsNode().get();
         const auto& arguments = argumentsNode->arguments();
         const auto expectedArgumentCount = parameterCount - parameterOffset;
+        const auto argumentsLocation = GetArgumentsLocation(argumentsNode, tokens);
 
         if (isVariadic)
         {
             if (arguments.size() < expectedArgumentCount)
             {
-                TODO("Add error diagnostics for argument count mismatch in variadic function call");
+                m_diagnostics.AddArgumentCountMismatchError(
+                    tokens.source(),
+                    argumentsLocation,
+                    functionDefinition.name(),
+                    static_cast<i32>(expectedArgumentCount),
+                    static_cast<i32>(arguments.size()),
+                    true);
                 return false;
             }
         }
@@ -1173,44 +1249,70 @@ namespace Caracal
         {
             if (arguments.size() != expectedArgumentCount)
             {
-                TODO("Add error diagnostics for argument count mismatch");
+                m_diagnostics.AddArgumentCountMismatchError(
+                    tokens.source(),
+                    argumentsLocation,
+                    functionDefinition.name(),
+                    static_cast<i32>(expectedArgumentCount),
+                    static_cast<i32>(arguments.size()),
+                    false);
                 return false;
             }
         }
 
+        std::vector<ArgumentTypeMismatchInfo> argumentTypeMismatches{};
         for (size_t i = 0; i < arguments.size(); ++i)
         {
             auto* argument = arguments[i].get();
-            auto argumentType = typeCheckExpression(argument);
+            auto argumentType = typeCheckExpression(argument, tokens);
 
             if (i < expectedArgumentCount)
             {
                 const auto expectedType = parameterTypes[i + parameterOffset].type();
                 if (argumentType != expectedType)
                 {
-                    TODO("Add error diagnostics for argument type mismatch");
-                    return false;
+                    argumentTypeMismatches.push_back(ArgumentTypeMismatchInfo{
+                        argument->sourceLocation(tokens),
+                        static_cast<i32>(i + 1),
+                        FormatTypeName(m_module, expectedType),
+                        FormatTypeName(m_module, argumentType),
+                    });
                 }
             }
             else
             {
                 if (argumentType == Type::Undefined() || argumentType == Type::Void())
                 {
-                    TODO("Add error diagnostics for invalid variadic argument type");
+                    m_diagnostics.AddInvalidVariadicArgumentTypeError(
+                        tokens.source(),
+                        argument->sourceLocation(tokens),
+                        functionDefinition.name(),
+                        static_cast<i32>(i + 1),
+                        FormatTypeName(m_module, argumentType));
                     return false;
                 }
             }
         }
 
+        if (!argumentTypeMismatches.empty())
+        {
+            m_diagnostics.AddArgumentTypeMismatchError(
+                tokens.source(),
+                argumentsLocation,
+                functionDefinition.name(),
+                argumentTypeMismatches);
+            return false;
+        }
+
         return true;
     }
 
-    Type TypeChecker::typeCheckNumberLiteral(NumberLiteral* literal)
+    Type TypeChecker::typeCheckNumberLiteral(NumberLiteral* literal, const TokenBuffer& tokens)
     {
         auto numberType = Type::Undefined();
         if (literal->explicitType().has_value())
         {
-            numberType = typeCheckTypeNameNode(literal->explicitType().value().get());
+            numberType = typeCheckTypeNameNode(literal->explicitType().value().get(), tokens);
         }
         else
         {
@@ -1232,7 +1334,7 @@ namespace Caracal
         return numberType;
     }
 
-    Type TypeChecker::typeCheckTypeNameNode(TypeNameNode* typeNameNode)
+    Type TypeChecker::typeCheckTypeNameNode(TypeNameNode* typeNameNode, const TokenBuffer& tokens)
     {
         const auto& name = typeNameNode->name();
         auto type = m_module.tryGetTypeByName(name);
@@ -1253,17 +1355,17 @@ namespace Caracal
         }
         else
         {
-            TODO("Add error diagnostics for unknown type name");
+            m_diagnostics.AddUnknownTypeError(tokens.source(), tokens.getSourceLocation(typeNameNode->nameToken()), name);
             return Type::Undefined();
         }
     }
 
-    std::vector<Parameter> TypeChecker::typeCheckParametersNode(ParametersNode* parametersNode)
+    std::vector<Parameter> TypeChecker::typeCheckParametersNode(ParametersNode* parametersNode, const TokenBuffer& tokens)
     {
         std::vector<Parameter> parameters{};
         for (const auto& parameterNode : parametersNode->parameters())
         {
-            auto parameterType = typeCheckTypeNameNode(parameterNode->typeName().get());
+            auto parameterType = typeCheckTypeNameNode(parameterNode->typeName().get(), tokens);
             parameters.push_back(Parameter{ parameterNode->name(), parameterType });
 
             // register parameter in current scope
@@ -1282,12 +1384,12 @@ namespace Caracal
         return parameters;
     }
 
-    std::vector<Type> TypeChecker::typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode)
+    std::vector<Type> TypeChecker::typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode, const TokenBuffer& tokens)
     {
         std::vector<Type> types{};
         for (const auto& returnTypeNode : returnTypesNode->returnTypes())
         {
-            auto returnType = typeCheckTypeNameNode(returnTypeNode.get());
+            auto returnType = typeCheckTypeNameNode(returnTypeNode.get(), tokens);
             if (returnType.isReference())
             {
                 TODO("Add error diagnostics for return type cannot be a reference");
@@ -1297,20 +1399,20 @@ namespace Caracal
         return types;
     }
 
-    std::vector<Type> TypeChecker::typeCheckArgumentsNode(ArgumentsNode* argumentsNode)
+    std::vector<Type> TypeChecker::typeCheckArgumentsNode(ArgumentsNode* argumentsNode, const TokenBuffer& tokens)
     {
         std::vector<Type> types{};
         for (const auto& argument : argumentsNode->arguments())
         {
-            auto argumentType = typeCheckExpression(argument.get());
+            auto argumentType = typeCheckExpression(argument.get(), tokens);
             types.push_back(argumentType);
         }
         return types;
     }
 
-    i32 TypeChecker::convertToI32(NumberLiteral* literal)
+    i32 TypeChecker::convertToI32(NumberLiteral* literal, const TokenBuffer& tokens)
     {
-        auto literalType = typeCheckNumberLiteral(literal);
+        auto literalType = typeCheckNumberLiteral(literal, tokens);
         if (literalType != Type::I32())
         {
             TODO("Add error diagnostics for number literal type mismatch");
@@ -1371,11 +1473,22 @@ namespace Caracal
         return false;
     }
 
-    void TypeChecker::typeCheckBlockNode(BlockNode* body)
+    const TokenBuffer& TypeChecker::tokensFor(const Statement* statement) const
+    {
+        const auto it = m_statementTokens.find(statement);
+        if (it == m_statementTokens.end())
+        {
+            TODO("Missing token buffer for statement");
+        }
+
+        return *it->second;
+    }
+
+    void TypeChecker::typeCheckBlockNode(BlockNode* body, const TokenBuffer& tokens)
     {
         for (const auto& statement : body->statements())
         {
-            typeCheckStatement(statement.get());
+            typeCheckStatement(statement.get(), tokens);
         }
     }
 

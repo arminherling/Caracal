@@ -49,6 +49,13 @@ namespace Caracal
     {
     }
 
+    SourceLocation BinaryExpression::sourceLocation(const TokenBuffer& tokens) const
+    {
+        const auto leftLocation = m_leftExpression->sourceLocation(tokens);
+        const auto rightLocation = m_rightExpression->sourceLocation(tokens);
+        return SourceLocation{ leftLocation.startIndex, rightLocation.endIndex };
+    }
+
     std::string stringify(BinaryOperatorKind operation)
     {
         static const std::unordered_map<BinaryOperatorKind, std::string> opToString{

@@ -14,4 +14,9 @@ namespace Caracal
         , m_explicitType{ std::move(explicitType) }
     {
     }
+
+    SourceLocation NumberLiteral::sourceLocation(const TokenBuffer& tokens) const
+    {
+        return tokens.getSourceLocation(m_literalToken);
+    }
 }

@@ -15,6 +15,7 @@ namespace Caracal
 
         [[nodiscard]] const Token& literalToken() const noexcept { return m_literalToken; }
         [[nodiscard]] const std::string& escapedContent() const noexcept { return m_escapedContent; }
+        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const override;
 
     private:
         Token m_literalToken;

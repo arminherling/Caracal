@@ -6,4 +6,9 @@ namespace Caracal {
         , m_underscoreToken{ underscoreToken }
     {
     }
+
+    SourceLocation DiscardLiteral::sourceLocation(const TokenBuffer& tokens) const
+    {
+        return tokens.getSourceLocation(m_underscoreToken);
+    }
 }

@@ -8,4 +8,9 @@ namespace Caracal
         , m_value{ value }
     {
     }
+
+    SourceLocation BoolLiteral::sourceLocation(const TokenBuffer& tokens) const
+    {
+        return tokens.getSourceLocation(m_literalToken);
+    }
 }

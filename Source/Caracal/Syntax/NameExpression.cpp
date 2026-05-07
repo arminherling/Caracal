@@ -8,4 +8,9 @@ namespace Caracal
         , m_name{ name }
     {
     }
+
+    SourceLocation NameExpression::sourceLocation(const TokenBuffer& tokens) const
+    {
+        return tokens.getSourceLocation(m_nameToken);
+    }
 }
