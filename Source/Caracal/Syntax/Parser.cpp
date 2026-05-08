@@ -505,7 +505,7 @@ namespace Caracal
             auto thirdDot = advanceOnMatch(TokenKind::Dot);
             auto fakeTypeName = std::make_unique<TypeNameNode>(std::nullopt, thirdDot, "...");
 
-            return std::make_unique<ParameterNode>(firstDot, "varargs", secondDot, std::move(fakeTypeName));
+            return std::make_unique<ParameterNode>(firstDot, "varargs", secondDot, std::move(fakeTypeName), true);
         }
     }
 

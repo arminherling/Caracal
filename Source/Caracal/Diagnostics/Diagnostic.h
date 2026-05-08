@@ -8,6 +8,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace Caracal
@@ -32,7 +33,7 @@ namespace Caracal
 
         [[nodiscard]] DiagnosticLevel level() const noexcept { return m_level; }
         [[nodiscard]] DiagnosticKind kind() const noexcept { return m_kind; }
-        [[nodiscard]] const std::string& code() const noexcept { return m_code; }
+        [[nodiscard]] std::string_view code() const noexcept;
         [[nodiscard]] const std::string& message() const noexcept { return m_message; }
         [[nodiscard]] const SourceTextSharedPtr& source() const noexcept { return m_source; }
         [[nodiscard]] const SourceLocation& location() const noexcept { return m_location; }
@@ -44,7 +45,6 @@ namespace Caracal
     private:
         DiagnosticLevel m_level = DiagnosticLevel::Unknown;
         DiagnosticKind m_kind = DiagnosticKind::Unknown;
-        std::string m_code;
         std::string m_message;
         SourceTextSharedPtr m_source;
         SourceLocation m_location;

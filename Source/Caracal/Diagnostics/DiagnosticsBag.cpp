@@ -64,25 +64,17 @@ namespace Caracal
         return stringify(kind);
     }
 
-    void DiagnosticsBag::AddError(const SourceTextSharedPtr& source, DiagnosticKind kind, const SourceLocation& location)
-    {
-        auto diagnostic = Diagnostic(DiagnosticLevel::Error, kind, source, location);
-        diagnostic.addPrimaryLabel(location, diagnostic.message());
-
-        diagnostics.push_back(std::move(diagnostic));
-    }
-
     void DiagnosticsBag::AddIllegalCharacterError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0001_IllegalCharacter,
+            DiagnosticKind::L0001_IllegalCharacter,
             source,
             location,
             "Remove the unsupported character.");
-        diagnostic.addPrimaryLabel(location, diagnostic.message());
+        diagnostic.addPrimaryLabel(location, "This character is not part of the Caracal syntax.");
 
         diagnostics.push_back(std::move(diagnostic));
     }
@@ -93,11 +85,11 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0002_UnterminatedString,
+            DiagnosticKind::L0002_UnterminatedString,
             source,
             location,
             "Add a closing quote to terminate the string.");
-        diagnostic.addPrimaryLabel(location, diagnostic.message());
+        diagnostic.addPrimaryLabel(location, "String literal is missing a closing quote.");
 
         diagnostics.push_back(std::move(diagnostic));
     }
@@ -124,7 +116,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0003_UnexpectedToken,
+            DiagnosticKind::P0001_UnexpectedToken,
             source,
             location,
             fix);
@@ -158,7 +150,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0003_UnexpectedToken,
+            DiagnosticKind::P0001_UnexpectedToken,
             source,
             location,
             fix);
@@ -168,7 +160,7 @@ namespace Caracal
             + ToTokenSource(expectedKind1)
             + " or "
             + ToTokenSource(expectedKind2)
-            + "but got "
+            + " but got "
             + ToTokenSource(actualKind));
 
         diagnostics.push_back(std::move(diagnostic));
@@ -178,10 +170,10 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0004_UnexpectedTrailingTokens,
+            DiagnosticKind::P0002_UnexpectedTrailingTokens,
             source,
             location);
-        diagnostic.addPrimaryLabel(location, diagnostic.message());
+        diagnostic.addPrimaryLabel(location, "Input should end before these trailing tokens.");
 
         diagnostics.push_back(std::move(diagnostic));
     }
@@ -204,104 +196,11 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0005_InvalidEnumField,
+            DiagnosticKind::P0003_InvalidEnumField,
             source,
             location,
             fix);
         diagnostic.addPrimaryLabel(location, "Expected an enum field name, but got a " + ToTokenSource(actualKind));
-
-        diagnostics.push_back(std::move(diagnostic));
-    }
-
-    void DiagnosticsBag::AddUnexpectedAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
-    {
-        auto diagnostic = Diagnostic(
-            DiagnosticLevel::Error,
-            DiagnosticKind::_0006_UnexpectedAnnotation,
-            source,
-            location,
-            "Remove the extra annotation or attach it to the next supported declaration.");
-        diagnostic.addPrimaryLabel(location, diagnostic.message());
-
-        diagnostics.push_back(std::move(diagnostic));
-    }
-
-    void DiagnosticsBag::AddUnknownAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, TokenKind targetKind)
-    {
-        auto fix = std::string{};
-        switch (targetKind)
-        {
-            case TokenKind::DefKeyword:
-                fix = "Rename '#" + annotationName + "' to #extern, or remove the annotation from the function.";
-                break;
-            case TokenKind::EnumKeyword:
-                fix = "Rename '#" + annotationName + "' to #flag or #step, or remove the annotation from the enum.";
-                break;
-            default:
-                fix = "Rename '#" + annotationName + "' to a supported annotation, or remove it.";
-                break;
-        }
-
-        auto diagnostic = Diagnostic(
-            DiagnosticLevel::Error,
-            DiagnosticKind::_0007_UnknownAnnotation,
-            source,
-            location,
-            fix);
-        diagnostic.addPrimaryLabel(location, "Unknown annotation '#" + annotationName + "'");
-
-        diagnostics.push_back(std::move(diagnostic));
-    }
-
-    void DiagnosticsBag::AddAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName)
-    {
-        auto fix = std::string{};
-        if (annotationName == "step")
-        {
-            fix = "Add one argument to '#step', for example #step(10).";
-        }
-        else
-        {
-            fix = "Provide the required annotation arguments.";
-        }
-
-        auto diagnostic = Diagnostic(
-            DiagnosticLevel::Error,
-            DiagnosticKind::_0008_MissingAnnotationArguments,
-            source,
-            location,
-            fix);
-        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' requires one argument.");
-
-        diagnostics.push_back(std::move(diagnostic));
-    }
-
-    void DiagnosticsBag::AddAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, i32 actualCount)
-    {
-        auto fix = std::string{};
-        if (annotationName == "step")
-        {
-            if (actualCount == 0)
-            {
-                fix = "Add an argument to '#step', for example #step(10).";
-            }
-            else
-            {
-                fix = "Change '#step' to take exactly one argument, for example #step(10).";
-            }
-        }
-        else
-        {
-            fix = "Adjust the annotation arguments to the expected count.";
-        }
-
-        auto diagnostic = Diagnostic(
-            DiagnosticLevel::Error,
-            DiagnosticKind::_0009_WrongNumberOfAnnotationArguments,
-            source,
-            location,
-            fix);
-        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' expects 1 argument, but got " + std::to_string(actualCount) + ".");
 
         diagnostics.push_back(std::move(diagnostic));
     }
@@ -320,7 +219,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0010_UnexpectedTopLevelToken,
+            DiagnosticKind::P0006_UnexpectedTopLevelToken,
             source,
             location,
             fix);
@@ -333,10 +232,10 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0011_InvalidStatement,
+            DiagnosticKind::P0007_InvalidStatement,
             source,
             location,
-            "Remove " + ToTokenSource(actualKind) + " or rewrite the statement so it starts with a valid statement token.");
+            "Remove this token or rewrite the statement so it starts with a valid statement token.");
         diagnostic.addPrimaryLabel(location, "Unexpected token " + ToTokenSource(actualKind) + " in statement");
 
         diagnostics.push_back(std::move(diagnostic));
@@ -346,11 +245,104 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0012_InvalidExpression,
+            DiagnosticKind::P0008_InvalidExpression,
             source,
             location,
-            "Remove " + ToTokenSource(actualKind) + " or replace it with a valid expression.");
+            "Remove this token or replace it with a valid expression.");
         diagnostic.addPrimaryLabel(location, "Unexpected token " + ToTokenSource(actualKind) + " in expression");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddUnexpectedAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::P0004_UnexpectedAnnotation,
+            source,
+            location,
+            "Remove the extra annotation or attach it to the next supported declaration.");
+        diagnostic.addPrimaryLabel(location, "This annotation is not attached to a supported declaration.");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddUnknownAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, TokenKind targetKind)
+    {
+        auto fix = std::string{};
+        switch (targetKind)
+        {
+            case TokenKind::DefKeyword:
+                fix = "Rename this annotation to #extern, or remove it from the function.";
+                break;
+            case TokenKind::EnumKeyword:
+                fix = "Rename this annotation to #flag or #step, or remove it from the enum.";
+                break;
+            default:
+                fix = "Rename this annotation to a supported one, or remove it.";
+                break;
+        }
+
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::P0005_UnknownAnnotation,
+            source,
+            location,
+            fix);
+        diagnostic.addPrimaryLabel(location, "Unknown annotation '#" + annotationName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName)
+    {
+        auto fix = std::string{};
+        if (annotationName == "step")
+        {
+            fix = "Add the required annotation argument, for example (10).";
+        }
+        else
+        {
+            fix = "Add the required annotation argument.";
+        }
+
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0001_MissingAnnotationArguments,
+            source,
+            location,
+            fix);
+        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' requires one argument.");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, i32 actualCount)
+    {
+        auto fix = std::string{};
+        if (annotationName == "step")
+        {
+            if (actualCount == 0)
+            {
+                fix = "Add the missing annotation argument, for example (10).";
+            }
+            else
+            {
+                fix = "Reduce the annotation to one argument, for example (10).";
+            }
+        }
+        else
+        {
+            fix = "Adjust the annotation argument count.";
+        }
+
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0002_WrongNumberOfAnnotationArguments,
+            source,
+            location,
+            fix);
+        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' expects 1 argument, but got " + std::to_string(actualCount) + ".");
 
         diagnostics.push_back(std::move(diagnostic));
     }
@@ -359,10 +351,10 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0013_UnknownName,
+            DiagnosticKind::T0003_UnknownName,
             source,
             location,
-            "Declare '" + name + "' before using it, or rename it to an existing symbol.");
+            "Declare this name before using it, or rename it to an existing symbol.");
         diagnostic.addPrimaryLabel(location, "Unknown name '" + name + "'");
 
         diagnostics.push_back(std::move(diagnostic));
@@ -372,10 +364,10 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0014_UnknownFunction,
+            DiagnosticKind::T0004_UnknownFunction,
             source,
             location,
-            "Declare '" + functionName + "' before calling it, or rename the call to an existing function.");
+            "Declare this function before calling it, or rename the call to an existing function.");
         diagnostic.addPrimaryLabel(location, "Unknown function '" + functionName + "'");
 
         diagnostics.push_back(std::move(diagnostic));
@@ -385,10 +377,10 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0015_UnknownType,
+            DiagnosticKind::T0005_UnknownType,
             source,
             location,
-            "Declare type '" + typeName + "' before using it, or rename it to an existing type.");
+            "Declare this type before using it, or rename it to an existing type.");
         diagnostic.addPrimaryLabel(location, "Unknown type '" + typeName + "'");
 
         diagnostics.push_back(std::move(diagnostic));
@@ -402,10 +394,10 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0016_UnknownMethod,
+            DiagnosticKind::T0006_UnknownMethod,
             source,
             location,
-            "Add method '" + methodName + "' to type '" + receiverTypeName + "', or rename the call to an existing method.");
+            "Add this method to the type, or rename the call to an existing method.");
         diagnostic.addPrimaryLabel(location, "Type '" + receiverTypeName + "' has no method '" + methodName + "'");
 
         diagnostics.push_back(std::move(diagnostic));
@@ -419,10 +411,10 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0017_UnknownField,
+            DiagnosticKind::T0007_UnknownField,
             source,
             location,
-            "Add field '" + fieldName + "' to type '" + receiverTypeName + "', or rename the access to an existing field.");
+            "Add this field to the type, or rename the access to an existing field.");
         diagnostic.addPrimaryLabel(location, "Type '" + receiverTypeName + "' has no field '" + fieldName + "'");
 
         diagnostics.push_back(std::move(diagnostic));
@@ -439,16 +431,16 @@ namespace Caracal
         auto fix = std::string{};
         if (isVariadic)
         {
-            fix = "Pass at least " + std::to_string(expectedCount) + " argument(s) to '" + functionName + "'.";
+            fix = "Add the missing arguments to this call.";
         }
         else
         {
-            fix = "Pass exactly " + std::to_string(expectedCount) + " argument(s) to '" + functionName + "'.";
+            fix = "Adjust this call to match the required argument count.";
         }
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0018_ArgumentCountMismatch,
+            DiagnosticKind::T0008_ArgumentCountMismatch,
             source,
             location,
             fix);
@@ -474,16 +466,16 @@ namespace Caracal
         auto fix = std::string{};
         if (mismatches.size() == 1)
         {
-            fix = "Change the mismatched argument in '" + functionName + "' to the expected parameter type.";
+            fix = "Change the mismatched argument to match the parameter type.";
         }
         else
         {
-            fix = "Change the mismatched arguments in '" + functionName + "' to the expected parameter types.";
+            fix = "Change the mismatched arguments to match the parameter types.";
         }
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0019_ArgumentTypeMismatch,
+            DiagnosticKind::T0009_ArgumentTypeMismatch,
             source,
             location,
             fix);
@@ -507,11 +499,207 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::_0020_InvalidVariadicArgumentType,
+            DiagnosticKind::T0010_InvalidVariadicArgumentType,
             source,
             location,
-            "Pass a non-void value as variadic argument " + std::to_string(argumentIndex) + " in '" + functionName + "'.");
+            "Pass a non-void value as this variadic argument.");
         diagnostic.addPrimaryLabel(location, "Variadic argument " + std::to_string(argumentIndex) + " of '" + functionName + "' cannot have type '" + actualTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddNonBoolIfConditionError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& actualTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0011_NonBoolIfCondition,
+            source,
+            location,
+            "Change the if condition to a bool expression.");
+        diagnostic.addPrimaryLabel(location, "If condition must have type 'bool', but got '" + actualTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddNonBoolWhileConditionError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& actualTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0012_NonBoolWhileCondition,
+            source,
+            location,
+            "Change the while condition to a bool expression.");
+        diagnostic.addPrimaryLabel(location, "While condition must have type 'bool', but got '" + actualTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddNonExternVariadicFunctionError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& functionName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0013_NonExternVariadicFunction,
+            source,
+            location,
+            "Add #extern to this function, or remove the variadic parameter.");
+        diagnostic.addPrimaryLabel(location, "Function '" + functionName + "' uses a variadic parameter but is not marked #extern");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddReturnTypeMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& expectedTypeName,
+        const std::string& actualTypeName)
+    {
+        auto fix = std::string{};
+        if (expectedTypeName == "void")
+        {
+            fix = "Remove the returned value from this return statement.";
+        }
+        else
+        {
+            fix = "Return a value of type '" + expectedTypeName + "' or change the function's return type.";
+        }
+
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0014_ReturnTypeMismatch,
+            source,
+            location,
+            fix);
+        diagnostic.addPrimaryLabel(location, "Cannot return '" + actualTypeName + "' from a function with return type '" + expectedTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddAssignmentTypeMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& expectedTypeName,
+        const std::string& actualTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0015_AssignmentTypeMismatch,
+            source,
+            location,
+            "Assign a value of type '" + expectedTypeName + "' or change the assignment target type.");
+        diagnostic.addPrimaryLabel(location, "Cannot assign '" + actualTypeName + "' to a value of type '" + expectedTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddExplicitConstantTypeMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& expectedTypeName,
+        const std::string& actualTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0016_ExplicitConstantTypeMismatch,
+            source,
+            location,
+            "Initialize this constant with a value of type '" + expectedTypeName + "' or change its explicit type.");
+        diagnostic.addPrimaryLabel(location, "Constant is declared as '" + expectedTypeName + "', but its initializer has type '" + actualTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddExplicitVariableTypeMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& expectedTypeName,
+        const std::string& actualTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0017_ExplicitVariableTypeMismatch,
+            source,
+            location,
+            "Initialize this variable with a value of type '" + expectedTypeName + "' or change its explicit type.");
+        diagnostic.addPrimaryLabel(location, "Variable is declared as '" + expectedTypeName + "', but its initializer has type '" + actualTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddTypeFieldInitializerMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& expectedTypeName,
+        const std::string& actualTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0018_TypeFieldInitializerMismatch,
+            source,
+            location,
+            "Initialize this field with a value of type '" + expectedTypeName + "' or change the field type.");
+        diagnostic.addPrimaryLabel(location, "Field is declared as '" + expectedTypeName + "', but its initializer has type '" + actualTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddArithmeticOperandTypeMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& operatorName,
+        const std::string& leftTypeName,
+        const std::string& rightTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0019_ArithmeticOperandTypeMismatch,
+            source,
+            location,
+            "Use matching operand types for this arithmetic operation.");
+        diagnostic.addPrimaryLabel(location, "Operator '" + operatorName + "' cannot be applied to '" + leftTypeName + "' and '" + rightTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddComparisonOperandTypeMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& operatorName,
+        const std::string& leftTypeName,
+        const std::string& rightTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0020_ComparisonOperandTypeMismatch,
+            source,
+            location,
+            "Use comparable operand types for this comparison.");
+        diagnostic.addPrimaryLabel(location, "Operator '" + operatorName + "' cannot compare '" + leftTypeName + "' and '" + rightTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddEnumFieldValueTypeMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& expectedTypeName,
+        const std::string& actualTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0021_EnumFieldValueTypeMismatch,
+            source,
+            location,
+            "Use a value of the enum base type for this field.");
+        diagnostic.addPrimaryLabel(location, "Enum base type is '" + expectedTypeName + "', but this field's initializer has type '" + actualTypeName + "'");
 
         diagnostics.push_back(std::move(diagnostic));
     }

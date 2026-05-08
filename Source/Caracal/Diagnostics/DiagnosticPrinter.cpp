@@ -91,7 +91,7 @@ namespace Caracal
         const SourceTextSharedPtr& diagnosticSource)
     {
         return CaraReport::Report(diagnostic.message())
-            .withTitle(diagnostic.code())
+            .withTitle(std::string(diagnostic.code()))
             .withLevel(ToCaraReportLevel(diagnostic.level()))
             .withSource(CreateSource(*diagnosticSource));
     }

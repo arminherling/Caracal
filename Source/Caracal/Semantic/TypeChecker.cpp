@@ -37,6 +37,39 @@ namespace Caracal
         return name;
     }
 
+    static std::string FormatBinaryOperator(BinaryOperatorKind binaryOperator)
+    {
+        switch (binaryOperator)
+        {
+            case BinaryOperatorKind::Addition:
+                return "+";
+            case BinaryOperatorKind::Subtraction:
+                return "-";
+            case BinaryOperatorKind::Multiplication:
+                return "*";
+            case BinaryOperatorKind::Division:
+                return "/";
+            case BinaryOperatorKind::Equal:
+                return "==";
+            case BinaryOperatorKind::NotEqual:
+                return "!=";
+            case BinaryOperatorKind::LessThan:
+                return "<";
+            case BinaryOperatorKind::LessOrEqual:
+                return "<=";
+            case BinaryOperatorKind::GreaterThan:
+                return ">";
+            case BinaryOperatorKind::GreaterOrEqual:
+                return ">=";
+            case BinaryOperatorKind::LogicalAnd:
+                return "and";
+            case BinaryOperatorKind::LogicalOr:
+                return "or";
+            default:
+                return stringify(binaryOperator);
+        }
+    }
+
     bool typeCheck(
         const std::vector<ParseTreeUPtr>& parseTrees,
         const TypeCheckerOptions& options,
@@ -297,10 +330,15 @@ namespace Caracal
         }
 
         auto& functionDefinition = m_module.getFunctionDefinition(functionType);
-        auto isVariadic = !parameters.empty() && parameters.back().type() == Type::CVariadic();
+        const auto& parameterNodes = statement->parametersNode()->parameters();
+        const auto isVariadic = !parameterNodes.empty() && parameterNodes.back()->isVariadic();
         if (isVariadic && !statement->isExtern())
         {
-            TODO("Add diagnostics for non-extern variadic function");
+            auto* variadicParameter = parameterNodes.back().get();
+            m_diagnostics.AddNonExternVariadicFunctionError(
+                tokens.source(),
+                variadicParameter->sourceLocation(tokens),
+                functionName);
         }
         functionDefinition.setParameters(parameters);
         functionDefinition.setReturnTypes(returns);
@@ -546,7 +584,11 @@ namespace Caracal
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
             if (rightType != Type::Undefined() && explicitType != Type::Undefined() && rightType != explicitType)
             {
-                TODO("Type mismatch error diagnostics");
+                m_diagnostics.AddExplicitConstantTypeMismatchError(
+                    tokens.source(),
+                    statement->rightExpression()->sourceLocation(tokens),
+                    FormatTypeName(m_module, explicitType),
+                    FormatTypeName(m_module, rightType));
             }
         }
 
@@ -579,7 +621,11 @@ namespace Caracal
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
             if (rightType != Type::Undefined() && explicitType != Type::Undefined() && rightType != explicitType)
             {
-                TODO("Type mismatch error diagnostics");
+                m_diagnostics.AddExplicitVariableTypeMismatchError(
+                    tokens.source(),
+                    statement->rightExpression()->sourceLocation(tokens),
+                    FormatTypeName(m_module, explicitType),
+                    FormatTypeName(m_module, rightType));
             }
         }
 
@@ -610,7 +656,11 @@ namespace Caracal
 
         if (leftType != rightType)
         {
-            TODO("Add error diagnostics for type mismatch in assignment");
+            m_diagnostics.AddAssignmentTypeMismatchError(
+                tokens.source(),
+                statement->rightExpression()->sourceLocation(tokens),
+                FormatTypeName(m_module, leftType),
+                FormatTypeName(m_module, rightType));
         }
     }
 
@@ -721,7 +771,14 @@ namespace Caracal
                 }
                 else if (fieldValueType != baseType)
                 {
-                    TODO("Add error diagnostics for enum field value type mismatch");
+                    if (fieldValueType != Type::Undefined())
+                    {
+                        m_diagnostics.AddEnumFieldValueTypeMismatchError(
+                            tokens.source(),
+                            expression->sourceLocation(tokens),
+                            FormatTypeName(m_module, baseType),
+                            FormatTypeName(m_module, fieldValueType));
+                    }
                 }
 
                 if (expression->kind() == NodeKind::NumberLiteral && expression->type() == Type::I32())
@@ -776,7 +833,11 @@ namespace Caracal
             }
             else if (fieldType != expressionType)
             {
-                TODO("Type mismatch error diagnostics");
+                m_diagnostics.AddTypeFieldInitializerMismatchError(
+                    tokens.source(),
+                    fieldExpression->sourceLocation(tokens),
+                    FormatTypeName(m_module, fieldType),
+                    FormatTypeName(m_module, expressionType));
             }
         }
 
@@ -829,9 +890,12 @@ namespace Caracal
     {
         auto conditionType = typeCheckExpression(statement->condition().get(), tokens);
         conditionType = coerceConditionType(conditionType, statement->condition().get());
-        if (conditionType != Type::Bool())
+        if (conditionType != Type::Undefined() && conditionType != Type::Bool())
         {
-            TODO("Add an error because only bool is allowed");
+            m_diagnostics.AddNonBoolIfConditionError(
+                tokens.source(),
+                statement->condition()->sourceLocation(tokens),
+                FormatTypeName(m_module, conditionType));
         }
 
         typeCheckStatement(statement->trueStatement().get(), tokens);
@@ -846,9 +910,12 @@ namespace Caracal
     {
         auto conditionType = typeCheckExpression(statement->condition().get(), tokens);
         conditionType = coerceConditionType(conditionType, statement->condition().get());
-        if (conditionType != Type::Bool())
+        if (conditionType != Type::Undefined() && conditionType != Type::Bool())
         {
-            TODO("Add an error because only bool is allowed");
+            m_diagnostics.AddNonBoolWhileConditionError(
+                tokens.source(),
+                statement->condition()->sourceLocation(tokens),
+                FormatTypeName(m_module, conditionType));
         }
 
         typeCheckStatement(statement->trueStatement().get(), tokens);
@@ -856,6 +923,8 @@ namespace Caracal
 
     void TypeChecker::typeCheckReturnStatement(ReturnStatement* statement, const TokenBuffer& tokens)
     {
+        const auto declaredReturnType = m_currentReturnType;
+
         if (statement->expression().has_value())
         {
             auto type = typeCheckExpression(statement->expression().value().get(), tokens);
@@ -871,15 +940,29 @@ namespace Caracal
                 return;
             }
 
-            if (m_currentReturnType != Type::Void() && m_currentReturnType != type)
+            if (declaredReturnType != type)
             {
-                TODO("Add error diagnostics for return type mismatch");
+                m_diagnostics.AddReturnTypeMismatchError(
+                    tokens.source(),
+                    statement->expression().value()->sourceLocation(tokens),
+                    FormatTypeName(m_module, declaredReturnType),
+                    FormatTypeName(m_module, type));
             }
-            m_currentReturnType = type;
         }
         else
         {
             statement->setType(Type::Void());
+
+            if (declaredReturnType != Type::Void())
+            {
+                const auto returnKeywordLocation = tokens.getSourceLocation(statement->keywordToken());
+                const auto semicolonLocation = tokens.getSourceLocation(statement->semicolonToken());
+                m_diagnostics.AddReturnTypeMismatchError(
+                    tokens.source(),
+                    SourceLocation{ returnKeywordLocation.startIndex, semicolonLocation.endIndex },
+                    FormatTypeName(m_module, declaredReturnType),
+                    FormatTypeName(m_module, Type::Void()));
+            }
         }
     }
 
@@ -1034,7 +1117,7 @@ namespace Caracal
                         {
                             m_diagnostics.AddUnknownMethodError(
                                 tokens.source(),
-                                functionCallExpression->nameExpression()->sourceLocation(tokens),
+                                functionCallExpression->sourceLocation(tokens),
                                 typeDefinition.name(),
                                 name);
                             return Type::Undefined();
@@ -1088,7 +1171,18 @@ namespace Caracal
                 // for now we'll just make sure left and right have the same type and use that one
                 if (leftType != rightType)
                 {
-                    TODO("Type mismatch error diagnostics");
+                    if (leftType != Type::Undefined() && rightType != Type::Undefined())
+                    {
+                        m_diagnostics.AddArithmeticOperandTypeMismatchError(
+                            tokens.source(),
+                            tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
+                            FormatBinaryOperator(binaryExpression->binaryOperator()),
+                            FormatTypeName(m_module, leftType),
+                            FormatTypeName(m_module, rightType));
+                    }
+
+                    binaryExpression->setType(Type::Undefined());
+                    return Type::Undefined();
                 }
 
                 binaryExpression->setType(leftType);
@@ -1116,7 +1210,18 @@ namespace Caracal
 
                 if (!areComparableTypes(leftType, rightType))
                 {
-                    TODO("Type mismatch error diagnostics");
+                    if (leftType != Type::Undefined() && rightType != Type::Undefined())
+                    {
+                        m_diagnostics.AddComparisonOperandTypeMismatchError(
+                            tokens.source(),
+                            tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
+                            FormatBinaryOperator(binaryExpression->binaryOperator()),
+                            FormatTypeName(m_module, leftType),
+                            FormatTypeName(m_module, rightType));
+                    }
+
+                    binaryExpression->setType(Type::Undefined());
+                    return Type::Undefined();
                 }
 
                 auto resultType = Type::Bool();
@@ -1164,7 +1269,7 @@ namespace Caracal
         {
             m_diagnostics.AddUnknownFunctionError(
                 tokens.source(),
-                functionCallExpression->nameExpression()->sourceLocation(tokens),
+                functionCallExpression->sourceLocation(tokens),
                 name);
             return Type::Undefined();
         }
