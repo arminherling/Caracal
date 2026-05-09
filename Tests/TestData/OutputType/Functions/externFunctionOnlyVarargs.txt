@@ -2,7 +2,7 @@ FunctionDefinitionStatement: {
     Type: (C Variadic) -> i32
     Name: printf
     Annotation: {
-        Name: Extern
+        Name: extern
         ArgumentsNode(0): {
         }
     }

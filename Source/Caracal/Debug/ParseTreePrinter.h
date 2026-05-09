@@ -33,9 +33,6 @@
 #include <Caracal/Syntax/MemberAccessExpression.h>
 #include <Caracal/Text/StringBuilder.h>
 #include <Caracal/Semantic/Module.h>
-#include <Caracal/Semantic/ExternAnnotation.h>
-#include <Caracal/Semantic/StepAnnotation.h>
-#include <Caracal/Semantic/FlagAnnotation.h>
 
 namespace Caracal 
 {
@@ -62,7 +59,6 @@ namespace Caracal
         void prettyPrintFunctionDefinitionStatement(FunctionDefinitionStatement* statement);
         void prettyPrintEnumDefinitionStatement(EnumDefinitionStatement* statement);
         void prettyPrintEnumFieldDeclaration(EnumFieldDeclaration* statement);
-    //    void PrettyPrintFieldDefinitionStatement(FieldDefinitionStatement* statement);
         void prettyPrintMethodDefinitionStatement(MethodDefinitionStatement* statement);
         void prettyPrintIfStatement(IfStatement* statement);
         void prettyPrintWhileStatement(WhileStatement* statement);
@@ -86,12 +82,7 @@ namespace Caracal
         void prettyPrintBoolLiteral(BoolLiteral* node);
         void prettyPrintNumberLiteral(NumberLiteral* number);
         void prettyPrintStringLiteral(StringLiteral* string);
-    //    void PrettyPrintMemberAccessExpression(MemberAccessExpression* memberAccess);
-    //    void PrettyPrintError(Error* error);
         void prettyPrintAnnotation(AnnotationNode* annotation);
-        void prettyPrintExternAnnotation(ExternAnnotation* annotation);
-        void prettyPrintStepAnnotation(StepAnnotation* annotation);
-        void prettyPrintFlagAnnotation(FlagAnnotation* annotation);
 
         void writeIndentedTypeName(Type type, std::string_view = "Type: ");
 

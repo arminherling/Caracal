@@ -2,7 +2,7 @@ FunctionDefinitionStatement: {
     Type: undefined
     Name: puts
     Annotation: {
-        Name: Extern
+        Name: extern
         ArgumentsNode(0): {
         }
     }
@@ -28,7 +28,7 @@ FunctionDefinitionStatement: {
     Type: undefined
     Name: clock
     Annotation: {
-        Name: Extern
+        Name: extern
         ArgumentsNode(0): {
         }
     }

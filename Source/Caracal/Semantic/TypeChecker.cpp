@@ -2,6 +2,34 @@
 
 namespace Caracal
 {
+    struct AnnotationDefinition
+    {
+        AnnotationKind kind;
+        std::string_view name;
+        TokenKind targetKind;
+        i32 requiredArgumentCount;
+        Type parameterType;
+    };
+
+    static const AnnotationDefinition* GetAnnotationDefinition(AnnotationKind kind)
+    {
+        static const AnnotationDefinition Definitions[] = {
+            { AnnotationKind::Extern, "extern", TokenKind::DefKeyword, 0, Type::Undefined() },
+            { AnnotationKind::Flag, "flag", TokenKind::EnumKeyword, 0, Type::Undefined() },
+            { AnnotationKind::Step, "step", TokenKind::EnumKeyword, 1, Type::I32() },
+        };
+
+        for (const auto& definition : Definitions)
+        {
+            if (definition.kind == kind)
+            {
+                return &definition;
+            }
+        }
+
+        return nullptr;
+    }
+
     static SourceLocation GetArgumentsLocation(ArgumentsNode* argumentsNode, const TokenBuffer& tokens)
     {
         if (argumentsNode->arguments().empty())
@@ -14,6 +42,23 @@ namespace Caracal
         const auto firstArgumentLocation = argumentsNode->arguments().front()->sourceLocation(tokens);
         const auto lastArgumentLocation = argumentsNode->arguments().back()->sourceLocation(tokens);
         return SourceLocation{ firstArgumentLocation.startIndex, lastArgumentLocation.endIndex };
+    }
+
+    static SourceLocation GetAnnotationLocation(const AnnotationNode* annotation, const TokenBuffer& tokens)
+    {
+        const auto hashLocation = tokens.getSourceLocation(annotation->hashToken());
+        const auto nameLocation = tokens.getSourceLocation(annotation->nameToken());
+        return SourceLocation{ hashLocation.startIndex, nameLocation.endIndex };
+    }
+
+    static SourceLocation GetAnnotationArgumentsLocation(const AnnotationNode* annotation, const TokenBuffer& tokens)
+    {
+        if (!annotation->argumentsNode().has_value())
+        {
+            return GetAnnotationLocation(annotation, tokens);
+        }
+
+        return GetArgumentsLocation(annotation->argumentsNode().value().get(), tokens);
     }
 
     static std::string FormatTypeName(Module& module, Type type)
@@ -130,6 +175,21 @@ namespace Caracal
                         auto* constantDeclaration = static_cast<ConstantDeclaration*>(statement.get());
                         m_statementTokens.emplace(constantDeclaration, &parseTree->tokens());
                         m_globalConstantDeclarations.push_back(constantDeclaration);
+
+                        break;
+                    }
+                    case NodeKind::VariableDeclaration:
+                    {
+                        auto* variableDeclaration = static_cast<VariableDeclaration*>(statement.get());
+                        if (!variableDeclaration->annotations().empty())
+                        {
+                            for (const auto& annotation : variableDeclaration->annotations())
+                            {
+                                m_diagnostics.AddUnexpectedAnnotationTargetError(
+                                    parseTree->tokens().source(),
+                                    GetAnnotationLocation(annotation.get(), parseTree->tokens()));
+                            }
+                        }
 
                         break;
                     }
@@ -331,8 +391,9 @@ namespace Caracal
 
         auto& functionDefinition = m_module.getFunctionDefinition(functionType);
         const auto& parameterNodes = statement->parametersNode()->parameters();
+        const auto isExtern = validateFunctionAnnotation(statement, tokens);
         const auto isVariadic = !parameterNodes.empty() && parameterNodes.back()->isVariadic();
-        if (isVariadic && !statement->isExtern())
+        if (isVariadic && !isExtern)
         {
             auto* variadicParameter = parameterNodes.back().get();
             m_diagnostics.AddNonExternVariadicFunctionError(
@@ -347,11 +408,13 @@ namespace Caracal
 
     void TypeChecker::typeCheckTypeSignature(TypeDefinitionStatement* statement, const TokenBuffer& tokens)
     {
-        auto typeType = m_module.tryGetTypeByName(statement->name());
+        auto typeType = statement->type();
         if (typeType == Type::Undefined())
         {
             TODO("This shouldn't happen");
         }
+
+        validateTypeAnnotation(statement, tokens);
 
         auto& typeDefinition = m_module.getTypeDefinition(typeType);
         typeCheckConstructorSignature(statement, typeDefinition, typeType, tokens);
@@ -553,6 +616,16 @@ namespace Caracal
 
     void TypeChecker::typeCheckConstantDeclaration(ConstantDeclaration* statement, const TokenBuffer& tokens)
     {
+        if (statement->isGlobalConstant())
+        {
+            for (const auto& annotation : statement->annotations())
+            {
+                m_diagnostics.AddUnexpectedAnnotationTargetError(
+                    tokens.source(),
+                    GetAnnotationLocation(annotation.get(), tokens));
+            }
+        }
+
         auto rightExpression = statement->rightExpression().get();
         auto rightType = typeCheckExpression(rightExpression, tokens);
 
@@ -711,25 +784,16 @@ namespace Caracal
         }
 
         auto& enumDefinition = m_module.getEnumDefinition(enumType);
-        const auto isFlag = statement->isFlag();
+        auto isFlag = false;
+        auto stepValue = std::optional<i32>{};
+        validateEnumAnnotation(statement, tokens, isFlag, stepValue);
         auto currentFieldValue = isFlag ? 1 : 0;
-        auto step = 1;
+        auto step = stepValue.value_or(1);
 
         if (statement->baseType().has_value())
         {
             baseType = typeCheckTypeNameNode(statement->baseType().value().get(), tokens);
             enumDefinition.setBaseType(baseType);
-        }
-
-        if (statement->hasStep())
-        {
-            auto stepAnnotation = statement->annotation().value().get();
-            auto arguments = stepAnnotation->argumentsNode().value().get();
-            auto stepParameter = arguments->arguments().at(0).get();
-            if (stepParameter->kind() == NodeKind::NumberLiteral)
-            {
-                step = convertToI32(static_cast<NumberLiteral*>(stepParameter), tokens);
-            }
         }
 
         const auto& fieldNodes = statement->fieldNodes();
@@ -804,6 +868,171 @@ namespace Caracal
         if (enumDefinition.baseType() == Type::Undefined())
         {
             enumDefinition.setBaseType(defaultBaseType);
+        }
+    }
+
+    bool TypeChecker::validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue)
+    {
+        const auto annotationLocation = GetAnnotationLocation(annotation, tokens);
+        const auto* definition = GetAnnotationDefinition(annotation->kind());
+        if (definition == nullptr)
+        {
+            m_diagnostics.AddUnknownAnnotationError(tokens.source(), annotationLocation, annotation->name(), targetKind);
+            return false;
+        }
+
+        if (definition->targetKind != targetKind)
+        {
+            m_diagnostics.AddUnexpectedAnnotationTargetError(tokens.source(), annotationLocation);
+            return false;
+        }
+
+        i32 actualCount = 0;
+        if (annotation->argumentsNode().has_value())
+        {
+            actualCount = static_cast<i32>(annotation->argumentsNode().value()->arguments().size());
+        }
+
+        if (definition->requiredArgumentCount > 0 && !annotation->argumentsNode().has_value())
+        {
+            m_diagnostics.AddAnnotationMissingArgumentsError(tokens.source(), annotationLocation, annotation->kind(), annotation->name());
+            return false;
+        }
+
+        if (actualCount != definition->requiredArgumentCount)
+        {
+            m_diagnostics.AddAnnotationWrongNumberOfArgumentsError(
+                tokens.source(),
+                GetAnnotationArgumentsLocation(annotation, tokens),
+                annotation->kind(),
+                annotation->name(),
+                definition->requiredArgumentCount,
+                actualCount);
+            return false;
+        }
+
+        if (definition->parameterType != Type::Undefined())
+        {
+            auto* argument = annotation->argumentsNode().value()->arguments().at(0).get();
+            auto argumentType = typeCheckExpression(argument, tokens);
+            if (argumentType == Type::Undefined())
+            {
+                return false;
+            }
+
+            if (argument->kind() != NodeKind::NumberLiteral)
+            {
+                m_diagnostics.AddAnnotationArgumentTypeMismatchError(
+                    tokens.source(),
+                    argument->sourceLocation(tokens),
+                    annotation->kind(),
+                    annotation->name(),
+                    "a " + FormatTypeName(m_module, definition->parameterType) + " number literal argument",
+                    "an expression of type '" + FormatTypeName(m_module, argumentType) + "'");
+                return false;
+            }
+
+            if (argumentType != definition->parameterType)
+            {
+                m_diagnostics.AddAnnotationArgumentTypeMismatchError(
+                    tokens.source(),
+                    argument->sourceLocation(tokens),
+                    annotation->kind(),
+                    annotation->name(),
+                    "a " + FormatTypeName(m_module, definition->parameterType) + " number literal argument",
+                    "a number literal of type '" + FormatTypeName(m_module, argumentType) + "'");
+                return false;
+            }
+
+            if (definition->parameterType == Type::I32() && i32ArgumentValue != nullptr)
+            {
+                *i32ArgumentValue = convertToI32(static_cast<NumberLiteral*>(argument), tokens);
+            }
+        }
+
+        return true;
+    }
+
+    bool TypeChecker::validateFunctionAnnotation(const FunctionDefinitionStatement* statement, const TokenBuffer& tokens)
+    {
+        auto isExtern = false;
+        for (const auto& annotationNode : statement->annotations())
+        {
+            const auto* annotation = annotationNode.get();
+            if (!validateAnnotation(annotation, TokenKind::DefKeyword, tokens))
+            {
+                continue;
+            }
+
+            if (annotation->kind() == AnnotationKind::Extern)
+            {
+                isExtern = true;
+            }
+        }
+
+        return isExtern;
+    }
+
+    void TypeChecker::validateEnumAnnotation(const EnumDefinitionStatement* statement, const TokenBuffer& tokens, bool& isFlag, std::optional<i32>& stepValue)
+    {
+        isFlag = false;
+        stepValue = std::nullopt;
+
+        const AnnotationNode* flagAnnotation = nullptr;
+        const AnnotationNode* stepAnnotation = nullptr;
+
+        for (const auto& annotationNode : statement->annotations())
+        {
+            const auto* annotation = annotationNode.get();
+            auto i32ArgumentValue = std::optional<i32>{};
+            if (!validateAnnotation(annotation, TokenKind::EnumKeyword, tokens, &i32ArgumentValue))
+            {
+                continue;
+            }
+
+            switch (annotation->kind())
+            {
+                case AnnotationKind::Flag:
+                    if (stepAnnotation != nullptr)
+                    {
+                        m_diagnostics.AddConflictingEnumAnnotationsError(
+                            tokens.source(),
+                            GetAnnotationLocation(annotation, tokens),
+                            GetAnnotationLocation(stepAnnotation, tokens),
+                            annotation->name(),
+                            stepAnnotation->name());
+                        break;
+                    }
+
+                    isFlag = true;
+                    flagAnnotation = annotation;
+                    break;
+                case AnnotationKind::Step:
+                    if (flagAnnotation != nullptr)
+                    {
+                        m_diagnostics.AddConflictingEnumAnnotationsError(
+                            tokens.source(),
+                            GetAnnotationLocation(annotation, tokens),
+                            GetAnnotationLocation(flagAnnotation, tokens),
+                            annotation->name(),
+                            flagAnnotation->name());
+                        break;
+                    }
+
+                    stepValue = i32ArgumentValue;
+                    stepAnnotation = annotation;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    void TypeChecker::validateTypeAnnotation(const TypeDefinitionStatement* statement, const TokenBuffer& tokens)
+    {
+        for (const auto& annotationNode : statement->annotations())
+        {
+            static_cast<void>(validateAnnotation(annotationNode.get(), TokenKind::TypeKeyword, tokens));
         }
     }
 

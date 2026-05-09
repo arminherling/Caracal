@@ -2,7 +2,7 @@ FunctionDefinitionStatement: {
     Type: (cstring) -> void
     Name: print
     Annotation: {
-        Name: Extern
+        Name: extern
         ArgumentsNode(0): {
         }
     }

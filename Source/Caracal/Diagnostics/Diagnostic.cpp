@@ -17,70 +17,76 @@ namespace Caracal
                 return "P0001";
             case DiagnosticKind::P0002_UnexpectedTrailingTokens:
                 return "P0002";
-            case DiagnosticKind::P0003_InvalidEnumField:
+            case DiagnosticKind::P0003_UnexpectedTopLevelToken:
                 return "P0003";
-            case DiagnosticKind::P0006_UnexpectedTopLevelToken:
+            case DiagnosticKind::P0004_InvalidEnumField:
+                return "P0004";
+            case DiagnosticKind::P0005_InvalidStatement:
+                return "P0005";
+            case DiagnosticKind::P0006_InvalidExpression:
                 return "P0006";
-            case DiagnosticKind::P0007_InvalidStatement:
+            case DiagnosticKind::P0007_DanglingAnnotation:
                 return "P0007";
-            case DiagnosticKind::P0008_InvalidExpression:
-                return "P0008";
 
             // Annotation diagnostics
-            case DiagnosticKind::P0004_UnexpectedAnnotation:
-                return "P0004";
-            case DiagnosticKind::P0005_UnknownAnnotation:
-                return "P0005";
             case DiagnosticKind::T0001_MissingAnnotationArguments:
                 return "T0001";
             case DiagnosticKind::T0002_WrongNumberOfAnnotationArguments:
                 return "T0002";
+            case DiagnosticKind::T0003_AnnotationArgumentTypeMismatch:
+                return "T0003";
+            case DiagnosticKind::T0004_UnexpectedAnnotationTarget:
+                return "T0004";
+            case DiagnosticKind::T0005_ConflictingEnumAnnotations:
+                return "T0005";
+            case DiagnosticKind::T0006_UnknownAnnotation:
+                return "T0006";
 
             // Unknown symbol diagnostics
-            case DiagnosticKind::T0003_UnknownName:
-                return "T0003";
-            case DiagnosticKind::T0004_UnknownFunction:
-                return "T0004";
-            case DiagnosticKind::T0005_UnknownType:
-                return "T0005";
-            case DiagnosticKind::T0006_UnknownMethod:
-                return "T0006";
-            case DiagnosticKind::T0007_UnknownField:
+            case DiagnosticKind::T0007_UnknownName:
                 return "T0007";
+            case DiagnosticKind::T0008_UnknownFunction:
+                return "T0008";
+            case DiagnosticKind::T0009_UnknownType:
+                return "T0009";
+            case DiagnosticKind::T0010_UnknownMethod:
+                return "T0010";
+            case DiagnosticKind::T0011_UnknownField:
+                return "T0011";
 
             // Call diagnostics
-            case DiagnosticKind::T0008_ArgumentCountMismatch:
-                return "T0008";
-            case DiagnosticKind::T0009_ArgumentTypeMismatch:
-                return "T0009";
-            case DiagnosticKind::T0010_InvalidVariadicArgumentType:
-                return "T0010";
+            case DiagnosticKind::T0012_ArgumentCountMismatch:
+                return "T0012";
+            case DiagnosticKind::T0013_ArgumentTypeMismatch:
+                return "T0013";
+            case DiagnosticKind::T0014_InvalidVariadicArgumentType:
+                return "T0014";
 
             // Control flow and declaration-shape diagnostics
-            case DiagnosticKind::T0011_NonBoolIfCondition:
-                return "T0011";
-            case DiagnosticKind::T0012_NonBoolWhileCondition:
-                return "T0012";
-            case DiagnosticKind::T0013_NonExternVariadicFunction:
-                return "T0013";
+            case DiagnosticKind::T0015_NonBoolIfCondition:
+                return "T0015";
+            case DiagnosticKind::T0016_NonBoolWhileCondition:
+                return "T0016";
+            case DiagnosticKind::T0017_NonExternVariadicFunction:
+                return "T0017";
 
             // Type mismatch diagnostics
-            case DiagnosticKind::T0014_ReturnTypeMismatch:
-                return "T0014";
-            case DiagnosticKind::T0015_AssignmentTypeMismatch:
-                return "T0015";
-            case DiagnosticKind::T0016_ExplicitConstantTypeMismatch:
-                return "T0016";
-            case DiagnosticKind::T0017_ExplicitVariableTypeMismatch:
-                return "T0017";
-            case DiagnosticKind::T0018_TypeFieldInitializerMismatch:
+            case DiagnosticKind::T0018_ReturnTypeMismatch:
                 return "T0018";
-            case DiagnosticKind::T0019_ArithmeticOperandTypeMismatch:
+            case DiagnosticKind::T0019_AssignmentTypeMismatch:
                 return "T0019";
-            case DiagnosticKind::T0020_ComparisonOperandTypeMismatch:
+            case DiagnosticKind::T0020_ExplicitConstantTypeMismatch:
                 return "T0020";
-            case DiagnosticKind::T0021_EnumFieldValueTypeMismatch:
+            case DiagnosticKind::T0021_ExplicitVariableTypeMismatch:
                 return "T0021";
+            case DiagnosticKind::T0022_TypeFieldInitializerMismatch:
+                return "T0022";
+            case DiagnosticKind::T0023_ArithmeticOperandTypeMismatch:
+                return "T0023";
+            case DiagnosticKind::T0024_ComparisonOperandTypeMismatch:
+                return "T0024";
+            case DiagnosticKind::T0025_EnumFieldValueTypeMismatch:
+                return "T0025";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -102,69 +108,75 @@ namespace Caracal
                 return "Unexpected token";
             case DiagnosticKind::P0002_UnexpectedTrailingTokens:
                 return "Unexpected trailing tokens";
-            case DiagnosticKind::P0003_InvalidEnumField:
-                return "Invalid enum field";
-            case DiagnosticKind::P0006_UnexpectedTopLevelToken:
+            case DiagnosticKind::P0003_UnexpectedTopLevelToken:
                 return "Unexpected top-level token";
-            case DiagnosticKind::P0007_InvalidStatement:
+            case DiagnosticKind::P0004_InvalidEnumField:
+                return "Invalid enum field";
+            case DiagnosticKind::P0005_InvalidStatement:
                 return "Invalid statement";
-            case DiagnosticKind::P0008_InvalidExpression:
+            case DiagnosticKind::P0006_InvalidExpression:
                 return "Invalid expression";
+            case DiagnosticKind::P0007_DanglingAnnotation:
+                return "Dangling annotation";
 
             // Annotation diagnostics
-            case DiagnosticKind::P0004_UnexpectedAnnotation:
-                return "Unexpected annotation";
-            case DiagnosticKind::P0005_UnknownAnnotation:
-                return "Unknown annotation";
             case DiagnosticKind::T0001_MissingAnnotationArguments:
                 return "Missing annotation arguments";
             case DiagnosticKind::T0002_WrongNumberOfAnnotationArguments:
                 return "Wrong number of annotation arguments";
+            case DiagnosticKind::T0003_AnnotationArgumentTypeMismatch:
+                return "Annotation argument type mismatch";
+            case DiagnosticKind::T0004_UnexpectedAnnotationTarget:
+                return "Unexpected annotation target";
+            case DiagnosticKind::T0005_ConflictingEnumAnnotations:
+                return "Conflicting enum annotations";
+            case DiagnosticKind::T0006_UnknownAnnotation:
+                return "Unknown annotation";
 
             // Unknown symbol diagnostics
-            case DiagnosticKind::T0003_UnknownName:
+            case DiagnosticKind::T0007_UnknownName:
                 return "Unknown name";
-            case DiagnosticKind::T0004_UnknownFunction:
+            case DiagnosticKind::T0008_UnknownFunction:
                 return "Unknown function";
-            case DiagnosticKind::T0005_UnknownType:
+            case DiagnosticKind::T0009_UnknownType:
                 return "Unknown type";
-            case DiagnosticKind::T0006_UnknownMethod:
+            case DiagnosticKind::T0010_UnknownMethod:
                 return "Unknown method";
-            case DiagnosticKind::T0007_UnknownField:
+            case DiagnosticKind::T0011_UnknownField:
                 return "Unknown field";
 
             // Call diagnostics
-            case DiagnosticKind::T0008_ArgumentCountMismatch:
+            case DiagnosticKind::T0012_ArgumentCountMismatch:
                 return "Argument count mismatch";
-            case DiagnosticKind::T0009_ArgumentTypeMismatch:
+            case DiagnosticKind::T0013_ArgumentTypeMismatch:
                 return "Argument type mismatch";
-            case DiagnosticKind::T0010_InvalidVariadicArgumentType:
+            case DiagnosticKind::T0014_InvalidVariadicArgumentType:
                 return "Invalid variadic argument type";
 
             // Control flow and declaration-shape diagnostics
-            case DiagnosticKind::T0011_NonBoolIfCondition:
+            case DiagnosticKind::T0015_NonBoolIfCondition:
                 return "Non-bool if condition";
-            case DiagnosticKind::T0012_NonBoolWhileCondition:
+            case DiagnosticKind::T0016_NonBoolWhileCondition:
                 return "Non-bool while condition";
-            case DiagnosticKind::T0013_NonExternVariadicFunction:
+            case DiagnosticKind::T0017_NonExternVariadicFunction:
                 return "Non-extern variadic function";
 
             // Type mismatch diagnostics
-            case DiagnosticKind::T0014_ReturnTypeMismatch:
+            case DiagnosticKind::T0018_ReturnTypeMismatch:
                 return "Return type mismatch";
-            case DiagnosticKind::T0015_AssignmentTypeMismatch:
+            case DiagnosticKind::T0019_AssignmentTypeMismatch:
                 return "Assignment type mismatch";
-            case DiagnosticKind::T0016_ExplicitConstantTypeMismatch:
+            case DiagnosticKind::T0020_ExplicitConstantTypeMismatch:
                 return "Explicit constant type mismatch";
-            case DiagnosticKind::T0017_ExplicitVariableTypeMismatch:
+            case DiagnosticKind::T0021_ExplicitVariableTypeMismatch:
                 return "Explicit variable type mismatch";
-            case DiagnosticKind::T0018_TypeFieldInitializerMismatch:
+            case DiagnosticKind::T0022_TypeFieldInitializerMismatch:
                 return "Type field initializer mismatch";
-            case DiagnosticKind::T0019_ArithmeticOperandTypeMismatch:
+            case DiagnosticKind::T0023_ArithmeticOperandTypeMismatch:
                 return "Arithmetic operand type mismatch";
-            case DiagnosticKind::T0020_ComparisonOperandTypeMismatch:
+            case DiagnosticKind::T0024_ComparisonOperandTypeMismatch:
                 return "Comparison operand type mismatch";
-            case DiagnosticKind::T0021_EnumFieldValueTypeMismatch:
+            case DiagnosticKind::T0025_EnumFieldValueTypeMismatch:
                 return "Enum field value type mismatch";
             case DiagnosticKind::Unknown:
             default:
@@ -199,6 +211,16 @@ namespace Caracal
             .location = location,
             .text = std::move(text),
             .isPrimary = true
+            });
+    }
+
+    void Diagnostic::addSecondaryLabel(const SourceLocation& location, std::string text)
+    {
+        m_labels.push_back(Label{
+            .source = m_source,
+            .location = location,
+            .text = std::move(text),
+            .isPrimary = false
             });
     }
 }

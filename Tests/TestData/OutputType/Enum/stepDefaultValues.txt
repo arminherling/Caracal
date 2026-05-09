@@ -2,7 +2,7 @@ EnumDefinitionStatement: {
     Type: Values(u8)
     Name: Values
     Annotation: {
-        Name: Step
+        Name: step
         ArgumentsNode(1): {
             NumberLiteral: 3
         }

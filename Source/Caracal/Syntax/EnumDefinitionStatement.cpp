@@ -11,7 +11,7 @@ namespace Caracal
         const Token& openBracket, 
         std::vector<EnumFieldDeclarationUPtr>&& fieldNodes, 
         const Token& closeBracket,
-        std::optional<AnnotationNodeUPtr>&& annotation)
+        std::vector<AnnotationNodeUPtr>&& annotations)
         : Statement(NodeKind::EnumDefinitionStatement, Type::Undefined())
         , m_enumKeyword{ enumKeyword }
         , m_nameToken{ nameToken }
@@ -21,27 +21,33 @@ namespace Caracal
         , m_openBracket{ openBracket }
         , m_fieldNodes{ std::move(fieldNodes) }
         , m_closeBracket{ closeBracket }
-        , m_annotation{ std::move(annotation) }
+        , m_annotations{ std::move(annotations) }
     {
     }
 
     bool EnumDefinitionStatement::hasStep() const noexcept
     {
-        if (m_annotation.has_value())
+        for (const auto& annotation : m_annotations)
         {
-            const auto& annotationNode = m_annotation.value();
-            return annotationNode->kind() == AnnotationKind::Step;
+            if (annotation->kind() == AnnotationKind::Step)
+            {
+                return true;
+            }
         }
+
         return false;
     }
 
     bool EnumDefinitionStatement::isFlag() const noexcept
     {
-        if (m_annotation.has_value())
+        for (const auto& annotation : m_annotations)
         {
-            const auto& annotationNode = m_annotation.value();
-            return annotationNode->kind() == AnnotationKind::Flag;
+            if (annotation->kind() == AnnotationKind::Flag)
+            {
+                return true;
+            }
         }
+
         return false;
     }
 }

@@ -13,42 +13,45 @@ namespace Caracal
         // Parser syntax diagnostics
         P0001_UnexpectedToken,
         P0002_UnexpectedTrailingTokens,
-        P0003_InvalidEnumField,
-        P0006_UnexpectedTopLevelToken,
-        P0007_InvalidStatement,
-        P0008_InvalidExpression,
+        P0003_UnexpectedTopLevelToken,
+        P0004_InvalidEnumField,
+        P0005_InvalidStatement,
+        P0006_InvalidExpression,
+        P0007_DanglingAnnotation,
 
         // Annotation diagnostics
-        P0004_UnexpectedAnnotation,
-        P0005_UnknownAnnotation,
         T0001_MissingAnnotationArguments,
         T0002_WrongNumberOfAnnotationArguments,
+        T0003_AnnotationArgumentTypeMismatch,
+        T0004_UnexpectedAnnotationTarget,
+        T0005_ConflictingEnumAnnotations,
 
         // Unknown symbol diagnostics
-        T0003_UnknownName,
-        T0004_UnknownFunction,
-        T0005_UnknownType,
-        T0006_UnknownMethod,
-        T0007_UnknownField,
+        T0006_UnknownAnnotation,
+        T0007_UnknownName,
+        T0008_UnknownFunction,
+        T0009_UnknownType,
+        T0010_UnknownMethod,
+        T0011_UnknownField,
 
         // Call diagnostics
-        T0008_ArgumentCountMismatch,
-        T0009_ArgumentTypeMismatch,
-        T0010_InvalidVariadicArgumentType,
+        T0012_ArgumentCountMismatch,
+        T0013_ArgumentTypeMismatch,
+        T0014_InvalidVariadicArgumentType,
 
         // Control flow and declaration-shape diagnostics
-        T0011_NonBoolIfCondition,
-        T0012_NonBoolWhileCondition,
-        T0013_NonExternVariadicFunction,
+        T0015_NonBoolIfCondition,
+        T0016_NonBoolWhileCondition,
+        T0017_NonExternVariadicFunction,
 
         // Type mismatch diagnostics
-        T0014_ReturnTypeMismatch,
-        T0015_AssignmentTypeMismatch,
-        T0016_ExplicitConstantTypeMismatch,
-        T0017_ExplicitVariableTypeMismatch,
-        T0018_TypeFieldInitializerMismatch,
-        T0019_ArithmeticOperandTypeMismatch,
-        T0020_ComparisonOperandTypeMismatch,
-        T0021_EnumFieldValueTypeMismatch,
+        T0018_ReturnTypeMismatch,
+        T0019_AssignmentTypeMismatch,
+        T0020_ExplicitConstantTypeMismatch,
+        T0021_ExplicitVariableTypeMismatch,
+        T0022_TypeFieldInitializerMismatch,
+        T0023_ArithmeticOperandTypeMismatch,
+        T0024_ComparisonOperandTypeMismatch,
+        T0025_EnumFieldValueTypeMismatch,
     };
 }

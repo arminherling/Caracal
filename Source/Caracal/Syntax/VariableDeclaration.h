@@ -1,10 +1,13 @@
 ﻿#pragma once
 
 #include <Caracal/API.h>
+#include <Caracal/Syntax/AnnotationNode.h>
 #include <Caracal/Syntax/Statement.h>
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/TypeNameNode.h>
 #include <Caracal/Syntax/Token.h>
+
+#include <vector>
 
 namespace Caracal
 {
@@ -17,7 +20,8 @@ namespace Caracal
             std::optional<TypeNameNodeUPtr>&& explicitType,
             const std::optional<Token>& equalToken,
             ExpressionUPtr&& rightExpression,
-            const Token& semicolonToken);
+            const Token& semicolonToken,
+            std::vector<AnnotationNodeUPtr>&& annotations = {});
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(VariableDeclaration)
 
@@ -27,6 +31,7 @@ namespace Caracal
         [[nodiscard]] const std::optional<Token>& equalToken() const noexcept { return m_equalToken; }
         [[nodiscard]] const ExpressionUPtr& rightExpression() const noexcept { return m_rightExpression; }
         [[nodiscard]] const Token& semicolonToken() const noexcept { return m_semicolonToken; }
+        [[nodiscard]] const std::vector<AnnotationNodeUPtr>& annotations() const noexcept { return m_annotations; }
 
     private:
         ExpressionUPtr m_leftExpression;
@@ -35,5 +40,6 @@ namespace Caracal
         std::optional<Token> m_equalToken;
         ExpressionUPtr m_rightExpression;
         Token m_semicolonToken;
+        std::vector<AnnotationNodeUPtr> m_annotations;
     };
 }

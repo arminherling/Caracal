@@ -41,6 +41,7 @@ namespace Caracal
         [[nodiscard]] const std::optional<std::string>& fix() const noexcept { return m_fix; }
 
         void addPrimaryLabel(const SourceLocation& location, std::string text);
+        void addSecondaryLabel(const SourceLocation& location, std::string text);
 
     private:
         DiagnosticLevel m_level = DiagnosticLevel::Unknown;

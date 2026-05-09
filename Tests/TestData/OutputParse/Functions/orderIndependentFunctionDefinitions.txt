@@ -2,7 +2,7 @@ FunctionDefinitionStatement: {
     Type: undefined
     Name: print
     Annotation: {
-        Name: Extern
+        Name: extern
         ArgumentsNode(0): {
         }
     }

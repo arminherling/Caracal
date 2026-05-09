@@ -6,7 +6,9 @@
 #include <Caracal/Syntax/ParametersNode.h>
 #include <Caracal/Syntax/ReturnTypesNode.h>
 #include <Caracal/Syntax/BlockNode.h>
-#include <Caracal/Semantic/ExternAnnotation.h>
+#include <Caracal/Syntax/AnnotationNode.h>
+
+#include <vector>
 
 namespace Caracal
 {
@@ -20,7 +22,7 @@ namespace Caracal
             ParametersNodeUPtr&& parametersNode,
             ReturnTypesNodeUPtr&& returnTypesNode,
             BlockNodeUPtr&& bodyNode,
-            std::optional<AnnotationNodeUPtr>&& annotation);
+            std::vector<AnnotationNodeUPtr>&& annotations);
         
         CARACAL_DELETE_COPY_DEFAULT_MOVE(FunctionDefinitionStatement)
 
@@ -30,7 +32,7 @@ namespace Caracal
         [[nodiscard]] const ParametersNodeUPtr& parametersNode()  const noexcept { return m_parametersNode; }
         [[nodiscard]] const ReturnTypesNodeUPtr& returnTypesNode() const noexcept { return m_returnTypesNode; }
         [[nodiscard]] const BlockNodeUPtr& bodyNode() const noexcept { return m_bodyNode; }
-        [[nodiscard]] const std::optional<AnnotationNodeUPtr>& annotation() const noexcept { return m_annotation; }
+        [[nodiscard]] const std::vector<AnnotationNodeUPtr>& annotations() const noexcept { return m_annotations; }
         [[nodiscard]] bool isExtern() const noexcept;
 
     private:
@@ -40,6 +42,6 @@ namespace Caracal
         ParametersNodeUPtr m_parametersNode;
         ReturnTypesNodeUPtr m_returnTypesNode;
         BlockNodeUPtr m_bodyNode;
-        std::optional<AnnotationNodeUPtr> m_annotation;
+        std::vector<AnnotationNodeUPtr> m_annotations;
     };
 }

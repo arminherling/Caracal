@@ -2,7 +2,7 @@ FunctionDefinitionStatement: {
     Type: undefined
     Name: printf
     Annotation: {
-        Name: Extern
+        Name: extern
         ArgumentsNode(0): {
         }
     }

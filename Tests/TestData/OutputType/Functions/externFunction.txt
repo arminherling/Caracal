@@ -2,7 +2,7 @@ FunctionDefinitionStatement: {
     Type: (cstring) -> i32
     Name: puts
     Annotation: {
-        Name: Extern
+        Name: extern
     }
     ParametersNode(1): {
         ParameterNode: {

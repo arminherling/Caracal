@@ -196,7 +196,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::P0003_InvalidEnumField,
+            DiagnosticKind::P0004_InvalidEnumField,
             source,
             location,
             fix);
@@ -219,7 +219,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::P0006_UnexpectedTopLevelToken,
+            DiagnosticKind::P0003_UnexpectedTopLevelToken,
             source,
             location,
             fix);
@@ -232,7 +232,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::P0007_InvalidStatement,
+            DiagnosticKind::P0005_InvalidStatement,
             source,
             location,
             "Remove this token or rewrite the statement so it starts with a valid statement token.");
@@ -245,7 +245,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::P0008_InvalidExpression,
+            DiagnosticKind::P0006_InvalidExpression,
             source,
             location,
             "Remove this token or replace it with a valid expression.");
@@ -254,15 +254,28 @@ namespace Caracal
         diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnexpectedAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    void DiagnosticsBag::AddDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::P0004_UnexpectedAnnotation,
+            DiagnosticKind::P0007_DanglingAnnotation,
             source,
             location,
             "Remove the extra annotation or attach it to the next supported declaration.");
-        diagnostic.addPrimaryLabel(location, "This annotation is not attached to a supported declaration.");
+        diagnostic.addPrimaryLabel(location, "This annotation is not attached to any declaration.");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddUnexpectedAnnotationTargetError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0004_UnexpectedAnnotationTarget,
+            source,
+            location,
+            "Remove the annotation or move it to a supported declaration kind.");
+        diagnostic.addPrimaryLabel(location, "This annotation is not supported on this declaration.");
 
         diagnostics.push_back(std::move(diagnostic));
     }
@@ -285,7 +298,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::P0005_UnknownAnnotation,
+            DiagnosticKind::T0006_UnknownAnnotation,
             source,
             location,
             fix);
@@ -294,12 +307,12 @@ namespace Caracal
         diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName)
+    void DiagnosticsBag::AddAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName)
     {
         auto fix = std::string{};
-        if (annotationName == "step")
+        if (annotationKind == AnnotationKind::Step)
         {
-            fix = "Add the required annotation argument, for example (10).";
+            fix = "Add the required annotation argument, for example #step(10).";
         }
         else
         {
@@ -317,19 +330,23 @@ namespace Caracal
         diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, i32 actualCount)
+    void DiagnosticsBag::AddAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, i32 expectedCount, i32 actualCount)
     {
         auto fix = std::string{};
-        if (annotationName == "step")
+        if (annotationKind == AnnotationKind::Step && expectedCount == 1)
         {
             if (actualCount == 0)
             {
-                fix = "Add the missing annotation argument, for example (10).";
+                fix = "Add the missing annotation argument, for example #step(10).";
             }
             else
             {
-                fix = "Reduce the annotation to one argument, for example (10).";
+                fix = "Reduce the annotation to one argument, for example #step(10).";
             }
+        }
+        else if (expectedCount == 0)
+        {
+            fix = "Remove the unexpected annotation arguments.";
         }
         else
         {
@@ -342,7 +359,44 @@ namespace Caracal
             source,
             location,
             fix);
-        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' expects 1 argument, but got " + std::to_string(actualCount) + ".");
+        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' expects " + std::to_string(expectedCount) + " argument(s), but got " + std::to_string(actualCount) + ".");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddAnnotationArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, const std::string& expectedDescription, const std::string& actualDescription)
+    {
+        auto fix = std::string{};
+        if (annotationKind == AnnotationKind::Step)
+        {
+            fix = "Change the annotation argument to an i32 literal, for example #step(10).";
+        }
+        else
+        {
+            fix = "Change the annotation argument to the expected type.";
+        }
+
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0003_AnnotationArgumentTypeMismatch,
+            source,
+            location,
+            fix);
+        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' expects " + expectedDescription + ", but got " + actualDescription + ".");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0005_ConflictingEnumAnnotations,
+            source,
+            location,
+            "Remove one of the conflicting enum annotations.");
+        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' cannot be used together with '#" + otherAnnotationName + "' on the same enum.");
+        diagnostic.addSecondaryLabel(otherLocation, "Conflicting annotation '#" + otherAnnotationName + "' was already used here.");
 
         diagnostics.push_back(std::move(diagnostic));
     }
@@ -351,7 +405,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0003_UnknownName,
+            DiagnosticKind::T0007_UnknownName,
             source,
             location,
             "Declare this name before using it, or rename it to an existing symbol.");
@@ -364,7 +418,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0004_UnknownFunction,
+            DiagnosticKind::T0008_UnknownFunction,
             source,
             location,
             "Declare this function before calling it, or rename the call to an existing function.");
@@ -377,7 +431,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0005_UnknownType,
+            DiagnosticKind::T0009_UnknownType,
             source,
             location,
             "Declare this type before using it, or rename it to an existing type.");
@@ -394,7 +448,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0006_UnknownMethod,
+            DiagnosticKind::T0010_UnknownMethod,
             source,
             location,
             "Add this method to the type, or rename the call to an existing method.");
@@ -411,7 +465,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0007_UnknownField,
+            DiagnosticKind::T0011_UnknownField,
             source,
             location,
             "Add this field to the type, or rename the access to an existing field.");
@@ -440,7 +494,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0008_ArgumentCountMismatch,
+            DiagnosticKind::T0012_ArgumentCountMismatch,
             source,
             location,
             fix);
@@ -475,7 +529,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0009_ArgumentTypeMismatch,
+            DiagnosticKind::T0013_ArgumentTypeMismatch,
             source,
             location,
             fix);
@@ -499,7 +553,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0010_InvalidVariadicArgumentType,
+            DiagnosticKind::T0014_InvalidVariadicArgumentType,
             source,
             location,
             "Pass a non-void value as this variadic argument.");
@@ -515,7 +569,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0011_NonBoolIfCondition,
+            DiagnosticKind::T0015_NonBoolIfCondition,
             source,
             location,
             "Change the if condition to a bool expression.");
@@ -531,7 +585,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0012_NonBoolWhileCondition,
+            DiagnosticKind::T0016_NonBoolWhileCondition,
             source,
             location,
             "Change the while condition to a bool expression.");
@@ -547,7 +601,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0013_NonExternVariadicFunction,
+            DiagnosticKind::T0017_NonExternVariadicFunction,
             source,
             location,
             "Add #extern to this function, or remove the variadic parameter.");
@@ -574,7 +628,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0014_ReturnTypeMismatch,
+            DiagnosticKind::T0018_ReturnTypeMismatch,
             source,
             location,
             fix);
@@ -591,7 +645,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0015_AssignmentTypeMismatch,
+            DiagnosticKind::T0019_AssignmentTypeMismatch,
             source,
             location,
             "Assign a value of type '" + expectedTypeName + "' or change the assignment target type.");
@@ -608,7 +662,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0016_ExplicitConstantTypeMismatch,
+            DiagnosticKind::T0020_ExplicitConstantTypeMismatch,
             source,
             location,
             "Initialize this constant with a value of type '" + expectedTypeName + "' or change its explicit type.");
@@ -625,7 +679,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0017_ExplicitVariableTypeMismatch,
+            DiagnosticKind::T0021_ExplicitVariableTypeMismatch,
             source,
             location,
             "Initialize this variable with a value of type '" + expectedTypeName + "' or change its explicit type.");
@@ -642,7 +696,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0018_TypeFieldInitializerMismatch,
+            DiagnosticKind::T0022_TypeFieldInitializerMismatch,
             source,
             location,
             "Initialize this field with a value of type '" + expectedTypeName + "' or change the field type.");
@@ -660,7 +714,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0019_ArithmeticOperandTypeMismatch,
+            DiagnosticKind::T0023_ArithmeticOperandTypeMismatch,
             source,
             location,
             "Use matching operand types for this arithmetic operation.");
@@ -678,7 +732,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0020_ComparisonOperandTypeMismatch,
+            DiagnosticKind::T0024_ComparisonOperandTypeMismatch,
             source,
             location,
             "Use comparable operand types for this comparison.");
@@ -695,7 +749,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0021_EnumFieldValueTypeMismatch,
+            DiagnosticKind::T0025_EnumFieldValueTypeMismatch,
             source,
             location,
             "Use a value of the enum base type for this field.");

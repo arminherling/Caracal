@@ -25,6 +25,8 @@ namespace Caracal
     public:
         Parser(const TokenBuffer& tokens, DiagnosticsBag& diagnostics);
 
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(Parser)
+
         ParseTreeUPtr parse();
 
     private:
@@ -89,7 +91,7 @@ namespace Caracal
         DiagnosticsBag& m_diagnostics;
         i32 m_currentIndex;
 
-        std::optional<AnnotationNodeUPtr> m_currentAnnotation;
+        std::vector<AnnotationNodeUPtr> m_currentAnnotations;
     };
 
     CARACAL_API ParseTreeUPtr parse(const TokenBuffer& tokens, DiagnosticsBag& diagnostics) noexcept;

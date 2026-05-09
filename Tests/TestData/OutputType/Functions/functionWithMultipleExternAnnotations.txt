@@ -2,7 +2,7 @@ FunctionDefinitionStatement: {
     Type: (cstring) -> i32
     Name: puts
     Annotation: {
-        Name: Extern
+        Name: extern
         ArgumentsNode(0): {
         }
     }
@@ -28,7 +28,7 @@ FunctionDefinitionStatement: {
     Type: () -> i32
     Name: clock
     Annotation: {
-        Name: Extern
+        Name: extern
         ArgumentsNode(0): {
         }
     }

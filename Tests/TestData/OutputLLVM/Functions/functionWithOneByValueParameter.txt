@@ -2,7 +2,7 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
-define void @square(i32 %x) {
+define i32 @square(i32 %x) {
 entry:
   %multmp = mul i32 %x, %x
   ret i32 %multmp

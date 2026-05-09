@@ -23,12 +23,36 @@
 #include <Caracal/Syntax/UnaryExpression.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/WhileStatement.h>
-#include <Caracal/Semantic/ExternAnnotation.h>
-#include <Caracal/Semantic/FlagAnnotation.h>
-#include <Caracal/Semantic/StepAnnotation.h>
 
 namespace Caracal
 {
+    static SourceLocation GetAnnotationLocation(const AnnotationNode* annotation, const TokenBuffer& tokens)
+    {
+        const auto hashLocation = tokens.getSourceLocation(annotation->hashToken());
+        const auto nameLocation = tokens.getSourceLocation(annotation->nameToken());
+        return { hashLocation.startIndex, nameLocation.endIndex };
+    }
+
+    static AnnotationKind ParseAnnotationKind(std::string_view name)
+    {
+        if (name == "extern")
+        {
+            return AnnotationKind::Extern;
+        }
+
+        if (name == "flag")
+        {
+            return AnnotationKind::Flag;
+        }
+
+        if (name == "step")
+        {
+            return AnnotationKind::Step;
+        }
+
+        return AnnotationKind::Error;
+    }
+
     static std::string ReplaceEscapeSequences(std::string_view input)
     {
         std::string result(input);
@@ -66,6 +90,14 @@ namespace Caracal
     ParseTreeUPtr Parser::parse()
     {
         auto statements = parseStatements(StatementScope::Global);
+
+        for (const auto& annotation : m_currentAnnotations)
+        {
+            m_diagnostics.AddDanglingAnnotationError(
+                m_tokens.source(),
+                GetAnnotationLocation(annotation.get(), m_tokens));
+        }
+
         if (m_currentIndex < m_tokens.size() - 1)
         {
             const auto& location = m_tokens.getSourceLocation(m_tokens.getToken(m_currentIndex));
@@ -281,10 +313,10 @@ namespace Caracal
         auto returnTypes = parseReturnTypesNode();
         auto body = parseFunctionBody();
 
-        auto optionalAnnotation = std::move(m_currentAnnotation);
-        m_currentAnnotation = std::nullopt;
+        auto annotations = std::move(m_currentAnnotations);
+        m_currentAnnotations.clear();
 
-        return std::make_unique<FunctionDefinitionStatement>(keyword, nameToken, name, std::move(parameters), std::move(returnTypes), std::move(body), std::move(optionalAnnotation));
+        return std::make_unique<FunctionDefinitionStatement>(keyword, nameToken, name, std::move(parameters), std::move(returnTypes), std::move(body), std::move(annotations));
     }
 
     StatementUPtr Parser::parseConstantOrVariableDeclaration(ExpressionUPtr&& leftExpression, StatementScope scope)
@@ -305,11 +337,25 @@ namespace Caracal
         if (secondToken.kind == TokenKind::Colon)
         {
             auto isGlobalConstant = scope == StatementScope::Global;
-            return std::make_unique<ConstantDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), semicolon, isGlobalConstant);
+            auto annotations = std::vector<AnnotationNodeUPtr>{};
+            if (scope == StatementScope::Global)
+            {
+                annotations = std::move(m_currentAnnotations);
+                m_currentAnnotations.clear();
+            }
+
+            return std::make_unique<ConstantDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), semicolon, isGlobalConstant, std::move(annotations));
         }
         else
         {
-            return std::make_unique<VariableDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), semicolon);
+            auto annotations = std::vector<AnnotationNodeUPtr>{};
+            if (scope == StatementScope::Global)
+            {
+                annotations = std::move(m_currentAnnotations);
+                m_currentAnnotations.clear();
+            }
+
+            return std::make_unique<VariableDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), semicolon, std::move(annotations));
         }
     }
 
@@ -341,10 +387,10 @@ namespace Caracal
         auto enumFields = parseEnumFields();
         auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
 
-        auto optionalAnnotation = std::move(m_currentAnnotation);
-        m_currentAnnotation = std::nullopt;
+        auto annotations = std::move(m_currentAnnotations);
+        m_currentAnnotations.clear();
 
-        return std::make_unique<EnumDefinitionStatement>(keyword, nameToken, name, colonToken, std::move(baseType), openBracket, std::move(enumFields), closeBracket, std::move(optionalAnnotation));
+        return std::make_unique<EnumDefinitionStatement>(keyword, nameToken, name, colonToken, std::move(baseType), openBracket, std::move(enumFields), closeBracket, std::move(annotations));
     }
 
     std::vector<EnumFieldDeclarationUPtr> Parser::parseEnumFields()
@@ -394,7 +440,10 @@ namespace Caracal
 
         auto body = parseTypeBody();
 
-        return std::make_unique<TypeDefinitionStatement>(keyword, nameToken, name, std::move(maybeParameters), std::move(body));
+        auto annotations = std::move(m_currentAnnotations);
+        m_currentAnnotations.clear();
+
+        return std::make_unique<TypeDefinitionStatement>(keyword, nameToken, name, std::move(maybeParameters), std::move(body), std::move(annotations));
     }
 
     StatementUPtr Parser::parseTypeFieldDeclaration(ExpressionUPtr&& leftExpression)
@@ -878,65 +927,13 @@ namespace Caracal
         auto hashToken = advanceOnMatch(TokenKind::Hash);
         auto nameToken = advanceOnMatch(TokenKind::Identifier);
         auto name = m_tokens.getLexeme(nameToken);
-        const auto hashLocation = m_tokens.getSourceLocation(hashToken);
-        const auto nameLocation = m_tokens.getSourceLocation(nameToken);
-        const auto annotationLocation = SourceLocation{ hashLocation.startIndex, nameLocation.endIndex };
-
         std::optional<ArgumentsNodeUPtr> arguments;
         if (currentToken().kind == TokenKind::OpenParenthesis)
         {
             arguments = parseArgumentsNode(scope);
         }
 
-        if (m_currentAnnotation.has_value())
-        {
-            m_diagnostics.AddUnexpectedAnnotationError(m_tokens.source(), annotationLocation);
-            return;
-        }
-
-        if(name == "extern")
-        {
-            m_currentAnnotation = std::make_unique<ExternAnnotation>(hashToken, nameToken, name, std::move(arguments));
-        }
-        else if(name == "flag")
-        {
-            m_currentAnnotation = std::make_unique<FlagAnnotation>(hashToken, nameToken, name, std::move(arguments));
-        }
-        else if(name == "step")
-        {
-            if(!arguments.has_value())
-            {
-                m_diagnostics.AddAnnotationMissingArgumentsError(m_tokens.source(), annotationLocation, std::string(name));
-                return;
-            }
-
-            if(arguments.value()->arguments().size() != 1)
-            {
-                SourceLocation argumentsLocation{};
-                if (arguments.value()->arguments().empty())
-                {
-                    const auto openParenthesisLocation = m_tokens.getSourceLocation(arguments.value()->openParenthesisToken());
-                    const auto closeParenthesisLocation = m_tokens.getSourceLocation(arguments.value()->closeParenthesisToken());
-                    argumentsLocation = SourceLocation{ openParenthesisLocation.startIndex, closeParenthesisLocation.endIndex };
-                }
-                else
-                {
-                    const auto firstArgument = arguments.value()->arguments().front().get();
-                    const auto lastArgument = arguments.value()->arguments().back().get();
-                    const auto firstArgumentLocation = firstArgument->sourceLocation(m_tokens);
-                    const auto lastArgumentLocation = lastArgument->sourceLocation(m_tokens);
-                    argumentsLocation = SourceLocation{ firstArgumentLocation.startIndex, lastArgumentLocation.endIndex };
-                }
-                m_diagnostics.AddAnnotationWrongNumberOfArgumentsError(m_tokens.source(), argumentsLocation, std::string(name), static_cast<i32>(arguments.value()->arguments().size()));
-                return;
-            }
-
-            m_currentAnnotation = std::make_unique<StepAnnotation>(hashToken, nameToken, name, std::move(arguments));
-        }
-        else
-        {
-            m_diagnostics.AddUnknownAnnotationError(m_tokens.source(), annotationLocation, std::string(name), currentToken().kind);
-        }
+        m_currentAnnotations.push_back(std::make_unique<AnnotationNode>(ParseAnnotationKind(name), hashToken, nameToken, name, std::move(arguments)));
     }
 
     Token Parser::advanceOnMatch(TokenKind kind)

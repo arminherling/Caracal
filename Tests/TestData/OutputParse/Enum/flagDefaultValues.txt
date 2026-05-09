@@ -2,7 +2,7 @@ EnumDefinitionStatement: {
     Type: undefined
     Name: Values
     Annotation: {
-        Name: Flag
+        Name: flag
     }
     FieldNodes(6): {
         EnumFieldDeclaration: {

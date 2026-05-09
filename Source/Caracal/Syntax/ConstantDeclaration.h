@@ -2,9 +2,12 @@
 
 #include <Caracal/API.h>
 #include <Caracal/Syntax/Statement.h>
+#include <Caracal/Syntax/AnnotationNode.h>
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/TypeNameNode.h>
 #include <Caracal/Syntax/Token.h>
+
+#include <vector>
 
 namespace Caracal
 {
@@ -18,7 +21,8 @@ namespace Caracal
             const Token& secondColonToken,
             ExpressionUPtr&& rightExpression,
             const Token& semicolonToken,
-            bool isGlobalConstant);
+            bool isGlobalConstant,
+            std::vector<AnnotationNodeUPtr>&& annotations = {});
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(ConstantDeclaration)
 
@@ -29,6 +33,7 @@ namespace Caracal
         [[nodiscard]] const ExpressionUPtr& rightExpression() const noexcept { return m_rightExpression; }
         [[nodiscard]] const Token& semicolonToken() const noexcept { return m_semicolonToken; }
         [[nodiscard]] bool isGlobalConstant() const noexcept { return m_isGlobalConstant; }
+        [[nodiscard]] const std::vector<AnnotationNodeUPtr>& annotations() const noexcept { return m_annotations; }
 
     private:
         ExpressionUPtr m_leftExpression;
@@ -38,5 +43,6 @@ namespace Caracal
         ExpressionUPtr m_rightExpression;
         Token m_semicolonToken;
         bool m_isGlobalConstant;
+        std::vector<AnnotationNodeUPtr> m_annotations;
     };
 }

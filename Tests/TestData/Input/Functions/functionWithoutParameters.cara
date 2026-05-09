@@ -1,4 +1,4 @@
-def func() 
+﻿def func() i32
 { 
     a :: 0;
     return a; 

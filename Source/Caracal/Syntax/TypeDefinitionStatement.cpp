@@ -7,13 +7,15 @@ namespace Caracal
         const Token& nameToken,
         std::string_view name,
         std::optional<ParametersNodeUPtr>&& constructorParameters,
-        BlockNodeUPtr&& bodyNode)
+        BlockNodeUPtr&& bodyNode,
+        std::vector<AnnotationNodeUPtr>&& annotations)
         : Statement(NodeKind::TypeDefinitionStatement, Type::Undefined())
         , m_typeKeyword(typeKeyword)
         , m_nameToken(nameToken)
         , m_name(name)
         , m_constructorParameters(std::move(constructorParameters))
         , m_bodyNode(std::move(bodyNode))
+        , m_annotations(std::move(annotations))
     {
     }
 }

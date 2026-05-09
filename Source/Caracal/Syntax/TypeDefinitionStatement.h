@@ -5,7 +5,10 @@
 #include <Caracal/Syntax/Statement.h>
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/ParametersNode.h>
+#include <Caracal/Syntax/AnnotationNode.h>
 #include <Caracal/Syntax/Token.h>
+
+#include <vector>
 
 namespace Caracal
 {
@@ -17,7 +20,8 @@ namespace Caracal
             const Token& nameToken,
             std::string_view name,
             std::optional<ParametersNodeUPtr>&& constructorParameters,
-            BlockNodeUPtr&& bodyNode);
+            BlockNodeUPtr&& bodyNode,
+            std::vector<AnnotationNodeUPtr>&& annotations);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(TypeDefinitionStatement)
 
@@ -26,6 +30,7 @@ namespace Caracal
         [[nodiscard]] std::string_view name() const noexcept { return m_name; }
         [[nodiscard]] const std::optional<ParametersNodeUPtr>& constructorParameters() const noexcept { return m_constructorParameters; }
         [[nodiscard]] const BlockNodeUPtr& bodyNode() const noexcept { return m_bodyNode; }
+        [[nodiscard]] const std::vector<AnnotationNodeUPtr>& annotations() const noexcept { return m_annotations; }
 
     private:
         Token m_typeKeyword;
@@ -33,5 +38,6 @@ namespace Caracal
         std::string m_name;
         std::optional<ParametersNodeUPtr> m_constructorParameters;
         BlockNodeUPtr m_bodyNode;
+        std::vector<AnnotationNodeUPtr> m_annotations;
     };
 }

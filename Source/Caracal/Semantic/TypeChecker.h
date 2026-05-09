@@ -3,6 +3,7 @@
 #include <Caracal/API.h>
 #include <Caracal/Defines.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
+#include <Caracal/Semantic/AnnotationKind.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/Module.h>
 #include <Caracal/Semantic/Parameter.h>
@@ -95,6 +96,10 @@ namespace Caracal
         [[nodiscard]] Type coerceConditionType(Type conditionType, Expression* conditionExpression);
         [[nodiscard]] bool areComparableTypes(Type leftType, Type rightType);
         [[nodiscard]] const TokenBuffer& tokensFor(const Statement* statement) const;
+        [[nodiscard]] bool validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue = nullptr);
+        [[nodiscard]] bool validateFunctionAnnotation(const FunctionDefinitionStatement* statement, const TokenBuffer& tokens);
+        void validateEnumAnnotation(const EnumDefinitionStatement* statement, const TokenBuffer& tokens, bool& isFlag, std::optional<i32>& stepValue);
+        void validateTypeAnnotation(const TypeDefinitionStatement* statement, const TokenBuffer& tokens);
 
         void pushScope(ScopeKind kind);
         void popScope();

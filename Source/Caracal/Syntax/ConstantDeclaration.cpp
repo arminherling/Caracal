@@ -9,7 +9,8 @@ namespace Caracal
         const Token& secondColonToken,
         ExpressionUPtr&& rightExpression,
         const Token& semicolonToken,
-        bool isGlobalConstant)
+        bool isGlobalConstant,
+        std::vector<AnnotationNodeUPtr>&& annotations)
         : Statement(NodeKind::ConstantDeclaration, rightExpression->type())
         , m_leftExpression{ std::move(leftExpression) }
         , m_firstColonToken{ firstColonToken }
@@ -18,6 +19,7 @@ namespace Caracal
         , m_rightExpression{ std::move(rightExpression) }
         , m_semicolonToken{ semicolonToken }
         , m_isGlobalConstant{ isGlobalConstant }
+        , m_annotations{ std::move(annotations) }
     {
     }
 }

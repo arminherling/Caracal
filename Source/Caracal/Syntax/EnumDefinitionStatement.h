@@ -7,6 +7,8 @@
 #include <Caracal/Syntax/TypeNameNode.h>
 #include <Caracal/Syntax/AnnotationNode.h>
 
+#include <vector>
+
 namespace Caracal
 {
     class CARACAL_API EnumDefinitionStatement : public Statement
@@ -21,7 +23,7 @@ namespace Caracal
             const Token& openBracket,
             std::vector<EnumFieldDeclarationUPtr>&& fieldNodes,
             const Token& closeBracket,
-            std::optional<AnnotationNodeUPtr>&& annotation);
+            std::vector<AnnotationNodeUPtr>&& annotations);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(EnumDefinitionStatement)
 
@@ -33,7 +35,7 @@ namespace Caracal
         [[nodiscard]] const Token& openBracket() const noexcept { return m_openBracket; }
         [[nodiscard]] const std::vector<EnumFieldDeclarationUPtr>& fieldNodes() const noexcept { return m_fieldNodes; }
         [[nodiscard]] const Token& closeBracket() const noexcept { return m_closeBracket; }
-        [[nodiscard]] const std::optional<AnnotationNodeUPtr>& annotation() const noexcept { return m_annotation; }
+        [[nodiscard]] const std::vector<AnnotationNodeUPtr>& annotations() const noexcept { return m_annotations; }
         [[nodiscard]] bool hasStep() const noexcept;
         [[nodiscard]] bool isFlag() const noexcept;
 
@@ -46,6 +48,6 @@ namespace Caracal
         Token m_openBracket;
         std::vector<EnumFieldDeclarationUPtr> m_fieldNodes;
         Token m_closeBracket;
-        std::optional<AnnotationNodeUPtr> m_annotation;
+        std::vector<AnnotationNodeUPtr> m_annotations;
     };
 }

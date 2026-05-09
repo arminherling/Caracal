@@ -1,5 +1,5 @@
 FunctionDefinitionStatement: {
-    Type: (i32) -> void
+    Type: (i32) -> i32
     Name: square
     ParametersNode(1): {
         ParameterNode: {
@@ -10,7 +10,11 @@ FunctionDefinitionStatement: {
             }
         }
     }
-    ReturnTypesNode(0): {
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
     }
     BlockNode(1): {
         ReturnStatement: {

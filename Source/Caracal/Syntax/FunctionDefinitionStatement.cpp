@@ -9,7 +9,7 @@ namespace Caracal
         ParametersNodeUPtr&& parametersNode,
         ReturnTypesNodeUPtr&& returnTypesNode,
         BlockNodeUPtr&& bodyNode,
-        std::optional<AnnotationNodeUPtr>&& annotation)
+        std::vector<AnnotationNodeUPtr>&& annotations)
         : Statement(NodeKind::FunctionDefinitionStatement, Type::Undefined())
         , m_keywordToken{ keywordToken }
         , m_nameToken{ nameToken }
@@ -17,17 +17,20 @@ namespace Caracal
         , m_parametersNode{ std::move(parametersNode) }
         , m_returnTypesNode{ std::move(returnTypesNode) }
         , m_bodyNode{ std::move(bodyNode) }
-        , m_annotation{ std::move(annotation) }
+        , m_annotations{ std::move(annotations) }
     {
     }
 
     bool FunctionDefinitionStatement::isExtern() const noexcept
     {
-        if (m_annotation.has_value())
+        for (const auto& annotation : m_annotations)
         {
-            const auto& annotationNode = m_annotation.value();
-            return annotationNode->kind() == AnnotationKind::Extern;
+            if (annotation->kind() == AnnotationKind::Extern)
+            {
+                return true;
+            }
         }
+
         return false;
     }
 }
