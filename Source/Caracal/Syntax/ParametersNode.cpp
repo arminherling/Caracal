@@ -12,4 +12,11 @@ namespace Caracal
         , m_closeParenthesisToken{ closeParenthesisToken }
     {
     }
+
+    SourceLocation ParametersNode::sourceLocation(const TokenBuffer& tokens) const
+    {
+        const auto openParenthesisLocation = tokens.getSourceLocation(m_openParenthesisToken);
+        const auto closeParenthesisLocation = tokens.getSourceLocation(m_closeParenthesisToken);
+        return SourceLocation{ openParenthesisLocation.startIndex, closeParenthesisLocation.endIndex };
+    }
 }

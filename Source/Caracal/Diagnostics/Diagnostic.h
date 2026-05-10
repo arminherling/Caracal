@@ -24,6 +24,13 @@ namespace Caracal
             bool isPrimary = false;
         };
 
+        struct RelatedReport
+        {
+            SourceTextSharedPtr source;
+            std::string message;
+            std::vector<Label> labels;
+        };
+
         Diagnostic(
             DiagnosticLevel level,
             DiagnosticKind kind,
@@ -38,10 +45,12 @@ namespace Caracal
         [[nodiscard]] const SourceTextSharedPtr& source() const noexcept { return m_source; }
         [[nodiscard]] const SourceLocation& location() const noexcept { return m_location; }
         [[nodiscard]] const std::vector<Label>& labels() const noexcept { return m_labels; }
+        [[nodiscard]] const std::vector<RelatedReport>& related() const noexcept { return m_related; }
         [[nodiscard]] const std::optional<std::string>& fix() const noexcept { return m_fix; }
 
         void addPrimaryLabel(const SourceLocation& location, std::string text);
         void addSecondaryLabel(const SourceLocation& location, std::string text);
+        void addRelatedPrimaryLabel(const SourceTextSharedPtr& source, const SourceLocation& location, std::string message, std::string text);
 
     private:
         DiagnosticLevel m_level = DiagnosticLevel::Unknown;
@@ -50,6 +59,7 @@ namespace Caracal
         SourceTextSharedPtr m_source;
         SourceLocation m_location;
         std::vector<Label> m_labels;
+        std::vector<RelatedReport> m_related;
         std::optional<std::string> m_fix;
     };
 }

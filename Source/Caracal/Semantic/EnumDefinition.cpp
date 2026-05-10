@@ -25,13 +25,13 @@ namespace Caracal
         return false;
     }
 
-    void EnumDefinition::addField(std::string_view name, Expression* expression) noexcept
+    void EnumDefinition::addField(std::string_view name, Expression* expression, SourceLocation location) noexcept
     {
-        m_fields.emplace(std::string(name), EnumField{ name, expression });
+        m_fields.emplace(std::string(name), EnumField{ name, expression, location });
     }
 
-    void EnumDefinition::addField(std::string_view name, i32 value) noexcept
+    void EnumDefinition::addField(std::string_view name, i32 value, SourceLocation location) noexcept
     {
-        m_fields.emplace(std::string(name), EnumField{ name, value });
+        m_fields.emplace(std::string(name), EnumField{ name, value, location });
     }
 }

@@ -53,5 +53,12 @@ namespace Caracal
         T0023_ArithmeticOperandTypeMismatch,
         T0024_ComparisonOperandTypeMismatch,
         T0025_EnumFieldValueTypeMismatch,
+        T0026_DuplicateDeclaration,
+        T0027_FlagEnumExplicitValue,
+        T0028_ReferenceReturnType,
+        T0029_ExplicitConstructorDeclaration,
+        T0030_AlreadyReference,
+        T0031_DuplicateTypeDeclaration,
+        T0032_DuplicateFunctionDeclaration,
     };
 }

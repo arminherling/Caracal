@@ -502,6 +502,12 @@ namespace Caracal
             TODO("Static methods can't begin with an underscore for now");
         }
 
+        auto specialFunctionType = SpecialFunctionType::None;
+        if (!methodNameNode->hasTypeName() && methodName == "new")
+        {
+            specialFunctionType = SpecialFunctionType::Constructor;
+        }
+
         return std::make_unique<MethodDefinitionStatement>(
             keyword, 
             std::move(methodNameNode),
@@ -509,7 +515,7 @@ namespace Caracal
             std::move(returnTypes), 
             std::move(body), 
             modifier,
-            SpecialFunctionType::None);
+            specialFunctionType);
     }
     
     BlockNodeUPtr Parser::parseFunctionBody()

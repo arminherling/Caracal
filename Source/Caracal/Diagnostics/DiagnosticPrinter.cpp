@@ -96,22 +96,56 @@ namespace Caracal
             .withSource(CreateSource(*diagnosticSource));
     }
 
-    static CaraReport::Report BuildReport(const Diagnostic& diagnostic)
+    struct DiagnosticReport
+    {
+        CaraReport::Report report;
+        std::vector<std::unique_ptr<CaraReport::Report>> relatedReports;
+    };
+
+    static std::unique_ptr<CaraReport::Report> CreateRelatedReport(
+        const Diagnostic::RelatedReport& related,
+        const SourceTextSharedPtr& diagnosticSource)
+    {
+        const auto& sourceText = ResolveSource(related.source, diagnosticSource);
+        auto report = std::make_unique<CaraReport::Report>(related.message);
+        static_cast<void>(report->withTitle("Related"));
+        static_cast<void>(report->withLevel(CaraReport::Level::Info));
+        static_cast<void>(report->withSource(CreateSource(sourceText)));
+
+        for (const auto& label : related.labels)
+        {
+            static_cast<void>(report->withLabel(CreateLabel(label, diagnosticSource)));
+        }
+
+        return report;
+    }
+
+    static DiagnosticReport BuildReport(const Diagnostic& diagnostic)
     {
         const auto& diagnosticSource = diagnostic.source();
-        auto report = CreateReport(diagnostic, diagnosticSource);
+        auto diagnosticReport = DiagnosticReport{
+            .report = CreateReport(diagnostic, diagnosticSource),
+            .relatedReports = {}
+        };
 
         for (const auto& label : diagnostic.labels())
         {
-            static_cast<void>(report.withLabel(CreateLabel(label, diagnosticSource)));
+            static_cast<void>(diagnosticReport.report.withLabel(CreateLabel(label, diagnosticSource)));
+        }
+
+        for (const auto& related : diagnostic.related())
+        {
+            auto relatedReport = CreateRelatedReport(related, diagnosticSource);
+            static_cast<void>(diagnosticReport.report.withRelated(relatedReport.get()));
+            diagnosticReport.relatedReports.push_back(std::move(relatedReport));
         }
 
         if (diagnostic.fix().has_value())
         {
-            static_cast<void>(report.withFix(diagnostic.fix().value()));
+            static_cast<void>(diagnosticReport.report.withFix(diagnostic.fix().value()));
         }
 
-        return report;
+        return diagnosticReport;
     }
 
     void writeDiagnostic(
@@ -119,13 +153,13 @@ namespace Caracal
         const Diagnostic& diagnostic,
         const DiagnosticOptions& options)
     {
-        auto report = BuildReport(diagnostic);
+        auto diagnosticReport = BuildReport(diagnostic);
         auto writer = CaraReport::Writer::create()
             .withContextLines(options.contextLines)
             .withColors(options.enableColors)
             .withUnicode(options.enableUnicode);
 
-        outStream << writer.writeReport(report);
+        outStream << writer.writeReport(diagnosticReport.report);
     }
 
     void writeDiagnostics(
@@ -141,8 +175,8 @@ namespace Caracal
         const auto& entries = diagnostics.Diagnostics();
         for (std::size_t i = 0; i < entries.size(); ++i)
         {
-            auto report = BuildReport(entries[i]);
-            outStream << writer.writeReport(report);
+            auto diagnosticReport = BuildReport(entries[i]);
+            outStream << writer.writeReport(diagnosticReport.report);
         }
     }
 

@@ -87,6 +87,20 @@ namespace Caracal
                 return "T0024";
             case DiagnosticKind::T0025_EnumFieldValueTypeMismatch:
                 return "T0025";
+            case DiagnosticKind::T0026_DuplicateDeclaration:
+                return "T0026";
+            case DiagnosticKind::T0027_FlagEnumExplicitValue:
+                return "T0027";
+            case DiagnosticKind::T0028_ReferenceReturnType:
+                return "T0028";
+            case DiagnosticKind::T0029_ExplicitConstructorDeclaration:
+                return "T0029";
+            case DiagnosticKind::T0030_AlreadyReference:
+                return "T0030";
+            case DiagnosticKind::T0031_DuplicateTypeDeclaration:
+                return "T0031";
+            case DiagnosticKind::T0032_DuplicateFunctionDeclaration:
+                return "T0032";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -178,6 +192,20 @@ namespace Caracal
                 return "Comparison operand type mismatch";
             case DiagnosticKind::T0025_EnumFieldValueTypeMismatch:
                 return "Enum field value type mismatch";
+            case DiagnosticKind::T0026_DuplicateDeclaration:
+                return "Duplicate declaration";
+            case DiagnosticKind::T0027_FlagEnumExplicitValue:
+                return "Flag enum explicit value";
+            case DiagnosticKind::T0028_ReferenceReturnType:
+                return "Reference return type";
+            case DiagnosticKind::T0029_ExplicitConstructorDeclaration:
+                return "Explicit constructor declaration";
+            case DiagnosticKind::T0030_AlreadyReference:
+                return "Already a reference";
+            case DiagnosticKind::T0031_DuplicateTypeDeclaration:
+                return "Duplicate type declaration";
+            case DiagnosticKind::T0032_DuplicateFunctionDeclaration:
+                return "Duplicate function declaration";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";
@@ -222,5 +250,31 @@ namespace Caracal
             .text = std::move(text),
             .isPrimary = false
             });
+    }
+
+    void Diagnostic::addRelatedPrimaryLabel(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        std::string message,
+        std::string text)
+    {
+        auto relatedSource = source;
+        if (!relatedSource)
+        {
+            relatedSource = m_source;
+        }
+
+        auto related = RelatedReport{
+            .source = relatedSource,
+            .message = std::move(message),
+            .labels = {}
+        };
+        related.labels.push_back(Label{
+            .source = relatedSource,
+            .location = location,
+            .text = std::move(text),
+            .isPrimary = true,
+        });
+        m_related.push_back(std::move(related));
     }
 }

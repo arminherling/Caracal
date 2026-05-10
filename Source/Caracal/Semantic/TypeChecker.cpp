@@ -30,35 +30,17 @@ namespace Caracal
         return nullptr;
     }
 
-    static SourceLocation GetArgumentsLocation(ArgumentsNode* argumentsNode, const TokenBuffer& tokens)
+    static std::optional<SourceLocation> GetTypeFieldLocation(const TypeDefinition& typeDefinition, const FieldDefinition& fieldDefinition, const TokenBuffer& tokens)
     {
-        if (argumentsNode->arguments().empty())
+        const auto fieldIndex = static_cast<size_t>(fieldDefinition.index());
+        const auto& statements = typeDefinition.statement()->bodyNode()->statements();
+        if (fieldIndex >= statements.size())
         {
-            const auto openParenthesisLocation = tokens.getSourceLocation(argumentsNode->openParenthesisToken());
-            const auto closeParenthesisLocation = tokens.getSourceLocation(argumentsNode->closeParenthesisToken());
-            return SourceLocation{ openParenthesisLocation.startIndex, closeParenthesisLocation.endIndex };
+            return std::nullopt;
         }
 
-        const auto firstArgumentLocation = argumentsNode->arguments().front()->sourceLocation(tokens);
-        const auto lastArgumentLocation = argumentsNode->arguments().back()->sourceLocation(tokens);
-        return SourceLocation{ firstArgumentLocation.startIndex, lastArgumentLocation.endIndex };
-    }
-
-    static SourceLocation GetAnnotationLocation(const AnnotationNode* annotation, const TokenBuffer& tokens)
-    {
-        const auto hashLocation = tokens.getSourceLocation(annotation->hashToken());
-        const auto nameLocation = tokens.getSourceLocation(annotation->nameToken());
-        return SourceLocation{ hashLocation.startIndex, nameLocation.endIndex };
-    }
-
-    static SourceLocation GetAnnotationArgumentsLocation(const AnnotationNode* annotation, const TokenBuffer& tokens)
-    {
-        if (!annotation->argumentsNode().has_value())
-        {
-            return GetAnnotationLocation(annotation, tokens);
-        }
-
-        return GetArgumentsLocation(annotation->argumentsNode().value().get(), tokens);
+        auto* fieldStatement = static_cast<TypeFieldDeclaration*>(statements[fieldIndex].get());
+        return fieldStatement->nameExpression()->sourceLocation(tokens);
     }
 
     static std::string FormatTypeName(Module& module, Type type)
@@ -187,7 +169,7 @@ namespace Caracal
                             {
                                 m_diagnostics.AddUnexpectedAnnotationTargetError(
                                     parseTree->tokens().source(),
-                                    GetAnnotationLocation(annotation.get(), parseTree->tokens()));
+                                    annotation->sourceLocation(parseTree->tokens()));
                             }
                         }
 
@@ -198,7 +180,41 @@ namespace Caracal
                         auto* enumStatement = static_cast<EnumDefinitionStatement*>(statement.get());
                         m_statementTokens.emplace(enumStatement, &parseTree->tokens());
                         const auto& enumName = enumStatement->name();
-                        // TODO check if type with same name exists already
+                        auto existingType = m_module.tryGetTypeByName(enumName);
+                        if (existingType != Type::Undefined())
+                        {
+                            auto otherSource = SourceTextSharedPtr{};
+                            auto otherLocation = std::optional<SourceLocation>{};
+                            if (existingType.kind() == TypeKind::Enum)
+                            {
+                                auto* otherStatement = m_module.getEnumDefinition(existingType).statement();
+                                if (otherStatement != nullptr)
+                                {
+                                    const auto& otherTokens = tokensFor(otherStatement);
+                                    otherSource = otherTokens.source();
+                                    otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
+                                }
+                            }
+                            else if (existingType.kind() == TypeKind::Type)
+                            {
+                                auto* otherStatement = m_module.getTypeDefinition(existingType).statement();
+                                if (otherStatement != nullptr)
+                                {
+                                    const auto& otherTokens = tokensFor(otherStatement);
+                                    otherSource = otherTokens.source();
+                                    otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
+                                }
+                            }
+
+                            m_diagnostics.AddDuplicateTypeDeclarationError(
+                                parseTree->tokens().source(),
+                                parseTree->tokens().getSourceLocation(enumStatement->nameToken()),
+                                enumName,
+                                otherSource,
+                                otherLocation);
+                            break;
+                        }
+
                         auto& enumDefinition = m_module.createEnum(enumName, enumStatement);
                         enumStatement->setType(enumDefinition.type());
                         m_enumDeclarations.push_back(enumStatement);
@@ -209,7 +225,41 @@ namespace Caracal
                     {
                         auto* typeStatement = static_cast<TypeDefinitionStatement*>(statement.get());
                         m_statementTokens.emplace(typeStatement, &parseTree->tokens());
-                        // TODO check if type with same name exists already
+                        auto existingType = m_module.tryGetTypeByName(typeStatement->name());
+                        if (existingType != Type::Undefined())
+                        {
+                            auto otherSource = SourceTextSharedPtr{};
+                            auto otherLocation = std::optional<SourceLocation>{};
+                            if (existingType.kind() == TypeKind::Enum)
+                            {
+                                auto* otherStatement = m_module.getEnumDefinition(existingType).statement();
+                                if (otherStatement != nullptr)
+                                {
+                                    const auto& otherTokens = tokensFor(otherStatement);
+                                    otherSource = otherTokens.source();
+                                    otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
+                                }
+                            }
+                            else if (existingType.kind() == TypeKind::Type)
+                            {
+                                auto* otherStatement = m_module.getTypeDefinition(existingType).statement();
+                                if (otherStatement != nullptr)
+                                {
+                                    const auto& otherTokens = tokensFor(otherStatement);
+                                    otherSource = otherTokens.source();
+                                    otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
+                                }
+                            }
+
+                            m_diagnostics.AddDuplicateTypeDeclarationError(
+                                parseTree->tokens().source(),
+                                parseTree->tokens().getSourceLocation(typeStatement->nameToken()),
+                                std::string(typeStatement->name()),
+                                otherSource,
+                                otherLocation);
+                            break;
+                        }
+
                         auto& typeDefinition = m_module.createType(typeStatement->name(), typeStatement);
                         typeStatement->setType(typeDefinition.type());
                         m_typeDeclarations.push_back(typeStatement);
@@ -221,6 +271,27 @@ namespace Caracal
                         auto* functionStatement = static_cast<FunctionDefinitionStatement*>(statement.get());
                         m_statementTokens.emplace(functionStatement, &parseTree->tokens());
                         const auto& functionName = functionStatement->name();
+                        auto existingFunctionType = m_module.tryGetFunctionTypeByName(functionName);
+                        if (existingFunctionType != Type::Undefined())
+                        {
+                            auto otherSource = SourceTextSharedPtr{};
+                            auto otherLocation = std::optional<SourceLocation>{};
+                            auto* otherStatement = static_cast<const FunctionDefinitionStatement*>(m_module.getFunctionDefinition(existingFunctionType).statement());
+                            if (otherStatement != nullptr)
+                            {
+                                const auto& otherTokens = tokensFor(otherStatement);
+                                otherSource = otherTokens.source();
+                                otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
+                            }
+
+                            m_diagnostics.AddDuplicateFunctionDeclarationError(
+                                parseTree->tokens().source(),
+                                parseTree->tokens().getSourceLocation(functionStatement->nameToken()),
+                                functionName,
+                                otherSource,
+                                otherLocation);
+                            break;
+                        }
 
                         std::vector<Parameter> parameters{};
                         const auto& parametersNodes = functionStatement->parametersNode()->parameters();
@@ -229,7 +300,6 @@ namespace Caracal
                             parameters.emplace_back(parameterNode->name(), Type::Undefined());
                         }
 
-                        // TODO check if type with same name exists already
                         auto& functionDefinition = m_module.createFunction(functionName, parameters, std::vector<Type>(), functionStatement);
                         functionStatement->setType(functionDefinition.type());
                         m_functionDeclarations.push_back(functionStatement);
@@ -249,7 +319,7 @@ namespace Caracal
     {
         for (const auto* typeDefinitionStatement : m_typeDeclarations)
         {
-            auto typeType = m_module.tryGetTypeByName(typeDefinitionStatement->name());
+            const auto typeType = m_module.tryGetTypeByName(typeDefinitionStatement->name());
             if (typeType == Type::Undefined())
             {
                 TODO("This shouldn't happen");
@@ -265,8 +335,24 @@ namespace Caracal
                 }
 
                 auto* methodStatement = static_cast<MethodDefinitionStatement*>(bodyStatement.get());
-                auto modifier = methodStatement->modifier();
+                const auto modifier = methodStatement->modifier();
                 const auto& methodName = methodStatement->methodNameNode()->methodName();
+                if (methodStatement->specialFunctionType() == SpecialFunctionType::Constructor || methodName == "new")
+                {
+                    const auto& tokens = tokensFor(typeDefinitionStatement);
+                    auto constructorLocation = tokens.getSourceLocation(typeDefinitionStatement->nameToken());
+                    if (typeDefinitionStatement->constructorParameters().has_value())
+                    {
+                        constructorLocation = typeDefinitionStatement->constructorParameters().value()->sourceLocation(tokens);
+                    }
+
+                    m_diagnostics.AddExplicitConstructorDeclarationError(
+                        tokens.source(),
+                        tokens.getSourceLocation(methodStatement->methodNameNode()->methodNameToken()),
+                        constructorLocation,
+                        std::string(typeDefinitionStatement->name()));
+                    continue;
+                }
 
                 std::vector<Parameter> declarationParameters{};
                 if (modifier != MethodModifier::Static)
@@ -288,12 +374,6 @@ namespace Caracal
 
                 auto& methodDefinition = m_module.createMethod(typeDefinition, modifier, methodName, declarationParameters, std::vector<Type>(), methodStatement);
                 methodStatement->setType(methodDefinition.type());
-            }
-
-            if (typeDefinition.tryGetMethodTypeByName("new") != Type::Undefined())
-            {
-                TODO("Add diagnostics for duplicate constructor declaration");
-                continue;
             }
 
             std::vector<Parameter> constructorParameters{};
@@ -428,6 +508,10 @@ namespace Caracal
             }
 
             const auto* methodStatement = static_cast<const MethodDefinitionStatement*>(bodyStatement.get());
+            if (methodStatement->specialFunctionType() == SpecialFunctionType::Constructor || methodStatement->methodNameNode()->methodName() == "new")
+            {
+                continue;
+            }
             typeCheckMethodSignature(methodStatement, typeDefinition, typeType, tokens);
         }
     }
@@ -483,7 +567,11 @@ namespace Caracal
         auto& typeDefinition = m_module.getTypeDefinition(typeType);
         for (const auto& fieldDefinition : typeDefinition.fields())
         {
-            currentScope()->addVariableBinding(fieldDefinition.name(), fieldDefinition.type());
+            currentScope()->addVariableBinding(
+                fieldDefinition.name(),
+                fieldDefinition.type(),
+                GetTypeFieldLocation(typeDefinition, fieldDefinition, tokens),
+                tokens.source());
         }
 
         const auto& definitionStatements = statement->bodyNode()->statements();
@@ -494,7 +582,13 @@ namespace Caracal
                 continue;
             }
 
-            typeCheckMethodDefinitionStatement(static_cast<MethodDefinitionStatement*>(definitionStatement.get()), tokens);
+            auto* methodStatement = static_cast<MethodDefinitionStatement*>(definitionStatement.get());
+            if (methodStatement->specialFunctionType() == SpecialFunctionType::Constructor || methodStatement->methodNameNode()->methodName() == "new")
+            {
+                continue;
+            }
+
+            typeCheckMethodDefinitionStatement(methodStatement, tokens);
         }
 
         popScope();
@@ -622,7 +716,7 @@ namespace Caracal
             {
                 m_diagnostics.AddUnexpectedAnnotationTargetError(
                     tokens.source(),
-                    GetAnnotationLocation(annotation.get(), tokens));
+                    annotation->sourceLocation(tokens));
             }
         }
 
@@ -637,7 +731,7 @@ namespace Caracal
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(name, rightType);
+                scope->addVariableBinding(name, rightType, nameExpression->sourceLocation(tokens), tokens.source());
 
                 if (statement->isGlobalConstant())
                 {
@@ -647,7 +741,12 @@ namespace Caracal
             }
             else
             {
-                TODO("Add error diagnostics for duplicate constant declaration");
+                m_diagnostics.AddDuplicateDeclarationError(
+                    tokens.source(),
+                    nameExpression->sourceLocation(tokens),
+                    name,
+                    scope->tryGetVariableBindingSource(name),
+                    scope->tryGetVariableBindingLocation(name));
             }
             nameExpression->setType(rightType);
         }
@@ -680,11 +779,16 @@ namespace Caracal
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(name, rightType);
+                scope->addVariableBinding(name, rightType, nameExpression->sourceLocation(tokens), tokens.source());
             }
             else
             {
-                TODO("Add error diagnostics for duplicate variable declaration");
+                m_diagnostics.AddDuplicateDeclarationError(
+                    tokens.source(),
+                    nameExpression->sourceLocation(tokens),
+                    name,
+                    scope->tryGetVariableBindingSource(name),
+                    scope->tryGetVariableBindingLocation(name));
             }
             nameExpression->setType(rightType);
         }
@@ -751,9 +855,15 @@ namespace Caracal
 
         auto& functionDefinition = m_module.getFunctionDefinition(functionType);
         auto& parameters = functionDefinition.parameters();
-        for (const auto& parameter : parameters)
+        const auto& parameterNodes = statement->parametersNode()->parameters();
+        for (size_t i = 0; i < parameters.size(); ++i)
         {
-            currentScope()->addVariableBinding(parameter.name(), parameter.type());
+            auto location = std::optional<SourceLocation>{};
+            if (i < parameterNodes.size())
+            {
+                location = parameterNodes[i]->sourceLocation(tokens);
+            }
+            currentScope()->addVariableBinding(parameters[i].name(), parameters[i].type(), location, tokens.source());
         }
 
         auto& returnTypes = functionDefinition.returnTypes();
@@ -802,17 +912,28 @@ namespace Caracal
             const auto& fieldName = fieldNode->name();
             if (enumDefinition.hasField(fieldName))
             {
-                TODO("Add error diagnostics for duplicate enum field name");
+                const auto& otherField = enumDefinition.getFieldByName(fieldName);
+                m_diagnostics.AddDuplicateDeclarationError(
+                    tokens.source(),
+                    tokens.getSourceLocation(fieldNode->nameToken()),
+                    fieldName,
+                    nullptr,
+                    otherField.location());
+                continue;
             }
 
+            const auto fieldLocation = tokens.getSourceLocation(fieldNode->nameToken());
             if (isFlag)
             {
                 if (fieldNode->valueExpression().has_value())
                 {
-                    TODO("Add error diagnostics for flag enums not allowing explicit values");
+                    m_diagnostics.AddFlagEnumExplicitValueError(
+                        tokens.source(),
+                        fieldNode->valueExpression().value()->sourceLocation(tokens),
+                        fieldName);
                 }
 
-                enumDefinition.addField(fieldName, currentFieldValue);
+                enumDefinition.addField(fieldName, currentFieldValue, fieldLocation);
                 fieldNode->setValue(currentFieldValue);
 
                 if (currentFieldValue == 0)
@@ -848,18 +969,18 @@ namespace Caracal
                 if (expression->kind() == NodeKind::NumberLiteral && expression->type() == Type::I32())
                 {
                     auto value = convertToI32(static_cast<NumberLiteral*>(expression), tokens);
-                    enumDefinition.addField(fieldName, value);
+                    enumDefinition.addField(fieldName, value, fieldLocation);
                     fieldNode->setValue(value);
                     currentFieldValue = value + step;
                 }
                 else
                 {
-                    enumDefinition.addField(fieldName, expression);
+                    enumDefinition.addField(fieldName, expression, fieldLocation);
                 }
             }
             else
             {
-                enumDefinition.addField(fieldName, currentFieldValue);
+                enumDefinition.addField(fieldName, currentFieldValue, fieldLocation);
                 fieldNode->setValue(currentFieldValue);
                 currentFieldValue += step;
             }
@@ -873,7 +994,7 @@ namespace Caracal
 
     bool TypeChecker::validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue)
     {
-        const auto annotationLocation = GetAnnotationLocation(annotation, tokens);
+        const auto annotationLocation = annotation->sourceLocation(tokens);
         const auto* definition = GetAnnotationDefinition(annotation->kind());
         if (definition == nullptr)
         {
@@ -903,7 +1024,7 @@ namespace Caracal
         {
             m_diagnostics.AddAnnotationWrongNumberOfArgumentsError(
                 tokens.source(),
-                GetAnnotationArgumentsLocation(annotation, tokens),
+                annotation->argumentsLocation(tokens),
                 annotation->kind(),
                 annotation->name(),
                 definition->requiredArgumentCount,
@@ -997,8 +1118,8 @@ namespace Caracal
                     {
                         m_diagnostics.AddConflictingEnumAnnotationsError(
                             tokens.source(),
-                            GetAnnotationLocation(annotation, tokens),
-                            GetAnnotationLocation(stepAnnotation, tokens),
+                            annotation->sourceLocation(tokens),
+                            stepAnnotation->sourceLocation(tokens),
                             annotation->name(),
                             stepAnnotation->name());
                         break;
@@ -1012,8 +1133,8 @@ namespace Caracal
                     {
                         m_diagnostics.AddConflictingEnumAnnotationsError(
                             tokens.source(),
-                            GetAnnotationLocation(annotation, tokens),
-                            GetAnnotationLocation(flagAnnotation, tokens),
+                            annotation->sourceLocation(tokens),
+                            flagAnnotation->sourceLocation(tokens),
                             annotation->name(),
                             flagAnnotation->name());
                         break;
@@ -1039,9 +1160,15 @@ namespace Caracal
     void TypeChecker::typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex, const TokenBuffer& tokens)
     {
         const auto& fieldName = statement->nameExpression()->name();
-        if (typeDefinition.tryGetFieldByName(fieldName).type() != Type::Undefined())
+        const auto& existingField = typeDefinition.tryGetFieldByName(fieldName);
+        if (existingField.type() != Type::Undefined())
         {
-            TODO("Add error diagnostics for duplicate type field declaration");
+            m_diagnostics.AddDuplicateDeclarationError(
+                tokens.source(),
+                statement->nameExpression()->sourceLocation(tokens),
+                fieldName,
+                nullptr,
+                GetTypeFieldLocation(typeDefinition, existingField, tokens));
             return;
         }
 
@@ -1072,7 +1199,6 @@ namespace Caracal
 
         if (fieldType == Type::Undefined())
         {
-            TODO("Add error diagnostics for missing type field type");
             return;
         }
 
@@ -1094,9 +1220,15 @@ namespace Caracal
 
         auto& methodDefinition = m_module.getFunctionDefinition(methodType);
         auto& parameters = methodDefinition.parameters();
-        for (const auto& parameter : parameters)
+        const auto& parameterNodes = statement->parametersNode()->parameters();
+        for (size_t i = 0; i < parameters.size(); ++i)
         {
-            currentScope()->addVariableBinding(parameter.name(), parameter.type());
+            auto location = std::optional<SourceLocation>{};
+            if (i < parameterNodes.size())
+            {
+                location = parameterNodes[i]->sourceLocation(tokens);
+            }
+            currentScope()->addVariableBinding(parameters[i].name(), parameters[i].type(), location, tokens.source());
         }
 
         auto& returnTypes = methodDefinition.returnTypes();
@@ -1269,7 +1401,9 @@ namespace Caracal
                 auto type = typeCheckExpression(unaryExpression->expression().get(), tokens);
                 if (type.isReference())
                 {
-                    TODO("Add error diagnostics for already being a reference");
+                    m_diagnostics.AddAlreadyReferenceError(
+                        tokens.source(),
+                        unaryExpression->sourceLocation(tokens));
                     return Type::Undefined();
                 }
                 auto referenceType = type.toReference();
@@ -1563,7 +1697,7 @@ namespace Caracal
         auto argumentsNode = functionCallExpression->argumentsNode().get();
         const auto& arguments = argumentsNode->arguments();
         const auto expectedArgumentCount = parameterCount - parameterOffset;
-        const auto argumentsLocation = GetArgumentsLocation(argumentsNode, tokens);
+        const auto argumentsLocation = argumentsNode->sourceLocation(tokens);
 
         if (isVariadic)
         {
@@ -1707,11 +1841,16 @@ namespace Caracal
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(name, parameterType);
+                scope->addVariableBinding(name, parameterType, tokens.getSourceLocation(parameterNode->nameToken()), tokens.source());
             }
             else
             {
-                TODO("Add error diagnostics for duplicate parameter declaration");
+                m_diagnostics.AddDuplicateDeclarationError(
+                    tokens.source(),
+                    tokens.getSourceLocation(parameterNode->nameToken()),
+                    name,
+                    scope->tryGetVariableBindingSource(name),
+                    scope->tryGetVariableBindingLocation(name));
             }
             parameterNode->setType(parameterType);
         }
@@ -1726,7 +1865,10 @@ namespace Caracal
             auto returnType = typeCheckTypeNameNode(returnTypeNode.get(), tokens);
             if (returnType.isReference())
             {
-                TODO("Add error diagnostics for return type cannot be a reference");
+                m_diagnostics.AddReferenceReturnTypeError(
+                    tokens.source(),
+                    returnTypeNode->sourceLocation(tokens),
+                    returnTypeNode->name());
             }
             types.push_back(returnType);
         }

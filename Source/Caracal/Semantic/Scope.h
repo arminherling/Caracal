@@ -2,6 +2,8 @@
 
 #include <Caracal/API.h>
 #include <Caracal/Semantic/Type.h>
+#include <Caracal/Text/SourceLocation.h>
+#include <Caracal/Text/SourceText.h>
 
 #include <string_view>
 #include <unordered_map>
@@ -18,6 +20,13 @@ namespace Caracal
         Method,
     };
 
+    struct VariableBinding
+    {
+        Type type;
+        SourceTextSharedPtr source;
+        std::optional<SourceLocation> location;
+    };
+
     class CARACAL_API Scope
     {
     public:
@@ -28,17 +37,19 @@ namespace Caracal
         bool hasVariableBinding(std::string_view identifier) const noexcept;
 
         //void addTypeBinding(std::string_view identifier, Type node);
-        void addVariableBinding(std::string_view identifier, Type node);
+        void addVariableBinding(std::string_view identifier, Type node, std::optional<SourceLocation> location = std::nullopt, const SourceTextSharedPtr& source = nullptr);
         //void addFunctionBinding(std::string_view identifier, Type node);
         //[[nodiscard]] std::optional<Type> tryGetTypeBinding(std::string_view identifier) const noexcept;
         [[nodiscard]] std::optional<Type> tryGetVariableBinding(std::string_view identifier) const noexcept;
+        [[nodiscard]] SourceTextSharedPtr tryGetVariableBindingSource(std::string_view identifier) const noexcept;
+        [[nodiscard]] std::optional<SourceLocation> tryGetVariableBindingLocation(std::string_view identifier) const noexcept;
         //[[nodiscard]] std::optional<Type> tryGetFunctionBinding(std::string_view identifier) const noexcept;
 
     private:
         Scope* m_parent;
         ScopeKind m_kind;
         //std::unordered_map<std::string_view, Type> m_typeBindings;
-        std::unordered_map<std::string_view, Type> m_variableBindings;
+        std::unordered_map<std::string_view, VariableBinding> m_variableBindings;
         std::unordered_map<std::string_view, Type> m_functionBindings;
     };
 }

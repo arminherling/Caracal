@@ -3,6 +3,7 @@
 #include <Caracal/API.h>
 #include <Caracal/Semantic/AnnotationKind.h>
 #include <Caracal/Syntax/ArgumentsNode.h>
+#include <Caracal/Syntax/TokenBuffer.h>
 
 namespace Caracal
 {
@@ -21,6 +22,8 @@ namespace Caracal
         [[nodiscard]] const Token& nameToken() const noexcept { return m_nameToken; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
         [[nodiscard]] const std::optional<ArgumentsNodeUPtr>& argumentsNode() const noexcept { return m_argumentsNode; }
+        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const;
+        [[nodiscard]] SourceLocation argumentsLocation(const TokenBuffer& tokens) const;
 
     private:
         AnnotationKind m_kind;

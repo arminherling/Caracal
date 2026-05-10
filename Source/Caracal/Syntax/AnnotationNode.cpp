@@ -15,4 +15,21 @@ namespace Caracal
         , m_argumentsNode{ std::move(argumentsNode) }
     {
     }
+
+    SourceLocation AnnotationNode::sourceLocation(const TokenBuffer& tokens) const
+    {
+        const auto hashLocation = tokens.getSourceLocation(m_hashToken);
+        const auto nameLocation = tokens.getSourceLocation(m_nameToken);
+        return SourceLocation{ hashLocation.startIndex, nameLocation.endIndex };
+    }
+
+    SourceLocation AnnotationNode::argumentsLocation(const TokenBuffer& tokens) const
+    {
+        if (!m_argumentsNode.has_value())
+        {
+            return sourceLocation(tokens);
+        }
+
+        return m_argumentsNode.value()->sourceLocation(tokens);
+    }
 }

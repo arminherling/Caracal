@@ -63,6 +63,13 @@ namespace Caracal
         void AddArithmeticOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& leftTypeName, const std::string& rightTypeName);
         void AddComparisonOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& leftTypeName, const std::string& rightTypeName);
         void AddEnumFieldValueTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
+        void AddDuplicateDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void AddFlagEnumExplicitValueError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName);
+        void AddReferenceReturnTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
+        void AddExplicitConstructorDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& typeName);
+        void AddAlreadyReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void AddDuplicateTypeDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void AddDuplicateFunctionDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
 
         const std::vector<Diagnostic>& Diagnostics() const;
 

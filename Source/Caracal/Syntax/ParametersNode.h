@@ -3,6 +3,7 @@
 #include <Caracal/API.h>
 #include <Caracal/Syntax/ParameterNode.h>
 #include <Caracal/Syntax/Token.h>
+#include <Caracal/Syntax/TokenBuffer.h>
 #include <vector>
 
 namespace Caracal
@@ -20,6 +21,7 @@ namespace Caracal
         [[nodiscard]] const Token& openParenthesisToken() const noexcept { return m_openParenthesisToken; }
         [[nodiscard]] const std::vector<ParameterNodeUPtr>& parameters() const noexcept { return m_parameters; }
         [[nodiscard]] const Token& closeParenthesisToken() const noexcept { return m_closeParenthesisToken; }
+        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const;
 
     private:
         Token m_openParenthesisToken;

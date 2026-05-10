@@ -3,6 +3,7 @@
 #include <Caracal/API.h>
 #include <Caracal/Syntax/Node.h>
 #include <Caracal/Syntax/NameExpression.h>
+#include <Caracal/Syntax/TokenBuffer.h>
 #include <optional>
 
 namespace Caracal 
@@ -21,6 +22,7 @@ namespace Caracal
         [[nodiscard]] bool isReference() const noexcept { return m_refToken.has_value(); }
         [[nodiscard]] const Token& nameToken() const noexcept { return m_nameToken; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
+        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const;
 
     private:
         std::optional<Token> m_refToken;

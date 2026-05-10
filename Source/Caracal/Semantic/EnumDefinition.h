@@ -22,8 +22,8 @@ namespace Caracal
         [[nodiscard]] const EnumDefinitionStatement* statement() const noexcept { return m_statement; }
 
         void setBaseType(Type baseType) noexcept { m_baseType = baseType; }
-        void addField(std::string_view name, Expression* expression) noexcept;
-        void addField(std::string_view name, i32 value) noexcept;
+        void addField(std::string_view name, Expression* expression, SourceLocation location) noexcept;
+        void addField(std::string_view name, i32 value, SourceLocation location) noexcept;
 
     private:
         Type m_type;

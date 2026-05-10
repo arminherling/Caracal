@@ -12,4 +12,16 @@ namespace Caracal
         , m_name{ name }
     {
     }
+
+    SourceLocation TypeNameNode::sourceLocation(const TokenBuffer& tokens) const
+    {
+        const auto nameLocation = tokens.getSourceLocation(m_nameToken);
+        if (!m_refToken.has_value())
+        {
+            return nameLocation;
+        }
+
+        const auto refLocation = tokens.getSourceLocation(m_refToken.value());
+        return SourceLocation{ refLocation.startIndex, nameLocation.endIndex };
+    }
 }

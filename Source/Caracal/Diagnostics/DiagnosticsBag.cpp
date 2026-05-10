@@ -4,6 +4,18 @@
 
 namespace Caracal
 {
+    static bool IsCrossFileDuplicate(
+        const SourceTextSharedPtr& source,
+        const SourceTextSharedPtr& otherSource)
+    {
+        if (!source || !otherSource)
+        {
+            return false;
+        }
+
+        return source->filePath != otherSource->filePath;
+    }
+
     static std::string ToTokenSource(TokenKind kind)
     {
         const std::unordered_map<TokenKind, std::string_view> tokenSource{
@@ -754,6 +766,170 @@ namespace Caracal
             location,
             "Use a value of the enum base type for this field.");
         diagnostic.addPrimaryLabel(location, "Enum base type is '" + expectedTypeName + "', but this field's initializer has type '" + actualTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddDuplicateDeclarationError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name,
+        const SourceTextSharedPtr& otherSource,
+        std::optional<SourceLocation> otherLocation)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0026_DuplicateDeclaration,
+            source,
+            location,
+            "Rename this declaration, or remove the duplicate.");
+        diagnostic.addPrimaryLabel(location, "Duplicate declaration of '" + name + "'");
+        if (otherLocation.has_value())
+        {
+            if (IsCrossFileDuplicate(source, otherSource))
+            {
+                diagnostic.addRelatedPrimaryLabel(
+                    otherSource,
+                    otherLocation.value(),
+                    "Previous declaration",
+                    "Previous declaration of '" + name + "' is here.");
+            }
+            else
+            {
+                diagnostic.addSecondaryLabel(otherLocation.value(), "Previous declaration is here.");
+            }
+        }
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddFlagEnumExplicitValueError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& fieldName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0027_FlagEnumExplicitValue,
+            source,
+            location,
+            "Remove the explicit value from this flag enum field.");
+        diagnostic.addPrimaryLabel(location, "Flag enum field '" + fieldName + "' cannot declare an explicit value");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddReferenceReturnTypeError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0028_ReferenceReturnType,
+            source,
+            location,
+            "Return the value type instead of a reference type.");
+        diagnostic.addPrimaryLabel(location, "Return type cannot be 'ref " + typeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddExplicitConstructorDeclarationError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const SourceLocation& otherLocation,
+        const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0029_ExplicitConstructorDeclaration,
+            source,
+            location,
+            "Remove the explicit 'new' method and declare constructor parameters on the type instead.");
+        diagnostic.addPrimaryLabel(location, "Type '" + typeName + "' cannot declare an explicit 'new' method");
+        diagnostic.addSecondaryLabel(otherLocation, "Constructor parameters are declared here on the type.");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddAlreadyReferenceError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0030_AlreadyReference,
+            source,
+            location,
+            "Remove the extra 'ref' operator.");
+        diagnostic.addPrimaryLabel(location, "This expression is already a reference");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddDuplicateTypeDeclarationError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& typeName,
+        const SourceTextSharedPtr& otherSource,
+        std::optional<SourceLocation> otherLocation)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0031_DuplicateTypeDeclaration,
+            source,
+            location,
+            "Rename this type declaration, or remove the duplicate.");
+        diagnostic.addPrimaryLabel(location, "Type '" + typeName + "' is already declared");
+        if (otherLocation.has_value())
+        {
+            if (IsCrossFileDuplicate(source, otherSource))
+            {
+                diagnostic.addRelatedPrimaryLabel(
+                    otherSource,
+                    otherLocation.value(),
+                    "Previous type declaration",
+                    "Previous type declaration of '" + typeName + "' is here.");
+            }
+            else
+            {
+                diagnostic.addSecondaryLabel(otherLocation.value(), "Previous type declaration is here.");
+            }
+        }
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddDuplicateFunctionDeclarationError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& functionName,
+        const SourceTextSharedPtr& otherSource,
+        std::optional<SourceLocation> otherLocation)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0032_DuplicateFunctionDeclaration,
+            source,
+            location,
+            "Rename this function, or remove the duplicate declaration.");
+        diagnostic.addPrimaryLabel(location, "Function '" + functionName + "' is already declared");
+        if (otherLocation.has_value())
+        {
+            if (IsCrossFileDuplicate(source, otherSource))
+            {
+                diagnostic.addRelatedPrimaryLabel(
+                    otherSource,
+                    otherLocation.value(),
+                    "Previous function declaration",
+                    "Previous function declaration of '" + functionName + "' is here.");
+            }
+            else
+            {
+                diagnostic.addSecondaryLabel(otherLocation.value(), "Previous function declaration is here.");
+            }
+        }
 
         diagnostics.push_back(std::move(diagnostic));
     }
