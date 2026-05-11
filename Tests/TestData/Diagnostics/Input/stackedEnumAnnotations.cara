@@ -1,0 +1,9 @@
+#flag
+#step(2)
+enum Bits {
+    A
+    B
+}
+
+def main() {
+}

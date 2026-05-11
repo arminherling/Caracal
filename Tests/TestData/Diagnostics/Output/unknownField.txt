@@ -1,0 +1,13 @@
+ Error T0011
+  Unknown field
+    ,-[Diagnostics/Input/unknownField.cara:5:10]
+  2 | }
+  3 | 
+  4 | def main() {
+  5 |     User.missing;
+    .          -------
+    .             `-- Type 'User' has no field 'missing'
+  6 | }
+  7 | 
+    `----
+  Fix: Add this field to the type, or rename the access to an existing field.

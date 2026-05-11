@@ -1,0 +1,13 @@
+ Error T0029
+  Flag enum explicit value
+    ,-[Diagnostics/Input/flagEnumExplicitValue.cara:3:13]
+  1 | #flag
+  2 | enum Bits {
+  3 |     Read :: 1
+    .             -
+    .             `-- Flag enum field 'Read' cannot declare an explicit value
+  4 |     Write
+  5 | }
+  6 | 
+    `----
+  Fix: Remove the explicit value from this flag enum field.

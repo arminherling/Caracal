@@ -1,0 +1,3 @@
+def id(value: i32, value: i32) i32 {
+    return value;
+}

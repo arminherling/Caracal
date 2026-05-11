@@ -1,0 +1,11 @@
+ Error L0001
+  Illegal character
+    ,-[Diagnostics/Input/illegalCharacterTest.cara:2:5]
+  1 | def main() {
+  2 |     @
+    .     -
+    .     `-- This character is not part of the Caracal syntax.
+  3 | }
+  4 | 
+    `----
+  Fix: Remove the unsupported character.

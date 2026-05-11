@@ -1,0 +1,4 @@
+#mystery
+enum Example {
+    A
+}

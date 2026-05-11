@@ -1,0 +1,11 @@
+ Error T0024
+  Type field initializer mismatch
+    ,-[Diagnostics/Input/typeFieldInitializerMismatch.cara:2:18]
+  1 | type Box {
+  2 |     value: i32 = true
+    .                  ----
+    .                    `-- Field is declared as 'i32', but its initializer has type 'bool'
+  3 | }
+  4 | 
+    `----
+  Fix: Initialize this field with a value of type 'i32' or change the field type.

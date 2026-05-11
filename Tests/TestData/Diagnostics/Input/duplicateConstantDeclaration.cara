@@ -1,0 +1,6 @@
+value :: 1;
+value :: 2;
+
+def main() i32 {
+    return value;
+}

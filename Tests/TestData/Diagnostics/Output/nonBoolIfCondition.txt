@@ -1,0 +1,12 @@
+ Error T0018
+  Non-bool if condition
+    ,-[Diagnostics/Input/nonBoolIfCondition.cara:2:8]
+  1 | def main() {
+  2 |     if 1 {
+    .        -
+    .        `-- If condition must have type 'bool', but got 'i32'
+  3 |     }
+  4 | }
+  5 | 
+    `----
+  Fix: Change the if condition to a bool expression.

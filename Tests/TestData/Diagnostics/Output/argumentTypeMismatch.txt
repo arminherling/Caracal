@@ -1,0 +1,13 @@
+ Error T0016
+  Argument type mismatch
+    ,-[Diagnostics/Input/argumentTypeMismatch.cara:5:15]
+  2 | }
+  3 | 
+  4 | def main() {
+  5 |     takesBool(1);
+    .               -
+    .               `-- Argument 1 of 'takesBool' expects 'bool', but got 'i32'
+  6 | }
+  7 | 
+    `----
+  Fix: Change the mismatched argument to match the parameter type.

@@ -1,0 +1,14 @@
+ Error T0006
+  Conflicting enum annotations
+    ,-[Diagnostics/Input/stackedEnumAnnotations.cara:2:1]
+  1 | #flag
+    . -----
+    .   `-- Conflicting annotation '#flag' was already used here.
+  2 | #step(2)
+    . -----
+    .   `-- Annotation '#step' cannot be used together with '#flag' on the same enum.
+  3 | enum Bits {
+  4 |     A
+  5 |     B
+    `----
+  Fix: Remove one of the conflicting enum annotations.

@@ -16,8 +16,7 @@ namespace
 static void FileTests(
     const std::string& /*fileName*/, 
     const std::filesystem::path& inputFilePath, 
-    const std::filesystem::path& outputFilePath, 
-    const std::filesystem::path& /*errorFilePath*/)
+    const std::filesystem::path& outputFilePath)
 {
     if (!std::filesystem::exists(inputFilePath))
         CaraTest::fail();// ("In file missing");
@@ -63,7 +62,7 @@ static void FileTests(
     CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
 }
 
-static std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> FileTests_Data()
+static std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path>> FileTests_Data()
 {
     const auto currentFilePath = std::filesystem::path(__FILE__);
     const auto currentDirectory = currentFilePath.parent_path();
@@ -71,7 +70,7 @@ static std::vector<std::tuple<std::string, std::filesystem::path, std::filesyste
     const auto inputDir = testDataDir / "Input";
     const auto absolutePath = std::filesystem::absolute(inputDir);
 
-    std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path, std::filesystem::path>> data{};
+    std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path>> data{};
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(absolutePath))
     {
@@ -87,19 +86,15 @@ static std::vector<std::tuple<std::string, std::filesystem::path, std::filesyste
             }
 
             const auto fileName = inputFilePath.stem().string();
-            const auto extension = inputFilePath.extension().string();
             const auto outputFileName = fileName + ".txt";
-            const auto outputFileNameError = fileName + "_error.txt";
 
             const auto putputParsePath = std::filesystem::absolute(outputParseDirectoryPath / inputDirName / outputFileName);
-            const auto putputErrorPath = std::filesystem::absolute(outputParseDirectoryPath / inputDirName / outputFileNameError);
 
             const auto testName = inputDirName.string() + "/" + fileName;
             data.push_back(std::make_tuple(
                 testName,
                 inputFilePath,
-                putputParsePath,
-                putputErrorPath));
+                putputParsePath));
         }
     }
     return data;

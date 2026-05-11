@@ -199,9 +199,9 @@ namespace Caracal
 
         typeCheckFunctionSignatures();
         typeCheckTypeSignatures();
+        typeCheckEnumDefinitions();
         typeCheckGlobalConstants();
         typeCheckTypeFieldDefinitions();
-        typeCheckEnumDefinitions();
         typeCheckFunctionDefinitions();
         typeCheckTypeMethodDefinitions();
         
@@ -576,6 +576,12 @@ namespace Caracal
             {
                 continue;
             }
+
+            if (methodStatement->type() == Type::Undefined())
+            {
+                continue;
+            }
+
             typeCheckMethodSignature(methodStatement, typeDefinition, typeType, tokens);
         }
     }
@@ -648,6 +654,11 @@ namespace Caracal
 
             auto* methodStatement = static_cast<MethodDefinitionStatement*>(definitionStatement.get());
             if (methodStatement->specialFunctionType() == SpecialFunctionType::Constructor || methodStatement->methodNameNode()->methodName() == "new")
+            {
+                continue;
+            }
+
+            if (methodStatement->type() == Type::Undefined())
             {
                 continue;
             }

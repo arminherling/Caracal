@@ -1,0 +1,14 @@
+ Error T0037
+  Duplicate enum field declaration
+    ,-[Diagnostics/Input/duplicateEnumFieldDeclaration.cara:3:5]
+  1 | enum Numbers {
+  2 |     One
+    .     ---
+    .      `-- Previous enum field declaration is here.
+  3 |     One
+    .     ---
+    .      `-- Enum field 'One' is already declared
+  4 | }
+  5 | 
+    `----
+  Fix: Rename this enum field, or remove the duplicate declaration.

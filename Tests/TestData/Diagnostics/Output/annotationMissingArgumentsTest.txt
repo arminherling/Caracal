@@ -1,0 +1,11 @@
+ Error T0003
+  Missing annotation arguments
+    ,-[Diagnostics/Input/annotationMissingArgumentsTest.cara:1:1]
+  1 | #step
+    . -----
+    .   `-- Annotation '#step' requires one argument.
+  2 | enum Example {
+  3 |     A
+  4 | }
+    `----
+  Fix: Add the required annotation argument, for example #step(10).

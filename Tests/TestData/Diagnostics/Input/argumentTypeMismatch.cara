@@ -1,0 +1,6 @@
+def takesBool(value: bool) {
+}
+
+def main() {
+    takesBool(1);
+}

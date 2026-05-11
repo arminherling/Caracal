@@ -1,0 +1,9 @@
+ Error P0007
+  Dangling annotation
+    ,-[Diagnostics/Input/danglingAnnotationAtEof.cara:1:1]
+  1 | #extern()
+    . -------
+    .    `-- This annotation is not attached to any declaration.
+  2 | 
+    `----
+  Fix: Remove the extra annotation or attach it to the next supported declaration.

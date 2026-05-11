@@ -1,0 +1,11 @@
+ Error T0001
+  Unknown annotation
+    ,-[Diagnostics/Input/unknownAnnotationEnumTest.cara:1:1]
+  1 | #mystery
+    . --------
+    .     `-- Unknown annotation '#mystery'
+  2 | enum Example {
+  3 |     A
+  4 | }
+    `----
+  Fix: Rename this annotation to #flag or #step, or remove it from the enum.

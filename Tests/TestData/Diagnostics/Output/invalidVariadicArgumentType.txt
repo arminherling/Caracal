@@ -1,0 +1,13 @@
+ Error T0017
+  Invalid variadic argument type
+     ,-[Diagnostics/Input/invalidVariadicArgumentType.cara:8:18]
+   5 | def printf(format: cstring, ...) {}
+   6 | 
+   7 | def main() {
+   8 |     printf("%d", printNothing());
+     .                  --------------
+     .                         `-- Variadic argument 2 of 'printf' cannot have type 'void'
+   9 | }
+  10 | 
+     `----
+  Fix: Pass a non-void value as this variadic argument.

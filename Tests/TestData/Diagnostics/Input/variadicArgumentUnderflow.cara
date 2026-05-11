@@ -1,0 +1,6 @@
+#extern
+def printf(format: cstring, ...) {}
+
+def main() {
+    printf();
+}

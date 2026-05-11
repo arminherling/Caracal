@@ -1,0 +1,14 @@
+ Error T0038
+  Duplicate type field declaration
+    ,-[Diagnostics/Input/duplicateTypeFieldDeclaration.cara:3:5]
+  1 | type Number {
+  2 |     value: i32 = 1
+    .     -----
+    .       `-- Previous type field declaration is here.
+  3 |     value: i32 = 2
+    .     -----
+    .       `-- Type field 'value' is already declared
+  4 | }
+  5 | 
+    `----
+  Fix: Rename this type field, or remove the duplicate declaration.

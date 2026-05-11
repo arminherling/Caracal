@@ -1,0 +1,9 @@
+ Error T0022
+  Explicit constant type mismatch
+    ,-[Diagnostics/Input/explicitConstantTypeMismatch.cara:1:14]
+  1 | value: i32 : true;
+    .              ----
+    .                `-- Constant is declared as 'i32', but its initializer has type 'bool'
+  2 | 
+    `----
+  Fix: Initialize this constant with a value of type 'i32' or change its explicit type.

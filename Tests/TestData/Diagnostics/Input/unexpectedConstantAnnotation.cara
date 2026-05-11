@@ -1,0 +1,5 @@
+#flag
+value :: 1;
+
+def main() {
+}

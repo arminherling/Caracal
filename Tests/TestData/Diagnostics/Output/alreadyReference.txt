@@ -1,0 +1,13 @@
+ Error T0032
+  Already a reference
+    ,-[Diagnostics/Input/alreadyReference.cara:4:22]
+  1 | def func() {
+  2 |     value := 5;
+  3 |     refValue: ref i32 = ref value;
+  4 |     other: ref i32 = ref refValue;
+    .                      ------------
+    .                            `-- This expression is already a reference
+  5 | }
+  6 | 
+    `----
+  Fix: Remove the extra 'ref' operator.

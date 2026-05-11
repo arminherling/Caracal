@@ -1,0 +1,11 @@
+ Error P0003
+  Unexpected top-level token
+    ,-[Diagnostics/Input/extraTokensCloseParenTest.cara:3:1]
+  1 | def main() {
+  2 | }
+  3 | )
+    . -
+    . `-- Unexpected top-level token ')'
+  4 | 
+    `----
+  Fix: Remove the unexpected top-level token or start a declaration with 'def', 'enum', or 'type'.

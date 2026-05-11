@@ -1,0 +1,11 @@
+ Error T0002
+  Unexpected annotation target
+    ,-[Diagnostics/Input/unexpectedTypeAnnotation.cara:1:1]
+  1 | #flag
+    . -----
+    .   `-- This annotation is not supported on this declaration.
+  2 | type Example {
+  3 | }
+  4 | 
+    `----
+  Fix: Remove the annotation or move it to a supported declaration kind.

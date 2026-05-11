@@ -1,0 +1,6 @@
+def takesOne(value: i32) {
+}
+
+def main() {
+    takesOne();
+}

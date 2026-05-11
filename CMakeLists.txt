@@ -24,6 +24,7 @@ add_subdirectory(Source)
 add_subdirectory(Driver)
 
 add_subdirectory(Tests/AllInOne)
+add_subdirectory(Tests/DiagnosticsTests)
 add_subdirectory(Tests/IRTests)
 add_subdirectory(Tests/LLVMCodeGenTests)
 add_subdirectory(Tests/LexerTests)

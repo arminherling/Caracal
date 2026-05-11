@@ -1,0 +1,7 @@
+enum Numbers {
+    One
+}
+
+def main() i32 {
+    return Numbers.One();
+}

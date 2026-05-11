@@ -1,0 +1,14 @@
+ Error T0035
+  Duplicate variable declaration
+    ,-[Diagnostics/Input/duplicateDeclaration.cara:3:5]
+  1 | def main() {
+  2 |     value: i32 = 0;
+    .     -----
+    .       `-- Previous variable declaration is here.
+  3 |     value: i32 = 1;
+    .     -----
+    .       `-- Variable 'value' is already declared
+  4 | }
+  5 | 
+    `----
+  Fix: Rename this variable, or remove the duplicate declaration.

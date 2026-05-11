@@ -1,0 +1,15 @@
+ Error T0040
+  Duplicate type declaration
+    ,-[Diagnostics/Input/duplicateTypeDeclaration.cara:4:6]
+  1 | type Number() {
+    .      ------
+    .         `-- Previous type declaration is here.
+  2 | }
+  3 | 
+  4 | type Number() {
+    .      ------
+    .         `-- Type 'Number' is already declared
+  5 | }
+  6 | 
+    `----
+  Fix: Rename this type declaration, or remove the duplicate.

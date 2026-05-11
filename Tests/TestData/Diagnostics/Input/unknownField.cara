@@ -1,0 +1,6 @@
+type User {
+}
+
+def main() {
+    User.missing;
+}

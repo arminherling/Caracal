@@ -1,0 +1,11 @@
+ Error T0004
+  Wrong number of annotation arguments
+    ,-[Diagnostics/Input/externAnnotationWrongNumberOfArguments.cara:1:9]
+  1 | #extern(1)
+    .         -
+    .         `-- Annotation '#extern' expects 0 argument(s), but got 1.
+  2 | def main() {
+  3 | }
+  4 | 
+    `----
+  Fix: Remove the unexpected annotation arguments.

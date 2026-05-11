@@ -1,0 +1,11 @@
+ Error T0007
+  Unknown name
+    ,-[Diagnostics/Input/unknownName.cara:2:12]
+  1 | def main() i32 {
+  2 |     return missingValue;
+    .            ------------
+    .                  `-- Unknown name 'missingValue'
+  3 | }
+  4 | 
+    `----
+  Fix: Declare this name before using it, or rename it to an existing symbol.

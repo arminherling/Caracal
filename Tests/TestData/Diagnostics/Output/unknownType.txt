@@ -1,0 +1,10 @@
+ Error T0009
+  Unknown type
+    ,-[Diagnostics/Input/unknownType.cara:1:17]
+  1 | def main(value: MissingType) {
+    .                 -----------
+    .                      `-- Unknown type 'MissingType'
+  2 | }
+  3 | 
+    `----
+  Fix: Declare this type before using it, or rename it to an existing type.

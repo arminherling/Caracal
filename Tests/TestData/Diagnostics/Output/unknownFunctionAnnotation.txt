@@ -1,0 +1,11 @@
+ Error T0001
+  Unknown annotation
+    ,-[Diagnostics/Input/unknownFunctionAnnotation.cara:1:1]
+  1 | #unknown
+    . --------
+    .     `-- Unknown annotation '#unknown'
+  2 | def main() {
+  3 | }
+  4 | 
+    `----
+  Fix: Rename this annotation to #extern, or remove it from the function.

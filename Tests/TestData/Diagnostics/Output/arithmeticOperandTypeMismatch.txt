@@ -1,0 +1,11 @@
+ Error T0025
+  Arithmetic operand type mismatch
+    ,-[Diagnostics/Input/arithmeticOperandTypeMismatch.cara:2:16]
+  1 | def main() {
+  2 |     value := 1 + true;
+    .                -
+    .                `-- Operator '+' cannot be applied to 'i32' and 'bool'
+  3 | }
+  4 | 
+    `----
+  Fix: Use matching operand types for this arithmetic operation.

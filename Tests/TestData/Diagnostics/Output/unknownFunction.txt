@@ -1,0 +1,11 @@
+ Error T0008
+  Unknown function
+    ,-[Diagnostics/Input/unknownFunction.cara:2:5]
+  1 | def main() {
+  2 |     missingCall();
+    .     -------------
+    .           `-- Unknown function 'missingCall'
+  3 | }
+  4 | 
+    `----
+  Fix: Declare this function before calling it, or rename the call to an existing function.

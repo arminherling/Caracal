@@ -1,0 +1,7 @@
+def value() i32 {
+    return 1;
+}
+
+def value() i32 {
+    return 2;
+}

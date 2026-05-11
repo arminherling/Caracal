@@ -1,0 +1,11 @@
+ Error T0023
+  Explicit variable type mismatch
+    ,-[Diagnostics/Input/explicitVariableTypeMismatch.cara:2:18]
+  1 | def main() {
+  2 |     value: i32 = true;
+    .                  ----
+    .                    `-- Variable is declared as 'i32', but its initializer has type 'bool'
+  3 | }
+  4 | 
+    `----
+  Fix: Initialize this variable with a value of type 'i32' or change its explicit type.

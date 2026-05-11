@@ -1,0 +1,13 @@
+ Error T0015
+  Argument count mismatch
+    ,-[Diagnostics/Input/variadicArgumentUnderflow.cara:5:11]
+  2 | def printf(format: cstring, ...) {}
+  3 | 
+  4 | def main() {
+  5 |     printf();
+    .           --
+    .            `-- Function 'printf' expects at least 1 argument(s), but got 0
+  6 | }
+  7 | 
+    `----
+  Fix: Add the missing arguments to this call.

@@ -1,0 +1,12 @@
+ Error T0002
+  Unexpected annotation target
+    ,-[Diagnostics/Input/unexpectedAnnotationTest.cara:2:1]
+  1 | #extern
+  2 | #flag
+    . -----
+    .   `-- This annotation is not supported on this declaration.
+  3 | def main() {
+  4 | }
+  5 | 
+    `----
+  Fix: Remove the annotation or move it to a supported declaration kind.

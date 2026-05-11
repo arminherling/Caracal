@@ -1,0 +1,5 @@
+def func() {
+    value := 5;
+    refValue: ref i32 = ref value;
+    other: ref i32 = ref refValue;
+}

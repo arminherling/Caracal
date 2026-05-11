@@ -1,0 +1,12 @@
+ Error T0027
+  Enum field value type mismatch
+    ,-[Diagnostics/Input/enumFieldValueTypeMismatch.cara:3:12]
+  1 | enum Numbers: i32 {
+  2 |     One :: 1
+  3 |     Two :: true
+    .            ----
+    .              `-- Enum base type is 'i32', but this field's initializer has type 'bool'
+  4 | }
+  5 | 
+    `----
+  Fix: Use a value of the enum base type for this field.

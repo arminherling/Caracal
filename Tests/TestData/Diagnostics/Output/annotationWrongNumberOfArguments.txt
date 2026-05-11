@@ -1,0 +1,11 @@
+ Error T0004
+  Wrong number of annotation arguments
+    ,-[Diagnostics/Input/annotationWrongNumberOfArguments.cara:1:7]
+  1 | #step(1, 2)
+    .       ----
+    .         `-- Annotation '#step' expects 1 argument(s), but got 2.
+  2 | enum Numbers {
+  3 |     One
+  4 | }
+    `----
+  Fix: Reduce the annotation to one argument, for example #step(10).

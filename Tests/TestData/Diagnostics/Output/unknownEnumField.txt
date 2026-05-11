@@ -1,0 +1,13 @@
+ Error T0012
+  Unknown enum field
+    ,-[Diagnostics/Input/unknownEnumField.cara:6:20]
+  3 | }
+  4 | 
+  5 | def main() i32 {
+  6 |     return Numbers.Two;
+    .                    ---
+    .                     `-- Enum 'Numbers' has no field 'Two'
+  7 | }
+  8 | 
+    `----
+  Fix: Use an existing enum field name, or rename this member access.

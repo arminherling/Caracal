@@ -1,0 +1,13 @@
+ Error T0013
+  Invalid enum member access
+    ,-[Diagnostics/Input/invalidEnumMemberAccess.cara:6:20]
+  3 | }
+  4 | 
+  5 | def main() i32 {
+  6 |     return Numbers.One();
+    .                    -----
+    .                      `-- Enum 'Numbers' member access must be a field name
+  7 | }
+  8 | 
+    `----
+  Fix: Access an enum field as 'Numbers.FieldName' without calling it.

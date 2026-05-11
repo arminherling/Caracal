@@ -1,0 +1,11 @@
+ Error T0005
+  Annotation argument type mismatch
+    ,-[Diagnostics/Input/stepAnnotationArgumentTypeMismatch.cara:1:7]
+  1 | #step("abc")
+    .       -----
+    .         `-- Annotation '#step' expects a i32 number literal argument, but got an expression of type 'cstring'.
+  2 | enum Numbers {
+  3 |     One
+  4 | }
+    `----
+  Fix: Change the annotation argument to an i32 literal, for example #step(10).

@@ -1,0 +1,11 @@
+ Error T0020
+  Return type mismatch
+    ,-[Diagnostics/Input/voidReturnValue.cara:2:12]
+  1 | def main() {
+  2 |     return 1;
+    .            -
+    .            `-- Cannot return 'i32' from a function with return type 'void'
+  3 | }
+  4 | 
+    `----
+  Fix: Remove the returned value from this return statement.

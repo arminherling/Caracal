@@ -1,0 +1,6 @@
+def takesTwo(flag: bool, count: i32) {
+}
+
+def main() {
+    takesTwo(1, true);
+}

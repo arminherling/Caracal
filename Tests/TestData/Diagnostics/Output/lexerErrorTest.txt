@@ -1,0 +1,11 @@
+ Error L0002
+  Unterminated string
+    ,-[Diagnostics/Input/lexerErrorTest.cara:2:13]
+  1 | def main() {
+  2 |     value = "unterminated
+    .             -------------
+    .                   `-- String literal is missing a closing quote.
+  3 | }
+  4 | 
+    `----
+  Fix: Add a closing quote to terminate the string.

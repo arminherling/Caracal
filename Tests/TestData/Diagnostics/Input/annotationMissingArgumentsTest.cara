@@ -1,0 +1,4 @@
+#step
+enum Example {
+    A
+}

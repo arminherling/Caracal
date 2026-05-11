@@ -1,0 +1,5 @@
+#flag
+enum Bits {
+    Read :: 1
+    Write
+}

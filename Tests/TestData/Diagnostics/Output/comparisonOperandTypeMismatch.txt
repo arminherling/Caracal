@@ -1,0 +1,11 @@
+ Error T0026
+  Comparison operand type mismatch
+    ,-[Diagnostics/Input/comparisonOperandTypeMismatch.cara:2:16]
+  1 | def main() {
+  2 |     value := 1 == true;
+    .                --
+    .                 `-- Operator '==' cannot compare 'i32' and 'bool'
+  3 | }
+  4 | 
+    `----
+  Fix: Use comparable operand types for this comparison.

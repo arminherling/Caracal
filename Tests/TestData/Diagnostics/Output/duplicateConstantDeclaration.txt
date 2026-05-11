@@ -1,0 +1,14 @@
+ Error T0034
+  Duplicate constant declaration
+    ,-[Diagnostics/Input/duplicateConstantDeclaration.cara:2:1]
+  1 | value :: 1;
+    . -----
+    .   `-- Previous constant declaration is here.
+  2 | value :: 2;
+    . -----
+    .   `-- Constant 'value' is already declared
+  3 | 
+  4 | def main() i32 {
+  5 |     return value;
+    `----
+  Fix: Rename this constant, or remove the duplicate declaration.

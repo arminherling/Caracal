@@ -1,0 +1,13 @@
+ Error T0010
+  Unknown method
+    ,-[Diagnostics/Input/unknownMethod.cara:5:10]
+  2 | }
+  3 | 
+  4 | def main() {
+  5 |     User.missing();
+    .          ---------
+    .              `-- Type 'User' has no method 'missing'
+  6 | }
+  7 | 
+    `----
+  Fix: Add this method to the type, or rename the call to an existing method.
