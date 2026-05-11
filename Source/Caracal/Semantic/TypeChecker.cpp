@@ -741,7 +741,7 @@ namespace Caracal
             }
             else
             {
-                m_diagnostics.AddDuplicateDeclarationError(
+                m_diagnostics.AddDuplicateConstantDeclarationError(
                     tokens.source(),
                     nameExpression->sourceLocation(tokens),
                     name,
@@ -783,7 +783,7 @@ namespace Caracal
             }
             else
             {
-                m_diagnostics.AddDuplicateDeclarationError(
+                m_diagnostics.AddDuplicateVariableDeclarationError(
                     tokens.source(),
                     nameExpression->sourceLocation(tokens),
                     name,
@@ -913,11 +913,10 @@ namespace Caracal
             if (enumDefinition.hasField(fieldName))
             {
                 const auto& otherField = enumDefinition.getFieldByName(fieldName);
-                m_diagnostics.AddDuplicateDeclarationError(
+                m_diagnostics.AddDuplicateEnumFieldDeclarationError(
                     tokens.source(),
                     tokens.getSourceLocation(fieldNode->nameToken()),
                     fieldName,
-                    nullptr,
                     otherField.location());
                 continue;
             }
@@ -1163,11 +1162,10 @@ namespace Caracal
         const auto& existingField = typeDefinition.tryGetFieldByName(fieldName);
         if (existingField.type() != Type::Undefined())
         {
-            m_diagnostics.AddDuplicateDeclarationError(
+            m_diagnostics.AddDuplicateTypeFieldDeclarationError(
                 tokens.source(),
                 statement->nameExpression()->sourceLocation(tokens),
                 fieldName,
-                nullptr,
                 GetTypeFieldLocation(typeDefinition, existingField, tokens));
             return;
         }
@@ -1427,9 +1425,30 @@ namespace Caracal
                 auto leftType = typeCheckExpression(binaryExpression->leftExpression().get(), tokens);
                 if (leftType.kind() == TypeKind::Enum)
                 {
-                    binaryExpression->setType(leftType);
-                    binaryExpression->rightExpression()->setType(leftType);
-                    return leftType;
+                    auto& enumDefinition = m_module.getEnumDefinition(leftType);
+                    if (binaryExpression->rightExpression()->kind() == NodeKind::NameExpression)
+                    {
+                        auto* fieldNameExpression = static_cast<NameExpression*>(binaryExpression->rightExpression().get());
+                        if (!enumDefinition.hasField(fieldNameExpression->name()))
+                        {
+                            m_diagnostics.AddUnknownEnumFieldError(
+                                tokens.source(),
+                                fieldNameExpression->sourceLocation(tokens),
+                                enumDefinition.name(),
+                                fieldNameExpression->name());
+                            return Type::Undefined();
+                        }
+
+                        binaryExpression->setType(leftType);
+                        fieldNameExpression->setType(leftType);
+                        return leftType;
+                    }
+
+                    m_diagnostics.AddInvalidEnumMemberAccessError(
+                        tokens.source(),
+                        binaryExpression->rightExpression()->sourceLocation(tokens),
+                        enumDefinition.name());
+                    return Type::Undefined();
                 }
                 else if (leftType.kind() == TypeKind::Type)
                 {
@@ -1505,13 +1524,15 @@ namespace Caracal
                         binaryExpression->setType(fieldType);
                         return fieldType;
                     }
-                    else
-                    {
-                        TODO("Add error diagnostics for invalid member access on type");
-                    }
                 }
 
-                TODO("Handle MemberAccess");
+                if (leftType != Type::Undefined())
+                {
+                    m_diagnostics.AddInvalidMemberAccessReceiverError(
+                        tokens.source(),
+                        binaryExpression->sourceLocation(tokens),
+                        FormatTypeName(m_module, leftType));
+                }
                 return Type::Undefined();
             }
             case BinaryOperatorKind::Addition:
@@ -1845,7 +1866,7 @@ namespace Caracal
             }
             else
             {
-                m_diagnostics.AddDuplicateDeclarationError(
+                m_diagnostics.AddDuplicateParameterDeclarationError(
                     tokens.source(),
                     tokens.getSourceLocation(parameterNode->nameToken()),
                     name,

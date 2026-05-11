@@ -16,6 +16,34 @@ namespace Caracal
         return source->filePath != otherSource->filePath;
     }
 
+    static void AddPreviousDeclarationLabel(
+        Diagnostic& diagnostic,
+        const SourceTextSharedPtr& source,
+        const SourceTextSharedPtr& otherSource,
+        const std::optional<SourceLocation>& otherLocation,
+        const std::string& relatedMessage,
+        const std::string& relatedLabel,
+        const std::string& secondaryLabel)
+    {
+        if (!otherLocation.has_value())
+        {
+            return;
+        }
+
+        if (IsCrossFileDuplicate(source, otherSource))
+        {
+            diagnostic.addRelatedPrimaryLabel(
+                otherSource,
+                otherLocation.value(),
+                relatedMessage,
+                relatedLabel);
+        }
+        else
+        {
+            diagnostic.addSecondaryLabel(otherLocation.value(), secondaryLabel);
+        }
+    }
+
     static std::string ToTokenSource(TokenKind kind)
     {
         const std::unordered_map<TokenKind, std::string_view> tokenSource{
@@ -283,7 +311,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0004_UnexpectedAnnotationTarget,
+            DiagnosticKind::T0002_UnexpectedAnnotationTarget,
             source,
             location,
             "Remove the annotation or move it to a supported declaration kind.");
@@ -310,7 +338,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0006_UnknownAnnotation,
+            DiagnosticKind::T0001_UnknownAnnotation,
             source,
             location,
             fix);
@@ -333,7 +361,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0001_MissingAnnotationArguments,
+            DiagnosticKind::T0003_MissingAnnotationArguments,
             source,
             location,
             fix);
@@ -367,7 +395,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0002_WrongNumberOfAnnotationArguments,
+            DiagnosticKind::T0004_WrongNumberOfAnnotationArguments,
             source,
             location,
             fix);
@@ -390,7 +418,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0003_AnnotationArgumentTypeMismatch,
+            DiagnosticKind::T0005_AnnotationArgumentTypeMismatch,
             source,
             location,
             fix);
@@ -403,7 +431,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0005_ConflictingEnumAnnotations,
+            DiagnosticKind::T0006_ConflictingEnumAnnotations,
             source,
             location,
             "Remove one of the conflicting enum annotations.");
@@ -486,6 +514,55 @@ namespace Caracal
         diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::AddUnknownEnumFieldError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& enumName,
+        const std::string& fieldName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0012_UnknownEnumField,
+            source,
+            location,
+            "Use an existing enum field name, or rename this member access.");
+        diagnostic.addPrimaryLabel(location, "Enum '" + enumName + "' has no field '" + fieldName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddInvalidEnumMemberAccessError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& enumName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0013_InvalidEnumMemberAccess,
+            source,
+            location,
+            "Access an enum field as '" + enumName + ".FieldName' without calling it.");
+        diagnostic.addPrimaryLabel(location, "Enum '" + enumName + "' member access must be a field name");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddInvalidMemberAccessReceiverError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& receiverTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0014_InvalidMemberAccessReceiver,
+            source,
+            location,
+            "Access members only on types and enum values that support member lookup.");
+        diagnostic.addPrimaryLabel(location, "Type '" + receiverTypeName + "' does not support member access");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::AddArgumentCountMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
@@ -506,7 +583,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0012_ArgumentCountMismatch,
+            DiagnosticKind::T0015_ArgumentCountMismatch,
             source,
             location,
             fix);
@@ -541,7 +618,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0013_ArgumentTypeMismatch,
+            DiagnosticKind::T0016_ArgumentTypeMismatch,
             source,
             location,
             fix);
@@ -565,7 +642,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0014_InvalidVariadicArgumentType,
+            DiagnosticKind::T0017_InvalidVariadicArgumentType,
             source,
             location,
             "Pass a non-void value as this variadic argument.");
@@ -581,7 +658,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0015_NonBoolIfCondition,
+            DiagnosticKind::T0018_NonBoolIfCondition,
             source,
             location,
             "Change the if condition to a bool expression.");
@@ -597,27 +674,11 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0016_NonBoolWhileCondition,
+            DiagnosticKind::T0019_NonBoolWhileCondition,
             source,
             location,
             "Change the while condition to a bool expression.");
         diagnostic.addPrimaryLabel(location, "While condition must have type 'bool', but got '" + actualTypeName + "'");
-
-        diagnostics.push_back(std::move(diagnostic));
-    }
-
-    void DiagnosticsBag::AddNonExternVariadicFunctionError(
-        const SourceTextSharedPtr& source,
-        const SourceLocation& location,
-        const std::string& functionName)
-    {
-        auto diagnostic = Diagnostic(
-            DiagnosticLevel::Error,
-            DiagnosticKind::T0017_NonExternVariadicFunction,
-            source,
-            location,
-            "Add #extern to this function, or remove the variadic parameter.");
-        diagnostic.addPrimaryLabel(location, "Function '" + functionName + "' uses a variadic parameter but is not marked #extern");
 
         diagnostics.push_back(std::move(diagnostic));
     }
@@ -640,7 +701,7 @@ namespace Caracal
 
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0018_ReturnTypeMismatch,
+            DiagnosticKind::T0020_ReturnTypeMismatch,
             source,
             location,
             fix);
@@ -657,7 +718,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0019_AssignmentTypeMismatch,
+            DiagnosticKind::T0021_AssignmentTypeMismatch,
             source,
             location,
             "Assign a value of type '" + expectedTypeName + "' or change the assignment target type.");
@@ -674,7 +735,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0020_ExplicitConstantTypeMismatch,
+            DiagnosticKind::T0022_ExplicitConstantTypeMismatch,
             source,
             location,
             "Initialize this constant with a value of type '" + expectedTypeName + "' or change its explicit type.");
@@ -691,7 +752,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0021_ExplicitVariableTypeMismatch,
+            DiagnosticKind::T0023_ExplicitVariableTypeMismatch,
             source,
             location,
             "Initialize this variable with a value of type '" + expectedTypeName + "' or change its explicit type.");
@@ -708,7 +769,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0022_TypeFieldInitializerMismatch,
+            DiagnosticKind::T0024_TypeFieldInitializerMismatch,
             source,
             location,
             "Initialize this field with a value of type '" + expectedTypeName + "' or change the field type.");
@@ -726,7 +787,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0023_ArithmeticOperandTypeMismatch,
+            DiagnosticKind::T0025_ArithmeticOperandTypeMismatch,
             source,
             location,
             "Use matching operand types for this arithmetic operation.");
@@ -744,7 +805,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0024_ComparisonOperandTypeMismatch,
+            DiagnosticKind::T0026_ComparisonOperandTypeMismatch,
             source,
             location,
             "Use comparable operand types for this comparison.");
@@ -761,11 +822,92 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0025_EnumFieldValueTypeMismatch,
+            DiagnosticKind::T0027_EnumFieldValueTypeMismatch,
             source,
             location,
             "Use a value of the enum base type for this field.");
         diagnostic.addPrimaryLabel(location, "Enum base type is '" + expectedTypeName + "', but this field's initializer has type '" + actualTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddNonExternVariadicFunctionError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& functionName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0028_NonExternVariadicFunction,
+            source,
+            location,
+            "Add #extern to this function, or remove the variadic parameter.");
+        diagnostic.addPrimaryLabel(location, "Function '" + functionName + "' uses a variadic parameter but is not marked #extern");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddFlagEnumExplicitValueError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& fieldName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0029_FlagEnumExplicitValue,
+            source,
+            location,
+            "Remove the explicit value from this flag enum field.");
+        diagnostic.addPrimaryLabel(location, "Flag enum field '" + fieldName + "' cannot declare an explicit value");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddExplicitConstructorDeclarationError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const SourceLocation& otherLocation,
+        const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0030_ExplicitConstructorDeclaration,
+            source,
+            location,
+            "Remove the explicit 'new' method and declare constructor parameters on the type instead.");
+        diagnostic.addPrimaryLabel(location, "Type '" + typeName + "' cannot declare an explicit 'new' method");
+        diagnostic.addSecondaryLabel(otherLocation, "Constructor parameters are declared here on the type.");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddReferenceReturnTypeError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0031_ReferenceReturnType,
+            source,
+            location,
+            "Return the value type instead of a reference type.");
+        diagnostic.addPrimaryLabel(location, "Return type cannot be 'ref " + typeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddAlreadyReferenceError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0032_AlreadyReference,
+            source,
+            location,
+            "Remove the extra 'ref' operator.");
+        diagnostic.addPrimaryLabel(location, "This expression is already a reference");
 
         diagnostics.push_back(std::move(diagnostic));
     }
@@ -779,91 +921,165 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0026_DuplicateDeclaration,
+            DiagnosticKind::T0033_DuplicateDeclaration,
             source,
             location,
             "Rename this declaration, or remove the duplicate.");
         diagnostic.addPrimaryLabel(location, "Duplicate declaration of '" + name + "'");
+        AddPreviousDeclarationLabel(
+            diagnostic,
+            source,
+            otherSource,
+            otherLocation,
+            "Previous declaration",
+            "Previous declaration of '" + name + "' is here.",
+            "Previous declaration is here.");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddDuplicateConstantDeclarationError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name,
+        const SourceTextSharedPtr& otherSource,
+        std::optional<SourceLocation> otherLocation)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0034_DuplicateConstantDeclaration,
+            source,
+            location,
+            "Rename this constant, or remove the duplicate declaration.");
+        diagnostic.addPrimaryLabel(location, "Constant '" + name + "' is already declared");
+        AddPreviousDeclarationLabel(
+            diagnostic,
+            source,
+            otherSource,
+            otherLocation,
+            "Previous constant declaration",
+            "Previous constant declaration of '" + name + "' is here.",
+            "Previous constant declaration is here.");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddDuplicateVariableDeclarationError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name,
+        const SourceTextSharedPtr& otherSource,
+        std::optional<SourceLocation> otherLocation)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0035_DuplicateVariableDeclaration,
+            source,
+            location,
+            "Rename this variable, or remove the duplicate declaration.");
+        diagnostic.addPrimaryLabel(location, "Variable '" + name + "' is already declared");
+        AddPreviousDeclarationLabel(
+            diagnostic,
+            source,
+            otherSource,
+            otherLocation,
+            "Previous variable declaration",
+            "Previous variable declaration of '" + name + "' is here.",
+            "Previous variable declaration is here.");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddDuplicateParameterDeclarationError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name,
+        const SourceTextSharedPtr& otherSource,
+        std::optional<SourceLocation> otherLocation)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0036_DuplicateParameterDeclaration,
+            source,
+            location,
+            "Rename this parameter, or remove the duplicate declaration.");
+        diagnostic.addPrimaryLabel(location, "Parameter '" + name + "' is already declared");
+        AddPreviousDeclarationLabel(
+            diagnostic,
+            source,
+            otherSource,
+            otherLocation,
+            "Previous parameter declaration",
+            "Previous parameter declaration of '" + name + "' is here.",
+            "Previous parameter declaration is here.");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::AddDuplicateEnumFieldDeclarationError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name,
+        std::optional<SourceLocation> otherLocation)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0037_DuplicateEnumFieldDeclaration,
+            source,
+            location,
+            "Rename this enum field, or remove the duplicate declaration.");
+        diagnostic.addPrimaryLabel(location, "Enum field '" + name + "' is already declared");
         if (otherLocation.has_value())
         {
-            if (IsCrossFileDuplicate(source, otherSource))
-            {
-                diagnostic.addRelatedPrimaryLabel(
-                    otherSource,
-                    otherLocation.value(),
-                    "Previous declaration",
-                    "Previous declaration of '" + name + "' is here.");
-            }
-            else
-            {
-                diagnostic.addSecondaryLabel(otherLocation.value(), "Previous declaration is here.");
-            }
+            diagnostic.addSecondaryLabel(otherLocation.value(), "Previous enum field declaration is here.");
         }
 
         diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddFlagEnumExplicitValueError(
+    void DiagnosticsBag::AddDuplicateTypeFieldDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
-        const std::string& fieldName)
+        const std::string& name,
+        std::optional<SourceLocation> otherLocation)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0027_FlagEnumExplicitValue,
+            DiagnosticKind::T0038_DuplicateTypeFieldDeclaration,
             source,
             location,
-            "Remove the explicit value from this flag enum field.");
-        diagnostic.addPrimaryLabel(location, "Flag enum field '" + fieldName + "' cannot declare an explicit value");
+            "Rename this type field, or remove the duplicate declaration.");
+        diagnostic.addPrimaryLabel(location, "Type field '" + name + "' is already declared");
+        if (otherLocation.has_value())
+        {
+            diagnostic.addSecondaryLabel(otherLocation.value(), "Previous type field declaration is here.");
+        }
 
         diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddReferenceReturnTypeError(
+    void DiagnosticsBag::AddDuplicateFunctionDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
-        const std::string& typeName)
+        const std::string& functionName,
+        const SourceTextSharedPtr& otherSource,
+        std::optional<SourceLocation> otherLocation)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0028_ReferenceReturnType,
+            DiagnosticKind::T0039_DuplicateFunctionDeclaration,
             source,
             location,
-            "Return the value type instead of a reference type.");
-        diagnostic.addPrimaryLabel(location, "Return type cannot be 'ref " + typeName + "'");
-
-        diagnostics.push_back(std::move(diagnostic));
-    }
-
-    void DiagnosticsBag::AddExplicitConstructorDeclarationError(
-        const SourceTextSharedPtr& source,
-        const SourceLocation& location,
-        const SourceLocation& otherLocation,
-        const std::string& typeName)
-    {
-        auto diagnostic = Diagnostic(
-            DiagnosticLevel::Error,
-            DiagnosticKind::T0029_ExplicitConstructorDeclaration,
+            "Rename this function, or remove the duplicate declaration.");
+        diagnostic.addPrimaryLabel(location, "Function '" + functionName + "' is already declared");
+        AddPreviousDeclarationLabel(
+            diagnostic,
             source,
-            location,
-            "Remove the explicit 'new' method and declare constructor parameters on the type instead.");
-        diagnostic.addPrimaryLabel(location, "Type '" + typeName + "' cannot declare an explicit 'new' method");
-        diagnostic.addSecondaryLabel(otherLocation, "Constructor parameters are declared here on the type.");
-
-        diagnostics.push_back(std::move(diagnostic));
-    }
-
-    void DiagnosticsBag::AddAlreadyReferenceError(
-        const SourceTextSharedPtr& source,
-        const SourceLocation& location)
-    {
-        auto diagnostic = Diagnostic(
-            DiagnosticLevel::Error,
-            DiagnosticKind::T0030_AlreadyReference,
-            source,
-            location,
-            "Remove the extra 'ref' operator.");
-        diagnostic.addPrimaryLabel(location, "This expression is already a reference");
+            otherSource,
+            otherLocation,
+            "Previous function declaration",
+            "Previous function declaration of '" + functionName + "' is here.",
+            "Previous function declaration is here.");
 
         diagnostics.push_back(std::move(diagnostic));
     }
@@ -877,7 +1093,7 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0031_DuplicateTypeDeclaration,
+            DiagnosticKind::T0040_DuplicateTypeDeclaration,
             source,
             location,
             "Rename this type declaration, or remove the duplicate.");
@@ -895,39 +1111,6 @@ namespace Caracal
             else
             {
                 diagnostic.addSecondaryLabel(otherLocation.value(), "Previous type declaration is here.");
-            }
-        }
-
-        diagnostics.push_back(std::move(diagnostic));
-    }
-
-    void DiagnosticsBag::AddDuplicateFunctionDeclarationError(
-        const SourceTextSharedPtr& source,
-        const SourceLocation& location,
-        const std::string& functionName,
-        const SourceTextSharedPtr& otherSource,
-        std::optional<SourceLocation> otherLocation)
-    {
-        auto diagnostic = Diagnostic(
-            DiagnosticLevel::Error,
-            DiagnosticKind::T0032_DuplicateFunctionDeclaration,
-            source,
-            location,
-            "Rename this function, or remove the duplicate declaration.");
-        diagnostic.addPrimaryLabel(location, "Function '" + functionName + "' is already declared");
-        if (otherLocation.has_value())
-        {
-            if (IsCrossFileDuplicate(source, otherSource))
-            {
-                diagnostic.addRelatedPrimaryLabel(
-                    otherSource,
-                    otherLocation.value(),
-                    "Previous function declaration",
-                    "Previous function declaration of '" + functionName + "' is here.");
-            }
-            else
-            {
-                diagnostic.addSecondaryLabel(otherLocation.value(), "Previous function declaration is here.");
             }
         }
 

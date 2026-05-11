@@ -30,29 +30,31 @@ namespace Caracal
 
         // Annotation diagnostics
         void AddDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location);
-        void AddUnexpectedAnnotationTargetError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void AddUnknownAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, TokenKind targetKind);
+        void AddUnexpectedAnnotationTargetError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void AddAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName);
         void AddAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, i32 expectedCount, i32 actualCount);
         void AddAnnotationArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, const std::string& expectedDescription, const std::string& actualDescription);
         void AddConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName);
 
-        // Unknown symbol diagnostics
+        // Unknown symbol and member access diagnostics
         void AddUnknownNameError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
         void AddUnknownFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
         void AddUnknownTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
         void AddUnknownMethodError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName, const std::string& methodName);
         void AddUnknownFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName, const std::string& fieldName);
+        void AddUnknownEnumFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& enumName, const std::string& fieldName);
+        void AddInvalidEnumMemberAccessError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& enumName);
+        void AddInvalidMemberAccessReceiverError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName);
 
         // Call diagnostics
         void AddArgumentCountMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 expectedCount, i32 actualCount, bool isVariadic);
         void AddArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::vector<ArgumentTypeMismatchInfo>& mismatches);
         void AddInvalidVariadicArgumentTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 argumentIndex, const std::string& actualTypeName);
 
-        // Control flow and declaration-shape diagnostics
+        // Control flow diagnostics
         void AddNonBoolIfConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);
         void AddNonBoolWhileConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);
-        void AddNonExternVariadicFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
 
         // Type mismatch diagnostics
         void AddReturnTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
@@ -63,13 +65,23 @@ namespace Caracal
         void AddArithmeticOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& leftTypeName, const std::string& rightTypeName);
         void AddComparisonOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& leftTypeName, const std::string& rightTypeName);
         void AddEnumFieldValueTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
-        void AddDuplicateDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+
+        // Declaration-shape and reference diagnostics
+        void AddNonExternVariadicFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
         void AddFlagEnumExplicitValueError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName);
-        void AddReferenceReturnTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
         void AddExplicitConstructorDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& typeName);
+        void AddReferenceReturnTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
         void AddAlreadyReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location);
-        void AddDuplicateTypeDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+
+        // Duplicate declaration diagnostics
+        void AddDuplicateDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void AddDuplicateConstantDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void AddDuplicateVariableDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void AddDuplicateParameterDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void AddDuplicateEnumFieldDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void AddDuplicateTypeFieldDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, std::optional<SourceLocation> otherLocation = std::nullopt);
         void AddDuplicateFunctionDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void AddDuplicateTypeDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
 
         const std::vector<Diagnostic>& Diagnostics() const;
 

@@ -20,45 +20,57 @@ namespace Caracal
         P0007_DanglingAnnotation,
 
         // Annotation diagnostics
-        T0001_MissingAnnotationArguments,
-        T0002_WrongNumberOfAnnotationArguments,
-        T0003_AnnotationArgumentTypeMismatch,
-        T0004_UnexpectedAnnotationTarget,
-        T0005_ConflictingEnumAnnotations,
+        T0001_UnknownAnnotation,
+        T0002_UnexpectedAnnotationTarget,
+        T0003_MissingAnnotationArguments,
+        T0004_WrongNumberOfAnnotationArguments,
+        T0005_AnnotationArgumentTypeMismatch,
+        T0006_ConflictingEnumAnnotations,
 
-        // Unknown symbol diagnostics
-        T0006_UnknownAnnotation,
+        // Unknown symbol and member access diagnostics
         T0007_UnknownName,
         T0008_UnknownFunction,
         T0009_UnknownType,
         T0010_UnknownMethod,
         T0011_UnknownField,
+        T0012_UnknownEnumField,
+        T0013_InvalidEnumMemberAccess,
+        T0014_InvalidMemberAccessReceiver,
 
         // Call diagnostics
-        T0012_ArgumentCountMismatch,
-        T0013_ArgumentTypeMismatch,
-        T0014_InvalidVariadicArgumentType,
+        T0015_ArgumentCountMismatch,
+        T0016_ArgumentTypeMismatch,
+        T0017_InvalidVariadicArgumentType,
 
-        // Control flow and declaration-shape diagnostics
-        T0015_NonBoolIfCondition,
-        T0016_NonBoolWhileCondition,
-        T0017_NonExternVariadicFunction,
+        // Control flow diagnostics
+        T0018_NonBoolIfCondition,
+        T0019_NonBoolWhileCondition,
 
         // Type mismatch diagnostics
-        T0018_ReturnTypeMismatch,
-        T0019_AssignmentTypeMismatch,
-        T0020_ExplicitConstantTypeMismatch,
-        T0021_ExplicitVariableTypeMismatch,
-        T0022_TypeFieldInitializerMismatch,
-        T0023_ArithmeticOperandTypeMismatch,
-        T0024_ComparisonOperandTypeMismatch,
-        T0025_EnumFieldValueTypeMismatch,
-        T0026_DuplicateDeclaration,
-        T0027_FlagEnumExplicitValue,
-        T0028_ReferenceReturnType,
-        T0029_ExplicitConstructorDeclaration,
-        T0030_AlreadyReference,
-        T0031_DuplicateTypeDeclaration,
-        T0032_DuplicateFunctionDeclaration,
+        T0020_ReturnTypeMismatch,
+        T0021_AssignmentTypeMismatch,
+        T0022_ExplicitConstantTypeMismatch,
+        T0023_ExplicitVariableTypeMismatch,
+        T0024_TypeFieldInitializerMismatch,
+        T0025_ArithmeticOperandTypeMismatch,
+        T0026_ComparisonOperandTypeMismatch,
+        T0027_EnumFieldValueTypeMismatch,
+
+        // Declaration-shape and reference diagnostics
+        T0028_NonExternVariadicFunction,
+        T0029_FlagEnumExplicitValue,
+        T0030_ExplicitConstructorDeclaration,
+        T0031_ReferenceReturnType,
+        T0032_AlreadyReference,
+
+        // Duplicate declaration diagnostics
+        T0033_DuplicateDeclaration,
+        T0034_DuplicateConstantDeclaration,
+        T0035_DuplicateVariableDeclaration,
+        T0036_DuplicateParameterDeclaration,
+        T0037_DuplicateEnumFieldDeclaration,
+        T0038_DuplicateTypeFieldDeclaration,
+        T0039_DuplicateFunctionDeclaration,
+        T0040_DuplicateTypeDeclaration,
     };
 }
