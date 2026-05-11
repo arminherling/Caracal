@@ -1,4 +1,4 @@
-﻿#include <CaraTest.h>
+#include <CaraTest.h>
 
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Token.h>
@@ -233,7 +233,7 @@ static void UnterminatedStrings(const std::string& input, const std::string_view
     const auto tokens = Caracal::lex(source, diagnostics);
     const auto& token = tokens.getToken(0);
 
-    CaraTest::isTrue(!diagnostics.Diagnostics().empty());
+    CaraTest::isTrue(!diagnostics.diagnostics().empty());
 
     const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
@@ -296,7 +296,7 @@ static void WholeInput(const std::string& input, i32 tokenCount)
     const auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
-    CaraTest::isTrue(diagnostics.Diagnostics().empty());
+    CaraTest::isTrue(diagnostics.diagnostics().empty());
     CaraTest::areEqual(tokenCount, tokens.size());
 }
 

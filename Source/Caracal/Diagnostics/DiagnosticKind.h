@@ -75,5 +75,10 @@ namespace Caracal
 
         // Literal diagnostics
         T0041_NumberLiteralOutOfRange,
+
+        // Warning diagnostics
+        T0042_UnusedLocalVariable,
+        T0043_UnusedLocalConstant,
+        T0044_UnusedParameter,
     };
 }

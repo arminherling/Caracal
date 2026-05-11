@@ -100,9 +100,10 @@ namespace Caracal
         [[nodiscard]] bool validateFunctionAnnotation(const FunctionDefinitionStatement* statement, const TokenBuffer& tokens);
         void validateEnumAnnotation(const EnumDefinitionStatement* statement, const TokenBuffer& tokens, bool& isFlag, std::optional<i32>& stepValue);
         void validateTypeAnnotation(const TypeDefinitionStatement* statement, const TokenBuffer& tokens);
+        void emitUnusedVariableWarnings(const Scope& scope);
 
         void pushScope(ScopeKind kind);
-        void popScope();
+        void popScope(bool emitUnusedWarnings = false);
         [[nodiscard]] Scope* currentScope() const noexcept;
         
         const std::vector<ParseTreeUPtr>& m_parseTrees;

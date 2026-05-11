@@ -1,4 +1,5 @@
 def takesOne(value: i32) {
+    _ = value;
 }
 
 def main() {

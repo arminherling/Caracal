@@ -1,4 +1,4 @@
-﻿#include <Caracal/Compiler.h>
+#include <Caracal/Compiler.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Text/File.h>
@@ -62,9 +62,9 @@ namespace Caracal
             }
 
             auto source = std::make_shared<Caracal::SourceText>(content.value(), caraFilePath);
-            const auto diagnosticCount = diagnostics.Diagnostics().size();
+            const auto diagnosticCount = diagnostics.diagnostics().size();
             const auto tokens = Caracal::lex(source, diagnostics);
-            if (diagnostics.Diagnostics().size() != diagnosticCount)
+            if (diagnostics.diagnostics().size() != diagnosticCount)
             {
                 // skip parsing if there were lexing errors
                 continue;
@@ -82,15 +82,15 @@ namespace Caracal
         }
 
         auto source = std::make_shared<Caracal::SourceText>(fileContent.value(), filePath);
-        const auto diagnosticCount = diagnostics.Diagnostics().size();
+        const auto diagnosticCount = diagnostics.diagnostics().size();
         const auto tokens = Caracal::lex(source, diagnostics);
-        if (diagnostics.Diagnostics().size() == diagnosticCount)
+        if (diagnostics.diagnostics().size() == diagnosticCount)
         {
             auto parseTree = Caracal::parse(tokens, diagnostics);
             parseTrees.push_back(std::move(parseTree));
         }
 
-        if (!diagnostics.Diagnostics().empty())
+        if (diagnostics.hasErrors())
         {
             Caracal::writeDiagnostics(std::cout, diagnostics, diagnosticOptions);
             return 1;
@@ -108,6 +108,11 @@ namespace Caracal
         {
             Caracal::writeDiagnostics(std::cout, diagnostics, diagnosticOptions);
             return 1;
+        }
+
+        if (!diagnostics.diagnostics().empty())
+        {
+            Caracal::writeDiagnostics(std::cout, diagnostics, diagnosticOptions);
         }
 
         llvm::InitializeNativeTarget();

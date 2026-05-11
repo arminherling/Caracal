@@ -1,0 +1,11 @@
+ Warning T0044
+  Unused parameter
+    ,-[Diagnostics/Input/unusedParameter.cara:1:8]
+  1 | def id(value: i32) i32 {
+    .        ----------
+    .             `-- Parameter 'value' is never used
+  2 |     return 0;
+  3 | }
+  4 | 
+    `----
+  Fix: Remove this parameter, rename it to '_', or use its value.

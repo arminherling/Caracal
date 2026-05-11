@@ -1,4 +1,6 @@
 def takesTwo(flag: bool, count: i32) {
+    _ = flag;
+    _ = count;
 }
 
 def main() {

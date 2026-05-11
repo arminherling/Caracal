@@ -123,6 +123,12 @@ namespace Caracal
                 return "T0040";
             case DiagnosticKind::T0041_NumberLiteralOutOfRange:
                 return "T0041";
+            case DiagnosticKind::T0042_UnusedLocalVariable:
+                return "T0042";
+            case DiagnosticKind::T0043_UnusedLocalConstant:
+                return "T0043";
+            case DiagnosticKind::T0044_UnusedParameter:
+                return "T0044";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -250,6 +256,12 @@ namespace Caracal
                 return "Duplicate type declaration";
             case DiagnosticKind::T0041_NumberLiteralOutOfRange:
                 return "Number literal out of range";
+            case DiagnosticKind::T0042_UnusedLocalVariable:
+                return "Unused local variable";
+            case DiagnosticKind::T0043_UnusedLocalConstant:
+                return "Unused local constant";
+            case DiagnosticKind::T0044_UnusedParameter:
+                return "Unused parameter";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

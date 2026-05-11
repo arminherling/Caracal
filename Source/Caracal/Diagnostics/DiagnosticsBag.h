@@ -16,79 +16,86 @@ namespace Caracal
         DiagnosticsBag() = default;
 
         // Lexer diagnostics
-        void AddIllegalCharacterError(const SourceTextSharedPtr& source, const SourceLocation& location);
-        void AddUnterminatedStringError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addIllegalCharacterError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addUnterminatedStringError(const SourceTextSharedPtr& source, const SourceLocation& location);
 
         // Parser syntax diagnostics
-        void AddExpectedTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind expectedKind, TokenKind actualKind);
-        void AddExpectedTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind expectedKind1, TokenKind expectedKind2, TokenKind actualKind);
-        void AddExtraTokensRemainingError(const SourceTextSharedPtr& source, const SourceLocation& location);
-        void AddUnexpectedTopLevelTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
-        void AddExpectedEnumFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
-        void AddUnexpectedStatementTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
-        void AddUnexpectedExpressionTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
+        void addExpectedTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind expectedKind, TokenKind actualKind);
+        void addExpectedTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind expectedKind1, TokenKind expectedKind2, TokenKind actualKind);
+        void addExtraTokensRemainingError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addUnexpectedTopLevelTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
+        void addExpectedEnumFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
+        void addUnexpectedStatementTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
+        void addUnexpectedExpressionTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
 
         // Annotation diagnostics
-        void AddDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location);
-        void AddUnknownAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, TokenKind targetKind);
-        void AddUnexpectedAnnotationTargetError(const SourceTextSharedPtr& source, const SourceLocation& location);
-        void AddAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName);
-        void AddAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, i32 expectedCount, i32 actualCount);
-        void AddAnnotationArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, const std::string& expectedDescription, const std::string& actualDescription);
-        void AddConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName);
+        void addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addUnknownAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, TokenKind targetKind);
+        void addUnexpectedAnnotationTargetError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName);
+        void addAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, i32 expectedCount, i32 actualCount);
+        void addAnnotationArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, const std::string& expectedDescription, const std::string& actualDescription);
+        void addConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName);
 
         // Unknown symbol and member access diagnostics
-        void AddUnknownNameError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
-        void AddUnknownFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
-        void AddUnknownTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
-        void AddUnknownMethodError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName, const std::string& methodName);
-        void AddUnknownFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName, const std::string& fieldName);
-        void AddUnknownEnumFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& enumName, const std::string& fieldName);
-        void AddInvalidEnumMemberAccessError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& enumName);
-        void AddInvalidMemberAccessReceiverError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName);
+        void addUnknownNameError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
+        void addUnknownFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
+        void addUnknownTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
+        void addUnknownMethodError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName, const std::string& methodName);
+        void addUnknownFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName, const std::string& fieldName);
+        void addUnknownEnumFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& enumName, const std::string& fieldName);
+        void addInvalidEnumMemberAccessError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& enumName);
+        void addInvalidMemberAccessReceiverError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName);
 
         // Call diagnostics
-        void AddArgumentCountMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 expectedCount, i32 actualCount, bool isVariadic);
-        void AddArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::vector<ArgumentTypeMismatchInfo>& mismatches);
-        void AddInvalidVariadicArgumentTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 argumentIndex, const std::string& actualTypeName);
+        void addArgumentCountMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 expectedCount, i32 actualCount, bool isVariadic);
+        void addArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::vector<ArgumentTypeMismatchInfo>& mismatches);
+        void addInvalidVariadicArgumentTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 argumentIndex, const std::string& actualTypeName);
 
         // Control flow diagnostics
-        void AddNonBoolIfConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);
-        void AddNonBoolWhileConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);
+        void addNonBoolIfConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);
+        void addNonBoolWhileConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);
 
         // Type mismatch diagnostics
-        void AddReturnTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
-        void AddAssignmentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
-        void AddExplicitConstantTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
-        void AddExplicitVariableTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
-        void AddTypeFieldInitializerMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
-        void AddArithmeticOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& leftTypeName, const std::string& rightTypeName);
-        void AddComparisonOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& leftTypeName, const std::string& rightTypeName);
-        void AddEnumFieldValueTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
+        void addReturnTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
+        void addAssignmentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
+        void addExplicitConstantTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
+        void addExplicitVariableTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
+        void addTypeFieldInitializerMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
+        void addArithmeticOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& leftTypeName, const std::string& rightTypeName);
+        void addComparisonOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& leftTypeName, const std::string& rightTypeName);
+        void addEnumFieldValueTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
 
         // Declaration-shape and reference diagnostics
-        void AddNonExternVariadicFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
-        void AddFlagEnumExplicitValueError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName);
-        void AddExplicitConstructorDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& typeName);
-        void AddReferenceReturnTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
-        void AddAlreadyReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addNonExternVariadicFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
+        void addFlagEnumExplicitValueError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName);
+        void addExplicitConstructorDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& typeName);
+        void addReferenceReturnTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
+        void addAlreadyReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location);
 
         // Duplicate declaration diagnostics
-        void AddDuplicateDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
-        void AddDuplicateConstantDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
-        void AddDuplicateVariableDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
-        void AddDuplicateParameterDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
-        void AddDuplicateEnumFieldDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, std::optional<SourceLocation> otherLocation = std::nullopt);
-        void AddDuplicateTypeFieldDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, std::optional<SourceLocation> otherLocation = std::nullopt);
-        void AddDuplicateFunctionDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
-        void AddDuplicateTypeDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void addDuplicateDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void addDuplicateConstantDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void addDuplicateVariableDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void addDuplicateParameterDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void addDuplicateEnumFieldDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void addDuplicateTypeFieldDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void addDuplicateFunctionDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
+        void addDuplicateTypeDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
 
         // Literal diagnostics
-        void AddNumberLiteralOutOfRangeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& literalText, const std::string& targetTypeName);
+        void addNumberLiteralOutOfRangeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& literalText, const std::string& targetTypeName);
 
-        const std::vector<Diagnostic>& Diagnostics() const;
+        // Warning diagnostics
+        void addUnusedLocalVariableWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
+        void addUnusedParameterWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
+        void addUnusedLocalConstantWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
+
+        const std::vector<Diagnostic>& diagnostics() const;
+        [[nodiscard]] bool hasErrors() const noexcept;
+        [[nodiscard]] bool hasWarnings() const noexcept;
 
     private:
-        std::vector<Diagnostic> diagnostics;
+        std::vector<Diagnostic> m_diagnostics;
     };
 }

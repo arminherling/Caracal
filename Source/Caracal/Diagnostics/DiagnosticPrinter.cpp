@@ -1,4 +1,4 @@
-﻿#include <Caracal/Diagnostics/DiagnosticPrinter.h>
+#include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <CaraReport.h>
 
 #include <sstream>
@@ -172,7 +172,7 @@ namespace Caracal
             .withColors(options.enableColors)
             .withUnicode(options.enableUnicode);
 
-        const auto& entries = diagnostics.Diagnostics();
+        const auto& entries = diagnostics.diagnostics();
         for (std::size_t i = 0; i < entries.size(); ++i)
         {
             auto diagnosticReport = BuildReport(entries[i]);

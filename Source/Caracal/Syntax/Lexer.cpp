@@ -1,4 +1,4 @@
-﻿#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Syntax/Lexer.h>
 
 #include <unordered_map>
 
@@ -214,7 +214,7 @@ namespace Caracal
             AddKindAndLexeme(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Error, startIndex);
             const auto& lastToken = tokenBuffer.getLastToken();
             const auto& location = tokenBuffer.getSourceLocation(lastToken);
-            diagnostics.AddUnterminatedStringError(sourceText, location);
+            diagnostics.addUnterminatedStringError(sourceText, location);
         }
     };
 
@@ -449,7 +449,7 @@ namespace Caracal
                     AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Unknown);
                     const auto& lastToken = tokenBuffer.getLastToken();
                     const auto& location = tokenBuffer.getSourceLocation(lastToken);
-                    diagnostics.AddIllegalCharacterError(sourceText, location);
+                    diagnostics.addIllegalCharacterError(sourceText, location);
                     break;
                 }
             }

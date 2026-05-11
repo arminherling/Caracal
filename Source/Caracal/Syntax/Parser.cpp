@@ -1,4 +1,4 @@
-﻿#include <Caracal/Syntax/AssignmentStatement.h>
+#include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/BreakStatement.h>
@@ -93,7 +93,7 @@ namespace Caracal
 
         for (const auto& annotation : m_currentAnnotations)
         {
-            m_diagnostics.AddDanglingAnnotationError(
+            m_diagnostics.addDanglingAnnotationError(
                 m_tokens.source(),
                 GetAnnotationLocation(annotation.get(), m_tokens));
         }
@@ -101,7 +101,7 @@ namespace Caracal
         if (m_currentIndex < m_tokens.size() - 1)
         {
             const auto& location = m_tokens.getSourceLocation(m_tokens.getToken(m_currentIndex));
-            m_diagnostics.AddExtraTokensRemainingError(m_tokens.source(), location);
+            m_diagnostics.addExtraTokensRemainingError(m_tokens.source(), location);
         }
 
         return std::make_unique<ParseTree>(m_tokens, std::move(statements));
@@ -129,7 +129,7 @@ namespace Caracal
                     if (scope == StatementScope::Global)
                     {
                         const auto& location = m_tokens.getSourceLocation(current);
-                        m_diagnostics.AddUnexpectedTopLevelTokenError(m_tokens.source(), location, current.kind);
+                        m_diagnostics.addUnexpectedTopLevelTokenError(m_tokens.source(), location, current.kind);
 
                         advanceCurrentIndex();
                         break;
@@ -285,11 +285,11 @@ namespace Caracal
         const auto& location = m_tokens.getSourceLocation(current);
         if (scope == StatementScope::Global)
         {
-            m_diagnostics.AddUnexpectedTopLevelTokenError(m_tokens.source(), location, current.kind);
+            m_diagnostics.addUnexpectedTopLevelTokenError(m_tokens.source(), location, current.kind);
         }
         else
         {
-            m_diagnostics.AddUnexpectedStatementTokenError(m_tokens.source(), location, current.kind);
+            m_diagnostics.addUnexpectedStatementTokenError(m_tokens.source(), location, current.kind);
         }
 
         auto errorExpression = std::make_unique<ErrorExpression>(current);
@@ -418,7 +418,7 @@ namespace Caracal
             else
             {
                 const auto& location = m_tokens.getSourceLocation(current);
-                m_diagnostics.AddExpectedEnumFieldError(m_tokens.source(), location, current.kind);
+                m_diagnostics.addExpectedEnumFieldError(m_tokens.source(), location, current.kind);
                 advanceCurrentIndex();
             }
             current = currentToken();
@@ -784,7 +784,7 @@ namespace Caracal
             {
                 advanceCurrentIndex();
                 const auto& location = m_tokens.getSourceLocation(current);
-                m_diagnostics.AddUnexpectedExpressionTokenError(m_tokens.source(), location, current.kind);
+                m_diagnostics.addUnexpectedExpressionTokenError(m_tokens.source(), location, current.kind);
                 return std::make_unique<ErrorExpression>(current);
             }
         }
@@ -953,7 +953,7 @@ namespace Caracal
         else
         {
             const auto& location = m_tokens.getSourceLocation(current);
-            m_diagnostics.AddExpectedTokenError(m_tokens.source(), location, kind, current.kind);
+            m_diagnostics.addExpectedTokenError(m_tokens.source(), location, kind, current.kind);
             return Token::ToError(current);
         }
     }
@@ -969,7 +969,7 @@ namespace Caracal
         else
         {
             const auto& location = m_tokens.getSourceLocation(current);
-            m_diagnostics.AddExpectedTokenError(m_tokens.source(), location, kind1, kind2, current.kind);
+            m_diagnostics.addExpectedTokenError(m_tokens.source(), location, kind1, kind2, current.kind);
             return Token::ToError(current);
         }
     }

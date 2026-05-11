@@ -1,4 +1,4 @@
-﻿#include <CaraTest.h>
+#include <CaraTest.h>
 #include <Caracal/Compiler.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Text/File.h>
@@ -35,7 +35,7 @@ static void FileTests(
     std::vector<Caracal::ParseTreeUPtr> parseTrees;
     parseTrees.push_back(std::move(parseTree));
 
-    CaraTest::isTrue(diagnostics.Diagnostics().empty());
+    CaraTest::isTrue(!diagnostics.hasErrors());
 
     Caracal::Module caracalModule = Caracal::Module::WithBuiltins();
     Caracal::TypeCheckerOptions options{
@@ -58,7 +58,7 @@ static void FileTests(
     std::cout << "      generateLLVMModule(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     CaraTest::isTrue(irGenerated);
-    CaraTest::isTrue(diagnostics.Diagnostics().empty());
+    CaraTest::isTrue(!diagnostics.hasErrors());
     CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
 }
 

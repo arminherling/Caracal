@@ -1,4 +1,5 @@
 def takesBool(value: bool) {
+    _ = value;
 }
 
 def main() {

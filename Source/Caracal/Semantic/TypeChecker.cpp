@@ -1,4 +1,4 @@
-﻿#include "TypeChecker.h"
+#include "TypeChecker.h"
 
 #include <charconv>
 #include <cmath>
@@ -66,6 +66,11 @@ namespace Caracal
         }
 
         return name;
+    }
+
+    static bool ShouldIgnoreUnusedVariableWarning(std::string_view name)
+    {
+        return name == "_" || name == "this";
     }
 
     static std::string FormatBinaryOperator(BinaryOperatorKind binaryOperator)
@@ -189,7 +194,7 @@ namespace Caracal
 
     bool TypeChecker::typeCheck()
     {
-        if (!m_diagnostics.Diagnostics().empty())
+        if (m_diagnostics.hasErrors())
         {
             return false;
         }
@@ -205,7 +210,7 @@ namespace Caracal
         typeCheckFunctionDefinitions();
         typeCheckTypeMethodDefinitions();
         
-        return m_diagnostics.Diagnostics().empty();
+        return !m_diagnostics.hasErrors();
     }
 
     void TypeChecker::collectDeclarations()
@@ -231,7 +236,7 @@ namespace Caracal
                         {
                             for (const auto& annotation : variableDeclaration->annotations())
                             {
-                                m_diagnostics.AddUnexpectedAnnotationTargetError(
+                                m_diagnostics.addUnexpectedAnnotationTargetError(
                                     parseTree->tokens().source(),
                                     annotation->sourceLocation(parseTree->tokens()));
                             }
@@ -270,7 +275,7 @@ namespace Caracal
                                 }
                             }
 
-                            m_diagnostics.AddDuplicateTypeDeclarationError(
+                            m_diagnostics.addDuplicateTypeDeclarationError(
                                 parseTree->tokens().source(),
                                 parseTree->tokens().getSourceLocation(enumStatement->nameToken()),
                                 enumName,
@@ -315,7 +320,7 @@ namespace Caracal
                                 }
                             }
 
-                            m_diagnostics.AddDuplicateTypeDeclarationError(
+                            m_diagnostics.addDuplicateTypeDeclarationError(
                                 parseTree->tokens().source(),
                                 parseTree->tokens().getSourceLocation(typeStatement->nameToken()),
                                 std::string(typeStatement->name()),
@@ -348,7 +353,7 @@ namespace Caracal
                                 otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
                             }
 
-                            m_diagnostics.AddDuplicateFunctionDeclarationError(
+                            m_diagnostics.addDuplicateFunctionDeclarationError(
                                 parseTree->tokens().source(),
                                 parseTree->tokens().getSourceLocation(functionStatement->nameToken()),
                                 functionName,
@@ -410,7 +415,7 @@ namespace Caracal
                         constructorLocation = typeDefinitionStatement->constructorParameters().value()->sourceLocation(tokens);
                     }
 
-                    m_diagnostics.AddExplicitConstructorDeclarationError(
+                    m_diagnostics.addExplicitConstructorDeclarationError(
                         tokens.source(),
                         tokens.getSourceLocation(methodStatement->methodNameNode()->methodNameToken()),
                         constructorLocation,
@@ -524,7 +529,7 @@ namespace Caracal
         pushScope(ScopeKind::Function);
         auto parameters = typeCheckParametersNode(statement->parametersNode().get(), tokens);
         auto returns = typeCheckReturnTypesNode(statement->returnTypesNode().get(), tokens);
-        popScope();
+        popScope(false);
 
         const auto& functionName = statement->name();
         auto functionType = m_module.tryGetFunctionTypeByName(functionName);
@@ -540,7 +545,7 @@ namespace Caracal
         if (isVariadic && !isExtern)
         {
             auto* variadicParameter = parameterNodes.back().get();
-            m_diagnostics.AddNonExternVariadicFunctionError(
+            m_diagnostics.addNonExternVariadicFunctionError(
                 tokens.source(),
                 variadicParameter->sourceLocation(tokens),
                 functionName);
@@ -615,7 +620,7 @@ namespace Caracal
             ++fieldIndex;
         }
 
-        popScope();
+        popScope(true);
     }
 
     void TypeChecker::typeCheckTypeMethodDefinition(TypeDefinitionStatement* statement, const TokenBuffer& tokens)
@@ -641,7 +646,8 @@ namespace Caracal
                 fieldDefinition.name(),
                 fieldDefinition.type(),
                 GetTypeFieldLocation(typeDefinition, fieldDefinition, tokens),
-                tokens.source());
+                tokens.source(),
+                VariableBindingKind::Field);
         }
 
         const auto& definitionStatements = statement->bodyNode()->statements();
@@ -666,7 +672,7 @@ namespace Caracal
             typeCheckMethodDefinitionStatement(methodStatement, tokens);
         }
 
-        popScope();
+        popScope(false);
         m_currentType = Type::Undefined();
     }
 
@@ -677,7 +683,7 @@ namespace Caracal
         pushScope(ScopeKind::Method);
         auto parameters = typeCheckParametersNode(methodStatement->parametersNode().get(), tokens);
         auto returns = typeCheckReturnTypesNode(methodStatement->returnTypesNode().get(), tokens);
-        popScope();
+        popScope(false);
 
         auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
         if (methodType == Type::Undefined())
@@ -709,7 +715,7 @@ namespace Caracal
         {
             pushScope(ScopeKind::Type);
             auto declaredConstructorParameters = typeCheckParametersNode(typeDefinitionStatement->constructorParameters().value().get(), tokens);
-            popScope();
+            popScope(false);
 
             constructorParameters.insert(
                 constructorParameters.end(),
@@ -789,7 +795,7 @@ namespace Caracal
         {
             for (const auto& annotation : statement->annotations())
             {
-                m_diagnostics.AddUnexpectedAnnotationTargetError(
+                m_diagnostics.addUnexpectedAnnotationTargetError(
                     tokens.source(),
                     annotation->sourceLocation(tokens));
             }
@@ -806,7 +812,7 @@ namespace Caracal
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(name, rightType, nameExpression->sourceLocation(tokens), tokens.source());
+                scope->addVariableBinding(name, rightType, nameExpression->sourceLocation(tokens), tokens.source(), VariableBindingKind::LocalConstant);
 
                 if (statement->isGlobalConstant())
                 {
@@ -816,7 +822,7 @@ namespace Caracal
             }
             else
             {
-                m_diagnostics.AddDuplicateConstantDeclarationError(
+                m_diagnostics.addDuplicateConstantDeclarationError(
                     tokens.source(),
                     nameExpression->sourceLocation(tokens),
                     name,
@@ -831,7 +837,7 @@ namespace Caracal
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
             if (rightType != Type::Undefined() && explicitType != Type::Undefined() && rightType != explicitType)
             {
-                m_diagnostics.AddExplicitConstantTypeMismatchError(
+                m_diagnostics.addExplicitConstantTypeMismatchError(
                     tokens.source(),
                     statement->rightExpression()->sourceLocation(tokens),
                     FormatTypeName(m_module, explicitType),
@@ -854,11 +860,11 @@ namespace Caracal
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(name, rightType, nameExpression->sourceLocation(tokens), tokens.source());
+                scope->addVariableBinding(name, rightType, nameExpression->sourceLocation(tokens), tokens.source(), VariableBindingKind::LocalVariable);
             }
             else
             {
-                m_diagnostics.AddDuplicateVariableDeclarationError(
+                m_diagnostics.addDuplicateVariableDeclarationError(
                     tokens.source(),
                     nameExpression->sourceLocation(tokens),
                     name,
@@ -873,7 +879,7 @@ namespace Caracal
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
             if (rightType != Type::Undefined() && explicitType != Type::Undefined() && rightType != explicitType)
             {
-                m_diagnostics.AddExplicitVariableTypeMismatchError(
+                m_diagnostics.addExplicitVariableTypeMismatchError(
                     tokens.source(),
                     statement->rightExpression()->sourceLocation(tokens),
                     FormatTypeName(m_module, explicitType),
@@ -908,7 +914,7 @@ namespace Caracal
 
         if (leftType != rightType)
         {
-            m_diagnostics.AddAssignmentTypeMismatchError(
+            m_diagnostics.addAssignmentTypeMismatchError(
                 tokens.source(),
                 statement->rightExpression()->sourceLocation(tokens),
                 FormatTypeName(m_module, leftType),
@@ -938,7 +944,7 @@ namespace Caracal
             {
                 location = parameterNodes[i]->sourceLocation(tokens);
             }
-            currentScope()->addVariableBinding(parameters[i].name(), parameters[i].type(), location, tokens.source());
+            currentScope()->addVariableBinding(parameters[i].name(), parameters[i].type(), location, tokens.source(), VariableBindingKind::Parameter);
         }
 
         auto& returnTypes = functionDefinition.returnTypes();
@@ -953,7 +959,7 @@ namespace Caracal
 
         typeCheckBlockNode(statement->bodyNode().get(), tokens);
 
-        popScope();
+        popScope(!statement->isExtern());
         m_currentReturnType = Type::Void();
     }
 
@@ -988,7 +994,7 @@ namespace Caracal
             if (enumDefinition.hasField(fieldName))
             {
                 const auto& otherField = enumDefinition.getFieldByName(fieldName);
-                m_diagnostics.AddDuplicateEnumFieldDeclarationError(
+                m_diagnostics.addDuplicateEnumFieldDeclarationError(
                     tokens.source(),
                     tokens.getSourceLocation(fieldNode->nameToken()),
                     fieldName,
@@ -1001,7 +1007,7 @@ namespace Caracal
             {
                 if (fieldNode->valueExpression().has_value())
                 {
-                    m_diagnostics.AddFlagEnumExplicitValueError(
+                    m_diagnostics.addFlagEnumExplicitValueError(
                         tokens.source(),
                         fieldNode->valueExpression().value()->sourceLocation(tokens),
                         fieldName);
@@ -1032,7 +1038,7 @@ namespace Caracal
                 {
                     if (fieldValueType != Type::Undefined())
                     {
-                        m_diagnostics.AddEnumFieldValueTypeMismatchError(
+                        m_diagnostics.addEnumFieldValueTypeMismatchError(
                             tokens.source(),
                             expression->sourceLocation(tokens),
                             FormatTypeName(m_module, baseType),
@@ -1072,13 +1078,13 @@ namespace Caracal
         const auto* definition = GetAnnotationDefinition(annotation->kind());
         if (definition == nullptr)
         {
-            m_diagnostics.AddUnknownAnnotationError(tokens.source(), annotationLocation, annotation->name(), targetKind);
+            m_diagnostics.addUnknownAnnotationError(tokens.source(), annotationLocation, annotation->name(), targetKind);
             return false;
         }
 
         if (definition->targetKind != targetKind)
         {
-            m_diagnostics.AddUnexpectedAnnotationTargetError(tokens.source(), annotationLocation);
+            m_diagnostics.addUnexpectedAnnotationTargetError(tokens.source(), annotationLocation);
             return false;
         }
 
@@ -1090,13 +1096,13 @@ namespace Caracal
 
         if (definition->requiredArgumentCount > 0 && !annotation->argumentsNode().has_value())
         {
-            m_diagnostics.AddAnnotationMissingArgumentsError(tokens.source(), annotationLocation, annotation->kind(), annotation->name());
+            m_diagnostics.addAnnotationMissingArgumentsError(tokens.source(), annotationLocation, annotation->kind(), annotation->name());
             return false;
         }
 
         if (actualCount != definition->requiredArgumentCount)
         {
-            m_diagnostics.AddAnnotationWrongNumberOfArgumentsError(
+            m_diagnostics.addAnnotationWrongNumberOfArgumentsError(
                 tokens.source(),
                 annotation->argumentsLocation(tokens),
                 annotation->kind(),
@@ -1117,7 +1123,7 @@ namespace Caracal
 
             if (argument->kind() != NodeKind::NumberLiteral)
             {
-                m_diagnostics.AddAnnotationArgumentTypeMismatchError(
+                m_diagnostics.addAnnotationArgumentTypeMismatchError(
                     tokens.source(),
                     argument->sourceLocation(tokens),
                     annotation->kind(),
@@ -1129,7 +1135,7 @@ namespace Caracal
 
             if (argumentType != definition->parameterType)
             {
-                m_diagnostics.AddAnnotationArgumentTypeMismatchError(
+                m_diagnostics.addAnnotationArgumentTypeMismatchError(
                     tokens.source(),
                     argument->sourceLocation(tokens),
                     annotation->kind(),
@@ -1190,7 +1196,7 @@ namespace Caracal
                 case AnnotationKind::Flag:
                     if (stepAnnotation != nullptr)
                     {
-                        m_diagnostics.AddConflictingEnumAnnotationsError(
+                        m_diagnostics.addConflictingEnumAnnotationsError(
                             tokens.source(),
                             annotation->sourceLocation(tokens),
                             stepAnnotation->sourceLocation(tokens),
@@ -1205,7 +1211,7 @@ namespace Caracal
                 case AnnotationKind::Step:
                     if (flagAnnotation != nullptr)
                     {
-                        m_diagnostics.AddConflictingEnumAnnotationsError(
+                        m_diagnostics.addConflictingEnumAnnotationsError(
                             tokens.source(),
                             annotation->sourceLocation(tokens),
                             flagAnnotation->sourceLocation(tokens),
@@ -1237,7 +1243,7 @@ namespace Caracal
         const auto& existingField = typeDefinition.tryGetFieldByName(fieldName);
         if (existingField.type() != Type::Undefined())
         {
-            m_diagnostics.AddDuplicateTypeFieldDeclarationError(
+            m_diagnostics.addDuplicateTypeFieldDeclarationError(
                 tokens.source(),
                 statement->nameExpression()->sourceLocation(tokens),
                 fieldName,
@@ -1262,7 +1268,7 @@ namespace Caracal
             }
             else if (fieldType != expressionType)
             {
-                m_diagnostics.AddTypeFieldInitializerMismatchError(
+                m_diagnostics.addTypeFieldInitializerMismatchError(
                     tokens.source(),
                     fieldExpression->sourceLocation(tokens),
                     FormatTypeName(m_module, fieldType),
@@ -1301,7 +1307,7 @@ namespace Caracal
             {
                 location = parameterNodes[i]->sourceLocation(tokens);
             }
-            currentScope()->addVariableBinding(parameters[i].name(), parameters[i].type(), location, tokens.source());
+            currentScope()->addVariableBinding(parameters[i].name(), parameters[i].type(), location, tokens.source(), VariableBindingKind::Parameter);
         }
 
         auto& returnTypes = methodDefinition.returnTypes();
@@ -1316,7 +1322,7 @@ namespace Caracal
 
         typeCheckBlockNode(statement->bodyNode().get(), tokens);
 
-        popScope();
+        popScope(true);
         m_currentReturnType = Type::Void();
     }
 
@@ -1326,7 +1332,7 @@ namespace Caracal
         conditionType = coerceConditionType(conditionType, statement->condition().get());
         if (conditionType != Type::Undefined() && conditionType != Type::Bool())
         {
-            m_diagnostics.AddNonBoolIfConditionError(
+            m_diagnostics.addNonBoolIfConditionError(
                 tokens.source(),
                 statement->condition()->sourceLocation(tokens),
                 FormatTypeName(m_module, conditionType));
@@ -1346,7 +1352,7 @@ namespace Caracal
         conditionType = coerceConditionType(conditionType, statement->condition().get());
         if (conditionType != Type::Undefined() && conditionType != Type::Bool())
         {
-            m_diagnostics.AddNonBoolWhileConditionError(
+            m_diagnostics.addNonBoolWhileConditionError(
                 tokens.source(),
                 statement->condition()->sourceLocation(tokens),
                 FormatTypeName(m_module, conditionType));
@@ -1376,7 +1382,7 @@ namespace Caracal
 
             if (declaredReturnType != type)
             {
-                m_diagnostics.AddReturnTypeMismatchError(
+                m_diagnostics.addReturnTypeMismatchError(
                     tokens.source(),
                     statement->expression().value()->sourceLocation(tokens),
                     FormatTypeName(m_module, declaredReturnType),
@@ -1391,7 +1397,7 @@ namespace Caracal
             {
                 const auto returnKeywordLocation = tokens.getSourceLocation(statement->keywordToken());
                 const auto semicolonLocation = tokens.getSourceLocation(statement->semicolonToken());
-                m_diagnostics.AddReturnTypeMismatchError(
+                m_diagnostics.addReturnTypeMismatchError(
                     tokens.source(),
                     SourceLocation{ returnKeywordLocation.startIndex, semicolonLocation.endIndex },
                     FormatTypeName(m_module, declaredReturnType),
@@ -1474,7 +1480,7 @@ namespace Caracal
                 auto type = typeCheckExpression(unaryExpression->expression().get(), tokens);
                 if (type.isReference())
                 {
-                    m_diagnostics.AddAlreadyReferenceError(
+                    m_diagnostics.addAlreadyReferenceError(
                         tokens.source(),
                         unaryExpression->sourceLocation(tokens));
                     return Type::Undefined();
@@ -1506,7 +1512,7 @@ namespace Caracal
                         auto* fieldNameExpression = static_cast<NameExpression*>(binaryExpression->rightExpression().get());
                         if (!enumDefinition.hasField(fieldNameExpression->name()))
                         {
-                            m_diagnostics.AddUnknownEnumFieldError(
+                            m_diagnostics.addUnknownEnumFieldError(
                                 tokens.source(),
                                 fieldNameExpression->sourceLocation(tokens),
                                 enumDefinition.name(),
@@ -1519,7 +1525,7 @@ namespace Caracal
                         return leftType;
                     }
 
-                    m_diagnostics.AddInvalidEnumMemberAccessError(
+                    m_diagnostics.addInvalidEnumMemberAccessError(
                         tokens.source(),
                         binaryExpression->rightExpression()->sourceLocation(tokens),
                         enumDefinition.name());
@@ -1572,7 +1578,7 @@ namespace Caracal
                         }
                         else
                         {
-                            m_diagnostics.AddUnknownMethodError(
+                            m_diagnostics.addUnknownMethodError(
                                 tokens.source(),
                                 functionCallExpression->sourceLocation(tokens),
                                 typeDefinition.name(),
@@ -1586,7 +1592,7 @@ namespace Caracal
                         const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldNameExpression->name());
                         if (fieldDefinition.type() == Type::Undefined())
                         {
-                            m_diagnostics.AddUnknownFieldError(
+                            m_diagnostics.addUnknownFieldError(
                                 tokens.source(),
                                 fieldNameExpression->sourceLocation(tokens),
                                 typeDefinition.name(),
@@ -1603,7 +1609,7 @@ namespace Caracal
 
                 if (leftType != Type::Undefined())
                 {
-                    m_diagnostics.AddInvalidMemberAccessReceiverError(
+                    m_diagnostics.addInvalidMemberAccessReceiverError(
                         tokens.source(),
                         binaryExpression->sourceLocation(tokens),
                         FormatTypeName(m_module, leftType));
@@ -1632,7 +1638,7 @@ namespace Caracal
                 {
                     if (leftType != Type::Undefined() && rightType != Type::Undefined())
                     {
-                        m_diagnostics.AddArithmeticOperandTypeMismatchError(
+                        m_diagnostics.addArithmeticOperandTypeMismatchError(
                             tokens.source(),
                             tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
                             FormatBinaryOperator(binaryExpression->binaryOperator()),
@@ -1671,7 +1677,7 @@ namespace Caracal
                 {
                     if (leftType != Type::Undefined() && rightType != Type::Undefined())
                     {
-                        m_diagnostics.AddComparisonOperandTypeMismatchError(
+                        m_diagnostics.addComparisonOperandTypeMismatchError(
                             tokens.source(),
                             tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
                             FormatBinaryOperator(binaryExpression->binaryOperator()),
@@ -1703,6 +1709,7 @@ namespace Caracal
         auto optionalVariableType = currentScope()->tryGetVariableBinding(name);
         if (optionalVariableType.has_value())
         {
+            static_cast<void>(currentScope()->markVariableBindingRead(name));
             auto type = optionalVariableType.value();
             expression->setType(type);
             return type;
@@ -1715,7 +1722,7 @@ namespace Caracal
             return type;
         }
 
-        m_diagnostics.AddUnknownNameError(tokens.source(), expression->sourceLocation(tokens), name);
+        m_diagnostics.addUnknownNameError(tokens.source(), expression->sourceLocation(tokens), name);
 
         return Type::Undefined();
     }
@@ -1726,7 +1733,7 @@ namespace Caracal
         auto functionType = m_module.tryGetFunctionTypeByName(name);
         if (functionType == Type::Undefined())
         {
-            m_diagnostics.AddUnknownFunctionError(
+            m_diagnostics.addUnknownFunctionError(
                 tokens.source(),
                 functionCallExpression->sourceLocation(tokens),
                 name);
@@ -1799,7 +1806,7 @@ namespace Caracal
         {
             if (arguments.size() < expectedArgumentCount)
             {
-                m_diagnostics.AddArgumentCountMismatchError(
+                m_diagnostics.addArgumentCountMismatchError(
                     tokens.source(),
                     argumentsLocation,
                     functionDefinition.name(),
@@ -1813,7 +1820,7 @@ namespace Caracal
         {
             if (arguments.size() != expectedArgumentCount)
             {
-                m_diagnostics.AddArgumentCountMismatchError(
+                m_diagnostics.addArgumentCountMismatchError(
                     tokens.source(),
                     argumentsLocation,
                     functionDefinition.name(),
@@ -1847,7 +1854,7 @@ namespace Caracal
             {
                 if (argumentType == Type::Undefined() || argumentType == Type::Void())
                 {
-                    m_diagnostics.AddInvalidVariadicArgumentTypeError(
+                    m_diagnostics.addInvalidVariadicArgumentTypeError(
                         tokens.source(),
                         argument->sourceLocation(tokens),
                         functionDefinition.name(),
@@ -1860,7 +1867,7 @@ namespace Caracal
 
         if (!argumentTypeMismatches.empty())
         {
-            m_diagnostics.AddArgumentTypeMismatchError(
+            m_diagnostics.addArgumentTypeMismatchError(
                 tokens.source(),
                 argumentsLocation,
                 functionDefinition.name(),
@@ -1894,7 +1901,7 @@ namespace Caracal
         if ((numberType == Type::U8() || numberType == Type::I32() || numberType == Type::F32())
             && !DoesLiteralFitType(literal->literalLexeme(), numberType))
         {
-            m_diagnostics.AddNumberLiteralOutOfRangeError(
+            m_diagnostics.addNumberLiteralOutOfRangeError(
                 tokens.source(),
                 literal->sourceLocation(tokens),
                 literal->literalLexeme(),
@@ -1927,7 +1934,7 @@ namespace Caracal
         }
         else
         {
-            m_diagnostics.AddUnknownTypeError(tokens.source(), tokens.getSourceLocation(typeNameNode->nameToken()), name);
+            m_diagnostics.addUnknownTypeError(tokens.source(), tokens.getSourceLocation(typeNameNode->nameToken()), name);
             return Type::Undefined();
         }
     }
@@ -1945,11 +1952,11 @@ namespace Caracal
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(name, parameterType, tokens.getSourceLocation(parameterNode->nameToken()), tokens.source());
+                scope->addVariableBinding(name, parameterType, tokens.getSourceLocation(parameterNode->nameToken()), tokens.source(), VariableBindingKind::Parameter);
             }
             else
             {
-                m_diagnostics.AddDuplicateParameterDeclarationError(
+                m_diagnostics.addDuplicateParameterDeclarationError(
                     tokens.source(),
                     tokens.getSourceLocation(parameterNode->nameToken()),
                     name,
@@ -1969,7 +1976,7 @@ namespace Caracal
             auto returnType = typeCheckTypeNameNode(returnTypeNode.get(), tokens);
             if (returnType.isReference())
             {
-                m_diagnostics.AddReferenceReturnTypeError(
+                m_diagnostics.addReferenceReturnTypeError(
                     tokens.source(),
                     returnTypeNode->sourceLocation(tokens),
                     returnTypeNode->name());
@@ -2001,7 +2008,7 @@ namespace Caracal
         const auto parsedValue = TryParseI32Literal(literal->literalLexeme());
         if (!parsedValue.has_value())
         {
-            m_diagnostics.AddNumberLiteralOutOfRangeError(
+            m_diagnostics.addNumberLiteralOutOfRangeError(
                 tokens.source(),
                 literal->sourceLocation(tokens),
                 literal->literalLexeme(),
@@ -2085,8 +2092,47 @@ namespace Caracal
         m_scopes.emplace_back(std::make_unique<Scope>(parent, kind));
     }
 
-    void TypeChecker::popScope()
+    void TypeChecker::emitUnusedVariableWarnings(const Scope& scope)
     {
+        if (m_diagnostics.hasErrors())
+        {
+            return;
+        }
+
+        for (const auto& [name, binding] : scope.variableBindings())
+        {
+            if (binding.wasRead || ShouldIgnoreUnusedVariableWarning(name) || !binding.location.has_value())
+            {
+                continue;
+            }
+
+            if (binding.kind != VariableBindingKind::LocalVariable && binding.kind != VariableBindingKind::LocalConstant && binding.kind != VariableBindingKind::Parameter)
+            {
+                continue;
+            }
+
+            if (binding.kind == VariableBindingKind::Parameter)
+            {
+                m_diagnostics.addUnusedParameterWarning(binding.source, binding.location.value(), std::string(name));
+            }
+            else if (binding.kind == VariableBindingKind::LocalConstant)
+            {
+                m_diagnostics.addUnusedLocalConstantWarning(binding.source, binding.location.value(), std::string(name));
+            }
+            else
+            {
+                m_diagnostics.addUnusedLocalVariableWarning(binding.source, binding.location.value(), std::string(name));
+            }
+        }
+    }
+
+    void TypeChecker::popScope(bool emitUnusedWarnings)
+    {
+        if (emitUnusedWarnings)
+        {
+            emitUnusedVariableWarnings(*m_scopes.back());
+        }
+
         m_scopes.pop_back();
         if (m_scopes.size() == 0)
         {

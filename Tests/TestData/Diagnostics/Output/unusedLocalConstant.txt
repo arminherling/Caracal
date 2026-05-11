@@ -1,0 +1,12 @@
+ Warning T0043
+  Unused local constant
+    ,-[Diagnostics/Input/unusedLocalConstant.cara:2:5]
+  1 | def main() i32 {
+  2 |     value :: 1;
+    .     -----
+    .       `-- Local constant 'value' is never used
+  3 |     return 0;
+  4 | }
+  5 | 
+    `----
+  Fix: Remove this constant, rename it to '_', or use its value.

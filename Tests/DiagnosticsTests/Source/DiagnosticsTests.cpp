@@ -1,4 +1,4 @@
-﻿#include <CaraTest.h>
+#include <CaraTest.h>
 
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
@@ -77,9 +77,9 @@ namespace
             throw std::runtime_error("Could not read input file: " + filePath.string());
 
         const auto source = std::make_shared<Caracal::SourceText>(input.value(), MakeRepositoryRelativePath(filePath));
-        const auto diagnosticCount = diagnostics.Diagnostics().size();
+        const auto diagnosticCount = diagnostics.diagnostics().size();
         const auto tokens = Caracal::lex(source, diagnostics);
-        if (diagnostics.Diagnostics().size() != diagnosticCount)
+        if (diagnostics.diagnostics().size() != diagnosticCount)
             return;
 
         auto parseTree = Caracal::parse(tokens, diagnostics);
@@ -99,7 +99,7 @@ namespace
             .enableUnicode = false
         };
 
-        if (!diagnostics.Diagnostics().empty())
+        if (!diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
         Caracal::Module caracalModule = Caracal::Module::WithBuiltins();
@@ -110,7 +110,44 @@ namespace
         };
 
         const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, caracalModule, diagnostics);
-        if (!wasSuccessful || !diagnostics.Diagnostics().empty())
+        if (!wasSuccessful || !diagnostics.diagnostics().empty())
+            return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
+
+        return {};
+    }
+
+    std::string RenderDiagnosticsForSource(const std::string& input, const std::filesystem::path& filePath)
+    {
+        Caracal::DiagnosticsBag diagnostics;
+        std::vector<Caracal::ParseTreeUPtr> parseTrees{};
+
+        const auto source = std::make_shared<Caracal::SourceText>(input, MakeRepositoryRelativePath(filePath));
+        const auto diagnosticCount = diagnostics.diagnostics().size();
+        const auto tokens = Caracal::lex(source, diagnostics);
+        if (diagnostics.diagnostics().size() == diagnosticCount)
+        {
+            auto parseTree = Caracal::parse(tokens, diagnostics);
+            parseTrees.push_back(std::move(parseTree));
+        }
+
+        const Caracal::DiagnosticOptions diagnosticOptions{
+            .contextLines = 3,
+            .enableColors = false,
+            .enableUnicode = false
+        };
+
+        if (!diagnostics.diagnostics().empty())
+            return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
+
+        Caracal::Module caracalModule = Caracal::Module::WithBuiltins();
+        const Caracal::TypeCheckerOptions options{
+            .defaultIntegerType = Caracal::Type::I32(),
+            .defaultFloatingType = Caracal::Type::F32(),
+            .defaultEnumBaseType = Caracal::Type::U8()
+        };
+
+        const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, caracalModule, diagnostics);
+        if (!wasSuccessful || !diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
         return {};
@@ -176,9 +213,20 @@ namespace
 
         return data;
     }
+
+    static void ExternFunctionUnusedParameterDoesNotWarn()
+    {
+        const auto output = RenderDiagnosticsForSource(
+            "#extern\n"
+            "def printf(value: i32) void {}\n",
+            DiagnosticsInputDirectory() / "externFunctionUnusedParameterDoesNotWarn.cara");
+
+        CaraTest::isTrue(output.empty());
+    }
 }
 
 static auto tests =
 {
     CaraTest::addTest("FileTests", FileTests, FileTests_Data),
+    CaraTest::addTest("ExternFunctionUnusedParameterDoesNotWarn", ExternFunctionUnusedParameterDoesNotWarn),
 };

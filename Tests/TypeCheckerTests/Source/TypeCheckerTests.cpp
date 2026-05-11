@@ -1,4 +1,4 @@
-﻿#include <CaraTest.h>
+#include <CaraTest.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Debug/ParseTreePrinter.h>
 #include <Caracal/Semantic/TypeChecker.h>
@@ -53,7 +53,7 @@ static void FileTests(
     Caracal::ParseTreePrinter printer{ *parseTrees[0], &module};
     const auto output = printer.prettyPrint();
 
-    CaraTest::isTrue(diagnostics.Diagnostics().empty());
+    CaraTest::isTrue(!diagnostics.hasErrors());
     CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
 }
 

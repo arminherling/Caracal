@@ -1,4 +1,4 @@
-﻿#include <CaraTest.h>
+#include <CaraTest.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Semantic/Module.h>
 #include <Caracal/Semantic/TypeChecker.h>
@@ -55,7 +55,7 @@ static void FileTests(
     std::cout << "      generateIRText(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     CaraTest::isTrue(irGenerated);
-    CaraTest::isTrue(diagnostics.Diagnostics().empty());
+    CaraTest::isTrue(!diagnostics.hasErrors());
     CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
     */
 }

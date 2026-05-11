@@ -1,0 +1,12 @@
+ Warning T0042
+  Unused local variable
+    ,-[Diagnostics/Input/unusedLocal.cara:2:5]
+  1 | def main() i32 {
+  2 |     value := 1;
+    .     -----
+    .       `-- Local variable 'value' is never used
+  3 |     return 0;
+  4 | }
+  5 | 
+    `----
+  Fix: Remove this variable, rename it to '_', or use its value.

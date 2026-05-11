@@ -1,13 +1,13 @@
  Error T0015
   Argument count mismatch
-    ,-[Diagnostics/Input/argumentCountMismatch.cara:5:13]
-  2 | }
-  3 | 
-  4 | def main() {
-  5 |     takesOne();
+    ,-[Diagnostics/Input/argumentCountMismatch.cara:6:13]
+  3 | }
+  4 | 
+  5 | def main() {
+  6 |     takesOne();
     .             --
     .              `-- Function 'takesOne' expects 1 argument(s), but got 0
-  6 | }
-  7 | 
+  7 | }
+  8 | 
     `----
   Fix: Adjust this call to match the required argument count.

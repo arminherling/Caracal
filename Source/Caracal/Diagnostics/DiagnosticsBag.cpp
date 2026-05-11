@@ -1,4 +1,4 @@
-﻿#include <Caracal/Diagnostics/DiagnosticsBag.h>
+#include <Caracal/Diagnostics/DiagnosticsBag.h>
 
 #include <unordered_map>
 
@@ -104,7 +104,7 @@ namespace Caracal
         return stringify(kind);
     }
 
-    void DiagnosticsBag::AddIllegalCharacterError(
+    void DiagnosticsBag::addIllegalCharacterError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location)
     {
@@ -116,10 +116,10 @@ namespace Caracal
             "Remove the unsupported character.");
         diagnostic.addPrimaryLabel(location, "This character is not part of the Caracal syntax.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnterminatedStringError(
+    void DiagnosticsBag::addUnterminatedStringError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location)
     {
@@ -131,10 +131,10 @@ namespace Caracal
             "Add a closing quote to terminate the string.");
         diagnostic.addPrimaryLabel(location, "String literal is missing a closing quote.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddExpectedTokenError(
+    void DiagnosticsBag::addExpectedTokenError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         TokenKind expectedKind,
@@ -162,10 +162,10 @@ namespace Caracal
             fix);
         diagnostic.addPrimaryLabel(location, "Expected " + ToTokenSource(expectedKind) + " but got " + ToTokenSource(actualKind));
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddExpectedTokenError(
+    void DiagnosticsBag::addExpectedTokenError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         TokenKind expectedKind1,
@@ -203,10 +203,10 @@ namespace Caracal
             + " but got "
             + ToTokenSource(actualKind));
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddExtraTokensRemainingError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    void DiagnosticsBag::addExtraTokensRemainingError(const SourceTextSharedPtr& source, const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
@@ -215,10 +215,10 @@ namespace Caracal
             location);
         diagnostic.addPrimaryLabel(location, "Input should end before these trailing tokens.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddExpectedEnumFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
+    void DiagnosticsBag::addExpectedEnumFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
     {
         auto fix = std::string{};
         if (actualKind == TokenKind::Number)
@@ -242,10 +242,10 @@ namespace Caracal
             fix);
         diagnostic.addPrimaryLabel(location, "Expected an enum field name, but got a " + ToTokenSource(actualKind));
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnexpectedTopLevelTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
+    void DiagnosticsBag::addUnexpectedTopLevelTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
     {
         auto fix = std::string{};
         if (actualKind == TokenKind::CloseBracket)
@@ -265,10 +265,10 @@ namespace Caracal
             fix);
         diagnostic.addPrimaryLabel(location, "Unexpected top-level token " + ToTokenSource(actualKind));
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnexpectedStatementTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
+    void DiagnosticsBag::addUnexpectedStatementTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
@@ -278,10 +278,10 @@ namespace Caracal
             "Remove this token or rewrite the statement so it starts with a valid statement token.");
         diagnostic.addPrimaryLabel(location, "Unexpected token " + ToTokenSource(actualKind) + " in statement");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnexpectedExpressionTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
+    void DiagnosticsBag::addUnexpectedExpressionTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
@@ -291,10 +291,10 @@ namespace Caracal
             "Remove this token or replace it with a valid expression.");
         diagnostic.addPrimaryLabel(location, "Unexpected token " + ToTokenSource(actualKind) + " in expression");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    void DiagnosticsBag::addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
@@ -304,10 +304,10 @@ namespace Caracal
             "Remove the extra annotation or attach it to the next supported declaration.");
         diagnostic.addPrimaryLabel(location, "This annotation is not attached to any declaration.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnexpectedAnnotationTargetError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    void DiagnosticsBag::addUnexpectedAnnotationTargetError(const SourceTextSharedPtr& source, const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
@@ -317,10 +317,10 @@ namespace Caracal
             "Remove the annotation or move it to a supported declaration kind.");
         diagnostic.addPrimaryLabel(location, "This annotation is not supported on this declaration.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnknownAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, TokenKind targetKind)
+    void DiagnosticsBag::addUnknownAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, TokenKind targetKind)
     {
         auto fix = std::string{};
         switch (targetKind)
@@ -344,10 +344,10 @@ namespace Caracal
             fix);
         diagnostic.addPrimaryLabel(location, "Unknown annotation '#" + annotationName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName)
+    void DiagnosticsBag::addAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName)
     {
         auto fix = std::string{};
         if (annotationKind == AnnotationKind::Step)
@@ -367,10 +367,10 @@ namespace Caracal
             fix);
         diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' requires one argument.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, i32 expectedCount, i32 actualCount)
+    void DiagnosticsBag::addAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, i32 expectedCount, i32 actualCount)
     {
         auto fix = std::string{};
         if (annotationKind == AnnotationKind::Step && expectedCount == 1)
@@ -401,10 +401,10 @@ namespace Caracal
             fix);
         diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' expects " + std::to_string(expectedCount) + " argument(s), but got " + std::to_string(actualCount) + ".");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddAnnotationArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, const std::string& expectedDescription, const std::string& actualDescription)
+    void DiagnosticsBag::addAnnotationArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, const std::string& expectedDescription, const std::string& actualDescription)
     {
         auto fix = std::string{};
         if (annotationKind == AnnotationKind::Step)
@@ -424,10 +424,10 @@ namespace Caracal
             fix);
         diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' expects " + expectedDescription + ", but got " + actualDescription + ".");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName)
+    void DiagnosticsBag::addConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
@@ -438,10 +438,10 @@ namespace Caracal
         diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' cannot be used together with '#" + otherAnnotationName + "' on the same enum.");
         diagnostic.addSecondaryLabel(otherLocation, "Conflicting annotation '#" + otherAnnotationName + "' was already used here.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnknownNameError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name)
+    void DiagnosticsBag::addUnknownNameError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
@@ -451,10 +451,10 @@ namespace Caracal
             "Declare this name before using it, or rename it to an existing symbol.");
         diagnostic.addPrimaryLabel(location, "Unknown name '" + name + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnknownFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName)
+    void DiagnosticsBag::addUnknownFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
@@ -464,10 +464,10 @@ namespace Caracal
             "Declare this function before calling it, or rename the call to an existing function.");
         diagnostic.addPrimaryLabel(location, "Unknown function '" + functionName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnknownTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName)
+    void DiagnosticsBag::addUnknownTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
@@ -477,10 +477,10 @@ namespace Caracal
             "Declare this type before using it, or rename it to an existing type.");
         diagnostic.addPrimaryLabel(location, "Unknown type '" + typeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnknownMethodError(
+    void DiagnosticsBag::addUnknownMethodError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& receiverTypeName,
@@ -494,10 +494,10 @@ namespace Caracal
             "Add this method to the type, or rename the call to an existing method.");
         diagnostic.addPrimaryLabel(location, "Type '" + receiverTypeName + "' has no method '" + methodName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnknownFieldError(
+    void DiagnosticsBag::addUnknownFieldError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& receiverTypeName,
@@ -511,10 +511,10 @@ namespace Caracal
             "Add this field to the type, or rename the access to an existing field.");
         diagnostic.addPrimaryLabel(location, "Type '" + receiverTypeName + "' has no field '" + fieldName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddUnknownEnumFieldError(
+    void DiagnosticsBag::addUnknownEnumFieldError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& enumName,
@@ -528,10 +528,10 @@ namespace Caracal
             "Use an existing enum field name, or rename this member access.");
         diagnostic.addPrimaryLabel(location, "Enum '" + enumName + "' has no field '" + fieldName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddInvalidEnumMemberAccessError(
+    void DiagnosticsBag::addInvalidEnumMemberAccessError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& enumName)
@@ -544,10 +544,10 @@ namespace Caracal
             "Access an enum field as '" + enumName + ".FieldName' without calling it.");
         diagnostic.addPrimaryLabel(location, "Enum '" + enumName + "' member access must be a field name");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddInvalidMemberAccessReceiverError(
+    void DiagnosticsBag::addInvalidMemberAccessReceiverError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& receiverTypeName)
@@ -560,10 +560,10 @@ namespace Caracal
             "Access members only on types and enum values that support member lookup.");
         diagnostic.addPrimaryLabel(location, "Type '" + receiverTypeName + "' does not support member access");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddArgumentCountMismatchError(
+    void DiagnosticsBag::addArgumentCountMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& functionName,
@@ -597,10 +597,10 @@ namespace Caracal
             diagnostic.addPrimaryLabel(location, "Function '" + functionName + "' expects " + std::to_string(expectedCount) + " argument(s), but got " + std::to_string(actualCount));
         }
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddArgumentTypeMismatchError(
+    void DiagnosticsBag::addArgumentTypeMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& functionName,
@@ -630,10 +630,10 @@ namespace Caracal
                 "Argument " + std::to_string(mismatch.argumentIndex) + " of '" + functionName + "' expects '" + mismatch.expectedTypeName + "', but got '" + mismatch.actualTypeName + "'");
         }
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddInvalidVariadicArgumentTypeError(
+    void DiagnosticsBag::addInvalidVariadicArgumentTypeError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& functionName,
@@ -648,10 +648,10 @@ namespace Caracal
             "Pass a non-void value as this variadic argument.");
         diagnostic.addPrimaryLabel(location, "Variadic argument " + std::to_string(argumentIndex) + " of '" + functionName + "' cannot have type '" + actualTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddNonBoolIfConditionError(
+    void DiagnosticsBag::addNonBoolIfConditionError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& actualTypeName)
@@ -664,10 +664,10 @@ namespace Caracal
             "Change the if condition to a bool expression.");
         diagnostic.addPrimaryLabel(location, "If condition must have type 'bool', but got '" + actualTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddNonBoolWhileConditionError(
+    void DiagnosticsBag::addNonBoolWhileConditionError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& actualTypeName)
@@ -680,10 +680,10 @@ namespace Caracal
             "Change the while condition to a bool expression.");
         diagnostic.addPrimaryLabel(location, "While condition must have type 'bool', but got '" + actualTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddReturnTypeMismatchError(
+    void DiagnosticsBag::addReturnTypeMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& expectedTypeName,
@@ -707,10 +707,10 @@ namespace Caracal
             fix);
         diagnostic.addPrimaryLabel(location, "Cannot return '" + actualTypeName + "' from a function with return type '" + expectedTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddAssignmentTypeMismatchError(
+    void DiagnosticsBag::addAssignmentTypeMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& expectedTypeName,
@@ -724,10 +724,10 @@ namespace Caracal
             "Assign a value of type '" + expectedTypeName + "' or change the assignment target type.");
         diagnostic.addPrimaryLabel(location, "Cannot assign '" + actualTypeName + "' to a value of type '" + expectedTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddExplicitConstantTypeMismatchError(
+    void DiagnosticsBag::addExplicitConstantTypeMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& expectedTypeName,
@@ -741,10 +741,10 @@ namespace Caracal
             "Initialize this constant with a value of type '" + expectedTypeName + "' or change its explicit type.");
         diagnostic.addPrimaryLabel(location, "Constant is declared as '" + expectedTypeName + "', but its initializer has type '" + actualTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddExplicitVariableTypeMismatchError(
+    void DiagnosticsBag::addExplicitVariableTypeMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& expectedTypeName,
@@ -758,10 +758,10 @@ namespace Caracal
             "Initialize this variable with a value of type '" + expectedTypeName + "' or change its explicit type.");
         diagnostic.addPrimaryLabel(location, "Variable is declared as '" + expectedTypeName + "', but its initializer has type '" + actualTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddTypeFieldInitializerMismatchError(
+    void DiagnosticsBag::addTypeFieldInitializerMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& expectedTypeName,
@@ -775,10 +775,10 @@ namespace Caracal
             "Initialize this field with a value of type '" + expectedTypeName + "' or change the field type.");
         diagnostic.addPrimaryLabel(location, "Field is declared as '" + expectedTypeName + "', but its initializer has type '" + actualTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddArithmeticOperandTypeMismatchError(
+    void DiagnosticsBag::addArithmeticOperandTypeMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& operatorName,
@@ -793,10 +793,10 @@ namespace Caracal
             "Use matching operand types for this arithmetic operation.");
         diagnostic.addPrimaryLabel(location, "Operator '" + operatorName + "' cannot be applied to '" + leftTypeName + "' and '" + rightTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddComparisonOperandTypeMismatchError(
+    void DiagnosticsBag::addComparisonOperandTypeMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& operatorName,
@@ -811,10 +811,10 @@ namespace Caracal
             "Use comparable operand types for this comparison.");
         diagnostic.addPrimaryLabel(location, "Operator '" + operatorName + "' cannot compare '" + leftTypeName + "' and '" + rightTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddEnumFieldValueTypeMismatchError(
+    void DiagnosticsBag::addEnumFieldValueTypeMismatchError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& expectedTypeName,
@@ -828,10 +828,10 @@ namespace Caracal
             "Use a value of the enum base type for this field.");
         diagnostic.addPrimaryLabel(location, "Enum base type is '" + expectedTypeName + "', but this field's initializer has type '" + actualTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddNonExternVariadicFunctionError(
+    void DiagnosticsBag::addNonExternVariadicFunctionError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& functionName)
@@ -844,10 +844,10 @@ namespace Caracal
             "Add #extern to this function, or remove the variadic parameter.");
         diagnostic.addPrimaryLabel(location, "Function '" + functionName + "' uses a variadic parameter but is not marked #extern");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddFlagEnumExplicitValueError(
+    void DiagnosticsBag::addFlagEnumExplicitValueError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& fieldName)
@@ -860,10 +860,10 @@ namespace Caracal
             "Remove the explicit value from this flag enum field.");
         diagnostic.addPrimaryLabel(location, "Flag enum field '" + fieldName + "' cannot declare an explicit value");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddExplicitConstructorDeclarationError(
+    void DiagnosticsBag::addExplicitConstructorDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const SourceLocation& otherLocation,
@@ -878,10 +878,10 @@ namespace Caracal
         diagnostic.addPrimaryLabel(location, "Type '" + typeName + "' cannot declare an explicit 'new' method");
         diagnostic.addSecondaryLabel(otherLocation, "Constructor parameters are declared here on the type.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddReferenceReturnTypeError(
+    void DiagnosticsBag::addReferenceReturnTypeError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& typeName)
@@ -894,10 +894,10 @@ namespace Caracal
             "Return the value type instead of a reference type.");
         diagnostic.addPrimaryLabel(location, "Return type cannot be 'ref " + typeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddAlreadyReferenceError(
+    void DiagnosticsBag::addAlreadyReferenceError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location)
     {
@@ -909,10 +909,10 @@ namespace Caracal
             "Remove the extra 'ref' operator.");
         diagnostic.addPrimaryLabel(location, "This expression is already a reference");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddDuplicateDeclarationError(
+    void DiagnosticsBag::addDuplicateDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& name,
@@ -935,10 +935,10 @@ namespace Caracal
             "Previous declaration of '" + name + "' is here.",
             "Previous declaration is here.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddDuplicateConstantDeclarationError(
+    void DiagnosticsBag::addDuplicateConstantDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& name,
@@ -961,10 +961,10 @@ namespace Caracal
             "Previous constant declaration of '" + name + "' is here.",
             "Previous constant declaration is here.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddDuplicateVariableDeclarationError(
+    void DiagnosticsBag::addDuplicateVariableDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& name,
@@ -987,10 +987,10 @@ namespace Caracal
             "Previous variable declaration of '" + name + "' is here.",
             "Previous variable declaration is here.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddDuplicateParameterDeclarationError(
+    void DiagnosticsBag::addDuplicateParameterDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& name,
@@ -1013,10 +1013,10 @@ namespace Caracal
             "Previous parameter declaration of '" + name + "' is here.",
             "Previous parameter declaration is here.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddDuplicateEnumFieldDeclarationError(
+    void DiagnosticsBag::addDuplicateEnumFieldDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& name,
@@ -1034,10 +1034,10 @@ namespace Caracal
             diagnostic.addSecondaryLabel(otherLocation.value(), "Previous enum field declaration is here.");
         }
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddDuplicateTypeFieldDeclarationError(
+    void DiagnosticsBag::addDuplicateTypeFieldDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& name,
@@ -1055,10 +1055,10 @@ namespace Caracal
             diagnostic.addSecondaryLabel(otherLocation.value(), "Previous type field declaration is here.");
         }
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddDuplicateFunctionDeclarationError(
+    void DiagnosticsBag::addDuplicateFunctionDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& functionName,
@@ -1081,10 +1081,10 @@ namespace Caracal
             "Previous function declaration of '" + functionName + "' is here.",
             "Previous function declaration is here.");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddDuplicateTypeDeclarationError(
+    void DiagnosticsBag::addDuplicateTypeDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& typeName,
@@ -1114,10 +1114,10 @@ namespace Caracal
             }
         }
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::AddNumberLiteralOutOfRangeError(
+    void DiagnosticsBag::addNumberLiteralOutOfRangeError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const std::string& literalText,
@@ -1131,11 +1131,85 @@ namespace Caracal
             "Use a smaller literal that fits in type '" + targetTypeName + "', or change the target type.");
         diagnostic.addPrimaryLabel(location, "Literal '" + literalText + "' does not fit in type '" + targetTypeName + "'");
 
-        diagnostics.push_back(std::move(diagnostic));
+        m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    const std::vector<Diagnostic>& DiagnosticsBag::Diagnostics() const
+    void DiagnosticsBag::addUnusedLocalVariableWarning(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name)
     {
-        return diagnostics;
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Warning,
+            DiagnosticKind::T0042_UnusedLocalVariable,
+            source,
+            location,
+            "Remove this variable, rename it to '_', or use its value.");
+        diagnostic.addPrimaryLabel(location, "Local variable '" + name + "' is never used");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addUnusedParameterWarning(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Warning,
+            DiagnosticKind::T0044_UnusedParameter,
+            source,
+            location,
+            "Remove this parameter, rename it to '_', or use its value.");
+        diagnostic.addPrimaryLabel(location, "Parameter '" + name + "' is never used");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addUnusedLocalConstantWarning(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Warning,
+            DiagnosticKind::T0043_UnusedLocalConstant,
+            source,
+            location,
+            "Remove this constant, rename it to '_', or use its value.");
+        diagnostic.addPrimaryLabel(location, "Local constant '" + name + "' is never used");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    const std::vector<Diagnostic>& DiagnosticsBag::diagnostics() const
+    {
+        return m_diagnostics;
+    }
+
+    bool DiagnosticsBag::hasErrors() const noexcept
+    {
+        for (const auto& diagnostic : m_diagnostics)
+        {
+            if (diagnostic.level() == DiagnosticLevel::Error)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool DiagnosticsBag::hasWarnings() const noexcept
+    {
+        for (const auto& diagnostic : m_diagnostics)
+        {
+            if (diagnostic.level() == DiagnosticLevel::Warning)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
