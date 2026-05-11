@@ -1,5 +1,9 @@
 ﻿#include "TypeChecker.h"
 
+#include <charconv>
+#include <cmath>
+#include <limits>
+
 namespace Caracal
 {
     struct AnnotationDefinition
@@ -95,6 +99,66 @@ namespace Caracal
             default:
                 return stringify(binaryOperator);
         }
+    }
+
+    static std::optional<i32> TryParseI32Literal(std::string_view lexeme)
+    {
+        i32 value = 0;
+        const auto* begin = lexeme.data();
+        const auto* end = begin + lexeme.size();
+        const auto result = std::from_chars(begin, end, value);
+        if (result.ec != std::errc{} || result.ptr != end)
+        {
+            return std::nullopt;
+        }
+
+        return value;
+    }
+
+    static std::optional<u8> TryParseU8Literal(std::string_view lexeme)
+    {
+        unsigned int value = 0;
+        const auto* begin = lexeme.data();
+        const auto* end = begin + lexeme.size();
+        const auto result = std::from_chars(begin, end, value);
+        if (result.ec != std::errc{} || result.ptr != end || value > std::numeric_limits<u8>::max())
+        {
+            return std::nullopt;
+        }
+
+        return static_cast<u8>(value);
+    }
+
+    static std::optional<float> TryParseF32Literal(std::string_view lexeme)
+    {
+        float value = 0.0f;
+        const auto* begin = lexeme.data();
+        const auto* end = begin + lexeme.size();
+        const auto result = std::from_chars(begin, end, value);
+        if (result.ec != std::errc{} || result.ptr != end || !std::isfinite(value))
+        {
+            return std::nullopt;
+        }
+
+        return value;
+    }
+
+    static bool DoesLiteralFitType(std::string_view lexeme, Type type)
+    {
+        if (type == Type::U8())
+        {
+            return TryParseU8Literal(lexeme).has_value();
+        } 
+        else if (type == Type::I32())
+        {
+            return TryParseI32Literal(lexeme).has_value();
+        }
+        else if (type == Type::F32())
+        {
+            return TryParseF32Literal(lexeme).has_value();
+        }
+
+        return true;
     }
 
     bool typeCheck(
@@ -1814,9 +1878,17 @@ namespace Caracal
             {
                 numberType = m_options.defaultIntegerType;
             }
+        }
 
-            // TODO check if the value fits into the type
-            // TODO if it doesnt fit, then we need to print diagnostics 
+        if ((numberType == Type::U8() || numberType == Type::I32() || numberType == Type::F32())
+            && !DoesLiteralFitType(literal->literalLexeme(), numberType))
+        {
+            m_diagnostics.AddNumberLiteralOutOfRangeError(
+                tokens.source(),
+                literal->sourceLocation(tokens),
+                literal->literalLexeme(),
+                FormatTypeName(m_module, numberType));
+            numberType = Type::Undefined();
         }
 
         literal->setType(numberType);
@@ -1912,14 +1984,21 @@ namespace Caracal
         auto literalType = typeCheckNumberLiteral(literal, tokens);
         if (literalType != Type::I32())
         {
-            TODO("Add error diagnostics for number literal type mismatch");
             return 0;
         }
 
-        const auto& lexeme = literal->literalLexeme();
-        auto value = std::stoll(lexeme);
+        const auto parsedValue = TryParseI32Literal(literal->literalLexeme());
+        if (!parsedValue.has_value())
+        {
+            m_diagnostics.AddNumberLiteralOutOfRangeError(
+                tokens.source(),
+                literal->sourceLocation(tokens),
+                literal->literalLexeme(),
+                FormatTypeName(m_module, Type::I32()));
+            return 0;
+        }
 
-        return static_cast<i32>(value);
+        return parsedValue.value();
     }
 
     Type TypeChecker::coerceConditionType(Type conditionType, Expression* conditionExpression)

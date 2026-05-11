@@ -121,6 +121,8 @@ namespace Caracal
                 return "T0039";
             case DiagnosticKind::T0040_DuplicateTypeDeclaration:
                 return "T0040";
+            case DiagnosticKind::T0041_NumberLiteralOutOfRange:
+                return "T0041";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -246,6 +248,8 @@ namespace Caracal
                 return "Duplicate function declaration";
             case DiagnosticKind::T0040_DuplicateTypeDeclaration:
                 return "Duplicate type declaration";
+            case DiagnosticKind::T0041_NumberLiteralOutOfRange:
+                return "Number literal out of range";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

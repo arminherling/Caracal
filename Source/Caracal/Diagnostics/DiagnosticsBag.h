@@ -83,6 +83,9 @@ namespace Caracal
         void AddDuplicateFunctionDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
         void AddDuplicateTypeDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);
 
+        // Literal diagnostics
+        void AddNumberLiteralOutOfRangeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& literalText, const std::string& targetTypeName);
+
         const std::vector<Diagnostic>& Diagnostics() const;
 
     private:

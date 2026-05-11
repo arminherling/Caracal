@@ -72,5 +72,8 @@ namespace Caracal
         T0038_DuplicateTypeFieldDeclaration,
         T0039_DuplicateFunctionDeclaration,
         T0040_DuplicateTypeDeclaration,
+
+        // Literal diagnostics
+        T0041_NumberLiteralOutOfRange,
     };
 }

@@ -1117,6 +1117,23 @@ namespace Caracal
         diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::AddNumberLiteralOutOfRangeError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& literalText,
+        const std::string& targetTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0041_NumberLiteralOutOfRange,
+            source,
+            location,
+            "Use a smaller literal that fits in type '" + targetTypeName + "', or change the target type.");
+        diagnostic.addPrimaryLabel(location, "Literal '" + literalText + "' does not fit in type '" + targetTypeName + "'");
+
+        diagnostics.push_back(std::move(diagnostic));
+    }
+
     const std::vector<Diagnostic>& DiagnosticsBag::Diagnostics() const
     {
         return diagnostics;
