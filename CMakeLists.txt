@@ -18,6 +18,7 @@ endif()
 include(LLVM)
 include(CaraReport)
 include(CaraTest)
+include(CTest)
 include(CopyBuildTarget)
 
 add_subdirectory(Source)
