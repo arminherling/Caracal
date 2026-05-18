@@ -59,7 +59,7 @@ namespace Caracal
         // Declaration-shape and reference diagnostics
         T0028_NonExternVariadicFunction,
         T0029_FlagEnumExplicitValue,
-        T0030_ExplicitConstructorDeclaration,
+        T0030_TypeDotNewDeclaration,
         T0031_ReferenceReturnType,
         T0032_AlreadyReference,
 

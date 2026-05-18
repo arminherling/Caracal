@@ -69,7 +69,7 @@ namespace Caracal
         // Declaration-shape and reference diagnostics
         void addNonExternVariadicFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
         void addFlagEnumExplicitValueError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName);
-        void addExplicitConstructorDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& typeName);
+        void addTypeDotNewDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& typeName);
         void addReferenceReturnTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
         void addAlreadyReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location);
 

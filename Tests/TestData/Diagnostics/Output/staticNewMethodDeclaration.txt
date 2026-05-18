@@ -1,14 +1,14 @@
  Error T0030
-  Explicit constructor declaration
+  Type.new declaration
     ,-[Diagnostics/Input/staticNewMethodDeclaration.cara:2:16]
   1 | type Number(value: i32) {
     .            ------------
     .                  `-- Constructor parameters are declared here on the type.
   2 |     def Number.new() {
     .                ---
-    .                 `-- Type 'Number' cannot declare an explicit 'new' method
+    .                 `-- Explicit Type.new declarations are not allowed
   3 |     }
   4 | }
   5 | 
     `----
-  Fix: Remove the explicit 'new' method and declare constructor parameters on the type instead.
+  Fix: Remove the Number.new declaration and declare constructor parameters on type instead.

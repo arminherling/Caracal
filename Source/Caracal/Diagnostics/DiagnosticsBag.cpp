@@ -863,7 +863,7 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::addExplicitConstructorDeclarationError(
+    void DiagnosticsBag::addTypeDotNewDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
         const SourceLocation& otherLocation,
@@ -871,11 +871,11 @@ namespace Caracal
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0030_ExplicitConstructorDeclaration,
+            DiagnosticKind::T0030_TypeDotNewDeclaration,
             source,
             location,
-            "Remove the explicit 'new' method and declare constructor parameters on the type instead.");
-        diagnostic.addPrimaryLabel(location, "Type '" + typeName + "' cannot declare an explicit 'new' method");
+            "Remove the " + typeName + ".new declaration and declare constructor parameters on type instead.");
+        diagnostic.addPrimaryLabel(location, "Explicit Type.new declarations are not allowed");
         diagnostic.addSecondaryLabel(otherLocation, "Constructor parameters are declared here on the type.");
 
         m_diagnostics.push_back(std::move(diagnostic));

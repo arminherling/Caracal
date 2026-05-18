@@ -97,7 +97,7 @@ namespace Caracal
                 return "T0028";
             case DiagnosticKind::T0029_FlagEnumExplicitValue:
                 return "T0029";
-            case DiagnosticKind::T0030_ExplicitConstructorDeclaration:
+            case DiagnosticKind::T0030_TypeDotNewDeclaration:
                 return "T0030";
             case DiagnosticKind::T0031_ReferenceReturnType:
                 return "T0031";
@@ -230,8 +230,8 @@ namespace Caracal
                 return "Non-extern variadic function";
             case DiagnosticKind::T0029_FlagEnumExplicitValue:
                 return "Flag enum explicit value";
-            case DiagnosticKind::T0030_ExplicitConstructorDeclaration:
-                return "Explicit constructor declaration";
+            case DiagnosticKind::T0030_TypeDotNewDeclaration:
+                return "Type.new declaration";
             case DiagnosticKind::T0031_ReferenceReturnType:
                 return "Reference return type";
             case DiagnosticKind::T0032_AlreadyReference:

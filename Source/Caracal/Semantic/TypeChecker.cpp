@@ -415,7 +415,7 @@ namespace Caracal
                         constructorLocation = typeDefinitionStatement->constructorParameters().value()->sourceLocation(tokens);
                     }
 
-                    m_diagnostics.addExplicitConstructorDeclarationError(
+                    m_diagnostics.addTypeDotNewDeclarationError(
                         tokens.source(),
                         tokens.getSourceLocation(methodStatement->methodNameNode()->methodNameToken()),
                         constructorLocation,
