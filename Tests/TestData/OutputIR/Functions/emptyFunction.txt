@@ -1,0 +1,3 @@
+def func() void
+block entry:
+    return

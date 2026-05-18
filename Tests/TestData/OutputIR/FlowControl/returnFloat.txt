@@ -1,0 +1,4 @@
+def func() f32
+block entry:
+    %0 = const 1.23 : f32
+    return %0
