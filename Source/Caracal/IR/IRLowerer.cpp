@@ -69,10 +69,6 @@ namespace Caracal
 
     bool IRLowerer::lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept
     {
-        // for now ignore extern functions
-        if (statement->isExtern())
-            return true;
-
         const auto functionType = m_semanticModule.tryGetFunctionTypeByName(statement->name());
         if (functionType == Type::Undefined())
             return false;
@@ -84,14 +80,22 @@ namespace Caracal
             returnType = functionDefinition.returnTypes().front();
         }
 
-        auto function = Function{ statement->name(), returnType };
-        auto entryBlock = BasicBlock{ m_nextBlockId++, "entry", std::make_unique<ReturnTerminator>() };
-        function.addBlock(std::move(entryBlock));
-
+        std::vector<Type> parameterTypes;
         for (const auto& parameter : functionDefinition.parameters())
         {
-            function.addParameterType(parameter.type());
+            parameterTypes.push_back(parameter.type());
         }
+
+        if (statement->isExtern())
+        {
+            auto function = ExternFunction{ statement->name(), parameterTypes, returnType };
+            module.addExternFunction(std::move(function));
+            return true;
+        }
+
+        auto function = Function{ statement->name(), parameterTypes, returnType };
+        auto entryBlock = BasicBlock{ m_nextBlockId++, "entry", std::make_unique<ReturnTerminator>() };
+        function.addBlock(std::move(entryBlock));
 
         if (!lowerBlock(statement->bodyNode().get(), function))
             return false;

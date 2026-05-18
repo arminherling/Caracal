@@ -3,6 +3,7 @@
 #include <Caracal/API.h>
 #include <Caracal/Defines.h>
 #include <Caracal/IR/BasicBlock.h>
+#include <Caracal/IR/ExternFunction.h>
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/Module.h>
 #include <Caracal/IR/Terminator.h>
@@ -25,6 +26,7 @@ namespace Caracal
         [[nodiscard]] std::string prettyPrint();
 
     private:
+        void prettyPrintExternFunction(const ExternFunction& function);
         void prettyPrintFunction(const Function& function);
         void prettyPrintBlock(const Function& function, const BasicBlock& block);
         void prettyPrintInstruction(const Function& function, const Instruction& instruction);

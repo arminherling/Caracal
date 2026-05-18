@@ -1,0 +1,1 @@
+extern printf(cstring, ...) i32

@@ -1,4 +1,4 @@
-def func() i32
+define func() i32
 block entry:
     %0 = const 5 : i32
     return %0

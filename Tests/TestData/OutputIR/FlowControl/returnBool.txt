@@ -1,4 +1,4 @@
-def func() bool
+define func() bool
 block entry:
     %0 = const true : bool
     return %0

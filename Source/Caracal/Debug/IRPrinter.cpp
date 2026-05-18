@@ -1,6 +1,7 @@
 ﻿#include <Caracal/Debug/IRPrinter.h>
 #include <Caracal/IR/BranchTerminator.h>
 #include <Caracal/IR/ConstantInstruction.h>
+#include <Caracal/IR/ExternFunction.h>
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
@@ -58,23 +59,53 @@ namespace Caracal
 
     std::string IRPrinter::prettyPrint()
     {
-        bool isFirstFunction = true;
+        bool hasPrintedFunction = false;
+
+        const auto appendFunctionSeparator = [&]()
+            {
+                if (hasPrintedFunction)
+                    m_builder.appendLine("");
+
+                hasPrintedFunction = true;
+            };
+
+        for (const auto& function : m_module.externFunctions())
+        {
+            appendFunctionSeparator();
+            prettyPrintExternFunction(function);
+        }
+
         for (const auto& function : m_module.functions())
         {
-            if (!isFirstFunction)
-                m_builder.appendLine("");
-
+            appendFunctionSeparator();
             prettyPrintFunction(function);
-            isFirstFunction = false;
         }
 
         return m_builder.toString();
     }
 
+    void IRPrinter::prettyPrintExternFunction(const ExternFunction& function)
+    {
+        std::ostringstream signature;
+        signature << "extern " << function.name() << "(";
+
+        const auto& parameterTypes = function.parameterTypes();
+        for (size_t index = 0; index < parameterTypes.size(); ++index)
+        {
+            if (index > 0)
+                signature << ", ";
+
+            signature << formatType(parameterTypes[index]);
+        }
+
+        signature << ") " << formatType(function.returnType());
+        m_builder.appendLine(signature.str());
+    }
+
     void IRPrinter::prettyPrintFunction(const Function& function)
     {
         std::ostringstream signature;
-        signature << "def " << function.name() << "(";
+        signature << "define " << function.name() << "(";
 
         const auto& parameterTypes = function.parameterTypes();
         for (size_t index = 0; index < parameterTypes.size(); ++index)

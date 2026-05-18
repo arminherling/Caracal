@@ -1,4 +1,4 @@
-def random() f32
+define random() f32
 block entry:
     %0 = const 1.23 : f32
     return %0
