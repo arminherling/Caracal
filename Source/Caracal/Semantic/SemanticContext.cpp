@@ -1,4 +1,4 @@
-﻿#include "Module.h"
+#include "SemanticContext.h"
 
 namespace Caracal
 {
@@ -20,9 +20,9 @@ namespace Caracal
         }
     }
 
-    Module Module::WithBuiltins() noexcept
+    SemanticContext SemanticContext::WithBuiltins() noexcept
     {
-        Module module{};
+        SemanticContext module{};
         module.createBuiltinType(Type::CVariadic(), "...", false);
         module.createBuiltinType(Type::Function(), "function", false);
         module.createBuiltinType(Type::Discard(), "discard", false);
@@ -40,7 +40,7 @@ namespace Caracal
         return module;
     }
 
-    Type Module::tryGetFunctionTypeByName(std::string_view typeName) const noexcept
+    Type SemanticContext::tryGetFunctionTypeByName(std::string_view typeName) const noexcept
     {
         for (const auto& functionDefinition : m_functionDefinitions)
         {
@@ -51,7 +51,7 @@ namespace Caracal
         return Type::Undefined();
     }
 
-    EnumDefinition& Module::getEnumDefinition(Type type) noexcept
+    EnumDefinition& SemanticContext::getEnumDefinition(Type type) noexcept
     {
         static auto invalidEnum = EnumDefinition{ nullptr, Type::Undefined(), std::string("???") };
 
@@ -63,7 +63,7 @@ namespace Caracal
             return invalidEnum;
     }
 
-    TypeDefinition& Module::getTypeDefinition(Type type) noexcept
+    TypeDefinition& SemanticContext::getTypeDefinition(Type type) noexcept
     {
         static auto invalidType = TypeDefinition{ nullptr, Type::Undefined(), std::string("???") };
 
@@ -75,7 +75,7 @@ namespace Caracal
             return invalidType;
     }
 
-    FunctionDefinition& Module::getFunctionDefinition(Type type) noexcept
+    FunctionDefinition& SemanticContext::getFunctionDefinition(Type type) noexcept
     {
         static auto invalidFunction = FunctionDefinition{ nullptr, Type::Undefined(), Type::Undefined(), FunctionType::None, std::string("???"), std::string("???"), false };
 
@@ -86,7 +86,7 @@ namespace Caracal
             return invalidFunction;
     }
 
-    Type Module::tryGetTypeByName(std::string_view name) const noexcept
+    Type SemanticContext::tryGetTypeByName(std::string_view name) const noexcept
     {
         if (const auto result = m_nameToTypes.find(std::string(name)); result != m_nameToTypes.end())
             return result->second;
@@ -94,7 +94,7 @@ namespace Caracal
         return Type::Undefined();
     }
 
-    std::string_view Module::getNameByType(Type type) noexcept
+    std::string_view SemanticContext::getNameByType(Type type) noexcept
     {
         auto baseType = type.toBaseType();
         auto id = baseType.id();
@@ -104,7 +104,7 @@ namespace Caracal
             return std::string_view("undefined");
     }
 
-    EnumDefinition& Module::createEnum(
+    EnumDefinition& SemanticContext::createEnum(
         std::string_view name,
         const EnumDefinitionStatement* statement) noexcept
     {
@@ -119,7 +119,7 @@ namespace Caracal
         return m_enumDefinitions.back();
     }
 
-    TypeDefinition& Module::createType(
+    TypeDefinition& SemanticContext::createType(
         std::string_view name,
         const TypeDefinitionStatement* statement) noexcept
     {
@@ -134,7 +134,7 @@ namespace Caracal
         return m_typeDefinitions.back();
     }
 
-    FunctionDefinition& Module::createFunction(
+    FunctionDefinition& SemanticContext::createFunction(
         std::string_view name,
         const std::vector<Parameter>& parameters,
         const std::vector<Type>& returnTypes,
@@ -151,7 +151,7 @@ namespace Caracal
         return m_functionDefinitions.back();
     }
 
-    FunctionDefinition& Module::createMethod(
+    FunctionDefinition& SemanticContext::createMethod(
         TypeDefinition& typeDefinition,
         MethodModifier modifier,
         const std::string& methodName,
@@ -172,7 +172,7 @@ namespace Caracal
         return m_functionDefinitions.back();
     }
 
-    FunctionDefinition& Module::createConstructor(
+    FunctionDefinition& SemanticContext::createConstructor(
         TypeDefinition& typeDefinition,
         const std::vector<Parameter>& parameters) noexcept
     {
@@ -188,7 +188,7 @@ namespace Caracal
         return m_functionDefinitions.back();
     }
 
-    ConstantDefinition& Module::createConstant(
+    ConstantDefinition& SemanticContext::createConstant(
         std::string_view name,
         Expression* expression) noexcept
     {
@@ -199,7 +199,7 @@ namespace Caracal
         return m_constantDefinitions.back();
     }
 
-    void Module::createBuiltinType(Type type, std::string_view name, bool addVariants)
+    void SemanticContext::createBuiltinType(Type type, std::string_view name, bool addVariants)
     {
         m_nameToTypes.try_emplace(std::string(name), type);
 

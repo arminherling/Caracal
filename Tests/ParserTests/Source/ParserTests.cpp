@@ -31,7 +31,7 @@ static void FileTests(
 
     std::cout << "      parse(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
-    Caracal::Module module = Caracal::Module::WithBuiltins();
+    Caracal::SemanticContext module = Caracal::SemanticContext::WithBuiltins();
     Caracal::ParseTreePrinter printer{ *parseTree, &module };
     const auto output = printer.prettyPrint();
 

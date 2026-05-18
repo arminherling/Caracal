@@ -47,7 +47,7 @@ namespace Caracal
         return fieldStatement->nameExpression()->sourceLocation(tokens);
     }
 
-    static std::string FormatTypeName(Module& module, Type type)
+    static std::string FormatTypeName(SemanticContext& module, Type type)
     {
         if (type == Type::Undefined())
         {
@@ -166,10 +166,42 @@ namespace Caracal
         return true;
     }
 
+    static std::optional<NumberLiteral::ParsedValue> TryParseNumberLiteralValue(std::string_view lexeme, Type type)
+    {
+        if (type == Type::U8())
+        {
+            const auto value = TryParseU8Literal(lexeme);
+            if (!value.has_value())
+                return std::nullopt;
+
+            return NumberLiteral::ParsedValue{ value.value() };
+        }
+
+        if (type == Type::I32())
+        {
+            const auto value = TryParseI32Literal(lexeme);
+            if (!value.has_value())
+                return std::nullopt;
+
+            return NumberLiteral::ParsedValue{ value.value() };
+        }
+
+        if (type == Type::F32())
+        {
+            const auto value = TryParseF32Literal(lexeme);
+            if (!value.has_value())
+                return std::nullopt;
+
+            return NumberLiteral::ParsedValue{ value.value() };
+        }
+
+        return std::nullopt;
+    }
+
     bool typeCheck(
         const std::vector<ParseTreeUPtr>& parseTrees,
         const TypeCheckerOptions& options,
-        Module& module,
+        SemanticContext& module,
         DiagnosticsBag& diagnostics) noexcept
     {
         TypeChecker typeChecker{ parseTrees, options, module, diagnostics };
@@ -179,7 +211,7 @@ namespace Caracal
     TypeChecker::TypeChecker(
         const std::vector<ParseTreeUPtr>& parseTrees,
         const TypeCheckerOptions& options,
-        Module& module,
+        SemanticContext& module,
         DiagnosticsBag& diagnostics)
         : m_parseTrees(parseTrees)
         , m_options{ options }
@@ -1881,6 +1913,7 @@ namespace Caracal
     Type TypeChecker::typeCheckNumberLiteral(NumberLiteral* literal, const TokenBuffer& tokens)
     {
         auto numberType = Type::Undefined();
+        auto parsedValue = std::optional<NumberLiteral::ParsedValue>{};
         if (literal->explicitType().has_value())
         {
             numberType = typeCheckTypeNameNode(literal->explicitType().value().get(), tokens);
@@ -1898,17 +1931,21 @@ namespace Caracal
             }
         }
 
-        if ((numberType == Type::U8() || numberType == Type::I32() || numberType == Type::F32())
-            && !DoesLiteralFitType(literal->literalLexeme(), numberType))
+        if (numberType == Type::U8() || numberType == Type::I32() || numberType == Type::F32())
         {
-            m_diagnostics.addNumberLiteralOutOfRangeError(
-                tokens.source(),
-                literal->sourceLocation(tokens),
-                literal->literalLexeme(),
-                FormatTypeName(m_module, numberType));
-            numberType = Type::Undefined();
+            parsedValue = TryParseNumberLiteralValue(literal->literalLexeme(), numberType);
+            if (!parsedValue.has_value())
+            {
+                m_diagnostics.addNumberLiteralOutOfRangeError(
+                    tokens.source(),
+                    literal->sourceLocation(tokens),
+                    literal->literalLexeme(),
+                    FormatTypeName(m_module, numberType));
+                numberType = Type::Undefined();
+            }
         }
 
+        literal->setParsedValue(std::move(parsedValue));
         literal->setType(numberType);
         return numberType;
     }
@@ -2005,8 +2042,7 @@ namespace Caracal
             return 0;
         }
 
-        const auto parsedValue = TryParseI32Literal(literal->literalLexeme());
-        if (!parsedValue.has_value())
+        if (!literal->hasParsedValue())
         {
             m_diagnostics.addNumberLiteralOutOfRangeError(
                 tokens.source(),
@@ -2016,7 +2052,7 @@ namespace Caracal
             return 0;
         }
 
-        return parsedValue.value();
+        return std::get<i32>(literal->parsedValue().value());
     }
 
     Type TypeChecker::coerceConditionType(Type conditionType, Expression* conditionExpression)

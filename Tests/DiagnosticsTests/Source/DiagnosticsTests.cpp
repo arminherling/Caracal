@@ -2,7 +2,7 @@
 
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
-#include <Caracal/Semantic/Module.h>
+#include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Semantic/Type.h>
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
@@ -102,14 +102,14 @@ namespace
         if (!diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
-        Caracal::Module caracalModule = Caracal::Module::WithBuiltins();
+        Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins();
         const Caracal::TypeCheckerOptions options{
             .defaultIntegerType = Caracal::Type::I32(),
             .defaultFloatingType = Caracal::Type::F32(),
             .defaultEnumBaseType = Caracal::Type::U8()
         };
 
-        const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, caracalModule, diagnostics);
+        const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
         if (!wasSuccessful || !diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
@@ -139,14 +139,14 @@ namespace
         if (!diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
-        Caracal::Module caracalModule = Caracal::Module::WithBuiltins();
+            Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins();
         const Caracal::TypeCheckerOptions options{
             .defaultIntegerType = Caracal::Type::I32(),
             .defaultFloatingType = Caracal::Type::F32(),
             .defaultEnumBaseType = Caracal::Type::U8()
         };
 
-        const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, caracalModule, diagnostics);
+            const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
         if (!wasSuccessful || !diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 

@@ -17,7 +17,7 @@
 #include <Caracal/Syntax/FunctionCallExpression.h>
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
-#include <Caracal/Semantic/Module.h>
+#include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/CodeGen/LLVMScope.h>
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
 #include <Caracal/Syntax/UnaryExpression.h>
@@ -41,7 +41,7 @@ namespace Caracal
     {
     public:
         LLVMCodeGenerator(
-            Module& caracalModule, 
+            SemanticContext& semanticContext, 
             llvm::Module& llvmModule);
 
         CARACAL_DELETE_COPY_DELETE_MOVE(LLVMCodeGenerator)
@@ -100,7 +100,7 @@ namespace Caracal
         [[nodiscard]] LLVMScope* currentScope() const noexcept;
 
     private:
-        Module& m_caracalModule;
+        SemanticContext& m_semanticContext;
         Type m_currentType;
         llvm::Module& m_llvmModule;
         llvm::Function* m_currentFunction;
@@ -110,5 +110,5 @@ namespace Caracal
         std::vector<std::unique_ptr<LLVMScope>> m_scopes;
     };
 
-    bool generateLLVMModule(Module& caracalModule, llvm::Module& llvmModule) noexcept;
+    bool generateLLVMModule(SemanticContext& semanticContext, llvm::Module& llvmModule) noexcept;
 }

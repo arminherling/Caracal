@@ -1,11 +1,14 @@
 #include <CaraTest.h>
+
+#include <Caracal/Compiler.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
-#include <Caracal/Semantic/Module.h>
+#include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/Text/File.h>
+
 #include <iostream>
 
 static void FileTests(
@@ -14,17 +17,13 @@ static void FileTests(
     const std::filesystem::path& outputFilePath)
 {
     if (!std::filesystem::exists(inputFilePath))
-        CaraTest::fail();// ("In file missing");
-
-    CaraTest::skip();
-
-    /*
+        CaraTest::fail();
     if (!std::filesystem::exists(outputFilePath))
-        CaraTest::skip();// ("Out file missing");
+        CaraTest::skip();
 
     const auto input = Caracal::File::readText(inputFilePath);
     if (!input.has_value())
-        CaraTest::fail();// ("Could not read input file");
+        CaraTest::fail();
 
     const auto source = std::make_shared<Caracal::SourceText>(input.value());
     Caracal::DiagnosticsBag diagnostics;
@@ -34,7 +33,7 @@ static void FileTests(
     std::vector<Caracal::ParseTreeUPtr> parseTrees;
     parseTrees.push_back(std::move(parseTree));
 
-    Caracal::Module module = Caracal::Module::WithBuiltins();
+    Caracal::SemanticContext module = Caracal::SemanticContext::WithBuiltins();
     Caracal::TypeCheckerOptions options{
         .defaultIntegerType = Caracal::Type::I32(),
         .defaultFloatingType = Caracal::Type::F32(),
@@ -57,7 +56,6 @@ static void FileTests(
     CaraTest::isTrue(irGenerated);
     CaraTest::isTrue(!diagnostics.hasErrors());
     CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
-    */
 }
 
 static std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path>> FileTests_Data()
@@ -79,22 +77,17 @@ static std::vector<std::tuple<std::string, std::filesystem::path, std::filesyste
 
             const auto outputParseDirectoryPath = testDataDir / "OutputIR";
             if (!std::filesystem::exists(outputParseDirectoryPath))
-            {
                 std::filesystem::create_directories(outputParseDirectoryPath);
-            }
 
             const auto fileName = inputFilePath.stem().string();
             const auto outputFileName = fileName + ".txt";
-
             const auto outputParsePath = std::filesystem::absolute(outputParseDirectoryPath / inputDirName / outputFileName);
 
             const auto testName = inputDirName.string() + "/" + fileName;
-            data.push_back(std::make_tuple(
-                testName,
-                inputFilePath,
-                outputParsePath));
+            data.push_back(std::make_tuple(testName, inputFilePath, outputParsePath));
         }
     }
+
     return data;
 }
 

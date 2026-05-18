@@ -3,7 +3,7 @@
 #include <Caracal/Debug/ParseTreePrinter.h>
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
-#include <Caracal/Semantic/Module.h>
+#include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/Text/File.h>
@@ -33,7 +33,7 @@ static void FileTests(
     std::vector<Caracal::ParseTreeUPtr> parseTrees;
     parseTrees.push_back(std::move(parseTree));
 
-    Caracal::Module module = Caracal::Module::WithBuiltins();
+    Caracal::SemanticContext module = Caracal::SemanticContext::WithBuiltins();
     Caracal::TypeCheckerOptions options{
         .defaultIntegerType = Caracal::Type::I32(),
         .defaultFloatingType = Caracal::Type::F32(),

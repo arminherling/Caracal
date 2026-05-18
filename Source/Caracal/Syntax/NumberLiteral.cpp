@@ -19,4 +19,9 @@ namespace Caracal
     {
         return tokens.getSourceLocation(m_literalToken);
     }
+
+    void NumberLiteral::setParsedValue(std::optional<ParsedValue> value) noexcept
+    {
+        m_parsedValue = std::move(value);
+    }
 }

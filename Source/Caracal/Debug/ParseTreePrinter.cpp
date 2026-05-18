@@ -1,11 +1,11 @@
 ﻿#include "ParseTreePrinter.h"
-#include <Caracal/Semantic/Module.h>
+#include <Caracal/Semantic/SemanticContext.h>
 
 namespace Caracal
 {
     ParseTreePrinter::ParseTreePrinter(
         const ParseTree& parseTree, 
-        Module* module, 
+        SemanticContext* module, 
         i32 indentation)
         : m_parseTree{ parseTree }
         , m_module{ module }

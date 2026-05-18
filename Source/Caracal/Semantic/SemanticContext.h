@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <Caracal/Defines.h>
 #include <Caracal/API.h>
@@ -18,12 +18,12 @@
 
 namespace Caracal
 {
-    class CARACAL_API Module
+    class CARACAL_API SemanticContext
     {
     public:
-        Module() = default;
+        SemanticContext() = default;
 
-        [[nodiscard]] static Module WithBuiltins() noexcept;
+        [[nodiscard]] static SemanticContext WithBuiltins() noexcept;
 
         [[nodiscard]] Type tryGetFunctionTypeByName(std::string_view typeName) const noexcept;
         [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;

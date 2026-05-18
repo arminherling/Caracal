@@ -37,14 +37,14 @@ static void FileTests(
 
     CaraTest::isTrue(!diagnostics.hasErrors());
 
-    Caracal::Module caracalModule = Caracal::Module::WithBuiltins();
+    Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins();
     Caracal::TypeCheckerOptions options{
         .defaultIntegerType = Caracal::Type::I32(),
         .defaultFloatingType = Caracal::Type::F32(),
         .defaultEnumBaseType = Caracal::Type::U8()
     };
 
-    auto wasSuccessful = Caracal::typeCheck(parseTrees, options, caracalModule, diagnostics);
+    auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
     if (!wasSuccessful)
     {
         std::cout << "Type checking failed!";
@@ -52,7 +52,7 @@ static void FileTests(
     }
 
     const auto startTime = std::chrono::high_resolution_clock::now();
-    const auto [irGenerated, output] = Caracal::generateLLVMIR(*parseTrees[0], caracalModule, TestTargetTriple);
+    const auto [irGenerated, output] = Caracal::generateLLVMIR(*parseTrees[0], semanticContext, TestTargetTriple);
     const auto endTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "      generateLLVMModule(): " << CaraTest::stringify(endTime - startTime) << std::endl;

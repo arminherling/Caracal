@@ -1,12 +1,14 @@
 #include <Caracal/Compiler.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/TypeChecker.h>
+#include <Caracal/Debug/IRPrinter.h>
 #include <Caracal/Text/File.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/CodeGen/LLVMCodeGenerator.h>
+#include <Caracal/IR/IRLowerer.h>
 
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/LLVMContext.h>
@@ -96,14 +98,14 @@ namespace Caracal
             return 1;
         }
 
-        Caracal::Module caracalModule = Caracal::Module::WithBuiltins();
+        Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins();
         Caracal::TypeCheckerOptions options{
             .defaultIntegerType = Caracal::Type::I32(),
             .defaultFloatingType = Caracal::Type::F32(),
             .defaultEnumBaseType = Caracal::Type::U8()
         };
 
-        auto wasSuccessful = Caracal::typeCheck(parseTrees, options, caracalModule, diagnostics);
+        auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
         if (!wasSuccessful)
         {
             Caracal::writeDiagnostics(std::cout, diagnostics, diagnosticOptions);
@@ -140,7 +142,7 @@ namespace Caracal
         llvmModule->setDataLayout(targetMachine->createDataLayout());
         llvmModule->setTargetTriple(triple);
 
-        wasSuccessful = Caracal::generateLLVMModule(caracalModule, *llvmModule);
+        wasSuccessful = Caracal::generateLLVMModule(semanticContext, *llvmModule);
         if (!wasSuccessful)
         {
             std::cout << "Module not generated!";
@@ -207,13 +209,25 @@ namespace Caracal
         return exeResult;
     }
 
-    std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, Module& caracalModule, std::string targetTriple)
+    std::pair<bool, std::string> generateIRText(ParseTree& parseTree, SemanticContext& semanticContext)
+    {
+        Module module{};
+        IRLowerer lowerer{ semanticContext };
+        const auto wasSuccessful = lowerer.lower(parseTree, module);
+        if (!wasSuccessful)
+            return std::make_pair(false, std::string{});
+
+        IRPrinter printer{ module };
+        return std::make_pair(true, printer.prettyPrint());
+    }
+
+    std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, SemanticContext& semanticContext, std::string targetTriple)
     {
         llvm::LLVMContext context;
         auto module = std::make_unique<llvm::Module>("CaracalModule", context);
         module->setTargetTriple(llvm::Triple(targetTriple));
 
-        auto wasSuccessful = Caracal::generateLLVMModule(caracalModule, *module);
+        auto wasSuccessful = Caracal::generateLLVMModule(semanticContext, *module);
         if (!wasSuccessful)
         {
             std::cout << "Module not generated!";

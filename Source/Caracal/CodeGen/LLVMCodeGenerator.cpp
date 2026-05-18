@@ -41,14 +41,14 @@ namespace Caracal
         Type type,
         llvm::LLVMContext& context,
         llvm::Module& llvmModule,
-        Module& caracalModule) noexcept
+        SemanticContext& semanticContext) noexcept
     {
         if (auto* llvmType = GetLLVMTypeForCaraType(type, context))
             return llvmType;
 
         if (type.kind() == TypeKind::Type)
         {
-            const auto typeName = caracalModule.getNameByType(type);
+            const auto typeName = semanticContext.getNameByType(type);
             if (!typeName.empty())
             {
                 if (auto* structType = llvm::StructType::getTypeByName(context, typeName))
@@ -118,9 +118,9 @@ namespace Caracal
     }
 
     LLVMCodeGenerator::LLVMCodeGenerator(
-        Module& caracalModule,
+        SemanticContext& semanticContext,
         llvm::Module& llvmModule)
-        : m_caracalModule{ caracalModule }
+        : m_semanticContext{ semanticContext }
         , m_currentType{ Type::Undefined() }
         , m_llvmModule{ llvmModule }
         , m_currentFunction{ nullptr }
@@ -287,7 +287,7 @@ namespace Caracal
             const auto* binaryExpression = static_cast<const BinaryExpression*>(rightExpression);
             if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
             {
-                auto* llvmType = GetLLVMTypeForCaraType(binaryExpression->type(), m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+                auto* llvmType = GetLLVMTypeForCaraType(binaryExpression->type(), m_llvmModule.getContext(), m_llvmModule, m_semanticContext);
                 auto* localValue = createLocalValue(name, llvmType);
                 if (tryGenerateConstructorCallInto(binaryExpression, localValue))
                 {
@@ -411,7 +411,7 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateFunction(Type functionType, BlockNode* body) noexcept
     {
-        auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
+        auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
         auto& functionName = functionDefinition.fullName();
 
         m_currentFunction = getFunctionDeclaration(functionDefinition);
@@ -438,7 +438,7 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateSynthesizedConstructor(const FunctionDefinition& functionDefinition) noexcept
     {
-        auto& typeDefinition = m_caracalModule.getTypeDefinition(functionDefinition.parentType());
+        auto& typeDefinition = m_semanticContext.getTypeDefinition(functionDefinition.parentType());
 
         m_currentFunction = getFunctionDeclaration(functionDefinition);
 
@@ -489,7 +489,7 @@ namespace Caracal
 
             if (fieldValue != nullptr)
             {
-                auto* llvmFieldType = GetLLVMTypeForCaraType(fieldDefinition.type(), m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+                auto* llvmFieldType = GetLLVMTypeForCaraType(fieldDefinition.type(), m_llvmModule.getContext(), m_llvmModule, m_semanticContext);
                 fieldValue = dereferenceIfNeeded(fieldDefinition.expression(), fieldValue, llvmFieldType);
                 m_irBuilder->CreateStore(fieldValue, fieldPointer);
             }
@@ -522,7 +522,7 @@ namespace Caracal
     void LLVMCodeGenerator::generateTypeDefinition(TypeDefinitionStatement* node) noexcept
     {
         auto thisType = node->type();
-        auto typeDefinition = m_caracalModule.getTypeDefinition(thisType);
+        auto typeDefinition = m_semanticContext.getTypeDefinition(thisType);
 
         const auto& statements = node->bodyNode()->statements();
         for(const auto& statement : statements)
@@ -754,7 +754,7 @@ namespace Caracal
             case BinaryOperatorKind::ConstructorCall:
             {
                 const auto objectType = node->type();
-                auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+                auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_semanticContext);
                 if (llvmObjectType == nullptr)
                 {
                     TODO("Constructor call target type not found");
@@ -764,7 +764,7 @@ namespace Caracal
                 auto* tempObject = createLocalValue("ctor_tmp", llvmObjectType);
                 auto* constructorCall = static_cast<FunctionCallExpression*>(node->rightExpression().get());
                 auto constructorType = constructorCall->functionType();
-                auto& constructorDefinition = m_caracalModule.getFunctionDefinition(constructorType);
+                auto& constructorDefinition = m_semanticContext.getFunctionDefinition(constructorType);
                 auto* llvmConstructor = getFunctionDeclaration(constructorDefinition);
                 if (llvmConstructor == nullptr)
                 {
@@ -796,7 +796,7 @@ namespace Caracal
                 const auto type = node->type();
                 if (type.kind() == TypeKind::Enum)
                 {
-                    const auto& enumDefinition = m_caracalModule.getEnumDefinition(type);
+                    const auto& enumDefinition = m_semanticContext.getEnumDefinition(type);
                     const auto baseType = enumDefinition.baseType();
                     const auto llvmType = GetLLVMTypeForCaraType(baseType, m_llvmModule.getContext());
 
@@ -815,7 +815,7 @@ namespace Caracal
                 {
                     auto* functionCallExpression = static_cast<FunctionCallExpression*>(node->rightExpression().get());
                     auto functionType = functionCallExpression->functionType();
-                    auto& methodDefinition = m_caracalModule.getFunctionDefinition(functionType);
+                    auto& methodDefinition = m_semanticContext.getFunctionDefinition(functionType);
                     auto* llvmMethod = getFunctionDeclaration(methodDefinition);
                     if (llvmMethod == nullptr)
                     {
@@ -873,7 +873,7 @@ namespace Caracal
                         return fieldPointer;
                     }
 
-                    auto* llvmFieldType = GetLLVMTypeForCaraType(fieldType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+                    auto* llvmFieldType = GetLLVMTypeForCaraType(fieldType, m_llvmModule.getContext(), m_llvmModule, m_semanticContext);
                     if (llvmFieldType == nullptr)
                     {
                         TODO("Field access type not found");
@@ -1191,7 +1191,7 @@ namespace Caracal
     llvm::Value* LLVMCodeGenerator::generateFunctionCallExpression(const FunctionCallExpression* node) noexcept
     {
         auto functionType = node->functionType();
-        auto& functionDefinition = m_caracalModule.getFunctionDefinition(functionType);
+        auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
         auto functionName = functionDefinition.fullName();
         auto llvmFunction = m_llvmModule.getFunction(functionName);
         if (llvmFunction == nullptr)
@@ -1242,19 +1242,31 @@ namespace Caracal
     {
         auto& context = m_llvmModule.getContext();
         const auto literalType = node->type();
-        const auto& lexeme = node->literalLexeme();
+
+        if (!node->hasParsedValue())
+        {
+            TODO("Number literal should have a parsed value after type checking");
+            return nullptr;
+        }
 
         if (literalType == Type::I32())
         {
             auto llvmType = GetLLVMTypeForCaraType(literalType, context);
-            auto value = std::stoi(lexeme);
+            auto value = std::get<i32>(node->parsedValue().value());
+            auto returnValue = llvm::ConstantInt::get(llvmType, value);
+            return returnValue;
+        }
+        else if (literalType == Type::U8())
+        {
+            auto llvmType = GetLLVMTypeForCaraType(literalType, context);
+            auto value = std::get<u8>(node->parsedValue().value());
             auto returnValue = llvm::ConstantInt::get(llvmType, value);
             return returnValue;
         }
         else if (literalType == Type::F32())
         {
             auto llvmType = GetLLVMTypeForCaraType(literalType, context);
-            auto value = std::stof(lexeme);
+            auto value = std::get<float>(node->parsedValue().value());
             auto returnValue = llvm::ConstantFP::get(context, llvm::APFloat(value));
             return returnValue;
         }
@@ -1272,14 +1284,14 @@ namespace Caracal
 
     llvm::Value* LLVMCodeGenerator::getPointerToField(llvm::Value* objectPtr, Type objectType, std::string_view fieldName) noexcept
     {
-        auto& typeDefinition = m_caracalModule.getTypeDefinition(objectType);
+        auto& typeDefinition = m_semanticContext.getTypeDefinition(objectType);
         const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldName);
         if (fieldDefinition.type() == Type::Undefined())
         {
             return nullptr;
         }
 
-        auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+        auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_semanticContext);
         auto* llvmStructType = llvm::dyn_cast<llvm::StructType>(llvmObjectType);
         if (llvmStructType == nullptr)
         {
@@ -1299,7 +1311,7 @@ namespace Caracal
             {
                 TODO("Handle multiple return types in function type generation");
             }
-            llvmReturnType = GetLLVMTypeForCaraType(functionDefinition.returnTypes()[0], context, m_llvmModule, m_caracalModule);
+            llvmReturnType = GetLLVMTypeForCaraType(functionDefinition.returnTypes()[0], context, m_llvmModule, m_semanticContext);
         }
         else
         {
@@ -1313,7 +1325,7 @@ namespace Caracal
         
         for (size_t i = 0; i < parameterCount; i++)
         {
-            auto llvmParameterType = GetLLVMTypeForCaraType(parameters[i].type(), context, m_llvmModule, m_caracalModule);
+            auto llvmParameterType = GetLLVMTypeForCaraType(parameters[i].type(), context, m_llvmModule, m_semanticContext);
             llvmParameterTypes.push_back(llvmParameterType);
         }
         
@@ -1324,7 +1336,7 @@ namespace Caracal
     {
         auto* constructorCall = static_cast<FunctionCallExpression*>(binaryExpression->rightExpression().get());
         auto constructorType = constructorCall->functionType();
-        auto& constructorDefinition = m_caracalModule.getFunctionDefinition(constructorType);
+        auto& constructorDefinition = m_semanticContext.getFunctionDefinition(constructorType);
         auto* llvmConstructor = getFunctionDeclaration(constructorDefinition);
         if (llvmConstructor == nullptr)
         {
@@ -1355,7 +1367,7 @@ namespace Caracal
     bool LLVMCodeGenerator::tryGenerateGlobalConstructorCall(const std::string& name, BinaryExpression* binaryExpression) noexcept
     {
         auto objectType = binaryExpression->type();
-        auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+        auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_semanticContext);
         if (llvmObjectType == nullptr)
         {
             TODO("Global constructor call target type not found");
@@ -1437,7 +1449,7 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateFunctionBodies() noexcept
     {
-        for (const auto& functionDefinition : m_caracalModule.functionDefinitions())
+        for (const auto& functionDefinition : m_semanticContext.functionDefinitions())
         {
             m_currentType = functionDefinition.parentType();
 
@@ -1529,7 +1541,7 @@ namespace Caracal
     {
         auto& context = m_llvmModule.getContext();
 
-        for (const auto& typeDefinition : m_caracalModule.typeDefinitions())
+        for (const auto& typeDefinition : m_semanticContext.typeDefinitions())
         {
             auto* llvmStructType = llvm::StructType::getTypeByName(context, typeDefinition.name());
             if (llvmStructType == nullptr)
@@ -1549,7 +1561,7 @@ namespace Caracal
                     fieldDefinition.type(),
                     context,
                     m_llvmModule,
-                    m_caracalModule);
+                    m_semanticContext);
 
                 if (llvmFieldType == nullptr)
                 {
@@ -1566,7 +1578,7 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateConstantDeclarations() noexcept
     {
-        for (const auto& constantDefinition : m_caracalModule.constantDefinitions())
+        for (const auto& constantDefinition : m_semanticContext.constantDefinitions())
         {
             const auto expression = constantDefinition.expression();
             if (expression == nullptr)
@@ -1604,7 +1616,7 @@ namespace Caracal
 
     void LLVMCodeGenerator::generateFunctionDeclarations() noexcept
     {
-        for (const auto& functionDefinition : m_caracalModule.functionDefinitions())
+        for (const auto& functionDefinition : m_semanticContext.functionDefinitions())
         {
             declareFunction(functionDefinition);
         }
@@ -1661,9 +1673,9 @@ namespace Caracal
         return m_scopes.back().get();
     }
 
-    bool generateLLVMModule(Module& caracalModule, llvm::Module& llvmModule) noexcept
+    bool generateLLVMModule(SemanticContext& semanticContext, llvm::Module& llvmModule) noexcept
     {
-        LLVMCodeGenerator generator{ caracalModule, llvmModule };
+        LLVMCodeGenerator generator{ semanticContext, llvmModule };
         return generator.generate();
     }
 
@@ -1821,7 +1833,7 @@ namespace Caracal
                     }
 
                     auto thisType = thisExpression->type().toValue();
-                    auto* llvmThisType = GetLLVMTypeForCaraType(thisType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+                    auto* llvmThisType = GetLLVMTypeForCaraType(thisType, m_llvmModule.getContext(), m_llvmModule, m_semanticContext);
                     if (llvmThisType == nullptr)
                     {
                         return nullptr;
@@ -1846,7 +1858,7 @@ namespace Caracal
         }
 
         auto thisType = thisExpression->type().toValue();
-        auto* llvmThisType = GetLLVMTypeForCaraType(thisType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+        auto* llvmThisType = GetLLVMTypeForCaraType(thisType, m_llvmModule.getContext(), m_llvmModule, m_semanticContext);
         if (llvmThisType == nullptr)
         {
             return nullptr;
@@ -1914,7 +1926,7 @@ namespace Caracal
                 return fieldPointer;
             }
 
-            auto* llvmFieldType = GetLLVMTypeForCaraType(fieldType, m_llvmModule.getContext(), m_llvmModule, m_caracalModule);
+            auto* llvmFieldType = GetLLVMTypeForCaraType(fieldType, m_llvmModule.getContext(), m_llvmModule, m_semanticContext);
             if (llvmFieldType == nullptr)
             {
                 TODO("Member access field type not found");
@@ -1941,7 +1953,7 @@ namespace Caracal
 
             auto* functionCallExpression = static_cast<FunctionCallExpression*>(innerExpression);
             auto functionType = functionCallExpression->functionType();
-            auto& methodDefinition = m_caracalModule.getFunctionDefinition(functionType);
+            auto& methodDefinition = m_semanticContext.getFunctionDefinition(functionType);
             auto* llvmMethod = getFunctionDeclaration(methodDefinition);
             if (llvmMethod == nullptr)
             {
