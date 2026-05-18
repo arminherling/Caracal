@@ -1,12 +1,12 @@
  Error T0030
-  Type.new declaration
+  Type.new declaration not allowed
     ,-[Diagnostics/Input/staticNewMethodDeclaration.cara:2:16]
   1 | type Number(value: i32) {
     .            ------------
     .                  `-- Constructor parameters are declared here on the type.
   2 |     def Number.new() {
     .                ---
-    .                 `-- Explicit Type.new declarations are not allowed
+    .                 `-- Type.new declarations are not allowed
   3 |     }
   4 | }
   5 | 

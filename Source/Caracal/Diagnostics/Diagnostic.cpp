@@ -231,7 +231,7 @@ namespace Caracal
             case DiagnosticKind::T0029_FlagEnumExplicitValue:
                 return "Flag enum explicit value";
             case DiagnosticKind::T0030_TypeDotNewDeclaration:
-                return "Type.new declaration";
+                return "Type.new declaration not allowed";
             case DiagnosticKind::T0031_ReferenceReturnType:
                 return "Reference return type";
             case DiagnosticKind::T0032_AlreadyReference:

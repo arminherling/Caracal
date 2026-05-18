@@ -875,7 +875,7 @@ namespace Caracal
             source,
             location,
             "Remove the " + typeName + ".new declaration and declare constructor parameters on type instead.");
-        diagnostic.addPrimaryLabel(location, "Explicit Type.new declarations are not allowed");
+        diagnostic.addPrimaryLabel(location, "Type.new declarations are not allowed");
         diagnostic.addSecondaryLabel(otherLocation, "Constructor parameters are declared here on the type.");
 
         m_diagnostics.push_back(std::move(diagnostic));
