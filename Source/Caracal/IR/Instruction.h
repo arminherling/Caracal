@@ -13,6 +13,7 @@ namespace Caracal
 
     enum class InstructionKind
     {
+        Parameter,
         Constant,
         Add,
         Subtract,

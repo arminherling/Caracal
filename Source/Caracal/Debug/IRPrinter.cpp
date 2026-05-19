@@ -6,6 +6,7 @@
 #include <Caracal/IR/ExternFunction.h>
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/MultiplyInstruction.h>
+#include <Caracal/IR/ParameterInstruction.h>
 #include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
@@ -107,7 +108,11 @@ namespace Caracal
             if (index > 0)
                 m_builder.append(", ");
 
-            m_builder.append(formatType(parameterTypes[index]));
+            m_builder
+                .append("%")
+                .append(std::to_string(index))
+                .append(": ")
+                .append(formatType(parameterTypes[index]));
         }
 
         m_builder
@@ -129,7 +134,11 @@ namespace Caracal
             if (index > 0)
                 m_builder.append(", ");
 
-            m_builder.append(formatType(parameterTypes[index]));
+            m_builder
+                .append("%")
+                .append(std::to_string(index))
+                .append(": ")
+                .append(formatType(parameterTypes[index]));
         }
 
         m_builder
@@ -166,6 +175,18 @@ namespace Caracal
     {
         switch (instruction.kind())
         {
+            case InstructionKind::Parameter:
+            {
+                const auto& parameter = static_cast<const ParameterInstruction&>(instruction);
+                m_builder
+                    .appendIndented(formatValue(ValueRef{ parameter.resultId() }))
+                    .append(" = parameter ")
+                    .append(std::to_string(parameter.parameterIndex()))
+                    .append(" : ")
+                    .append(formatType(parameter.type()))
+                    .appendLine("");
+                break;
+            }
             case InstructionKind::Constant:
             {
                 const auto& constant = static_cast<const ConstantInstruction&>(instruction);

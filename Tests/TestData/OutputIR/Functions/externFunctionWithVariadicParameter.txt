@@ -1,1 +1,1 @@
-extern printf(cstring, ...) i32
+extern printf(%0: cstring, %1: ...) i32

@@ -1,1 +1,1 @@
-extern printf(...) i32
+extern printf(%0: ...) i32

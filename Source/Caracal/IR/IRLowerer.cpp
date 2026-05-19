@@ -5,6 +5,7 @@
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
+#include <Caracal/IR/ParameterInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
 #include <Caracal/IR/SubtractInstruction.h>
@@ -106,13 +107,8 @@ namespace Caracal
 
         auto function = Function{ statement->name(), parameterTypes, returnType };
 
-        const auto& parameterNodes = statement->parametersNode()->parameters();
-        for (size_t index = 0; index < parameterNodes.size(); ++index)
-        {
-            m_localValues.emplace(parameterNodes[index]->name(), ValueRef{ m_nextTemporaryId++ });
-        }
-
         auto entryBlock = BasicBlock{ m_nextBlockId++, "entry", std::make_unique<ReturnTerminator>() };
+        lowerParameters(statement, entryBlock);
         function.addBlock(std::move(entryBlock));
 
         if (!lowerBlock(statement->bodyNode().get(), function))
@@ -120,6 +116,20 @@ namespace Caracal
 
         module.addFunction(std::move(function));
         return true;
+    }
+
+    void IRLowerer::lowerParameters(const FunctionDefinitionStatement* statement, BasicBlock& block) noexcept
+    {
+        const auto& parameterNodes = statement->parametersNode()->parameters();
+        for (size_t index = 0; index < parameterNodes.size(); ++index)
+        {
+            const auto parameterId = m_nextTemporaryId++;
+            block.addInstruction(std::make_unique<ParameterInstruction>(
+                parameterId,
+                static_cast<i32>(index),
+                parameterNodes[index]->type()));
+            m_localValues.emplace(parameterNodes[index]->name(), ValueRef{ parameterId });
+        }
     }
 
     bool IRLowerer::lowerBlock(const BlockNode* block, Function& function) noexcept

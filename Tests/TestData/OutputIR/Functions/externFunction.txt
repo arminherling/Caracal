@@ -1,1 +1,1 @@
-extern puts(cstring) i32
+extern puts(%0: cstring) i32

@@ -31,6 +31,7 @@ namespace Caracal
         [[nodiscard]] bool lowerStatement(const Statement* statement, Module& module) noexcept;
         [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept;
         [[nodiscard]] bool lowerBlock(const BlockNode* block, Function& function) noexcept;
+        void lowerParameters(const FunctionDefinitionStatement* statement, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept;
