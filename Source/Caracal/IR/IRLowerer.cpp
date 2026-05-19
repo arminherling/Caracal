@@ -4,6 +4,8 @@
 #include <Caracal/IR/ConstantValue.h>
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
+#include <Caracal/IR/BranchIfTerminator.h>
+#include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
@@ -17,6 +19,7 @@
 #include <Caracal/Syntax/ConstantDeclaration.h>
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
+#include <Caracal/Syntax/IfStatement.h>
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/NodeKind.h>
 #include <Caracal/Syntax/NumberLiteral.h>
@@ -30,6 +33,14 @@
 
 namespace Caracal
 {
+    static BasicBlock* TryGetCurrentBlock(Function& function, const std::optional<BlockId>& blockId) noexcept
+    {
+        if (!blockId.has_value())
+            return nullptr;
+
+        return function.tryGetBlock(blockId.value());
+    }
+
     static std::optional<ConstantValue> CreateConstantValue(const NumberLiteral& literal) noexcept
     {
         if (!literal.hasParsedValue())
@@ -106,12 +117,13 @@ namespace Caracal
         }
 
         auto function = Function{ statement->name(), parameterTypes, returnType };
-
-        auto entryBlock = BasicBlock{ m_nextBlockId++, "entry", std::make_unique<ReturnTerminator>() };
+        auto blockId = m_nextBlockId++;
+        auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
         lowerParameters(statement, entryBlock);
         function.addBlock(std::move(entryBlock));
 
-        if (!lowerBlock(statement->bodyNode().get(), function))
+        std::optional<BlockId> entryBlockId = blockId;
+        if (!lowerBlock(statement->bodyNode().get(), function, entryBlockId))
             return false;
 
         module.addFunction(std::move(function));
@@ -132,65 +144,146 @@ namespace Caracal
         }
     }
 
-    bool IRLowerer::lowerBlock(const BlockNode* block, Function& function) noexcept
+    bool IRLowerer::lowerStatement(const Statement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept
     {
-        if (!function.hasBlocks())
+        if (!currentBlockId.has_value())
+            return true;
+
+        auto* currentBlock = function.tryGetBlock(currentBlockId.value());
+        if (currentBlock == nullptr)
             return false;
 
-        auto& entryBlock = function.firstBlock();
-
-        for (const auto& statement : block->statements())
+        switch (statement->kind())
         {
-            switch (statement->kind())
+            case NodeKind::BlockNode: 
             {
-                case NodeKind::VariableDeclaration:
-                {
-                    const auto* variableDeclaration = static_cast<const VariableDeclaration*>(statement.get());
-                    if (!lowerLocalDeclaration(
-                        variableDeclaration->leftExpression().get(),
-                        variableDeclaration->rightExpression().get(),
-                        entryBlock))
-                    {
-                        return false;
-                    }
-                    break;
-                }
-                case NodeKind::ConstantDeclaration:
-                {
-                    const auto* constantDeclaration = static_cast<const ConstantDeclaration*>(statement.get());
-                    if (!lowerLocalDeclaration(
-                        constantDeclaration->leftExpression().get(),
-                        constantDeclaration->rightExpression().get(),
-                        entryBlock))
-                    {
-                        return false;
-                    }
-                    break;
-                }
-                case NodeKind::AssignmentStatement:
-                {
-                    const auto* assignmentStatement = static_cast<const AssignmentStatement*>(statement.get());
-                    if (!lowerAssignmentStatement(
-                        assignmentStatement->leftExpression().get(),
-                        assignmentStatement->rightExpression().get(),
-                        entryBlock))
-                    {
-                        return false;
-                    }
-                    break;
-                }
-                case NodeKind::ReturnStatement:
-                {
-                    const auto* returnStatement = static_cast<const ReturnStatement*>(statement.get());
-                    if (!lowerReturnStatement(returnStatement, entryBlock))
-                        return false;
-                    break;
-                }
-                default:
-                    return false;
+                const auto* blockNode = static_cast<const BlockNode*>(statement);
+                return lowerBlock(blockNode, function, currentBlockId);
+            }
+            case NodeKind::VariableDeclaration:
+            {
+                const auto* variableDeclaration = static_cast<const VariableDeclaration*>(statement);
+                return lowerLocalDeclaration(
+                    variableDeclaration->leftExpression().get(),
+                    variableDeclaration->rightExpression().get(),
+                    *currentBlock);
+            }
+            case NodeKind::ConstantDeclaration:
+            {
+                const auto* constantDeclaration = static_cast<const ConstantDeclaration*>(statement);
+                return lowerLocalDeclaration(
+                    constantDeclaration->leftExpression().get(),
+                    constantDeclaration->rightExpression().get(),
+                    *currentBlock);
+            }
+            case NodeKind::AssignmentStatement:
+            {
+                const auto* assignmentStatement = static_cast<const AssignmentStatement*>(statement);
+                return lowerAssignmentStatement(
+                    assignmentStatement->leftExpression().get(),
+                    assignmentStatement->rightExpression().get(),
+                    *currentBlock);
+            }
+            case NodeKind::IfStatement: 
+            {
+                const auto* ifStatement = static_cast<const IfStatement*>(statement);
+                return lowerIfStatement(ifStatement, function, currentBlockId);
+            }
+            case NodeKind::ReturnStatement:
+            {
+                const auto* returnStatement = static_cast<const ReturnStatement*>(statement);
+                return lowerReturnStatement(returnStatement, *currentBlock);
+            }
+            default: 
+            {
+                return false;
             }
         }
+    }
 
+    bool IRLowerer::lowerBlock(const BlockNode* block, Function& function, std::optional<BlockId>& currentBlockId) noexcept
+    {
+        for (const auto& statement : block->statements())
+        {
+            if (!lowerStatement(statement.get(), function, currentBlockId))
+                return false;
+        }
+
+        return true;
+    }
+
+    bool IRLowerer::lowerIfStatement(const IfStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept
+    {
+        auto* currentBlock = TryGetCurrentBlock(function, currentBlockId);
+        if (currentBlock == nullptr)
+            return false;
+
+        const auto conditionValue = lowerValueExpression(statement->condition().get(), *currentBlock);
+        if (!conditionValue.has_value())
+            return false;
+
+        const auto trueId = m_nextBlockId++;
+        function.addBlock(BasicBlock{ trueId, "if.true", nullptr });
+
+        if (!statement->hasFalseBlock())
+        {
+            const auto continuationId = m_nextBlockId++;
+            currentBlock->setTerminator(std::make_unique<BranchIfTerminator>(conditionValue.value(), trueId, continuationId));
+
+            std::optional<BlockId> trueBlockId = trueId;
+            if (!lowerStatement(statement->trueStatement().get(), function, trueBlockId))
+                return false;
+
+            function.addBlock(BasicBlock{ continuationId, "if.continuation", nullptr });
+
+            auto* trueBlock = TryGetCurrentBlock(function, trueBlockId);
+            const auto needsContinuationJump = trueBlock != nullptr && !trueBlock->hasTerminator();
+            if (needsContinuationJump)
+            {
+                trueBlock->setTerminator(std::make_unique<JumpTerminator>(continuationId));
+            }
+
+            currentBlockId = continuationId;
+            return true;
+        }
+
+        const auto falseId = m_nextBlockId++;
+        currentBlock->setTerminator(std::make_unique<BranchIfTerminator>(conditionValue.value(), trueId, falseId));
+
+        std::optional<BlockId> trueBlockId = trueId;
+        if (!lowerStatement(statement->trueStatement().get(), function, trueBlockId))
+            return false;
+
+        function.addBlock(BasicBlock{ falseId, "if.false", nullptr });
+
+        std::optional<BlockId> falseBlockId = falseId;
+        if (!lowerStatement(statement->falseStatement().value().get(), function, falseBlockId))
+            return false;
+
+        auto* trueBlock = TryGetCurrentBlock(function, trueBlockId);
+        auto* falseBlock = TryGetCurrentBlock(function, falseBlockId);
+        const auto trueFallsThrough = trueBlock != nullptr && !trueBlock->hasTerminator();
+        const auto falseFallsThrough = falseBlock != nullptr && !falseBlock->hasTerminator();
+        if (!trueFallsThrough && !falseFallsThrough)
+        {
+            currentBlockId.reset();
+            return true;
+        }
+
+        const auto continuationId = m_nextBlockId++;
+        function.addBlock(BasicBlock{ continuationId, "if.continuation", nullptr });
+
+        if (trueFallsThrough)
+        {
+            trueBlock->setTerminator(std::make_unique<JumpTerminator>(continuationId));
+        }
+
+        if (falseFallsThrough)
+        {
+            falseBlock->setTerminator(std::make_unique<JumpTerminator>(continuationId));
+        }
+
+        currentBlockId = continuationId;
         return true;
     }
 
@@ -229,7 +322,10 @@ namespace Caracal
     bool IRLowerer::lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept
     {
         if (!statement->expression().has_value())
+        {
+            block.setTerminator(std::make_unique<ReturnTerminator>());
             return true;
+        }
 
         const auto loweredValue = lowerValueExpression(statement->expression().value().get(), block);
         if (!loweredValue.has_value())

@@ -1,5 +1,5 @@
 define func() void
-block entry:
+block entry(0):
     %0 = const true : bool
     %1 = const false : bool
     return

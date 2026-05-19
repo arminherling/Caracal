@@ -11,8 +11,6 @@
 #include <Caracal/Text/StringBuilder.h>
 
 #include <string>
-#include <string_view>
-#include <unordered_map>
 
 namespace Caracal
 {
@@ -32,13 +30,12 @@ namespace Caracal
         void prettyPrintInstruction(const Function& function, const Instruction& instruction);
         void prettyPrintTerminator(const Function& function, const Terminator& terminator);
 
-        [[nodiscard]] std::string formatType(Type type) const;
-        [[nodiscard]] std::string formatValue(ValueRef value) const;
-        [[nodiscard]] std::string_view blockLabel(const Function& function, BlockId blockId) const;
+        void appendType(Type type);
+        void appendValue(ValueRef value);
+        void appendBlockLabel(const Function& function, BlockId blockId);
 
     private:
         const Module& m_module;
         StringBuilder m_builder;
-        std::unordered_map<BlockId, std::string_view> m_blockLabels;
     };
 }

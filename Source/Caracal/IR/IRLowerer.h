@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Caracal/API.h>
 #include <Caracal/IR/BasicBlock.h>
@@ -9,10 +9,12 @@
 #include <Caracal/Syntax/BlockNode.h>
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
+#include <Caracal/Syntax/IfStatement.h>
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Statement.h>
 
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -29,8 +31,10 @@ namespace Caracal
 
     private:
         [[nodiscard]] bool lowerStatement(const Statement* statement, Module& module) noexcept;
+        [[nodiscard]] bool lowerStatement(const Statement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept;
-        [[nodiscard]] bool lowerBlock(const BlockNode* block, Function& function) noexcept;
+        [[nodiscard]] bool lowerBlock(const BlockNode* block, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
+        [[nodiscard]] bool lowerIfStatement(const IfStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         void lowerParameters(const FunctionDefinitionStatement* statement, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;

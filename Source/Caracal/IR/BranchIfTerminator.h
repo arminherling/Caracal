@@ -1,14 +1,14 @@
-#pragma once
+﻿#pragma once
 
 #include <Caracal/IR/Terminator.h>
 #include <Caracal/IR/ValueRef.h>
 
 namespace Caracal
 {
-    class BranchTerminator final : public Terminator
+    class BranchIfTerminator final : public Terminator
     {
     public:
-        BranchTerminator(ValueRef condition, BlockId trueBlockId, BlockId falseBlockId) noexcept;
+        BranchIfTerminator(ValueRef condition, BlockId trueBlockId, BlockId falseBlockId) noexcept;
 
         [[nodiscard]] ValueRef condition() const noexcept { return m_condition; }
         [[nodiscard]] BlockId trueBlockId() const noexcept { return m_trueBlockId; }

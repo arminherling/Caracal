@@ -1,8 +1,8 @@
-#include <Caracal/IR/BranchTerminator.h>
+﻿#include <Caracal/IR/BranchIfTerminator.h>
 
 namespace Caracal
 {
-    BranchTerminator::BranchTerminator(ValueRef condition, BlockId trueBlockId, BlockId falseBlockId) noexcept
+    BranchIfTerminator::BranchIfTerminator(ValueRef condition, BlockId trueBlockId, BlockId falseBlockId) noexcept
         : Terminator{ TerminatorKind::Branch }
         , m_condition{ condition }
         , m_trueBlockId{ trueBlockId }

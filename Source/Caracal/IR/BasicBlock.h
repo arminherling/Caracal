@@ -1,8 +1,10 @@
 ﻿#pragma once
 
+#include <Caracal/Defines.h>
 #include <Caracal/IR/Instruction.h>
 #include <Caracal/IR/Terminator.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,6 +15,7 @@ namespace Caracal
     public:
         BasicBlock() = default;
         BasicBlock(BlockId id, std::string label, TerminatorUPtr terminator);
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(BasicBlock)
 
         [[nodiscard]] BlockId id() const noexcept { return m_id; }
         [[nodiscard]] const std::string& label() const noexcept { return m_label; }
@@ -29,4 +32,6 @@ namespace Caracal
         std::vector<InstructionUPtr> m_instructions;
         TerminatorUPtr m_terminator;
     };
+
+    using BasicBlockUPtr = std::unique_ptr<BasicBlock>;
 }
