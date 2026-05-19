@@ -1,0 +1,4 @@
+define func() void
+block entry:
+    %0 = const true : bool
+    return

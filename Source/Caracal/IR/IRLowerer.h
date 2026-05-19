@@ -13,6 +13,9 @@
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Statement.h>
 
+#include <string>
+#include <unordered_map>
+
 namespace Caracal
 {
     class CARACAL_API IRLowerer
@@ -28,11 +31,14 @@ namespace Caracal
         [[nodiscard]] bool lowerStatement(const Statement* statement, Module& module) noexcept;
         [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept;
         [[nodiscard]] bool lowerBlock(const BlockNode* block, Function& function) noexcept;
+        [[nodiscard]] bool lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
+        [[nodiscard]] bool lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerValueExpression(const Expression* expression, BasicBlock& block) noexcept;
 
     private:
         SemanticContext& m_semanticModule;
+        std::unordered_map<std::string, ValueRef> m_localValues;
         TemporaryId m_nextTemporaryId{ 0 };
         BlockId m_nextBlockId{ 0 };
     };

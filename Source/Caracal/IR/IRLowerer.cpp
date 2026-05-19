@@ -4,16 +4,20 @@
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
+#include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Semantic/FunctionDefinition.h>
 #include <Caracal/Syntax/BlockNode.h>
 #include <Caracal/Syntax/BoolLiteral.h>
+#include <Caracal/Syntax/ConstantDeclaration.h>
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
+#include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/NodeKind.h>
 #include <Caracal/Syntax/NumberLiteral.h>
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Statement.h>
+#include <Caracal/Syntax/VariableDeclaration.h>
 
 #include <optional>
 #include <variant>
@@ -69,6 +73,8 @@ namespace Caracal
 
     bool IRLowerer::lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept
     {
+        m_localValues.clear();
+
         const auto functionType = m_semanticModule.tryGetFunctionTypeByName(statement->name());
         if (functionType == Type::Undefined())
             return false;
@@ -113,13 +119,88 @@ namespace Caracal
 
         for (const auto& statement : block->statements())
         {
-            if (statement->kind() != NodeKind::ReturnStatement)
-                return false;
-
-            if (!lowerReturnStatement(static_cast<const ReturnStatement*>(statement.get()), entryBlock))
-                return false;
+            switch (statement->kind())
+            {
+                case NodeKind::VariableDeclaration:
+                {
+                    const auto* variableDeclaration = static_cast<const VariableDeclaration*>(statement.get());
+                    if (!lowerLocalDeclaration(
+                        variableDeclaration->leftExpression().get(),
+                        variableDeclaration->rightExpression().get(),
+                        entryBlock))
+                    {
+                        return false;
+                    }
+                    break;
+                }
+                case NodeKind::ConstantDeclaration:
+                {
+                    const auto* constantDeclaration = static_cast<const ConstantDeclaration*>(statement.get());
+                    if (!lowerLocalDeclaration(
+                        constantDeclaration->leftExpression().get(),
+                        constantDeclaration->rightExpression().get(),
+                        entryBlock))
+                    {
+                        return false;
+                    }
+                    break;
+                }
+                case NodeKind::AssignmentStatement:
+                {
+                    const auto* assignmentStatement = static_cast<const AssignmentStatement*>(statement.get());
+                    if (!lowerAssignmentStatement(
+                        assignmentStatement->leftExpression().get(),
+                        assignmentStatement->rightExpression().get(),
+                        entryBlock))
+                    {
+                        return false;
+                    }
+                    break;
+                }
+                case NodeKind::ReturnStatement:
+                {
+                    const auto* returnStatement = static_cast<const ReturnStatement*>(statement.get());
+                    if (!lowerReturnStatement(returnStatement, entryBlock))
+                        return false;
+                    break;
+                }
+                default:
+                    return false;
+            }
         }
 
+        return true;
+    }
+
+    bool IRLowerer::lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept
+    {
+        if (leftExpression->kind() != NodeKind::NameExpression)
+            return false;
+
+        const auto loweredValue = lowerValueExpression(rightExpression, block);
+        if (!loweredValue.has_value())
+            return false;
+
+        const auto* nameExpression = static_cast<const NameExpression*>(leftExpression);
+        m_localValues[nameExpression->name()] = loweredValue.value();
+
+        return true;
+    }
+
+    bool IRLowerer::lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept
+    {
+        if (leftExpression->kind() != NodeKind::NameExpression)
+            return false;
+
+        const auto* nameExpression = static_cast<const NameExpression*>(leftExpression);
+        if (!m_localValues.contains(nameExpression->name()))
+            return false;
+
+        const auto loweredValue = lowerValueExpression(rightExpression, block);
+        if (!loweredValue.has_value())
+            return false;
+
+        m_localValues[nameExpression->name()] = loweredValue.value();
         return true;
     }
 
@@ -163,6 +244,15 @@ namespace Caracal
                     ConstantValue::FromBool(literal->value()),
                     literal->type()));
                 return ValueRef{ temporaryId };
+            }
+            case NodeKind::NameExpression:
+            {
+                const auto* nameExpression = static_cast<const NameExpression*>(expression);
+                const auto result = m_localValues.find(nameExpression->name());
+                if (result == m_localValues.end())
+                    return std::nullopt;
+
+                return result->second;
             }
             default:
                 return std::nullopt;
