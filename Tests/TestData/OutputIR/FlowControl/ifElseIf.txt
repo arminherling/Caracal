@@ -1,0 +1,18 @@
+define func() i32
+block entry(0):
+    %0 = const true : bool
+    branch if %0, if.true(1), if.false(2)
+block if.true(1):
+    %1 = const 1 : i32
+    return %1
+block if.false(2):
+    %2 = const false : bool
+    branch if %2, if.true(3), if.continuation(4)
+block if.true(3):
+    %3 = const 2 : i32
+    return %3
+block if.continuation(4):
+    jump if.continuation(5)
+block if.continuation(5):
+    %4 = const 3 : i32
+    return %4
