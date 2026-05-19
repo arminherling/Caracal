@@ -1,15 +1,18 @@
 ﻿#include <Caracal/Debug/IRPrinter.h>
+#include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/BranchTerminator.h>
 #include <Caracal/IR/ConstantInstruction.h>
+#include <Caracal/IR/DivideInstruction.h>
 #include <Caracal/IR/ExternFunction.h>
 #include <Caracal/IR/Function.h>
+#include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
+#include <Caracal/IR/SubtractInstruction.h>
 #include <Caracal/IR/JumpTerminator.h>
 
 #include <charconv>
-#include <sstream>
 #include <string>
 #include <type_traits>
 #include <variant>
@@ -40,11 +43,18 @@ namespace Caracal
                 if constexpr (std::is_same_v<Payload, float>)
                 {
                     char buffer[32]{};
-                    const auto [end, error] = std::to_chars(buffer, buffer + sizeof(buffer), payload);
+                    const auto [end, error] = std::to_chars(buffer, buffer + sizeof(buffer), payload, std::chars_format::fixed, 6);
                     if (error != std::errc{})
                         return "<invalid-f32>";
 
-                    return std::string(buffer, end);
+                    auto text = std::string(buffer, end);
+                    const auto dotIndex = text.find('.');
+                    if (dotIndex == std::string::npos)
+                    {
+                        text += ".0";
+                    }
+
+                    return text;
                 }
 
                 return "<unknown-constant>";
@@ -86,38 +96,46 @@ namespace Caracal
 
     void IRPrinter::prettyPrintExternFunction(const ExternFunction& function)
     {
-        std::ostringstream signature;
-        signature << "extern " << function.name() << "(";
+        m_builder
+            .append("extern ")
+            .append(function.name())
+            .append("(");
 
         const auto& parameterTypes = function.parameterTypes();
         for (size_t index = 0; index < parameterTypes.size(); ++index)
         {
             if (index > 0)
-                signature << ", ";
+                m_builder.append(", ");
 
-            signature << formatType(parameterTypes[index]);
+            m_builder.append(formatType(parameterTypes[index]));
         }
 
-        signature << ") " << formatType(function.returnType());
-        m_builder.appendLine(signature.str());
+        m_builder
+            .append(") ")
+            .append(formatType(function.returnType()))
+            .appendLine("");
     }
 
     void IRPrinter::prettyPrintFunction(const Function& function)
     {
-        std::ostringstream signature;
-        signature << "define " << function.name() << "(";
+        m_builder
+            .append("define ")
+            .append(function.name())
+            .append("(");
 
         const auto& parameterTypes = function.parameterTypes();
         for (size_t index = 0; index < parameterTypes.size(); ++index)
         {
             if (index > 0)
-                signature << ", ";
+                m_builder.append(", ");
 
-            signature << formatType(parameterTypes[index]);
+            m_builder.append(formatType(parameterTypes[index]));
         }
 
-        signature << ") " << formatType(function.returnType());
-        m_builder.appendLine(signature.str());
+        m_builder
+            .append(") ")
+            .append(formatType(function.returnType()))
+            .appendLine("");
 
         m_blockLabels.clear();
         for (const auto& block : function.blocks())
@@ -129,7 +147,10 @@ namespace Caracal
 
     void IRPrinter::prettyPrintBlock(const Function& function, const BasicBlock& block)
     {
-        m_builder.append("block ").append(block.label()).appendLine(":");
+        m_builder
+            .append("block ")
+            .append(block.label())
+            .appendLine(":");
         m_builder.pushIndentation();
 
         for (const auto& instruction : block.instructions())
@@ -148,31 +169,97 @@ namespace Caracal
             case InstructionKind::Constant:
             {
                 const auto& constant = static_cast<const ConstantInstruction&>(instruction);
-                std::ostringstream line;
-                line << formatValue(ValueRef{ constant.resultId() })
-                    << " = const " << FormatConstantValue(constant.value())
-                    << " : " << formatType(constant.type());
-                m_builder.appendIndentedLine(line.str());
+                m_builder
+                    .appendIndented(formatValue(ValueRef{ constant.resultId() }))
+                    .append(" = const ")
+                    .append(FormatConstantValue(constant.value()))
+                    .append(" : ")
+                    .append(formatType(constant.type()))
+                    .appendLine("");
+                break;
+            }
+            case InstructionKind::Add:
+            {
+                const auto& add = static_cast<const AddInstruction&>(instruction);
+                m_builder
+                    .appendIndented(formatValue(ValueRef{ add.resultId() }))
+                    .append(" = add ")
+                    .append(formatValue(add.leftValue()))
+                    .append(", ")
+                    .append(formatValue(add.rightValue()))
+                    .append(" : ")
+                    .append(formatType(add.type()))
+                    .appendLine("");
+                break;
+            }
+            case InstructionKind::Subtract:
+            {
+                const auto& subtract = static_cast<const SubtractInstruction&>(instruction);
+                m_builder
+                    .appendIndented(formatValue(ValueRef{ subtract.resultId() }))
+                    .append(" = sub ")
+                    .append(formatValue(subtract.leftValue()))
+                    .append(", ")
+                    .append(formatValue(subtract.rightValue()))
+                    .append(" : ")
+                    .append(formatType(subtract.type()))
+                    .appendLine("");
+                break;
+            }
+            case InstructionKind::Multiply:
+            {
+                const auto& multiply = static_cast<const MultiplyInstruction&>(instruction);
+                m_builder
+                    .appendIndented(formatValue(ValueRef{ multiply.resultId() }))
+                    .append(" = mul ")
+                    .append(formatValue(multiply.leftValue()))
+                    .append(", ")
+                    .append(formatValue(multiply.rightValue()))
+                    .append(" : ")
+                    .append(formatType(multiply.type()))
+                    .appendLine("");
+                break;
+            }
+            case InstructionKind::Divide:
+            {
+                const auto& divide = static_cast<const DivideInstruction&>(instruction);
+                m_builder
+                    .appendIndented(formatValue(ValueRef{ divide.resultId() }))
+                    .append(" = div ")
+                    .append(formatValue(divide.leftValue()))
+                    .append(", ")
+                    .append(formatValue(divide.rightValue()))
+                    .append(" : ")
+                    .append(formatType(divide.type()))
+                    .appendLine("");
                 break;
             }
             case InstructionKind::Phi:
             {
                 const auto& phi = static_cast<const PhiInstruction&>(instruction);
-                std::ostringstream line;
-                line << formatValue(ValueRef{ phi.resultId() }) << " = phi ";
+                m_builder
+                    .appendIndented(formatValue(ValueRef{ phi.resultId() }))
+                    .append(" = phi ");
 
                 const auto& phiInputs = phi.inputs();
                 for (size_t index = 0; index < phiInputs.size(); ++index)
                 {
                     if (index > 0)
-                        line << ", ";
+                        m_builder.append(", ");
 
                     const auto& input = phiInputs[index];
-                    line << "[" << blockLabel(function, input.blockId()) << ": " << formatValue(input.value()) << "]";
+                    m_builder
+                        .append("[")
+                        .append(blockLabel(function, input.blockId()))
+                        .append(": ")
+                        .append(formatValue(input.value()))
+                        .append("]");
                 }
 
-                line << " : " << formatType(phi.type());
-                m_builder.appendIndentedLine(line.str());
+                m_builder
+                    .append(" : ")
+                    .append(formatType(phi.type()))
+                    .appendLine("");
                 break;
             }
         }
@@ -185,19 +272,23 @@ namespace Caracal
             case TerminatorKind::Jump:
             {
                 const auto& jump = static_cast<const JumpTerminator&>(terminator);
-                std::ostringstream line;
-                line << "jump " << blockLabel(function, jump.targetBlockId());
-                m_builder.appendIndentedLine(line.str());
+                m_builder
+                    .appendIndented("jump ")
+                    .append(blockLabel(function, jump.targetBlockId()))
+                    .appendLine("");
                 break;
             }
             case TerminatorKind::Branch:
             {
                 const auto& branch = static_cast<const BranchTerminator&>(terminator);
-                std::ostringstream line;
-                line << "branch " << formatValue(branch.condition())
-                    << ", " << blockLabel(function, branch.trueBlockId())
-                    << ", " << blockLabel(function, branch.falseBlockId());
-                m_builder.appendIndentedLine(line.str());
+                m_builder
+                    .appendIndented("branch ")
+                    .append(formatValue(branch.condition()))
+                    .append(", ")
+                    .append(blockLabel(function, branch.trueBlockId()))
+                    .append(", ")
+                    .append(blockLabel(function, branch.falseBlockId()))
+                    .appendLine("");
                 break;
             }
             case TerminatorKind::Return:
@@ -208,9 +299,10 @@ namespace Caracal
             case TerminatorKind::ReturnValue:
             {
                 const auto& ret = static_cast<const ReturnValueTerminator&>(terminator);
-                std::ostringstream line;
-                line << "return " << formatValue(ret.value());
-                m_builder.appendIndentedLine(line.str());
+                m_builder
+                    .appendIndented("return ")
+                    .append(formatValue(ret.value()))
+                    .appendLine("");
                 break;
             }
         }

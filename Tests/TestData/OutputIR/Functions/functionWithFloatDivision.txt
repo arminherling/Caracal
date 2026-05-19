@@ -1,0 +1,6 @@
+define func() f32
+block entry:
+    %0 = const 6.000000 : f32
+    %1 = const 2.000000 : f32
+    %2 = div %0, %1 : f32
+    return %2

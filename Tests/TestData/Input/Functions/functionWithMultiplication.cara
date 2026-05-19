@@ -1,0 +1,5 @@
+def func() i32
+{
+    value := 3;
+    return value * 4;
+}

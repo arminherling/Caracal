@@ -1,0 +1,27 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NumberLiteral: 8
+                }
+                Operation: Division
+                Right: {
+                    NumberLiteral: 2
+                }
+            }
+        }
+    }
+}

@@ -1,11 +1,16 @@
 ﻿#include <Caracal/IR/IRLowerer.h>
 
+#include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/ConstantValue.h>
 #include <Caracal/IR/ConstantInstruction.h>
+#include <Caracal/IR/DivideInstruction.h>
+#include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
+#include <Caracal/IR/SubtractInstruction.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Semantic/FunctionDefinition.h>
+#include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BlockNode.h>
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
@@ -100,6 +105,13 @@ namespace Caracal
         }
 
         auto function = Function{ statement->name(), parameterTypes, returnType };
+
+        const auto& parameterNodes = statement->parametersNode()->parameters();
+        for (size_t index = 0; index < parameterNodes.size(); ++index)
+        {
+            m_localValues.emplace(parameterNodes[index]->name(), ValueRef{ m_nextTemporaryId++ });
+        }
+
         auto entryBlock = BasicBlock{ m_nextBlockId++, "entry", std::make_unique<ReturnTerminator>() };
         function.addBlock(std::move(entryBlock));
 
@@ -253,6 +265,38 @@ namespace Caracal
                     return std::nullopt;
 
                 return result->second;
+            }
+            case NodeKind::BinaryExpression:
+            {
+                const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+                const auto leftValue = lowerValueExpression(binaryExpression->leftExpression().get(), block);
+                if (!leftValue.has_value())
+                    return std::nullopt;
+
+                const auto rightValue = lowerValueExpression(binaryExpression->rightExpression().get(), block);
+                if (!rightValue.has_value())
+                    return std::nullopt;
+
+                const auto temporaryId = m_nextTemporaryId++;
+                switch (binaryExpression->binaryOperator())
+                {
+                    case BinaryOperatorKind::Addition:
+                        block.addInstruction(std::make_unique<AddInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::Subtraction:
+                        block.addInstruction(std::make_unique<SubtractInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::Multiplication:
+                        block.addInstruction(std::make_unique<MultiplyInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::Division:
+                        block.addInstruction(std::make_unique<DivideInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    default:
+                        return std::nullopt;
+                }
+
+                return ValueRef{ temporaryId };
             }
             default:
                 return std::nullopt;

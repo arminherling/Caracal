@@ -1,0 +1,35 @@
+FunctionDefinitionStatement: {
+    Type: () -> f32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: f32
+            Lexeme: f32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: f32
+            BinaryExpression: {
+                Type: f32
+                Left: {
+                    NumberLiteral: 6.0
+                    TypeNameNode: {
+                        Type: f32
+                        Lexeme: f32
+                    }
+                }
+                Operation: Division
+                Right: {
+                    NumberLiteral: 2.0
+                    TypeNameNode: {
+                        Type: f32
+                        Lexeme: f32
+                    }
+                }
+            }
+        }
+    }
+}

@@ -14,6 +14,10 @@ namespace Caracal
     enum class InstructionKind
     {
         Constant,
+        Add,
+        Subtract,
+        Multiply,
+        Divide,
         Phi,
     };
 
