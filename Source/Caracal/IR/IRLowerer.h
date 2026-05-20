@@ -18,6 +18,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace Caracal
 {
@@ -37,6 +38,8 @@ namespace Caracal
         [[nodiscard]] bool lowerBlock(const BlockNode* block, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerIfStatement(const IfStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerWhileStatement(const WhileStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
+        [[nodiscard]] bool lowerBreakStatement(BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept;
+        [[nodiscard]] bool lowerSkipStatement(BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept;
         void lowerParameters(const FunctionDefinitionStatement* statement, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
@@ -44,8 +47,15 @@ namespace Caracal
         [[nodiscard]] std::optional<ValueRef> lowerValueExpression(const Expression* expression, BasicBlock& block) noexcept;
 
     private:
+        struct LoopContext final
+        {
+            BlockId conditionBlockId;
+            BlockId continuationBlockId;
+        };
+
         SemanticContext& m_semanticModule;
         std::unordered_map<std::string, ValueRef> m_localValues;
+        std::vector<LoopContext> m_loopContexts;
         TemporaryId m_nextTemporaryId{ 0 };
         BlockId m_nextBlockId{ 0 };
     };

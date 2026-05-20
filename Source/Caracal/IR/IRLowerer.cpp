@@ -71,6 +71,7 @@ namespace Caracal
     {
         m_nextTemporaryId = 0;
         m_nextBlockId = 0;
+        m_loopContexts.clear();
 
         for (const auto& statement : parseTree.statements())
         {
@@ -195,6 +196,14 @@ namespace Caracal
                 const auto* whileStatement = static_cast<const WhileStatement*>(statement);
                 return lowerWhileStatement(whileStatement, function, currentBlockId);
             }
+            case NodeKind::BreakStatement:
+            {
+                return lowerBreakStatement(*currentBlock, currentBlockId);
+            }
+            case NodeKind::SkipStatement:
+            {
+                return lowerSkipStatement(*currentBlock, currentBlockId);
+            }
             case NodeKind::ReturnStatement:
             {
                 const auto* returnStatement = static_cast<const ReturnStatement*>(statement);
@@ -318,8 +327,11 @@ namespace Caracal
 
         function.addBlock(BasicBlock{ loopId, "while.body", nullptr });
 
+        m_loopContexts.push_back(LoopContext{ conditionId, continuationId });
         std::optional<BlockId> loopBlockId = loopId;
-        if (!lowerStatement(statement->trueStatement().get(), function, loopBlockId))
+        const auto loweredBody = lowerStatement(statement->trueStatement().get(), function, loopBlockId);
+        m_loopContexts.pop_back();
+        if (!loweredBody)
             return false;
 
         auto* loopBlock = TryGetCurrentBlock(function, loopBlockId);
@@ -330,6 +342,28 @@ namespace Caracal
 
         function.addBlock(BasicBlock{ continuationId, "while.continuation", nullptr });
         currentBlockId = continuationId;
+        return true;
+    }
+
+    bool IRLowerer::lowerBreakStatement(BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept
+    {
+        if (m_loopContexts.empty())
+            return false;
+
+        const auto& loopContext = m_loopContexts.back();
+        block.setTerminator(std::make_unique<JumpTerminator>(loopContext.continuationBlockId));
+        currentBlockId.reset();
+        return true;
+    }
+
+    bool IRLowerer::lowerSkipStatement(BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept
+    {
+        if (m_loopContexts.empty())
+            return false;
+
+        const auto& loopContext = m_loopContexts.back();
+        block.setTerminator(std::make_unique<JumpTerminator>(loopContext.conditionBlockId));
+        currentBlockId.reset();
         return true;
     }
 
