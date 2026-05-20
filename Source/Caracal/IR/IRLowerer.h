@@ -13,6 +13,7 @@
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Statement.h>
+#include <Caracal/Syntax/WhileStatement.h>
 
 #include <optional>
 #include <string>
@@ -35,6 +36,7 @@ namespace Caracal
         [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept;
         [[nodiscard]] bool lowerBlock(const BlockNode* block, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerIfStatement(const IfStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
+        [[nodiscard]] bool lowerWhileStatement(const WhileStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         void lowerParameters(const FunctionDefinitionStatement* statement, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;

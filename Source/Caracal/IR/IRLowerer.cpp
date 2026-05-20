@@ -27,6 +27,7 @@
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Statement.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
+#include <Caracal/Syntax/WhileStatement.h>
 
 #include <optional>
 #include <variant>
@@ -189,6 +190,11 @@ namespace Caracal
                 const auto* ifStatement = static_cast<const IfStatement*>(statement);
                 return lowerIfStatement(ifStatement, function, currentBlockId);
             }
+            case NodeKind::WhileStatement:
+            {
+                const auto* whileStatement = static_cast<const WhileStatement*>(statement);
+                return lowerWhileStatement(whileStatement, function, currentBlockId);
+            }
             case NodeKind::ReturnStatement:
             {
                 const auto* returnStatement = static_cast<const ReturnStatement*>(statement);
@@ -283,6 +289,46 @@ namespace Caracal
             falseBlock->setTerminator(std::make_unique<JumpTerminator>(continuationId));
         }
 
+        currentBlockId = continuationId;
+        return true;
+    }
+
+    bool IRLowerer::lowerWhileStatement(const WhileStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept
+    {
+        auto* currentBlock = TryGetCurrentBlock(function, currentBlockId);
+        if (currentBlock == nullptr)
+            return false;
+
+        const auto conditionId = m_nextBlockId++;
+        const auto loopId = m_nextBlockId++;
+        const auto continuationId = m_nextBlockId++;
+
+        currentBlock->setTerminator(std::make_unique<JumpTerminator>(conditionId));
+
+        function.addBlock(BasicBlock{ conditionId, "while.condition", nullptr });
+        auto* conditionBlock = function.tryGetBlock(conditionId);
+        if (conditionBlock == nullptr)
+            return false;
+
+        const auto conditionValue = lowerValueExpression(statement->condition().get(), *conditionBlock);
+        if (!conditionValue.has_value())
+            return false;
+
+        conditionBlock->setTerminator(std::make_unique<BranchIfTerminator>(conditionValue.value(), loopId, continuationId));
+
+        function.addBlock(BasicBlock{ loopId, "while.body", nullptr });
+
+        std::optional<BlockId> loopBlockId = loopId;
+        if (!lowerStatement(statement->trueStatement().get(), function, loopBlockId))
+            return false;
+
+        auto* loopBlock = TryGetCurrentBlock(function, loopBlockId);
+        if (loopBlock != nullptr && !loopBlock->hasTerminator())
+        {
+            loopBlock->setTerminator(std::make_unique<JumpTerminator>(conditionId));
+        }
+
+        function.addBlock(BasicBlock{ continuationId, "while.continuation", nullptr });
         currentBlockId = continuationId;
         return true;
     }

@@ -1,0 +1,10 @@
+define func() void
+block entry(0):
+    jump while.condition(1)
+block while.condition(1):
+    %0 = const true : bool
+    branch if %0, while.body(2), while.continuation(3)
+block while.body(2):
+    return
+block while.continuation(3):
+    return
