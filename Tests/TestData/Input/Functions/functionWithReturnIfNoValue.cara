@@ -1,4 +1,5 @@
 ﻿def func()
 {
     return if true;
+    return;
 }
