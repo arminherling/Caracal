@@ -1,0 +1,53 @@
+FunctionDefinitionStatement: {
+    Type: () -> bool
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: bool
+            Left: {
+                NameExpression: {
+                    Type: bool
+                    Name: value
+                }
+            }
+            Right: {
+                BoolLiteral: true
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BoolLiteral: true
+            }
+            True: {
+                BlockNode(1): {
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: bool
+                                Name: value
+                            }
+                        }
+                        Right: {
+                            BoolLiteral: false
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: bool
+            NameExpression: {
+                Type: bool
+                Name: value
+            }
+        }
+    }
+}

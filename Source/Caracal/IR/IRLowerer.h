@@ -24,6 +24,27 @@ namespace Caracal
 {
     class CARACAL_API IRLowerer
     {
+    private:
+        struct LocalState final
+        {
+            ValueRef value;
+            Type type;
+        };
+        using LocalStateMap = std::unordered_map<std::string, LocalState>;
+
+        struct IncomingLocalValues final
+        {
+            BlockId predecessorBlockId;
+            LocalStateMap values;
+        };
+
+        struct LoopContext final
+        {
+            BlockId conditionBlockId;
+            BlockId continuationBlockId;
+            std::vector<IncomingLocalValues> continuationInputs;
+        };
+
     public:
         explicit IRLowerer(SemanticContext& semanticModule);
 
@@ -45,16 +66,12 @@ namespace Caracal
         [[nodiscard]] bool lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerValueExpression(const Expression* expression, BasicBlock& block) noexcept;
-
-    private:
-        struct LoopContext final
-        {
-            BlockId conditionBlockId;
-            BlockId continuationBlockId;
-        };
+        
+        void restoreLocalValues(const LocalStateMap& values) noexcept;
+        void mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept;
 
         SemanticContext& m_semanticModule;
-        std::unordered_map<std::string, ValueRef> m_localValues;
+        LocalStateMap m_localValues;
         std::vector<LoopContext> m_loopContexts;
         TemporaryId m_nextTemporaryId{ 0 };
         BlockId m_nextBlockId{ 0 };

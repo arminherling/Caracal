@@ -1,0 +1,11 @@
+def func() bool
+{
+    value := true;
+
+    if true
+    {
+        value = false;
+    }
+
+    return value;
+}

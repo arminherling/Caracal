@@ -8,6 +8,7 @@
 #include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
+#include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
 #include <Caracal/IR/SubtractInstruction.h>
@@ -29,6 +30,7 @@
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/WhileStatement.h>
 
+#include <algorithm>
 #include <optional>
 #include <variant>
 
@@ -138,11 +140,13 @@ namespace Caracal
         for (size_t index = 0; index < parameterNodes.size(); ++index)
         {
             const auto parameterId = m_nextTemporaryId++;
+            const auto parameterName = parameterNodes[index]->name();
+            const auto parameterType = parameterNodes[index]->type();
             block.addInstruction(std::make_unique<ParameterInstruction>(
                 parameterId,
                 static_cast<i32>(index),
-                parameterNodes[index]->type()));
-            m_localValues.emplace(parameterNodes[index]->name(), ValueRef{ parameterId });
+                parameterType));
+            m_localValues.emplace(parameterName, LocalState{ ValueRef{ parameterId }, parameterType });
         }
     }
 
@@ -233,6 +237,9 @@ namespace Caracal
         if (currentBlock == nullptr)
             return false;
 
+        // copy the locals before branching so each path can be lowered from the same state
+        const auto preBranchValues = m_localValues;
+
         const auto conditionValue = lowerValueExpression(statement->condition().get(), *currentBlock);
         if (!conditionValue.has_value())
             return false;
@@ -245,18 +252,28 @@ namespace Caracal
             const auto continuationId = m_nextBlockId++;
             currentBlock->setTerminator(std::make_unique<BranchIfTerminator>(conditionValue.value(), trueId, continuationId));
 
+            restoreLocalValues(preBranchValues);
             std::optional<BlockId> trueBlockId = trueId;
             if (!lowerStatement(statement->trueStatement().get(), function, trueBlockId))
                 return false;
+            const auto trueExitValues = m_localValues;
 
             function.addBlock(BasicBlock{ continuationId, "if.continuation", nullptr });
+            auto* continuationBlock = function.tryGetBlock(continuationId);
+            if (continuationBlock == nullptr)
+                return false;
 
             auto* trueBlock = TryGetCurrentBlock(function, trueBlockId);
+            std::vector<IncomingLocalValues> continuationInputs;
+            continuationInputs.push_back(IncomingLocalValues{ currentBlock->id(), preBranchValues });
             const auto needsContinuationJump = trueBlock != nullptr && !trueBlock->hasTerminator();
             if (needsContinuationJump)
             {
                 trueBlock->setTerminator(std::make_unique<JumpTerminator>(continuationId));
+                continuationInputs.push_back(IncomingLocalValues{ trueBlock->id(), trueExitValues });
             }
+
+            mergeLocalValues(*continuationBlock, continuationInputs);
 
             currentBlockId = continuationId;
             return true;
@@ -265,15 +282,20 @@ namespace Caracal
         const auto falseId = m_nextBlockId++;
         currentBlock->setTerminator(std::make_unique<BranchIfTerminator>(conditionValue.value(), trueId, falseId));
 
+        // restpre values so later phi decisions are comparable
+        restoreLocalValues(preBranchValues);
         std::optional<BlockId> trueBlockId = trueId;
         if (!lowerStatement(statement->trueStatement().get(), function, trueBlockId))
             return false;
+        const auto trueExitValues = m_localValues;
 
         function.addBlock(BasicBlock{ falseId, "if.false", nullptr });
 
+        restoreLocalValues(preBranchValues);
         std::optional<BlockId> falseBlockId = falseId;
         if (!lowerStatement(statement->falseStatement().value().get(), function, falseBlockId))
             return false;
+        const auto falseExitValues = m_localValues;
 
         auto* trueBlock = TryGetCurrentBlock(function, trueBlockId);
         auto* falseBlock = TryGetCurrentBlock(function, falseBlockId);
@@ -287,16 +309,23 @@ namespace Caracal
 
         const auto continuationId = m_nextBlockId++;
         function.addBlock(BasicBlock{ continuationId, "if.continuation", nullptr });
+        auto* continuationBlock = function.tryGetBlock(continuationId);
+        if (continuationBlock == nullptr)
+            return false;
 
+        std::vector<IncomingLocalValues> continuationInputs;
         if (trueFallsThrough)
         {
             trueBlock->setTerminator(std::make_unique<JumpTerminator>(continuationId));
+            continuationInputs.push_back(IncomingLocalValues{ trueBlock->id(), trueExitValues });
         }
-
         if (falseFallsThrough)
         {
             falseBlock->setTerminator(std::make_unique<JumpTerminator>(continuationId));
+            continuationInputs.push_back(IncomingLocalValues{ falseBlock->id(), falseExitValues });
         }
+
+        mergeLocalValues(*continuationBlock, continuationInputs);
 
         currentBlockId = continuationId;
         return true;
@@ -308,6 +337,8 @@ namespace Caracal
         if (currentBlock == nullptr)
             return false;
 
+        // copy the locals before branching so loop condition can be lowered from the same state as the body
+        const auto preLoopValues = m_localValues;
         const auto conditionId = m_nextBlockId++;
         const auto loopId = m_nextBlockId++;
         const auto continuationId = m_nextBlockId++;
@@ -327,9 +358,15 @@ namespace Caracal
 
         function.addBlock(BasicBlock{ loopId, "while.body", nullptr });
 
-        m_loopContexts.push_back(LoopContext{ conditionId, continuationId });
+        // add loop exit targets so break statements can contribute values for continuation phis
+        m_loopContexts.push_back(LoopContext{ conditionId, continuationId, {} });
+        restoreLocalValues(preLoopValues);
+
         std::optional<BlockId> loopBlockId = loopId;
         const auto loweredBody = lowerStatement(statement->trueStatement().get(), function, loopBlockId);
+        
+        // copy the values added by any breaks before dropping the loop context
+        auto continuationInputs = m_loopContexts.back().continuationInputs;
         m_loopContexts.pop_back();
         if (!loweredBody)
             return false;
@@ -341,7 +378,15 @@ namespace Caracal
         }
 
         function.addBlock(BasicBlock{ continuationId, "while.continuation", nullptr });
+        auto* continuationBlock = function.tryGetBlock(continuationId);
+        if (continuationBlock == nullptr)
+            return false;
+
+        // condition-false edge reaches the continuation with the bindings from before the loop body
+        continuationInputs.insert(continuationInputs.begin(), IncomingLocalValues{ conditionId, preLoopValues });
+        mergeLocalValues(*continuationBlock, continuationInputs);
         currentBlockId = continuationId;
+
         return true;
     }
 
@@ -350,9 +395,11 @@ namespace Caracal
         if (m_loopContexts.empty())
             return false;
 
-        const auto& loopContext = m_loopContexts.back();
+        auto& loopContext = m_loopContexts.back();
+        loopContext.continuationInputs.push_back(IncomingLocalValues{ block.id(), m_localValues });
         block.setTerminator(std::make_unique<JumpTerminator>(loopContext.continuationBlockId));
         currentBlockId.reset();
+
         return true;
     }
 
@@ -364,6 +411,7 @@ namespace Caracal
         const auto& loopContext = m_loopContexts.back();
         block.setTerminator(std::make_unique<JumpTerminator>(loopContext.conditionBlockId));
         currentBlockId.reset();
+        
         return true;
     }
 
@@ -377,7 +425,7 @@ namespace Caracal
             return false;
 
         const auto* nameExpression = static_cast<const NameExpression*>(leftExpression);
-        m_localValues[nameExpression->name()] = loweredValue.value();
+        m_localValues.insert_or_assign(nameExpression->name(), LocalState{ loweredValue.value(), nameExpression->type() });
 
         return true;
     }
@@ -395,8 +443,84 @@ namespace Caracal
         if (!loweredValue.has_value())
             return false;
 
-        m_localValues[nameExpression->name()] = loweredValue.value();
+        auto& localState = m_localValues.at(nameExpression->name());
+        localState.value = loweredValue.value();
+
         return true;
+    }
+
+    void IRLowerer::restoreLocalValues(const LocalStateMap& values) noexcept
+    {
+        m_localValues = values;
+    }
+
+    void IRLowerer::mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept
+    {
+        LocalStateMap mergedLocalValues;
+        if (incomingValues.empty())
+        {
+            m_localValues = std::move(mergedLocalValues);
+            return;
+        }
+
+        const auto& firstIncomingValues = incomingValues.front().values;
+
+        std::vector<std::string> mergeCandidateNames;
+        mergeCandidateNames.reserve(firstIncomingValues.size());
+        for (const auto& [name, localState] : firstIncomingValues)
+        {
+            if (localState.type == Type::Undefined())
+                continue;
+
+            mergeCandidateNames.push_back(name);
+        }
+
+        // sorting for deterministic phi insertion and snapshot output
+        std::sort(mergeCandidateNames.begin(), mergeCandidateNames.end());
+
+        for (const auto& name : mergeCandidateNames)
+        {
+            // only merge locals that are defined along every incoming edge
+            const auto isAvailableOnAllPaths = std::all_of(
+                incomingValues.begin(),
+                incomingValues.end(),
+                [&name](const IncomingLocalValues& incomingValue)
+                {
+                    return incomingValue.values.contains(name);
+                });
+            if (!isAvailableOnAllPaths)
+                continue;
+
+            const auto& firstState = firstIncomingValues.at(name);
+            // phi is only needed when at least one predecessor contributes a different SSA value
+            const auto requiresPhi = std::any_of(
+                incomingValues.begin() + 1,
+                incomingValues.end(),
+                [&name, &firstState](const IncomingLocalValues& incomingValue)
+                {
+                    return incomingValue.values.at(name).value.id() != firstState.value.id();
+                });
+            if (!requiresPhi)
+            {
+                mergedLocalValues.emplace(name, firstState);
+                continue;
+            }
+
+            std::vector<PhiInput> phiInputs;
+            phiInputs.reserve(incomingValues.size());
+            // phi inputs in predecessor order for the merged block
+            for (const auto& incomingValue : incomingValues)
+            {
+                phiInputs.emplace_back(incomingValue.predecessorBlockId, incomingValue.values.at(name).value);
+            }
+
+            const auto phiId = m_nextTemporaryId++;
+            block.addInstruction(std::make_unique<PhiInstruction>(phiId, std::move(phiInputs), firstState.type));
+            mergedLocalValues.emplace(name, LocalState{ ValueRef{ phiId }, firstState.type });
+        }
+
+        // replace locals with values after the merge
+        m_localValues = std::move(mergedLocalValues);
     }
 
     bool IRLowerer::lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept
@@ -450,7 +574,7 @@ namespace Caracal
                 if (result == m_localValues.end())
                     return std::nullopt;
 
-                return result->second;
+                return result->second.value;
             }
             case NodeKind::BinaryExpression:
             {

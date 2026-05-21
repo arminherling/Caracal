@@ -1,0 +1,12 @@
+def func() bool
+{
+    value := true;
+
+    while true
+    {
+        value = false;
+        break;
+    }
+
+    return value;
+}

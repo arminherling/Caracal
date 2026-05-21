@@ -1,0 +1,13 @@
+define func() bool
+block entry(0):
+    %0 = const true : bool
+    jump while.condition(1)
+block while.condition(1):
+    %1 = const true : bool
+    branch if %1, while.body(2), while.continuation(3)
+block while.body(2):
+    %2 = const false : bool
+    jump while.continuation(3)
+block while.continuation(3):
+    %3 = phi [while.condition(1): %0], [while.body(2): %2] : bool
+    return %3

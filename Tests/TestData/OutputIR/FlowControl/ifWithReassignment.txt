@@ -1,0 +1,11 @@
+define func() bool
+block entry(0):
+    %0 = const true : bool
+    %1 = const true : bool
+    branch if %1, if.true(1), if.continuation(2)
+block if.true(1):
+    %2 = const false : bool
+    jump if.continuation(2)
+block if.continuation(2):
+    %3 = phi [entry(0): %0], [if.true(1): %2] : bool
+    return %3
