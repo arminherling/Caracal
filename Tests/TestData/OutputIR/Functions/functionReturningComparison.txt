@@ -1,0 +1,6 @@
+define isEqual(%0: i32, %1: i32) bool
+block entry(0):
+    %0 = parameter 0 : i32
+    %1 = parameter 1 : i32
+    %2 = equal %0, %1 : bool
+    return %2

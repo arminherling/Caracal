@@ -11,6 +11,7 @@
 #include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
+#include <Caracal/IR/LogicalNegationInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
@@ -18,6 +19,7 @@
 #include <Caracal/IR/ReturnTerminator.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
 #include <Caracal/IR/SubtractInstruction.h>
+#include <Caracal/IR/ValueNegationInstruction.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Semantic/FunctionDefinition.h>
 #include <Caracal/Syntax/BinaryExpression.h>
@@ -33,6 +35,7 @@
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Statement.h>
+#include <Caracal/Syntax/UnaryExpression.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/WhileStatement.h>
 
@@ -472,6 +475,11 @@ namespace Caracal
 
     bool IRLowerer::lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept
     {
+        if (leftExpression->kind() == NodeKind::DiscardLiteral)
+        {
+            return lowerValueExpression(rightExpression, block).has_value();
+        }
+
         if (leftExpression->kind() != NodeKind::NameExpression)
             return false;
 
@@ -487,6 +495,11 @@ namespace Caracal
 
     bool IRLowerer::lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept
     {
+        if (leftExpression->kind() == NodeKind::DiscardLiteral)
+        {
+            return lowerValueExpression(rightExpression, block).has_value();
+        }
+
         if (leftExpression->kind() != NodeKind::NameExpression)
             return false;
 
@@ -630,6 +643,31 @@ namespace Caracal
                     return std::nullopt;
 
                 return result->second.value;
+            }
+            case NodeKind::UnaryExpression:
+            {
+                const auto* unaryExpression = static_cast<const UnaryExpression*>(expression);
+                const auto operandValue = lowerValueExpression(unaryExpression->expression().get(), block);
+                if (!operandValue.has_value())
+                    return std::nullopt;
+
+                switch (unaryExpression->unaryOperator())
+                {
+                    case UnaryOperatorKind::ValueNegation:
+                    {
+                        const auto temporaryId = m_nextTemporaryId++;
+                        block.addInstruction(std::make_unique<ValueNegationInstruction>(temporaryId, operandValue.value(), expression->type()));
+                        return ValueRef{ temporaryId };
+                    }
+                    case UnaryOperatorKind::LogicalNegation:
+                    {
+                        const auto temporaryId = m_nextTemporaryId++;
+                        block.addInstruction(std::make_unique<LogicalNegationInstruction>(temporaryId, operandValue.value(), expression->type()));
+                        return ValueRef{ temporaryId };
+                    }
+                    default:
+                        return std::nullopt;
+                }
             }
             case NodeKind::BinaryExpression:
             {

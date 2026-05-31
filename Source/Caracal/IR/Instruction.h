@@ -15,6 +15,8 @@ namespace Caracal
     {
         Parameter,
         Constant,
+        ValueNegation,
+        LogicalNegation,
         Add,
         Subtract,
         Multiply,

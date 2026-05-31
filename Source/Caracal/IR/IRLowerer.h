@@ -5,6 +5,7 @@
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/Module.h>
 #include <Caracal/IR/ValueRef.h>
+#include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Syntax/BlockNode.h>
 #include <Caracal/Syntax/Expression.h>

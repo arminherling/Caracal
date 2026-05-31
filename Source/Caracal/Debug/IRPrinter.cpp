@@ -10,6 +10,7 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
+#include <Caracal/IR/LogicalNegationInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
@@ -18,6 +19,7 @@
 #include <Caracal/IR/ReturnValueTerminator.h>
 #include <Caracal/IR/SubtractInstruction.h>
 #include <Caracal/IR/JumpTerminator.h>
+#include <Caracal/IR/ValueNegationInstruction.h>
 
 #include <algorithm>
 #include <charconv>
@@ -201,6 +203,30 @@ namespace Caracal
                     .append(FormatConstantValue(constant.value()))
                     .append(" : ");
                 appendType(constant.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::ValueNegation:
+            {
+                const auto& valueNegation = static_cast<const ValueNegationInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ valueNegation.resultId() });
+                m_builder.append(" = value_negate ");
+                appendValue(valueNegation.operandValue());
+                m_builder.append(" : ");
+                appendType(valueNegation.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::LogicalNegation:
+            {
+                const auto& logicalNegation = static_cast<const LogicalNegationInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ logicalNegation.resultId() });
+                m_builder.append(" = logical_negate ");
+                appendValue(logicalNegation.operandValue());
+                m_builder.append(" : ");
+                appendType(logicalNegation.type());
                 m_builder.appendLine("");
                 break;
             }
