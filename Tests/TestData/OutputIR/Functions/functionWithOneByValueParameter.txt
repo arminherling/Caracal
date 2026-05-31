@@ -1,5 +1,5 @@
 define square(%0: i32) i32
 block entry(0):
     %0 = parameter 0 : i32
-    %1 = mul %0, %0 : i32
+    %1 = multiply %0, %0 : i32
     return %1

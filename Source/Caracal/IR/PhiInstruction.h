@@ -17,6 +17,8 @@ namespace Caracal
         [[nodiscard]] const std::vector<PhiInput>& inputs() const noexcept { return m_inputs; }
         [[nodiscard]] Type type() const noexcept { return m_type; }
 
+        void setInputs(std::vector<PhiInput> inputs) noexcept;
+
     private:
         TemporaryId m_resultId;
         std::vector<PhiInput> m_inputs;

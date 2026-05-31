@@ -3,9 +3,15 @@
 #include <Caracal/IR/BranchIfTerminator.h>
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
+#include <Caracal/IR/EqualInstruction.h>
 #include <Caracal/IR/ExternFunction.h>
 #include <Caracal/IR/Function.h>
+#include <Caracal/IR/GreaterOrEqualInstruction.h>
+#include <Caracal/IR/GreaterThanInstruction.h>
+#include <Caracal/IR/LessOrEqualInstruction.h>
+#include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
+#include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
 #include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
@@ -231,7 +237,7 @@ namespace Caracal
                 const auto& multiply = static_cast<const MultiplyInstruction&>(instruction);
                 m_builder.appendIndented("");
                 appendValue(ValueRef{ multiply.resultId() });
-                m_builder.append(" = mul ");
+                m_builder.append(" = multiply ");
                 appendValue(multiply.leftValue());
                 m_builder.append(", ");
                 appendValue(multiply.rightValue());
@@ -245,12 +251,96 @@ namespace Caracal
                 const auto& divide = static_cast<const DivideInstruction&>(instruction);
                 m_builder.appendIndented("");
                 appendValue(ValueRef{ divide.resultId() });
-                m_builder.append(" = div ");
+                m_builder.append(" = divide ");
                 appendValue(divide.leftValue());
                 m_builder.append(", ");
                 appendValue(divide.rightValue());
                 m_builder.append(" : ");
                 appendType(divide.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::Equal:
+            {
+                const auto& equal = static_cast<const EqualInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ equal.resultId() });
+                m_builder.append(" = equal ");
+                appendValue(equal.leftValue());
+                m_builder.append(", ");
+                appendValue(equal.rightValue());
+                m_builder.append(" : ");
+                appendType(equal.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::NotEqual:
+            {
+                const auto& notEqual = static_cast<const NotEqualInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ notEqual.resultId() });
+                m_builder.append(" = not_equal ");
+                appendValue(notEqual.leftValue());
+                m_builder.append(", ");
+                appendValue(notEqual.rightValue());
+                m_builder.append(" : ");
+                appendType(notEqual.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::LessThan:
+            {
+                const auto& lessThan = static_cast<const LessThanInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ lessThan.resultId() });
+                m_builder.append(" = less_than ");
+                appendValue(lessThan.leftValue());
+                m_builder.append(", ");
+                appendValue(lessThan.rightValue());
+                m_builder.append(" : ");
+                appendType(lessThan.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::LessOrEqual:
+            {
+                const auto& lessOrEqual = static_cast<const LessOrEqualInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ lessOrEqual.resultId() });
+                m_builder.append(" = less_or_equal ");
+                appendValue(lessOrEqual.leftValue());
+                m_builder.append(", ");
+                appendValue(lessOrEqual.rightValue());
+                m_builder.append(" : ");
+                appendType(lessOrEqual.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::GreaterThan:
+            {
+                const auto& greaterThan = static_cast<const GreaterThanInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ greaterThan.resultId() });
+                m_builder.append(" = greater_than ");
+                appendValue(greaterThan.leftValue());
+                m_builder.append(", ");
+                appendValue(greaterThan.rightValue());
+                m_builder.append(" : ");
+                appendType(greaterThan.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::GreaterOrEqual:
+            {
+                const auto& greaterOrEqual = static_cast<const GreaterOrEqualInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ greaterOrEqual.resultId() });
+                m_builder.append(" = greater_or_equal ");
+                appendValue(greaterOrEqual.leftValue());
+                m_builder.append(", ");
+                appendValue(greaterOrEqual.rightValue());
+                m_builder.append(" : ");
+                appendType(greaterOrEqual.type());
                 m_builder.appendLine("");
                 break;
             }

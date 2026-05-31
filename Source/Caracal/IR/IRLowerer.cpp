@@ -4,9 +4,15 @@
 #include <Caracal/IR/ConstantValue.h>
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
+#include <Caracal/IR/EqualInstruction.h>
+#include <Caracal/IR/GreaterOrEqualInstruction.h>
+#include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
 #include <Caracal/IR/JumpTerminator.h>
+#include <Caracal/IR/LessOrEqualInstruction.h>
+#include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
+#include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
 #include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
@@ -350,6 +356,39 @@ namespace Caracal
         if (conditionBlock == nullptr)
             return false;
 
+        std::vector<std::string> headerNames;
+        headerNames.reserve(preLoopValues.size());
+        for (const auto& [name, localState] : preLoopValues)
+        {
+            if (localState.type == Type::Undefined())
+                continue;
+
+            headerNames.push_back(name);
+        }
+        std::sort(headerNames.begin(), headerNames.end());
+
+        LocalStateMap loopHeaderValues;
+        loopHeaderValues.reserve(headerNames.size());
+        std::vector<LoopHeaderPhi> loopHeaderPhis;
+        loopHeaderPhis.reserve(headerNames.size());
+        for (const auto& name : headerNames)
+        {
+            const auto& localState = preLoopValues.at(name);
+            const auto phiId = m_nextTemporaryId++;
+
+            std::vector<PhiInput> phiInputs;
+            phiInputs.emplace_back(currentBlock->id(), localState.value);
+
+            auto phiInstruction = std::make_unique<PhiInstruction>(phiId, std::move(phiInputs), localState.type);
+            auto* phiInstructionPtr = phiInstruction.get();
+            conditionBlock->addInstruction(std::move(phiInstruction));
+
+            loopHeaderValues.emplace(name, LocalState{ ValueRef{ phiId }, localState.type });
+            loopHeaderPhis.push_back(LoopHeaderPhi{ name, phiInstructionPtr, localState.type });
+        }
+
+        restoreLocalValues(loopHeaderValues);
+
         const auto conditionValue = lowerValueExpression(statement->condition().get(), *conditionBlock);
         if (!conditionValue.has_value())
             return false;
@@ -359,13 +398,14 @@ namespace Caracal
         function.addBlock(BasicBlock{ loopId, "while.body", nullptr });
 
         // add loop exit targets so break statements can contribute values for continuation phis
-        m_loopContexts.push_back(LoopContext{ conditionId, continuationId, {} });
-        restoreLocalValues(preLoopValues);
+        m_loopContexts.push_back(LoopContext{ conditionId, continuationId, {}, {} });
+        restoreLocalValues(loopHeaderValues);
 
         std::optional<BlockId> loopBlockId = loopId;
         const auto loweredBody = lowerStatement(statement->trueStatement().get(), function, loopBlockId);
         
         // copy the values added by any breaks before dropping the loop context
+        auto conditionInputs = m_loopContexts.back().conditionInputs;
         auto continuationInputs = m_loopContexts.back().continuationInputs;
         m_loopContexts.pop_back();
         if (!loweredBody)
@@ -374,7 +414,21 @@ namespace Caracal
         auto* loopBlock = TryGetCurrentBlock(function, loopBlockId);
         if (loopBlock != nullptr && !loopBlock->hasTerminator())
         {
+            conditionInputs.push_back(IncomingLocalValues{ loopBlock->id(), m_localValues });
             loopBlock->setTerminator(std::make_unique<JumpTerminator>(conditionId));
+        }
+
+        for (const auto& loopHeaderPhi : loopHeaderPhis)
+        {
+            std::vector<PhiInput> phiInputs;
+            phiInputs.reserve(1 + conditionInputs.size());
+            phiInputs.emplace_back(currentBlock->id(), preLoopValues.at(loopHeaderPhi.name).value);
+            for (const auto& conditionInput : conditionInputs)
+            {
+                phiInputs.emplace_back(conditionInput.predecessorBlockId, conditionInput.values.at(loopHeaderPhi.name).value);
+            }
+
+            loopHeaderPhi.instruction->setInputs(std::move(phiInputs));
         }
 
         function.addBlock(BasicBlock{ continuationId, "while.continuation", nullptr });
@@ -382,8 +436,8 @@ namespace Caracal
         if (continuationBlock == nullptr)
             return false;
 
-        // condition-false edge reaches the continuation with the bindings from before the loop body
-        continuationInputs.insert(continuationInputs.begin(), IncomingLocalValues{ conditionId, preLoopValues });
+        // condition-false edge reaches the continuation with the bindings visible at the loop header
+        continuationInputs.insert(continuationInputs.begin(), IncomingLocalValues{ conditionId, loopHeaderValues });
         mergeLocalValues(*continuationBlock, continuationInputs);
         currentBlockId = continuationId;
 
@@ -408,7 +462,8 @@ namespace Caracal
         if (m_loopContexts.empty())
             return false;
 
-        const auto& loopContext = m_loopContexts.back();
+        auto& loopContext = m_loopContexts.back();
+        loopContext.conditionInputs.push_back(IncomingLocalValues{ block.id(), m_localValues });
         block.setTerminator(std::make_unique<JumpTerminator>(loopContext.conditionBlockId));
         currentBlockId.reset();
         
@@ -601,6 +656,24 @@ namespace Caracal
                         break;
                     case BinaryOperatorKind::Division:
                         block.addInstruction(std::make_unique<DivideInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::Equal:
+                        block.addInstruction(std::make_unique<EqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::NotEqual:
+                        block.addInstruction(std::make_unique<NotEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::LessThan:
+                        block.addInstruction(std::make_unique<LessThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::LessOrEqual:
+                        block.addInstruction(std::make_unique<LessOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::GreaterThan:
+                        block.addInstruction(std::make_unique<GreaterThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::GreaterOrEqual:
+                        block.addInstruction(std::make_unique<GreaterOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
                     default:
                         return std::nullopt;

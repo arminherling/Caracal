@@ -9,4 +9,9 @@ namespace Caracal
         , m_type{ type }
     {
     }
+
+    void PhiInstruction::setInputs(std::vector<PhiInput> inputs) noexcept
+    {
+        m_inputs = std::move(inputs);
+    }
 }

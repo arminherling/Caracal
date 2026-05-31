@@ -1,0 +1,31 @@
+define func() i32
+block entry(0):
+    %0 = const 0 : i32
+    %1 = const 0 : i32
+    jump while.condition(1)
+block while.condition(1):
+    %2 = phi [entry(0): %0], [if.true(4): %7], [if.continuation(7): %7] : i32
+    %3 = phi [entry(0): %1], [if.true(4): %3], [if.continuation(7): %12] : i32
+    %4 = const 6 : i32
+    %5 = less_than %2, %4 : bool
+    branch if %5, while.body(2), while.continuation(3)
+block while.body(2):
+    %6 = const 1 : i32
+    %7 = add %2, %6 : i32
+    %8 = const 2 : i32
+    %9 = equal %7, %8 : bool
+    branch if %9, if.true(4), if.continuation(5)
+block if.true(4):
+    jump while.condition(1)
+block if.continuation(5):
+    %10 = const 5 : i32
+    %11 = greater_or_equal %7, %10 : bool
+    branch if %11, if.true(6), if.continuation(7)
+block if.true(6):
+    jump while.continuation(3)
+block if.continuation(7):
+    %12 = add %3, %7 : i32
+    jump while.condition(1)
+block while.continuation(3):
+    %13 = phi [while.condition(1): %2], [if.true(6): %7] : i32
+    return %3

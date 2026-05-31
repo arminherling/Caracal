@@ -19,6 +19,12 @@ namespace Caracal
         Subtract,
         Multiply,
         Divide,
+        Equal,
+        NotEqual,
+        LessThan,
+        LessOrEqual,
+        GreaterThan,
+        GreaterOrEqual,
         Phi,
     };
 

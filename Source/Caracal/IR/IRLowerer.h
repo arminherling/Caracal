@@ -42,7 +42,15 @@ namespace Caracal
         {
             BlockId conditionBlockId;
             BlockId continuationBlockId;
+            std::vector<IncomingLocalValues> conditionInputs;
             std::vector<IncomingLocalValues> continuationInputs;
+        };
+
+        struct LoopHeaderPhi final
+        {
+            std::string name;
+            PhiInstruction* instruction;
+            Type type;
         };
 
     public:
