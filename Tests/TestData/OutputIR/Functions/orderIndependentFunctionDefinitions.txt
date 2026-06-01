@@ -1,0 +1,12 @@
+extern print(%0: cstring) void
+
+define func() void
+block entry(0):
+    %0 = call value() : cstring
+    call print(%0)
+    return
+
+define value() cstring
+block entry(0):
+    %1 = const "val\0" : cstring
+    return %1

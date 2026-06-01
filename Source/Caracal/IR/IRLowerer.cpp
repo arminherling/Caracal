@@ -37,6 +37,7 @@
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Statement.h>
+#include <Caracal/Syntax/StringLiteral.h>
 #include <Caracal/Syntax/UnaryExpression.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/WhileStatement.h>
@@ -655,6 +656,16 @@ namespace Caracal
                 block.addInstruction(std::make_unique<ConstantInstruction>(
                     temporaryId,
                     ConstantValue::FromBool(literal->value()),
+                    literal->type()));
+                return ValueRef{ temporaryId };
+            }
+            case NodeKind::StringLiteral:
+            {
+                const auto* literal = static_cast<const StringLiteral*>(expression);
+                const auto temporaryId = m_nextTemporaryId++;
+                block.addInstruction(std::make_unique<ConstantInstruction>(
+                    temporaryId,
+                    ConstantValue::FromString(literal->escapedContent()),
                     literal->type()));
                 return ValueRef{ temporaryId };
             }

@@ -22,6 +22,11 @@ namespace Caracal
         return ConstantValue{ Data{ value } };
     }
 
+    ConstantValue ConstantValue::FromString(std::string value) noexcept
+    {
+        return ConstantValue{ Data{ std::move(value) } };
+    }
+
     ConstantValue::ConstantValue(Data data) noexcept
         : m_data{ std::move(data) }
     {

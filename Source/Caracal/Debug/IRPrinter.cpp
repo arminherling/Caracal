@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <charconv>
+#include <string_view>
 #include <string>
 #include <type_traits>
 #include <variant>
@@ -42,11 +43,50 @@ namespace Caracal
         return *functionName;
     }
 
-    static std::string FormatConstantValue(const ConstantValue& value)
+    static std::string FormatConstantValue(const ConstantValue& value, Type type)
     {
-        return std::visit([](const auto& payload) -> std::string
+        return std::visit([type](const auto& payload) -> std::string
             {
                 using Payload = std::decay_t<decltype(payload)>;
+
+                const auto formatStringLiteral = [type](std::string_view text) -> std::string
+                    {
+                        std::string formatted = "\"";
+                        formatted.reserve(text.size() + 2);
+                        for (const auto character : text)
+                        {
+                            switch (character)
+                            {
+                                case '\\':
+                                    formatted += "\\\\";
+                                    break;
+                                case '"':
+                                    formatted += "\\\"";
+                                    break;
+                                case '\n':
+                                    formatted += "\\n";
+                                    break;
+                                case '\r':
+                                    formatted += "\\r";
+                                    break;
+                                case '\t':
+                                    formatted += "\\t";
+                                    break;
+                                case '\0':
+                                    formatted += "\\0";
+                                    break;
+                                default:
+                                    formatted += character;
+                                    break;
+                            }
+                        }
+
+                        if (type == Type::String())
+                            formatted += "\\0";
+
+                        formatted += '"';
+                        return formatted;
+                    };
 
                 if constexpr (std::is_same_v<Payload, bool>)
                 {
@@ -79,6 +119,9 @@ namespace Caracal
 
                     return text;
                 }
+
+                if constexpr (std::is_same_v<Payload, std::string>)
+                    return formatStringLiteral(payload);
 
                 return "<unknown-constant>";
             }, value.data());
@@ -213,7 +256,7 @@ namespace Caracal
                 appendValue(ValueRef{ constant.resultId() });
                 m_builder
                     .append(" = const ")
-                    .append(FormatConstantValue(constant.value()))
+                    .append(FormatConstantValue(constant.value(), constant.type()))
                     .append(" : ");
                 appendType(constant.type());
                 m_builder.appendLine("");
