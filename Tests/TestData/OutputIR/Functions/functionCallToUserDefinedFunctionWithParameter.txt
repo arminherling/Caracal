@@ -1,0 +1,10 @@
+define inner(%0: i32) void
+block entry(0):
+    %0 = parameter 0 : i32
+    return
+
+define outer() void
+block entry(0):
+    %1 = const 10 : i32
+    call inner(%1)
+    return

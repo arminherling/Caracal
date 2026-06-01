@@ -10,6 +10,7 @@ namespace Caracal
 {
     using TemporaryId = i32;
     using BlockId = i32;
+    using FunctionId = i32;
 
     enum class InstructionKind
     {
@@ -17,6 +18,8 @@ namespace Caracal
         Constant,
         ValueNegation,
         LogicalNegation,
+        Call,
+        CallVoid,
         Add,
         Subtract,
         Multiply,

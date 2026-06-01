@@ -1,0 +1,10 @@
+define inner(%0: bool) void
+block entry(0):
+    %0 = parameter 0 : bool
+    return
+
+define outer() void
+block entry(0):
+    %1 = const false : bool
+    call inner(%1)
+    return

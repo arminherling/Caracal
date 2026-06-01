@@ -2,8 +2,9 @@
 
 namespace Caracal
 {
-    ExternFunction::ExternFunction(std::string name, const std::vector<Type>& parameterTypes, Type returnType)
-        : m_name{ std::move(name) }
+    ExternFunction::ExternFunction(FunctionId id, std::string name, const std::vector<Type>& parameterTypes, Type returnType)
+        : m_id{ id }
+        , m_name{ std::move(name) }
         , m_parameterTypes{ parameterTypes }
         , m_returnType{ returnType }
     {

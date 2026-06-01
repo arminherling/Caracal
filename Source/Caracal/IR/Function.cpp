@@ -2,8 +2,9 @@
 
 namespace Caracal
 {
-    Function::Function(std::string name, const std::vector<Type>& parameterTypes, Type returnType)
-        : m_name{ std::move(name) }
+    Function::Function(FunctionId id, std::string name, const std::vector<Type>& parameterTypes, Type returnType)
+        : m_id{ id }
+        , m_name{ std::move(name) }
         , m_parameterTypes{ parameterTypes }
         , m_returnType{ returnType }
     {

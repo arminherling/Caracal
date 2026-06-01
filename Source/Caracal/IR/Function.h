@@ -14,9 +14,10 @@ namespace Caracal
     {
     public:
         Function() = default;
-        Function(std::string name, const std::vector<Type>& parameterTypes, Type returnType);
+        Function(FunctionId id, std::string name, const std::vector<Type>& parameterTypes, Type returnType);
         CARACAL_DELETE_COPY_DEFAULT_MOVE(Function)
 
+        [[nodiscard]] FunctionId id() const noexcept { return m_id; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
         [[nodiscard]] const std::vector<Type>& parameterTypes() const noexcept { return m_parameterTypes; }
         [[nodiscard]] Type returnType() const noexcept { return m_returnType; }
@@ -30,6 +31,7 @@ namespace Caracal
         void addBlock(BasicBlock block);
 
     private:
+        FunctionId m_id{ -1 };
         std::string m_name;
         std::vector<Type> m_parameterTypes;
         Type m_returnType{ Type::Void() };

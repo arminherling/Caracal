@@ -1,6 +1,8 @@
 ﻿#include <Caracal/IR/IRLowerer.h>
 
 #include <Caracal/IR/AddInstruction.h>
+#include <Caracal/IR/CallInstruction.h>
+#include <Caracal/IR/CallVoidInstruction.h>
 #include <Caracal/IR/ConstantValue.h>
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
@@ -104,6 +106,7 @@ namespace Caracal
     bool IRLowerer::lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept
     {
         m_localValues.clear();
+        m_nextBlockId = 0;
 
         const auto functionType = m_semanticModule.tryGetFunctionTypeByName(statement->name());
         if (functionType == Type::Undefined())
@@ -124,22 +127,24 @@ namespace Caracal
 
         if (statement->isExtern())
         {
-            auto function = ExternFunction{ statement->name(), parameterTypes, returnType };
-            module.addExternFunction(std::move(function));
+            const auto functionId = functionDefinition.type().id();
+            module.addExternFunction(ExternFunction{ functionId, statement->name(), parameterTypes, returnType });
             return true;
         }
 
-        auto function = Function{ statement->name(), parameterTypes, returnType };
+        auto functionId = functionDefinition.type().id();
+        module.addFunction(Function{ functionId, statement->name(), parameterTypes, returnType });
+        auto* function = module.tryGetFunction(functionId);
+
         auto blockId = m_nextBlockId++;
         auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
         lowerParameters(statement, entryBlock);
-        function.addBlock(std::move(entryBlock));
+        function->addBlock(std::move(entryBlock));
 
         std::optional<BlockId> entryBlockId = blockId;
-        if (!lowerBlock(statement->bodyNode().get(), function, entryBlockId))
+        if (!lowerBlock(statement->bodyNode().get(), *function, entryBlockId))
             return false;
 
-        module.addFunction(std::move(function));
         return true;
     }
 
@@ -170,7 +175,7 @@ namespace Caracal
 
         switch (statement->kind())
         {
-            case NodeKind::BlockNode: 
+            case NodeKind::BlockNode:
             {
                 const auto* blockNode = static_cast<const BlockNode*>(statement);
                 return lowerBlock(blockNode, function, currentBlockId);
@@ -199,7 +204,12 @@ namespace Caracal
                     assignmentStatement->rightExpression().get(),
                     *currentBlock);
             }
-            case NodeKind::IfStatement: 
+            case NodeKind::ExpressionStatement:
+            {
+                const auto* expressionStatement = static_cast<const ExpressionStatement*>(statement);
+                return lowerExpressionStatement(expressionStatement, *currentBlock);
+            }
+            case NodeKind::IfStatement:
             {
                 const auto* ifStatement = static_cast<const IfStatement*>(statement);
                 return lowerIfStatement(ifStatement, function, currentBlockId);
@@ -222,7 +232,7 @@ namespace Caracal
                 const auto* returnStatement = static_cast<const ReturnStatement*>(statement);
                 return lowerReturnStatement(returnStatement, *currentBlock);
             }
-            default: 
+            default:
             {
                 return false;
             }
@@ -406,7 +416,7 @@ namespace Caracal
 
         std::optional<BlockId> loopBlockId = loopId;
         const auto loweredBody = lowerStatement(statement->trueStatement().get(), function, loopBlockId);
-        
+
         // copy the values added by any breaks before dropping the loop context
         auto conditionInputs = m_loopContexts.back().conditionInputs;
         auto continuationInputs = m_loopContexts.back().continuationInputs;
@@ -469,15 +479,20 @@ namespace Caracal
         loopContext.conditionInputs.push_back(IncomingLocalValues{ block.id(), m_localValues });
         block.setTerminator(std::make_unique<JumpTerminator>(loopContext.conditionBlockId));
         currentBlockId.reset();
-        
+
         return true;
+    }
+
+    bool IRLowerer::lowerExpressionStatement(const ExpressionStatement* statement, BasicBlock& block) noexcept
+    {
+        return lowerExpression(statement->expression().get(), block);
     }
 
     bool IRLowerer::lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept
     {
         if (leftExpression->kind() == NodeKind::DiscardLiteral)
         {
-            return lowerValueExpression(rightExpression, block).has_value();
+            return lowerExpression(rightExpression, block);
         }
 
         if (leftExpression->kind() != NodeKind::NameExpression)
@@ -497,7 +512,7 @@ namespace Caracal
     {
         if (leftExpression->kind() == NodeKind::DiscardLiteral)
         {
-            return lowerValueExpression(rightExpression, block).has_value();
+            return lowerExpression(rightExpression, block);
         }
 
         if (leftExpression->kind() != NodeKind::NameExpression)
@@ -607,6 +622,14 @@ namespace Caracal
         return true;
     }
 
+    bool IRLowerer::lowerExpression(const Expression* expression, BasicBlock& block) noexcept
+    {
+        if (expression->kind() == NodeKind::FunctionCallExpression)
+            return lowerFunctionCall(static_cast<const FunctionCallExpression*>(expression), block).has_value();
+
+        return lowerValueExpression(expression, block).has_value();
+    }
+
     std::optional<ValueRef> IRLowerer::lowerValueExpression(const Expression* expression, BasicBlock& block) noexcept
     {
         switch (expression->kind())
@@ -644,6 +667,11 @@ namespace Caracal
 
                 return result->second.value;
             }
+            case NodeKind::FunctionCallExpression:
+                if (expression->type() == Type::Void())
+                    return std::nullopt;
+
+                return lowerFunctionCall(static_cast<const FunctionCallExpression*>(expression), block);
             case NodeKind::UnaryExpression:
             {
                 const auto* unaryExpression = static_cast<const UnaryExpression*>(expression);
@@ -722,5 +750,37 @@ namespace Caracal
             default:
                 return std::nullopt;
         }
+    }
+
+    std::optional<ValueRef> IRLowerer::lowerFunctionCall(const FunctionCallExpression* expression, BasicBlock& block) noexcept
+    {
+        const auto functionType = expression->functionType();
+        if (functionType == Type::Undefined())
+            return std::nullopt;
+
+        auto& functionDefinition = m_semanticModule.getFunctionDefinition(functionType);
+        const auto functionId = functionDefinition.type().id();
+
+        std::vector<ValueRef> loweredArguments;
+        const auto& arguments = expression->argumentsNode()->arguments();
+        loweredArguments.reserve(arguments.size());
+        for (const auto& argument : arguments)
+        {
+            const auto loweredArgument = lowerValueExpression(argument.get(), block);
+            if (!loweredArgument.has_value())
+                return std::nullopt;
+
+            loweredArguments.push_back(loweredArgument.value());
+        }
+
+        if (expression->type() == Type::Void())
+        {
+            block.addInstruction(std::make_unique<CallVoidInstruction>(functionId, std::move(loweredArguments)));
+            return ValueRef{};
+        }
+
+        const auto temporaryId = m_nextTemporaryId++;
+        block.addInstruction(std::make_unique<CallInstruction>(temporaryId, functionId, std::move(loweredArguments), expression->type()));
+        return ValueRef{ temporaryId };
     }
 }

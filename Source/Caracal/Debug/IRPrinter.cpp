@@ -1,6 +1,8 @@
 ﻿#include <Caracal/Debug/IRPrinter.h>
 #include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
+#include <Caracal/IR/CallInstruction.h>
+#include <Caracal/IR/CallVoidInstruction.h>
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
@@ -29,6 +31,17 @@
 
 namespace Caracal
 {
+    static const std::string& ResolveFunctionName(const Module& module, FunctionId functionId)
+    {
+        static const std::string unknownFunctionName = "<unknown-function>";
+
+        const auto* functionName = module.tryGetFunctionName(functionId);
+        if (functionName == nullptr)
+            return unknownFunctionName;
+
+        return *functionName;
+    }
+
     static std::string FormatConstantValue(const ConstantValue& value)
     {
         return std::visit([](const auto& payload) -> std::string
@@ -228,6 +241,39 @@ namespace Caracal
                 m_builder.append(" : ");
                 appendType(logicalNegation.type());
                 m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::Call:
+            {
+                const auto& call = static_cast<const CallInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ call.resultId() });
+                m_builder.append(" = call ").append(ResolveFunctionName(m_module, call.functionId())).append("(");
+                for (size_t index = 0; index < call.arguments().size(); ++index)
+                {
+                    if (index > 0)
+                        m_builder.append(", ");
+
+                    appendValue(call.arguments()[index]);
+                }
+                m_builder.append(") : ");
+                appendType(call.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::CallVoid:
+            {
+                const auto& call = static_cast<const CallVoidInstruction&>(instruction);
+                m_builder.appendIndented("");
+                m_builder.append("call ").append(ResolveFunctionName(m_module, call.functionId())).append("(");
+                for (size_t index = 0; index < call.arguments().size(); ++index)
+                {
+                    if (index > 0)
+                        m_builder.append(", ");
+
+                    appendValue(call.arguments()[index]);
+                }
+                m_builder.appendLine(")");
                 break;
             }
             case InstructionKind::Add:

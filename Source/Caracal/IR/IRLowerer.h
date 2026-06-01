@@ -15,6 +15,8 @@
 #include <Caracal/Syntax/ReturnStatement.h>
 #include <Caracal/Syntax/Statement.h>
 #include <Caracal/Syntax/WhileStatement.h>
+#include <Caracal/Syntax/ExpressionStatement.h>
+#include <Caracal/Syntax/FunctionCallExpression.h>
 
 #include <optional>
 #include <string>
@@ -70,11 +72,14 @@ namespace Caracal
         [[nodiscard]] bool lowerWhileStatement(const WhileStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerBreakStatement(BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerSkipStatement(BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept;
+        [[nodiscard]] bool lowerExpressionStatement(const ExpressionStatement* statement, BasicBlock& block) noexcept;
         void lowerParameters(const FunctionDefinitionStatement* statement, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerValueExpression(const Expression* expression, BasicBlock& block) noexcept;
+        [[nodiscard]] bool lowerExpression(const Expression* expression, BasicBlock& block) noexcept;
+        [[nodiscard]] std::optional<ValueRef> lowerFunctionCall(const FunctionCallExpression* expression, BasicBlock& block) noexcept;
         
         void restoreLocalValues(const LocalStateMap& values) noexcept;
         void mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept;

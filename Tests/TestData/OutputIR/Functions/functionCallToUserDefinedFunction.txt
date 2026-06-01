@@ -1,0 +1,8 @@
+define inner() void
+block entry(0):
+    return
+
+define outer() void
+block entry(0):
+    call inner()
+    return
