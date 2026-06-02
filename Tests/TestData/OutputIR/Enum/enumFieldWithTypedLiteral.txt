@@ -1,0 +1,7 @@
+enum Numbers : i32
+    One = 1
+
+define func() Numbers
+block entry(0):
+    %0 = const Numbers.One (= 1) : Numbers
+    return %0

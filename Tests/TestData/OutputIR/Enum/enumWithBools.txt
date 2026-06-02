@@ -1,0 +1,3 @@
+enum Answer : bool
+    Yes = true
+    No = false

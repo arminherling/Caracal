@@ -28,8 +28,10 @@
 #include <Caracal/Syntax/BlockNode.h>
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
+#include <Caracal/Syntax/EnumDefinitionStatement.h>
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
+#include <Caracal/Syntax/GroupingExpression.h>
 #include <Caracal/Syntax/IfStatement.h>
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/NodeKind.h>
@@ -48,6 +50,42 @@
 
 namespace Caracal
 {
+    template <typename TResult, typename TVisitor>
+    static std::optional<TResult> TryVisitLiteralData(const ConstantValue& value, TVisitor&& visitor) noexcept
+    {
+        const auto* literalData = value.tryGetLiteralData();
+        if (literalData == nullptr)
+            return std::nullopt;
+
+        return std::visit(
+            [&](const auto& payload) -> std::optional<TResult>
+            {
+                return visitor(payload);
+            },
+            *literalData);
+    }
+
+    template <typename TValue>
+    static std::optional<ConstantValue> ConstantFold(BinaryOperatorKind operation, TValue lhs, TValue rhs) noexcept
+    {
+        switch (operation)
+        {
+            case BinaryOperatorKind::Addition:
+                return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs + rhs) });
+            case BinaryOperatorKind::Subtraction:
+                return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs - rhs) });
+            case BinaryOperatorKind::Multiplication:
+                return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs * rhs) });
+            case BinaryOperatorKind::Division:
+                if (rhs == static_cast<TValue>(0))
+                    return std::nullopt;
+
+                return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs / rhs) });
+            default:
+                return std::nullopt;
+        }
+    }
+
     static BasicBlock* TryGetCurrentBlock(Function& function, const std::optional<BlockId>& blockId) noexcept
     {
         if (!blockId.has_value())
@@ -72,6 +110,83 @@ namespace Caracal
 
         if (baseType == Type::F32())
             return ConstantValue::FromF32(std::get<f32>(parsedValue));
+
+        return std::nullopt;
+    }
+
+    static std::optional<ConstantValue> ConstantFoldUnary(UnaryOperatorKind operation, const ConstantValue& value) noexcept
+    {
+        return TryVisitLiteralData<ConstantValue>(
+            value,
+            [operation](const auto& payload) -> std::optional<ConstantValue>
+            {
+                using Payload = std::decay_t<decltype(payload)>;
+
+                switch (operation)
+                {
+                    case UnaryOperatorKind::ValueNegation:
+                        if constexpr (std::is_same_v<Payload, i32> || std::is_same_v<Payload, float>)
+                            return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ -payload });
+                        break;
+                    case UnaryOperatorKind::LogicalNegation:
+                        if constexpr (std::is_same_v<Payload, bool>)
+                            return ConstantValue::FromBool(!payload);
+                        break;
+                    default:
+                        break;
+                }
+
+                return std::nullopt;
+            });
+    }
+
+    static std::optional<ConstantValue> ConstantFoldBinary(
+        BinaryOperatorKind operation,
+        const ConstantValue& left,
+        const ConstantValue& right) noexcept
+    {
+        const auto* leftData = left.tryGetLiteralData();
+        const auto* rightData = right.tryGetLiteralData();
+        if (leftData == nullptr || rightData == nullptr)
+            return std::nullopt;
+
+        return std::visit(
+            [operation](const auto& lhs, const auto& rhs) -> std::optional<ConstantValue>
+            {
+                using Left = std::decay_t<decltype(lhs)>;
+                using Right = std::decay_t<decltype(rhs)>;
+
+                if constexpr (!std::is_same_v<Left, Right>)
+                {
+                    return std::nullopt;
+                }
+                else if constexpr (std::is_same_v<Left, u8> || std::is_same_v<Left, i32> || std::is_same_v<Left, float>)
+                {
+                    return ConstantFold(operation, lhs, rhs);
+                }
+                else
+                {
+                    return std::nullopt;
+                }
+            },
+            *leftData,
+            *rightData);
+    }
+
+    static std::optional<ConstantValue> CreateEnumConstantValue(Type baseType, i32 value) noexcept
+    {
+        const auto normalizedBaseType = baseType.toBaseType();
+        if (normalizedBaseType == Type::Bool())
+            return ConstantValue::FromBool(value != 0);
+
+        if (normalizedBaseType == Type::U8())
+            return ConstantValue::FromU8(static_cast<u8>(value));
+
+        if (normalizedBaseType == Type::I32())
+            return ConstantValue::FromI32(value);
+
+        if (normalizedBaseType == Type::F32())
+            return ConstantValue::FromF32(static_cast<f32>(value));
 
         return std::nullopt;
     }
@@ -101,7 +216,31 @@ namespace Caracal
         if (statement->kind() == NodeKind::FunctionDefinitionStatement)
             return lowerFunctionDefinition(static_cast<const FunctionDefinitionStatement*>(statement), module);
 
+        if (statement->kind() == NodeKind::EnumDefinitionStatement)
+            return lowerEnumDefinition(static_cast<const EnumDefinitionStatement*>(statement), module);
+
         return false;
+    }
+
+    bool IRLowerer::lowerEnumDefinition(const EnumDefinitionStatement* statement, Module& module) noexcept
+    {
+        const auto enumType = statement->type();
+        if (enumType == Type::Undefined())
+            return false;
+
+        auto& semanticEnumDefinition = m_semanticModule.getEnumDefinition(enumType);
+        auto enumDeclaration = EnumDeclaration{ semanticEnumDefinition.name(), enumType, semanticEnumDefinition.baseType() };
+        for (const auto& fieldNode : statement->fieldNodes())
+        {
+            auto loweredFieldValue = tryLowerEnumFieldValue(enumType, fieldNode->name());
+            if (!loweredFieldValue.has_value())
+                return false;
+
+            enumDeclaration.addField(fieldNode->name(), loweredFieldValue.value());
+        }
+
+        module.addEnum(std::move(enumDeclaration));
+        return true;
     }
 
     bool IRLowerer::lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept
@@ -623,6 +762,114 @@ namespace Caracal
         return true;
     }
 
+    std::optional<ConstantValue> IRLowerer::tryLowerConstantExpression(const Expression* expression) noexcept
+    {
+        switch (expression->kind())
+        {
+            case NodeKind::NumberLiteral:
+            {
+                return CreateConstantValue(*static_cast<const NumberLiteral*>(expression));
+            }
+            case NodeKind::BoolLiteral:
+            {
+                const auto* literal = static_cast<const BoolLiteral*>(expression);
+                return ConstantValue::FromBool(literal->value());
+            }
+            case NodeKind::StringLiteral:
+            {
+                const auto* literal = static_cast<const StringLiteral*>(expression);
+                return ConstantValue::FromString(literal->escapedContent());
+            }
+            case NodeKind::GroupingExpression:
+            {
+                const auto* groupingExpression = static_cast<const GroupingExpression*>(expression);
+                return tryLowerConstantExpression(groupingExpression->expression().get());
+            }
+            case NodeKind::UnaryExpression:
+            {
+                const auto* unaryExpression = static_cast<const UnaryExpression*>(expression);
+                const auto operandValue = tryLowerConstantExpression(unaryExpression->expression().get());
+                if (!operandValue.has_value())
+                    return std::nullopt;
+
+                switch (unaryExpression->unaryOperator())
+                {
+                    case UnaryOperatorKind::ValueNegation:
+                    case UnaryOperatorKind::LogicalNegation:
+                        return ConstantFoldUnary(unaryExpression->unaryOperator(), operandValue.value());
+                    default:
+                        return std::nullopt;
+                }
+            }
+            case NodeKind::BinaryExpression:
+            {
+                const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+                if (binaryExpression->binaryOperator() == BinaryOperatorKind::MemberAccess)
+                {
+                    const auto enumConstant = tryLowerEnumMemberConstant(binaryExpression);
+                    if (!enumConstant.has_value())
+                        return std::nullopt;
+
+                    if (const auto* enumValue = enumConstant->tryGetEnumConstant())
+                        return ConstantValue::FromLiteralData(enumValue->underlyingValue);
+
+                    return std::nullopt;
+                }
+
+                const auto leftValue = tryLowerConstantExpression(binaryExpression->leftExpression().get());
+                if (!leftValue.has_value())
+                    return std::nullopt;
+
+                const auto rightValue = tryLowerConstantExpression(binaryExpression->rightExpression().get());
+                if (!rightValue.has_value())
+                    return std::nullopt;
+
+                return ConstantFoldBinary(binaryExpression->binaryOperator(), leftValue.value(), rightValue.value());
+            }
+            default:
+                return std::nullopt;
+        }
+    }
+
+    std::optional<ConstantValue> IRLowerer::tryLowerEnumFieldValue(Type enumType, const std::string& fieldName) noexcept
+    {
+        auto& enumDefinition = m_semanticModule.getEnumDefinition(enumType);
+        if (!enumDefinition.hasField(fieldName))
+            return std::nullopt;
+
+        const auto& enumField = enumDefinition.getFieldByName(fieldName);
+        if (enumField.expression() != nullptr)
+            return tryLowerConstantExpression(enumField.expression());
+
+        return CreateEnumConstantValue(enumDefinition.baseType(), enumField.value());
+    }
+
+    std::optional<ConstantValue> IRLowerer::tryLowerEnumMemberConstant(const BinaryExpression* expression) noexcept
+    {
+        const auto enumType = expression->leftExpression()->type();
+        if (enumType.kind() != TypeKind::Enum)
+            return std::nullopt;
+
+        if (expression->rightExpression()->kind() != NodeKind::NameExpression)
+            return std::nullopt;
+
+        const auto* fieldNameExpression = static_cast<const NameExpression*>(expression->rightExpression().get());
+        auto underlyingValue = tryLowerEnumFieldValue(enumType, fieldNameExpression->name());
+        if (!underlyingValue.has_value())
+            return std::nullopt;
+
+        const auto* literalData = underlyingValue->tryGetLiteralData();
+        if (literalData == nullptr)
+            return std::nullopt;
+
+        auto& enumDefinition = m_semanticModule.getEnumDefinition(enumType);
+        return ConstantValue::FromEnum(
+            enumType,
+            enumDefinition.name(),
+            fieldNameExpression->name(),
+            *literalData);
+    }
+
     bool IRLowerer::lowerExpression(const Expression* expression, BasicBlock& block) noexcept
     {
         if (expression->kind() == NodeKind::FunctionCallExpression)
@@ -711,6 +958,20 @@ namespace Caracal
             case NodeKind::BinaryExpression:
             {
                 const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+                if (binaryExpression->binaryOperator() == BinaryOperatorKind::MemberAccess)
+                {
+                    const auto enumConstant = tryLowerEnumMemberConstant(binaryExpression);
+                    if (!enumConstant.has_value())
+                        return std::nullopt;
+
+                    const auto temporaryId = m_nextTemporaryId++;
+                    block.addInstruction(std::make_unique<ConstantInstruction>(
+                        temporaryId,
+                        enumConstant.value(),
+                        expression->type()));
+                    return ValueRef{ temporaryId };
+                }
+
                 const auto leftValue = lowerValueExpression(binaryExpression->leftExpression().get(), block);
                 if (!leftValue.has_value())
                     return std::nullopt;

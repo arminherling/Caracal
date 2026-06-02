@@ -2,14 +2,18 @@
 
 #include <Caracal/API.h>
 #include <Caracal/IR/BasicBlock.h>
+#include <Caracal/IR/ConstantValue.h>
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/Module.h>
 #include <Caracal/IR/ValueRef.h>
 #include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/Semantic/SemanticContext.h>
+#include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BlockNode.h>
+#include <Caracal/Syntax/EnumDefinitionStatement.h>
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
+#include <Caracal/Syntax/GroupingExpression.h>
 #include <Caracal/Syntax/IfStatement.h>
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/ReturnStatement.h>
@@ -66,6 +70,7 @@ namespace Caracal
     private:
         [[nodiscard]] bool lowerStatement(const Statement* statement, Module& module) noexcept;
         [[nodiscard]] bool lowerStatement(const Statement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
+        [[nodiscard]] bool lowerEnumDefinition(const EnumDefinitionStatement* statement, Module& module) noexcept;
         [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept;
         [[nodiscard]] bool lowerBlock(const BlockNode* block, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerIfStatement(const IfStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
@@ -77,6 +82,9 @@ namespace Caracal
         [[nodiscard]] bool lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept;
+        [[nodiscard]] std::optional<ConstantValue> tryLowerConstantExpression(const Expression* expression) noexcept;
+        [[nodiscard]] std::optional<ConstantValue> tryLowerEnumFieldValue(Type enumType, const std::string& fieldName) noexcept;
+        [[nodiscard]] std::optional<ConstantValue> tryLowerEnumMemberConstant(const BinaryExpression* expression) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerValueExpression(const Expression* expression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerExpression(const Expression* expression, BasicBlock& block) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerFunctionCall(const FunctionCallExpression* expression, BasicBlock& block) noexcept;

@@ -24,6 +24,7 @@ namespace Caracal
         [[nodiscard]] std::string prettyPrint();
 
     private:
+        void prettyPrintEnumDeclaration(const EnumDeclaration& enumDeclaration);
         void prettyPrintExternFunction(const ExternFunction& function);
         void prettyPrintFunction(const Function& function);
         void prettyPrintBlock(const Function& function, const BasicBlock& block);

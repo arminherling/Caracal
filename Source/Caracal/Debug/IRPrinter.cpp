@@ -43,7 +43,7 @@ namespace Caracal
         return *functionName;
     }
 
-    static std::string FormatConstantValue(const ConstantValue& value, Type type)
+    static std::string FormatLiteralData(const ConstantValue::LiteralData& value, Type type)
     {
         return std::visit([type](const auto& payload) -> std::string
             {
@@ -124,7 +124,33 @@ namespace Caracal
                     return formatStringLiteral(payload);
 
                 return "<unknown-constant>";
-            }, value.data());
+            }, value);
+    }
+
+    static std::string FormatLiteralConstantValue(const ConstantValue& value, Type type)
+    {
+        if (const auto* literalData = value.tryGetLiteralData())
+            return FormatLiteralData(*literalData, type);
+
+        if (const auto* enumConstant = value.tryGetEnumConstant())
+            return enumConstant->enumName + "." + enumConstant->fieldName;
+
+        return "<unknown-constant>";
+    }
+
+    static std::string FormatConstantValue(const Module& module, const ConstantValue& value, Type type)
+    {
+        if (const auto* enumConstant = value.tryGetEnumConstant())
+        {
+            auto underlyingType = type;
+            if (const auto* enumDeclaration = module.tryGetEnum(enumConstant->enumType))
+                underlyingType = enumDeclaration->baseType();
+
+            return enumConstant->enumName + "." + enumConstant->fieldName + " (= "
+                + FormatLiteralData(enumConstant->underlyingValue, underlyingType) + ")";
+        }
+
+        return FormatLiteralConstantValue(value, type);
     }
 
     IRPrinter::IRPrinter(const Module& module, i32 indentation)
@@ -135,28 +161,56 @@ namespace Caracal
 
     std::string IRPrinter::prettyPrint()
     {
-        bool hasPrintedFunction = false;
-        const auto appendFunctionSeparator = [&]()
+        bool hasPrintedDeclaration = false;
+        const auto appendDeclarationSeparator = [&]()
             {
-                if (hasPrintedFunction)
+                if (hasPrintedDeclaration)
                     m_builder.appendLine("");
 
-                hasPrintedFunction = true;
+                hasPrintedDeclaration = true;
             };
+
+        for (const auto& enumDeclaration : m_module.enums())
+        {
+            appendDeclarationSeparator();
+            prettyPrintEnumDeclaration(enumDeclaration);
+        }
 
         for (const auto& function : m_module.externFunctions())
         {
-            appendFunctionSeparator();
+            appendDeclarationSeparator();
             prettyPrintExternFunction(function);
         }
 
         for (const auto& function : m_module.functions())
         {
-            appendFunctionSeparator();
+            appendDeclarationSeparator();
             prettyPrintFunction(function);
         }
 
         return m_builder.toString();
+    }
+
+    void IRPrinter::prettyPrintEnumDeclaration(const EnumDeclaration& enumDeclaration)
+    {
+        m_builder
+            .append("enum ")
+            .append(enumDeclaration.name())
+            .append(" : ");
+        appendType(enumDeclaration.baseType());
+        m_builder.appendLine("");
+
+        m_builder.pushIndentation();
+        for (const auto& field : enumDeclaration.fields())
+        {
+            m_builder
+                .appendIndented("")
+                .append(field.name)
+                .append(" = ")
+                .append(FormatLiteralConstantValue(field.value, enumDeclaration.baseType()))
+                .appendLine("");
+        }
+        m_builder.popIndentation();
     }
 
     void IRPrinter::prettyPrintExternFunction(const ExternFunction& function)
@@ -256,7 +310,7 @@ namespace Caracal
                 appendValue(ValueRef{ constant.resultId() });
                 m_builder
                     .append(" = const ")
-                    .append(FormatConstantValue(constant.value(), constant.type()))
+                    .append(FormatConstantValue(m_module, constant.value(), constant.type()))
                     .append(" : ");
                 appendType(constant.type());
                 m_builder.appendLine("");
@@ -556,6 +610,8 @@ namespace Caracal
             m_builder.append("function");
         else if (baseType == Type::CVariadic())
             m_builder.append("...");
+        else if (const auto* enumDeclaration = m_module.tryGetEnum(baseType))
+            m_builder.append(enumDeclaration->name());
         else
             m_builder.append("type#").append(std::to_string(baseType.id()));
 

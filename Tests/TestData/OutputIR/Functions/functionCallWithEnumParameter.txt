@@ -1,0 +1,14 @@
+enum Values : u8
+    First = 0
+    Second = 1
+
+define inner(%0: Values) void
+block entry(0):
+    %0 = parameter 0 : Values
+    return
+
+define outer() void
+block entry(0):
+    %1 = const Values.First (= 0) : Values
+    call inner(%1)
+    return

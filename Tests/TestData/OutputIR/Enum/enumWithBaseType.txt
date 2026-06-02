@@ -1,0 +1,2 @@
+enum Values : i32
+    Value = 0
