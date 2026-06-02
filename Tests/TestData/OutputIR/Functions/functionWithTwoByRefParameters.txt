@@ -1,0 +1,9 @@
+define swap(%0: ref i32, %1: ref i32) void
+block entry(0):
+    %0 = parameter 0 : ref i32
+    %1 = parameter 1 : ref i32
+    %2 = load_value %0 : i32
+    %3 = load_value %1 : i32
+    store_value %3, %0 : i32
+    store_value %2, %1 : i32
+    return

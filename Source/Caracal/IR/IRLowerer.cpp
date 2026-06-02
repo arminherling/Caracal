@@ -650,7 +650,11 @@ namespace Caracal
             return false;
 
         const auto* nameExpression = static_cast<const NameExpression*>(leftExpression);
-        if (nameExpression->type().isReference())
+        const auto isExplicitReferenceBinding =
+            (rightExpression->kind() == NodeKind::UnaryExpression
+            && static_cast<const UnaryExpression*>(rightExpression)->unaryOperator() == UnaryOperatorKind::ReferenceOf);
+
+        if (nameExpression->type().isReference() && isExplicitReferenceBinding)
         {
             const auto loweredAddress = lowerAddressExpression(rightExpression, block);
             if (!loweredAddress.has_value())
@@ -664,7 +668,11 @@ namespace Caracal
         if (!loweredValue.has_value())
             return false;
 
-        m_localValues.insert_or_assign(nameExpression->name(), LocalState{ loweredValue.value(), nameExpression->type(), LocalStorageKind::Value });
+        auto localType = nameExpression->type();
+        if (localType.isReference())
+            localType = localType.toValue();
+
+        m_localValues.insert_or_assign(nameExpression->name(), LocalState{ loweredValue.value(), localType, LocalStorageKind::Value });
 
         return true;
     }
