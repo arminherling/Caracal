@@ -5,6 +5,7 @@
 #include <Caracal/IR/BasicBlock.h>
 #include <Caracal/IR/ExternFunction.h>
 #include <Caracal/IR/Function.h>
+#include <Caracal/IR/LocalSlotRef.h>
 #include <Caracal/IR/Module.h>
 #include <Caracal/IR/Terminator.h>
 #include <Caracal/IR/ValueRef.h>
@@ -32,6 +33,7 @@ namespace Caracal
         void prettyPrintTerminator(const Function& function, const Terminator& terminator);
 
         void appendType(Type type);
+        void appendSlot(LocalSlotRef slot);
         void appendValue(ValueRef value);
         void appendBlockLabel(const Function& function, BlockId blockId);
 

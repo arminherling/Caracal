@@ -24,6 +24,7 @@ namespace Caracal
         [[nodiscard]] bool hasTerminator() const noexcept { return m_terminator != nullptr; }
 
         void addInstruction(InstructionUPtr instruction);
+        void addPrologueInstruction(InstructionUPtr instruction);
         void setTerminator(TerminatorUPtr terminator);
 
     private:

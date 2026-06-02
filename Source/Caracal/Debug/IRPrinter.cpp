@@ -1,5 +1,7 @@
 ﻿#include <Caracal/Debug/IRPrinter.h>
 #include <Caracal/IR/AddInstruction.h>
+#include <Caracal/IR/AddressOfInstruction.h>
+#include <Caracal/IR/AllocateLocalInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
 #include <Caracal/IR/CallInstruction.h>
 #include <Caracal/IR/CallVoidInstruction.h>
@@ -12,6 +14,7 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
+#include <Caracal/IR/LoadValueInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
@@ -19,6 +22,7 @@
 #include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
+#include <Caracal/IR/StoreValueInstruction.h>
 #include <Caracal/IR/SubtractInstruction.h>
 #include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/ValueNegationInstruction.h>
@@ -313,6 +317,52 @@ namespace Caracal
                     .append(FormatConstantValue(m_module, constant.value(), constant.type()))
                     .append(" : ");
                 appendType(constant.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::AllocateLocal:
+            {
+                const auto& allocateLocal = static_cast<const AllocateLocalInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendSlot(LocalSlotRef{ allocateLocal.resultId() });
+                m_builder.append(" = allocate_local ").append(allocateLocal.localName()).append(" : ");
+                appendType(allocateLocal.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::AddressOf:
+            {
+                const auto& addressOf = static_cast<const AddressOfInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ addressOf.resultId() });
+                m_builder.append(" = address_of ");
+                appendSlot(addressOf.local());
+                m_builder.append(" : ");
+                appendType(addressOf.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::LoadValue:
+            {
+                const auto& load = static_cast<const LoadValueInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ load.resultId() });
+                m_builder.append(" = load_value ");
+                appendValue(load.address());
+                m_builder.append(" : ");
+                appendType(load.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::StoreValue:
+            {
+                const auto& store = static_cast<const StoreValueInstruction&>(instruction);
+                m_builder.appendIndented("store_value ");
+                appendValue(store.value());
+                m_builder.append(", ");
+                appendValue(store.address());
+                m_builder.append(" : ");
+                appendType(store.type());
                 m_builder.appendLine("");
                 break;
             }
@@ -624,6 +674,13 @@ namespace Caracal
         m_builder
             .append("%")
             .append(std::to_string(value.id()));
+    }
+
+    void IRPrinter::appendSlot(LocalSlotRef slot)
+    {
+        m_builder
+            .append("%slot")
+            .append(std::to_string(slot.id()));
     }
 
     void IRPrinter::appendBlockLabel(const Function& function, BlockId blockId)

@@ -5,5 +5,5 @@ block entry(0):
 
 define func() void
 block entry(0):
-    %1 = call value() : i32
+    %0 = call value() : i32
     return

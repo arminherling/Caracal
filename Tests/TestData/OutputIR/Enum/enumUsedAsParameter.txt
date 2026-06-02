@@ -9,14 +9,14 @@ block entry(0):
 
 define func() i32
 block entry(0):
-    %1 = const Answer.Yes (= true) : Answer
-    %2 = call choose(%1) : Answer
-    %3 = const Answer.Yes (= true) : Answer
-    %4 = equal %2, %3 : bool
-    branch if %4, if.true(1), if.continuation(2)
+    %0 = const Answer.Yes (= true) : Answer
+    %1 = call choose(%0) : Answer
+    %2 = const Answer.Yes (= true) : Answer
+    %3 = equal %1, %2 : bool
+    branch if %3, if.true(1), if.continuation(2)
 block if.true(1):
-    %5 = const 1 : i32
-    return %5
+    %4 = const 1 : i32
+    return %4
 block if.continuation(2):
-    %6 = const 0 : i32
-    return %6
+    %5 = const 0 : i32
+    return %5

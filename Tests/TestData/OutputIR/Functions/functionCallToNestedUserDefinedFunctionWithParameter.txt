@@ -5,11 +5,11 @@ block entry(0):
 
 define inner(%0: i32) void
 block entry(0):
-    %1 = parameter 0 : i32
+    %0 = parameter 0 : i32
     return
 
 define outer() void
 block entry(0):
-    %2 = call one() : i32
-    call inner(%2)
+    %0 = call one() : i32
+    call inner(%0)
     return

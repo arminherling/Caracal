@@ -1,0 +1,18 @@
+define double(%0: ref i32) void
+block entry(0):
+    %0 = parameter 0 : ref i32
+    %1 = load_value %0 : i32
+    %2 = const 2 : i32
+    %3 = multiply %1, %2 : i32
+    store_value %3, %0 : i32
+    return
+
+define func() i32
+block entry(0):
+    %slot0 = allocate_local value : i32
+    %0 = const 5 : i32
+    %1 = address_of %slot0 : ref i32
+    store_value %0, %1 : i32
+    call double(%1)
+    %2 = load_value %1 : i32
+    return %2

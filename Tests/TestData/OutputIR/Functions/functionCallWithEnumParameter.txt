@@ -9,6 +9,6 @@ block entry(0):
 
 define outer() void
 block entry(0):
-    %1 = const Values.First (= 0) : Values
-    call inner(%1)
+    %0 = const Values.First (= 0) : Values
+    call inner(%0)
     return

@@ -8,5 +8,5 @@ block entry(0):
 
 define value() cstring
 block entry(0):
-    %1 = const "val\0" : cstring
-    return %1
+    %0 = const "val\0" : cstring
+    return %0

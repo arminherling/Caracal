@@ -9,6 +9,7 @@
 namespace Caracal
 {
     using TemporaryId = i32;
+    using LocalSlotId = i32;
     using BlockId = i32;
     using FunctionId = i32;
     using EnumId = i32;
@@ -17,6 +18,10 @@ namespace Caracal
     {
         Parameter,
         Constant,
+        AllocateLocal,
+        AddressOf,
+        LoadValue,
+        StoreValue,
         ValueNegation,
         LogicalNegation,
         Call,

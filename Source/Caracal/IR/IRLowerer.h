@@ -32,10 +32,17 @@ namespace Caracal
     class CARACAL_API IRLowerer
     {
     private:
+        enum class LocalStorageKind
+        {
+            Value,
+            Address,
+        };
+
         struct LocalState final
         {
             ValueRef value;
             Type type;
+            LocalStorageKind storageKind{ LocalStorageKind::Value };
         };
         using LocalStateMap = std::unordered_map<std::string, LocalState>;
 
@@ -85,6 +92,8 @@ namespace Caracal
         [[nodiscard]] std::optional<ConstantValue> tryLowerConstantExpression(const Expression* expression) noexcept;
         [[nodiscard]] std::optional<ConstantValue> tryLowerEnumFieldValue(Type enumType, const std::string& fieldName) noexcept;
         [[nodiscard]] std::optional<ConstantValue> tryLowerEnumMemberConstant(const BinaryExpression* expression) noexcept;
+        [[nodiscard]] std::optional<ValueRef> ensureAddressableLocal(const NameExpression* expression, BasicBlock& block) noexcept;
+        [[nodiscard]] std::optional<ValueRef> lowerAddressExpression(const Expression* expression, BasicBlock& block) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerValueExpression(const Expression* expression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerExpression(const Expression* expression, BasicBlock& block) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerFunctionCall(const FunctionCallExpression* expression, BasicBlock& block) noexcept;
@@ -96,6 +105,7 @@ namespace Caracal
         LocalStateMap m_localValues;
         std::vector<LoopContext> m_loopContexts;
         TemporaryId m_nextTemporaryId{ 0 };
+        LocalSlotId m_nextLocalSlotId{ 0 };
         BlockId m_nextBlockId{ 0 };
     };
 }
