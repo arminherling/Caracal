@@ -1,0 +1,22 @@
+enum Answer : bool
+    Yes = true
+    No = false
+
+define choose(%0: Answer) Answer
+block entry(0):
+    %0 = parameter 0 : Answer
+    return %0
+
+define func() i32
+block entry(0):
+    %1 = const Answer.Yes (= true) : Answer
+    %2 = call choose(%1) : Answer
+    %3 = const Answer.Yes (= true) : Answer
+    %4 = equal %2, %3 : bool
+    branch if %4, if.true(1), if.continuation(2)
+block if.true(1):
+    %5 = const 1 : i32
+    return %5
+block if.continuation(2):
+    %6 = const 0 : i32
+    return %6

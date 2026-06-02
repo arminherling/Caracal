@@ -1,0 +1,10 @@
+enum Numbers : i32
+    One = 1
+    Two = 2
+
+define func() bool
+block entry(0):
+    %0 = const Numbers.Two (= 2) : Numbers
+    %1 = const 2 : i32
+    %2 = equal %0, %1 : bool
+    return %2

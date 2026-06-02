@@ -964,11 +964,15 @@ namespace Caracal
                     if (!enumConstant.has_value())
                         return std::nullopt;
 
+                    auto loweredType = expression->type();
+                    if (const auto* enumValue = enumConstant->tryGetEnumConstant())
+                        loweredType = enumValue->enumType;
+
                     const auto temporaryId = m_nextTemporaryId++;
                     block.addInstruction(std::make_unique<ConstantInstruction>(
                         temporaryId,
                         enumConstant.value(),
-                        expression->type()));
+                        loweredType));
                     return ValueRef{ temporaryId };
                 }
 
