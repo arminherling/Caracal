@@ -1,0 +1,9 @@
+enum Numbers : u8
+    Zero = 0
+    Two = 2
+    Four = 4
+
+define func() Numbers
+block entry(0):
+    %0 = const Numbers.Four (= 4) : Numbers
+    return %0

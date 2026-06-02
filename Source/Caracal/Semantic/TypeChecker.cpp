@@ -1,4 +1,4 @@
-#include "TypeChecker.h"
+﻿#include "TypeChecker.h"
 
 #include <charconv>
 #include <cmath>
@@ -153,7 +153,7 @@ namespace Caracal
         if (type == Type::U8())
         {
             return TryParseU8Literal(lexeme).has_value();
-        } 
+        }
         else if (type == Type::I32())
         {
             return TryParseI32Literal(lexeme).has_value();
@@ -193,6 +193,27 @@ namespace Caracal
                 return std::nullopt;
 
             return NumberLiteral::ParsedValue{ value.value() };
+        }
+
+        return std::nullopt;
+    }
+
+    static std::optional<i32> TryConvertEnumFieldLiteralValue(const NumberLiteral& literal)
+    {
+        if (!literal.hasParsedValue())
+        {
+            return std::nullopt;
+        }
+
+        const auto literalType = literal.type();
+        if (literalType == Type::U8())
+        {
+            return static_cast<i32>(std::get<u8>(literal.parsedValue().value()));
+        }
+
+        if (literalType == Type::I32())
+        {
+            return std::get<i32>(literal.parsedValue().value());
         }
 
         return std::nullopt;
@@ -241,7 +262,7 @@ namespace Caracal
         typeCheckTypeFieldDefinitions();
         typeCheckFunctionDefinitions();
         typeCheckTypeMethodDefinitions();
-        
+
         return !m_diagnostics.hasErrors();
     }
 
@@ -1060,6 +1081,7 @@ namespace Caracal
             else if (fieldNode->valueExpression().has_value())
             {
                 auto expression = fieldNode->valueExpression().value().get();
+                m_contextualNumberType = baseType == Type::Undefined() ? defaultBaseType : baseType;
                 auto fieldValueType = typeCheckExpression(expression, tokens);
                 if (baseType == Type::Undefined())
                 {
@@ -1078,12 +1100,19 @@ namespace Caracal
                     }
                 }
 
-                if (expression->kind() == NodeKind::NumberLiteral && expression->type() == Type::I32())
+                if (expression->kind() == NodeKind::NumberLiteral)
                 {
-                    auto value = convertToI32(static_cast<NumberLiteral*>(expression), tokens);
-                    enumDefinition.addField(fieldName, value, fieldLocation);
-                    fieldNode->setValue(value);
-                    currentFieldValue = value + step;
+                    const auto value = TryConvertEnumFieldLiteralValue(*static_cast<NumberLiteral*>(expression));
+                    if (value.has_value())
+                    {
+                        enumDefinition.addField(fieldName, value.value(), fieldLocation);
+                        fieldNode->setValue(value.value());
+                        currentFieldValue = value.value() + step;
+                    }
+                    else
+                    {
+                        enumDefinition.addField(fieldName, expression, fieldLocation);
+                    }
                 }
                 else
                 {
@@ -1400,7 +1429,7 @@ namespace Caracal
         if (statement->expression().has_value())
         {
             auto type = typeCheckExpression(statement->expression().value().get(), tokens);
-            if(type.isReference())
+            if (type.isReference())
             {
                 // returning a ref is now allowed, so we need to coerce it to a value
                 type = type.toValue();
@@ -1879,7 +1908,7 @@ namespace Caracal
                         static_cast<i32>(i + 1),
                         FormatTypeName(m_module, expectedType),
                         FormatTypeName(m_module, argumentType),
-                    });
+                        });
                 }
             }
             else
@@ -1921,11 +1950,21 @@ namespace Caracal
         else
         {
             const auto& lexeme = literal->literalLexeme();
-            if (lexeme.find('.') != std::string_view::npos)
+            const auto isFloatingLiteral = lexeme.find('.') != std::string_view::npos;
+            if (m_contextualNumberType.has_value())
+            {
+                const auto contextualType = m_contextualNumberType.value();
+                if (!isFloatingLiteral && (contextualType == Type::U8() || contextualType == Type::I32()))
+                {
+                    numberType = contextualType;
+                }
+            }
+
+            if (numberType == Type::Undefined() && isFloatingLiteral)
             {
                 numberType = m_options.defaultFloatingType;
             }
-            else
+            else if (numberType == Type::Undefined())
             {
                 numberType = m_options.defaultIntegerType;
             }

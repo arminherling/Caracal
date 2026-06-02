@@ -1,5 +1,5 @@
 EnumDefinitionStatement: {
-    Type: Numbers(i32)
+    Type: Numbers(u8)
     Name: Numbers
     FieldNodes(1): {
         EnumFieldDeclaration: {
@@ -16,25 +16,25 @@ FunctionDefinitionStatement: {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: Numbers(i32)
+            Type: Numbers(u8)
             Lexeme: Numbers
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: Numbers(i32)
+            Type: Numbers(u8)
             BinaryExpression: {
-                Type: Numbers(i32)
+                Type: Numbers(u8)
                 Left: {
                     NameExpression: {
-                        Type: Numbers(i32)
+                        Type: Numbers(u8)
                         Name: Numbers
                     }
                 }
                 Operation: MemberAccess
                 Right: {
                     NameExpression: {
-                        Type: Numbers(i32)
+                        Type: Numbers(u8)
                         Name: Zero
                     }
                 }

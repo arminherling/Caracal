@@ -1,5 +1,5 @@
 EnumDefinitionStatement: {
-    Type: Values(i32)
+    Type: Values(u8)
     Name: Values
     Annotation: {
         Name: step

@@ -112,6 +112,7 @@ namespace Caracal
         DiagnosticsBag& m_diagnostics;
         Type m_currentReturnType;
         Type m_currentType;
+        std::optional<Type> m_contextualNumberType;
         std::vector<std::unique_ptr<Scope>> m_scopes;
         std::unordered_map<const Statement*, const TokenBuffer*> m_statementTokens;
         std::vector<const ConstantDeclaration*> m_globalConstantDeclarations;

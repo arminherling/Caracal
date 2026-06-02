@@ -1,0 +1,7 @@
+enum Values : u8
+    First = 1
+    Second = 2
+    Third = 4
+    Fourth = 8
+    Fifth = 16
+    Sixth = 32

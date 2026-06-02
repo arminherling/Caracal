@@ -1,7 +1,7 @@
 enum Numbers : u8
-    Three = 3
+    Zero = 0
 
 define func() Numbers
 block entry(0):
-    %0 = const Numbers.Three (= 3) : Numbers
+    %0 = const Numbers.Zero (= 0) : Numbers
     return %0
