@@ -1,0 +1,10 @@
+def read(x: ref i32) i32
+{
+    return x;
+}
+
+def func() i32
+{
+    value := 5;
+    return read((ref value));
+}

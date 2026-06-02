@@ -733,6 +733,11 @@ namespace Caracal
     {
         switch (expression->kind())
         {
+            case NodeKind::GroupingExpression:
+            {
+                const auto* groupingExpression = static_cast<const GroupingExpression*>(expression);
+                return lowerAddressExpression(groupingExpression->expression().get(), block);
+            }
             case NodeKind::NameExpression:
             {
                 const auto* nameExpression = static_cast<const NameExpression*>(expression);

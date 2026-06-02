@@ -1,0 +1,81 @@
+FunctionDefinitionStatement: {
+    Type: (ref i32) -> i32
+    Name: read
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: x
+            TypeNameNode: {
+                Type: ref i32
+                Lexeme: i32
+                Ref: true
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: ref i32
+                Name: x
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NumberLiteral: 5
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            FunctionCallExpression: {
+                Type: i32
+                Function type: (ref i32) -> i32
+                NameExpression: {
+                    Type: (ref i32) -> i32
+                    Name: read
+                }
+                ArgumentsNode(1): {
+                    GroupingExpression: {
+                        Type: ref i32
+                        UnaryExpression: {
+                            Type: ref i32
+                            Operation: ReferenceOf
+                            Expression: {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: value
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
