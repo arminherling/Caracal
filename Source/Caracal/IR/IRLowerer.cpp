@@ -9,6 +9,7 @@
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
+#include <Caracal/IR/FieldAddressInstruction.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
@@ -35,6 +36,7 @@
 #include <Caracal/Syntax/Expression.h>
 #include <Caracal/Syntax/GroupingExpression.h>
 #include <Caracal/Syntax/IfStatement.h>
+#include <Caracal/Syntax/MemberAccessExpression.h>
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/NodeKind.h>
 #include <Caracal/Syntax/NumberLiteral.h>
@@ -200,10 +202,7 @@ namespace Caracal
 
     bool IRLowerer::lower(Module& module) noexcept
     {
-        m_nextTemporaryId = 0;
-        m_nextLocalSlotId = 0;
-        m_nextBlockId = 0;
-        m_loopContexts.clear();
+        resetState();
 
         for (const auto& enumDefinition : m_semanticModule.enumDefinitions())
         {
@@ -225,14 +224,90 @@ namespace Caracal
 
         for (const auto& functionDefinition : m_semanticModule.functionDefinitions())
         {
-            const auto* statement = functionDefinition.statement();
-            if (statement == nullptr || statement->kind() != NodeKind::FunctionDefinitionStatement)
-                continue;
+            if (functionDefinition.functionType() == FunctionType::SynthesizedConstructor)
+            {
+                if (!lowerSynthesizedConstructorDefinition(functionDefinition, module))
+                    return false;
 
-            if (!lowerFunctionDefinition(functionDefinition, module))
-                return false;
+                continue;
+            }
+
+            const auto* statement = functionDefinition.statement();
+            switch (statement->kind())
+            {
+                case NodeKind::FunctionDefinitionStatement:
+                {
+                    const auto* functionStatement = static_cast<const FunctionDefinitionStatement*>(statement);
+                    if (!lowerFunctionDefinition(functionDefinition, functionStatement->bodyNode().get(), functionStatement->isExtern(), module))
+                        return false;
+
+                    break;
+                }
+                case NodeKind::MethodDefinitionStatement:
+                {
+                    const auto* methodStatement = static_cast<const MethodDefinitionStatement*>(statement);
+                    if (!lowerFunctionDefinition(functionDefinition, methodStatement->bodyNode().get(), false, module))
+                        return false;
+
+                    break;
+                }
+                default:
+                    break;
+            }
         }
 
+        return true;
+    }
+
+    bool IRLowerer::lowerSynthesizedConstructorDefinition(const FunctionDefinition& definition, Module& module) noexcept
+    {
+        resetState();
+
+        std::vector<IRParameter> parameters;
+        for (const auto& parameter : definition.parameters())
+        {
+            parameters.emplace_back(parameter.name(), parameter.type());
+        }
+
+        const auto functionId = definition.type().id();
+        module.addFunction(Function{ functionId, definition.fullName(), parameters, Type::Void() });
+        auto* function = module.tryGetFunction(functionId);
+        if (function == nullptr)
+            return false;
+
+        auto blockId = m_nextBlockId++;
+        auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
+        lowerParameters(definition, entryBlock);
+
+        const auto thisResult = m_localValues.find("this");
+        if (thisResult == m_localValues.end() || thisResult->second.storageKind != LocalStorageKind::Address)
+            return false;
+
+        const auto& typeDefinition = m_semanticModule.getTypeDefinition(definition.parentType());
+        for (const auto& fieldDefinition : typeDefinition.fields())
+        {
+            if (fieldDefinition.expression() == nullptr)
+                continue;
+
+            const auto loweredValue = lowerValueExpression(fieldDefinition.expression(), entryBlock);
+            if (!loweredValue.has_value())
+                continue;
+
+            const auto addressId = m_nextTemporaryId++;
+            entryBlock.addInstruction(std::make_unique<FieldAddressInstruction>(
+                addressId,
+                thisResult->second.value,
+                definition.parentType(),
+                fieldDefinition.name(),
+                fieldDefinition.index(),
+                fieldDefinition.type().toReference()));
+            entryBlock.addInstruction(std::make_unique<StoreValueInstruction>(
+                loweredValue.value(),
+                ValueRef{ addressId },
+                fieldDefinition.type()));
+        }
+
+        function->addBlock(std::move(entryBlock));
         return true;
     }
 
@@ -272,16 +347,9 @@ namespace Caracal
         return true;
     }
 
-    bool IRLowerer::lowerFunctionDefinition(const FunctionDefinition& definition, Module& module) noexcept
+    bool IRLowerer::lowerFunctionDefinition(const FunctionDefinition& definition, const BlockNode* bodyNode, bool isExtern, Module& module) noexcept
     {
-        m_localValues.clear();
-        m_nextTemporaryId = 0;
-        m_nextLocalSlotId = 0;
-        m_nextBlockId = 0;
-
-        const auto* statement = static_cast<const FunctionDefinitionStatement*>(definition.statement());
-        if (statement == nullptr)
-            return false;
+        resetState();
 
         auto returnType = Type::Void();
         if (!definition.returnTypes().empty())
@@ -289,21 +357,21 @@ namespace Caracal
             returnType = definition.returnTypes().front();
         }
 
-        std::vector<Type> parameterTypes;
+        std::vector<IRParameter> parameters;
         for (const auto& parameter : definition.parameters())
         {
-            parameterTypes.push_back(parameter.type());
+            parameters.emplace_back(parameter.name(), parameter.type());
         }
 
-        if (statement->isExtern())
+        const auto& functionName = definition.fullName();
+        const auto functionId = definition.type().id();
+        if (isExtern)
         {
-            const auto functionId = definition.type().id();
-            module.addExternFunction(ExternFunction{ functionId, definition.name(), parameterTypes, returnType });
+            module.addExternFunction(ExternFunction{ functionId, functionName, parameters, returnType });
             return true;
         }
 
-        auto functionId = definition.type().id();
-        module.addFunction(Function{ functionId, definition.name(), parameterTypes, returnType });
+        module.addFunction(Function{ functionId, functionName, parameters, returnType });
         auto* function = module.tryGetFunction(functionId);
 
         auto blockId = m_nextBlockId++;
@@ -312,7 +380,7 @@ namespace Caracal
         function->addBlock(std::move(entryBlock));
 
         std::optional<BlockId> entryBlockId = blockId;
-        if (!lowerBlock(statement->bodyNode().get(), *function, entryBlockId))
+        if (!lowerBlock(bodyNode, *function, entryBlockId))
             return false;
 
         return true;
@@ -328,7 +396,7 @@ namespace Caracal
             block.addInstruction(std::make_unique<ParameterInstruction>(
                 parameterId,
                 static_cast<i32>(index),
-                parameterType));
+                IRParameter{ parameters[index].name(), parameterType}));
 
             const auto& parameterName = parameters[index].name();
             const auto storageKind = parameterType.isReference() ? LocalStorageKind::Address : LocalStorageKind::Value;
@@ -707,15 +775,28 @@ namespace Caracal
             return lowerExpression(rightExpression, block);
         }
 
+        const auto loweredValue = lowerValueExpression(rightExpression, block);
+        if (!loweredValue.has_value())
+            return false;
+
+        if (leftExpression->kind() == NodeKind::MemberAccessExpression)
+        {
+            const auto loweredAddress = lowerAddressExpression(leftExpression, block);
+            if (!loweredAddress.has_value())
+                return false;
+
+            block.addInstruction(std::make_unique<StoreValueInstruction>(
+                loweredValue.value(),
+                loweredAddress.value(),
+                leftExpression->type().toValue()));
+            return true;
+        }
+
         if (leftExpression->kind() != NodeKind::NameExpression)
             return false;
 
         const auto* nameExpression = static_cast<const NameExpression*>(leftExpression);
         if (!m_localValues.contains(nameExpression->name()))
-            return false;
-
-        const auto loweredValue = lowerValueExpression(rightExpression, block);
-        if (!loweredValue.has_value())
             return false;
 
         auto& localState = m_localValues.at(nameExpression->name());
@@ -789,83 +870,36 @@ namespace Caracal
 
                 return ensureAddressableLocal(static_cast<const NameExpression*>(unaryExpression->expression().get()), block);
             }
+            case NodeKind::MemberAccessExpression:
+            {
+                const auto* memberAccessExpression = static_cast<const MemberAccessExpression*>(expression);
+                if (memberAccessExpression->expression()->kind() != NodeKind::NameExpression)
+                    return std::nullopt;
+
+                const auto thisResult = m_localValues.find("this");
+                if (thisResult == m_localValues.end() || thisResult->second.storageKind != LocalStorageKind::Address)
+                    return std::nullopt;
+
+                const auto* fieldNameExpression = static_cast<const NameExpression*>(memberAccessExpression->expression().get());
+                const auto objectType = thisResult->second.type;
+                const auto& typeDefinition = m_semanticModule.getTypeDefinition(objectType);
+                const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldNameExpression->name());
+                if (fieldDefinition.type() == Type::Undefined())
+                    return std::nullopt;
+
+                const auto temporaryId = m_nextTemporaryId++;
+                block.addInstruction(std::make_unique<FieldAddressInstruction>(
+                    temporaryId,
+                    thisResult->second.value,
+                    objectType,
+                    fieldNameExpression->name(),
+                    fieldDefinition.index(),
+                    expression->type().toReference()));
+                return ValueRef{ temporaryId };
+            }
             default:
                 return std::nullopt;
         }
-    }
-
-    void IRLowerer::restoreLocalValues(const LocalStateMap& values) noexcept
-    {
-        m_localValues = values;
-    }
-
-    void IRLowerer::mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept
-    {
-        LocalStateMap mergedLocalValues;
-        if (incomingValues.empty())
-        {
-            m_localValues = std::move(mergedLocalValues);
-            return;
-        }
-
-        const auto& firstIncomingValues = incomingValues.front().values;
-
-        std::vector<std::string> mergeCandidateNames;
-        mergeCandidateNames.reserve(firstIncomingValues.size());
-        for (const auto& [name, localState] : firstIncomingValues)
-        {
-            if (localState.type == Type::Undefined())
-                continue;
-
-            mergeCandidateNames.push_back(name);
-        }
-
-        // sorting for deterministic phi insertion and snapshot output
-        std::sort(mergeCandidateNames.begin(), mergeCandidateNames.end());
-
-        for (const auto& name : mergeCandidateNames)
-        {
-            // only merge locals that are defined along every incoming edge
-            const auto isAvailableOnAllPaths = std::all_of(
-                incomingValues.begin(),
-                incomingValues.end(),
-                [&name](const IncomingLocalValues& incomingValue)
-                {
-                    return incomingValue.values.contains(name);
-                });
-            if (!isAvailableOnAllPaths)
-                continue;
-
-            const auto& firstState = firstIncomingValues.at(name);
-            // phi is only needed when at least one predecessor contributes a different SSA value
-            const auto requiresPhi = std::any_of(
-                incomingValues.begin() + 1,
-                incomingValues.end(),
-                [&name, &firstState](const IncomingLocalValues& incomingValue)
-                {
-                    return incomingValue.values.at(name).value.id() != firstState.value.id();
-                });
-            if (!requiresPhi)
-            {
-                mergedLocalValues.emplace(name, firstState);
-                continue;
-            }
-
-            std::vector<PhiInput> phiInputs;
-            phiInputs.reserve(incomingValues.size());
-            // phi inputs in predecessor order for the merged block
-            for (const auto& incomingValue : incomingValues)
-            {
-                phiInputs.emplace_back(incomingValue.predecessorBlockId, incomingValue.values.at(name).value);
-            }
-
-            const auto phiId = m_nextTemporaryId++;
-            block.addInstruction(std::make_unique<PhiInstruction>(phiId, std::move(phiInputs), firstState.type));
-            mergedLocalValues.emplace(name, LocalState{ ValueRef{ phiId }, firstState.type });
-        }
-
-        // replace locals with values after the merge
-        m_localValues = std::move(mergedLocalValues);
     }
 
     bool IRLowerer::lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept
@@ -1059,6 +1093,22 @@ namespace Caracal
                     return std::nullopt;
 
                 return lowerFunctionCall(static_cast<const FunctionCallExpression*>(expression), block);
+            case NodeKind::MemberAccessExpression:
+            {
+                const auto loweredAddress = lowerAddressExpression(expression, block);
+                if (!loweredAddress.has_value())
+                    return std::nullopt;
+
+                if (expression->type().isReference())
+                    return loweredAddress;
+
+                const auto temporaryId = m_nextTemporaryId++;
+                block.addInstruction(std::make_unique<LoadValueInstruction>(
+                    temporaryId,
+                    loweredAddress.value(),
+                    expression->type().toValue()));
+                return ValueRef{ temporaryId };
+            }
             case NodeKind::UnaryExpression:
             {
                 const auto* unaryExpression = static_cast<const UnaryExpression*>(expression);
@@ -1092,6 +1142,15 @@ namespace Caracal
                 const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
                 if (binaryExpression->binaryOperator() == BinaryOperatorKind::MemberAccess)
                 {
+                    if (binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression)
+                    {
+                        if (binaryExpression->type() == Type::Void())
+                            return std::nullopt;
+
+                        const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(binaryExpression->rightExpression().get());
+                        return lowerFunctionCall(functionCallExpression, block);
+                    }
+
                     const auto enumConstant = tryLowerEnumMemberConstant(binaryExpression);
                     if (!enumConstant.has_value())
                         return std::nullopt;
@@ -1201,5 +1260,87 @@ namespace Caracal
         const auto temporaryId = m_nextTemporaryId++;
         block.addInstruction(std::make_unique<CallInstruction>(temporaryId, functionId, std::move(loweredArguments), expression->type()));
         return ValueRef{ temporaryId };
+    }
+
+    void IRLowerer::resetState()
+    {
+        m_localValues.clear();
+        m_nextTemporaryId = 0;
+        m_nextLocalSlotId = 0;
+        m_nextBlockId = 0;
+    }
+
+    void IRLowerer::restoreLocalValues(const LocalStateMap& values) noexcept
+    {
+        m_localValues = values;
+    }
+
+    void IRLowerer::mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept
+    {
+        LocalStateMap mergedLocalValues;
+        if (incomingValues.empty())
+        {
+            m_localValues = std::move(mergedLocalValues);
+            return;
+        }
+
+        const auto& firstIncomingValues = incomingValues.front().values;
+
+        std::vector<std::string> mergeCandidateNames;
+        mergeCandidateNames.reserve(firstIncomingValues.size());
+        for (const auto& [name, localState] : firstIncomingValues)
+        {
+            if (localState.type == Type::Undefined())
+                continue;
+
+            mergeCandidateNames.push_back(name);
+        }
+
+        // sorting for deterministic phi insertion and snapshot output
+        std::sort(mergeCandidateNames.begin(), mergeCandidateNames.end());
+
+        for (const auto& name : mergeCandidateNames)
+        {
+            // only merge locals that are defined along every incoming edge
+            const auto isAvailableOnAllPaths = std::all_of(
+                incomingValues.begin(),
+                incomingValues.end(),
+                [&name](const IncomingLocalValues& incomingValue)
+                {
+                    return incomingValue.values.contains(name);
+                });
+            if (!isAvailableOnAllPaths)
+                continue;
+
+            const auto& firstState = firstIncomingValues.at(name);
+            // phi is only needed when at least one predecessor contributes a different SSA value
+            const auto requiresPhi = std::any_of(
+                incomingValues.begin() + 1,
+                incomingValues.end(),
+                [&name, &firstState](const IncomingLocalValues& incomingValue)
+                {
+                    return incomingValue.values.at(name).value.id() != firstState.value.id();
+                });
+            if (!requiresPhi)
+            {
+                mergedLocalValues.emplace(name, firstState);
+                continue;
+            }
+
+            std::vector<PhiInput> phiInputs;
+            phiInputs.reserve(incomingValues.size());
+            // phi inputs in predecessor order for the merged block
+            for (const auto& incomingValue : incomingValues)
+            {
+                phiInputs.emplace_back(incomingValue.predecessorBlockId, incomingValue.values.at(name).value);
+            }
+
+            const auto phiId = m_nextTemporaryId++;
+            block.addInstruction(std::make_unique<PhiInstruction>(phiId, std::move(phiInputs), firstState.type));
+            mergedLocalValues.emplace(name, LocalState{ ValueRef{ phiId }, firstState.type });
+        }
+
+        // replace locals with values after the merge
+        m_localValues = std::move(mergedLocalValues);
     }
 }

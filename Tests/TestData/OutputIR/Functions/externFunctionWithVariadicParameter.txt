@@ -1,1 +1,1 @@
-extern printf(%0: cstring, %1: ...) i32
+extern printf(%0: cstring "message", %1: ... "varargs") i32

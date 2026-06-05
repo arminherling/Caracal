@@ -9,6 +9,7 @@
 #include <Caracal/IR/DivideInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
 #include <Caracal/IR/ExternFunction.h>
+#include <Caracal/IR/FieldAddressInstruction.h>
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
@@ -157,6 +158,18 @@ namespace Caracal
         return FormatLiteralConstantValue(value, type);
     }
 
+    static std::string_view ResolveParameterName(const std::vector<std::string>& parameterNames, size_t index) noexcept
+    {
+        static constexpr std::string_view unnamedParameter = "_";
+        if (index >= parameterNames.size())
+            return unnamedParameter;
+
+        if (parameterNames[index].empty())
+            return unnamedParameter;
+
+        return parameterNames[index];
+    }
+
     IRPrinter::IRPrinter(const Module& module, i32 indentation)
         : m_module{ module }
         , m_builder{ indentation }
@@ -253,8 +266,8 @@ namespace Caracal
             .append(function.name())
             .append("(");
 
-        const auto& parameterTypes = function.parameterTypes();
-        for (size_t index = 0; index < parameterTypes.size(); ++index)
+        const auto& parameters = function.parameters();
+        for (size_t index = 0; index < parameters.size(); ++index)
         {
             if (index > 0)
             {
@@ -265,7 +278,11 @@ namespace Caracal
                 .append("%")
                 .append(std::to_string(index))
                 .append(": ");
-            appendType(parameterTypes[index]);
+            appendType(parameters[index].type());
+            m_builder
+                .append(" \"")
+                .append(parameters[index].name())
+                .append("\"");
         }
 
         m_builder.append(") ");
@@ -280,8 +297,8 @@ namespace Caracal
             .append(function.name())
             .append("(");
 
-        const auto& parameterTypes = function.parameterTypes();
-        for (size_t index = 0; index < parameterTypes.size(); ++index)
+        const auto& parameters = function.parameters();
+        for (size_t index = 0; index < parameters.size(); ++index)
         {
             if (index > 0)
                 m_builder.append(", ");
@@ -290,7 +307,11 @@ namespace Caracal
                 .append("%")
                 .append(std::to_string(index))
                 .append(": ");
-            appendType(parameterTypes[index]);
+            appendType(parameters[index].type());
+            m_builder
+                .append(" \"")
+                .append(parameters[index].name())
+                .append("\"");
         }
 
         m_builder.append(") ");
@@ -332,8 +353,11 @@ namespace Caracal
                     .append(" = parameter ")
                     .append(std::to_string(parameter.parameterIndex()))
                     .append(" : ");
-                appendType(parameter.type());
-                m_builder.appendLine("");
+                appendType(parameter.parameter().type());
+                m_builder
+                    .append(" \"")
+                    .append(parameter.parameter().name())
+                    .appendLine("\"");
                 break;
             }
             case InstructionKind::Constant:
@@ -368,6 +392,18 @@ namespace Caracal
                 appendSlot(addressOf.local());
                 m_builder.append(" : ");
                 appendType(addressOf.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::FieldAddress:
+            {
+                const auto& fieldAddress = static_cast<const FieldAddressInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ fieldAddress.resultId() });
+                m_builder.append(" = field_address ");
+                appendValue(fieldAddress.objectAddress());
+                m_builder.append(".").append(std::to_string(fieldAddress.fieldIndex())).append(" ").append(fieldAddress.fieldName()).append(" : ");
+                appendType(fieldAddress.type());
                 m_builder.appendLine("");
                 break;
             }
@@ -689,8 +725,8 @@ namespace Caracal
             m_builder.append("function");
         else if (baseType == Type::CVariadic())
             m_builder.append("...");
-        else if (const auto* enumDeclaration = m_module.tryGetEnum(baseType))
-            m_builder.append(enumDeclaration->name());
+        else if (const auto* typeName = m_module.tryGetTypeName(baseType))
+            m_builder.append(*typeName);
         else
             m_builder.append("type#").append(std::to_string(baseType.id()));
 

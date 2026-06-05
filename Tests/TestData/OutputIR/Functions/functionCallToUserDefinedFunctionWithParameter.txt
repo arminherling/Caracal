@@ -1,6 +1,6 @@
-define inner(%0: i32) void
+define inner(%0: i32 "x") void
 block entry(0):
-    %0 = parameter 0 : i32
+    %0 = parameter 0 : i32 "x"
     return
 
 define outer() void

@@ -2,9 +2,9 @@ enum Answer : bool
     Yes = true
     No = false
 
-define choose(%0: Answer) Answer
+define choose(%0: Answer "a") Answer
 block entry(0):
-    %0 = parameter 0 : Answer
+    %0 = parameter 0 : Answer "a"
     return %0
 
 define func() i32

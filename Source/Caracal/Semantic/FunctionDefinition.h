@@ -15,7 +15,7 @@ namespace Caracal
         StaticMethod,
         PublicMethod,
         PrivateMethod,
-        Constructor,
+        SynthesizedConstructor,
         Destructor
     };
 

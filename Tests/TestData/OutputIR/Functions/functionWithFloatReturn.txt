@@ -1,6 +1,6 @@
-define half(%0: f32) f32
+define half(%0: f32 "x") f32
 block entry(0):
-    %0 = parameter 0 : f32
+    %0 = parameter 0 : f32 "x"
     %1 = const 2.000000 : f32
     %2 = divide %0, %1 : f32
     return %2

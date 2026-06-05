@@ -1,4 +1,4 @@
-extern puts(%0: cstring) i32
+extern puts(%0: cstring "message") i32
 
 define func() i32
 block entry(0):

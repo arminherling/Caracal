@@ -2,9 +2,9 @@ enum Values : u8
     First = 0
     Second = 1
 
-define inner(%0: Values) void
+define inner(%0: Values "x") void
 block entry(0):
-    %0 = parameter 0 : Values
+    %0 = parameter 0 : Values "x"
     return
 
 define outer() void

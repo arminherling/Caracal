@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <Caracal/IR/Instruction.h>
+#include <Caracal/IR/IRParameter.h>
 #include <Caracal/Semantic/Type.h>
 
 #include <string>
@@ -13,19 +14,19 @@ namespace Caracal
     {
     public:
         ExternFunction() = default;
-        ExternFunction(FunctionId id, std::string name, const std::vector<Type>& parameterTypes, Type returnType);
+        ExternFunction(FunctionId id, std::string name, const std::vector<IRParameter>& parameters, Type returnType);
 
         [[nodiscard]] FunctionId id() const noexcept { return m_id; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
-        [[nodiscard]] const std::vector<Type>& parameterTypes() const noexcept { return m_parameterTypes; }
+        [[nodiscard]] const std::vector<IRParameter>& parameters() const noexcept { return m_parameters; }
         [[nodiscard]] Type returnType() const noexcept { return m_returnType; }
 
-        void addParameterType(Type type);
+        void addParameter(IRParameter parameter);
 
     private:
         FunctionId m_id{ -1 };
         std::string m_name;
-        std::vector<Type> m_parameterTypes;
+        std::vector<IRParameter> m_parameters;
         Type m_returnType{ Type::Void() };
     };
 }

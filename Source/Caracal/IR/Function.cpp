@@ -2,10 +2,10 @@
 
 namespace Caracal
 {
-    Function::Function(FunctionId id, std::string name, const std::vector<Type>& parameterTypes, Type returnType)
+    Function::Function(FunctionId id, std::string name, const std::vector<IRParameter>& parameters, Type returnType)
         : m_id{ id }
         , m_name{ std::move(name) }
-        , m_parameterTypes{ parameterTypes }
+        , m_parameters{ parameters }
         , m_returnType{ returnType }
     {
     }
@@ -28,9 +28,9 @@ namespace Caracal
         return m_blocks[result->second].get();
     }
 
-    void Function::addParameterType(Type type)
+    void Function::addParameter(IRParameter parameter)
     {
-        m_parameterTypes.push_back(type);
+        m_parameters.push_back(std::move(parameter));
     }
 
     void Function::addBlock(BasicBlock block)

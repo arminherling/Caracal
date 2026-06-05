@@ -2,11 +2,11 @@
 
 namespace Caracal
 {
-    ParameterInstruction::ParameterInstruction(TemporaryId resultId, i32 parameterIndex, Type type) noexcept
+    ParameterInstruction::ParameterInstruction(TemporaryId resultId, i32 parameterIndex, IRParameter parameter) noexcept
         : Instruction{ InstructionKind::Parameter }
         , m_resultId{ resultId }
         , m_parameterIndex{ parameterIndex }
-        , m_type{ type }
+        , m_parameter{ std::move(parameter) }
     {
     }
 }

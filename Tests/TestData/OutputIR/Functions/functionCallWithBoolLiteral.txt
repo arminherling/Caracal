@@ -1,6 +1,6 @@
-define inner(%0: bool) void
+define inner(%0: bool "x") void
 block entry(0):
-    %0 = parameter 0 : bool
+    %0 = parameter 0 : bool "x"
     return
 
 define outer() void

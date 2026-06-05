@@ -23,6 +23,7 @@ namespace Caracal
         [[nodiscard]] const ExternFunction* tryGetExternFunction(FunctionId id) const noexcept;
         [[nodiscard]] Function* tryGetFunction(FunctionId id) noexcept;
         [[nodiscard]] const std::string* tryGetFunctionName(FunctionId id) const noexcept;
+        [[nodiscard]] const std::string* tryGetTypeName(Type type) const noexcept;
 
         void addEnum(EnumDeclaration enumDeclaration);
         void addExternFunction(ExternFunction function);

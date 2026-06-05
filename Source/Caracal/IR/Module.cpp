@@ -41,6 +41,20 @@ namespace Caracal
         return nullptr;
     }
 
+    const std::string* Module::tryGetTypeName(Type type) const noexcept
+    {
+        const auto baseType = type.toBaseType();
+
+        if (const auto* enumDeclaration = tryGetEnum(baseType))
+            return &enumDeclaration->name();
+
+        const auto result = m_typeIndices.find(baseType.id());
+        if (result == m_typeIndices.end())
+            return nullptr;
+
+        return &m_types[result->second].name();
+    }
+
     void Module::addEnum(EnumDeclaration enumDeclaration)
     {
         const auto enumId = enumDeclaration.type().id();

@@ -1453,7 +1453,7 @@ namespace Caracal
         {
             m_currentType = functionDefinition.parentType();
 
-            if (functionDefinition.functionType() == FunctionType::Constructor)
+            if (functionDefinition.functionType() == FunctionType::SynthesizedConstructor)
             {
                 generateSynthesizedConstructor(functionDefinition);
                 continue;

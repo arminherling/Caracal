@@ -1,4 +1,4 @@
-extern print(%0: cstring) void
+extern print(%0: cstring "message") void
 
 define func() void
 block entry(0):

@@ -1,10 +1,10 @@
 type Number
-    const value: i32
+    value: i32
 
-define Number.new(%0: ref Number "this") void
+define Number.new(%0: ref Number "this", %1: i32 "value") void
 block entry(0):
     %0 = parameter 0 : ref Number "this"
-    %1 = const 42 : i32
+    %1 = parameter 1 : i32 "value"
     %2 = field_address %0.0 value : ref i32
     store_value %1, %2 : i32
     return

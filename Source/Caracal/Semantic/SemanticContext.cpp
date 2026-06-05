@@ -1,4 +1,4 @@
-#include "SemanticContext.h"
+﻿#include "SemanticContext.h"
 
 namespace Caracal
 {
@@ -181,7 +181,7 @@ namespace Caracal
         auto fullConstructorName = typeDefinition.name() + "." + constructorName;
         auto constructorId = m_nextId += VariantCount;
         auto methodType = Type{ constructorId, TypeKind::Constructor };
-        m_functionDefinitions.emplace_back(nullptr, methodType, parentType, FunctionType::Constructor, constructorName, fullConstructorName, false, parameters, std::vector<Type>{ Type::Void() });
+        m_functionDefinitions.emplace_back(nullptr, methodType, parentType, FunctionType::SynthesizedConstructor, constructorName, fullConstructorName, false, parameters, std::vector<Type>{ Type::Void() });
         m_functionDefinitionIndexById.try_emplace(constructorId, m_functionDefinitions.size() - 1);
         typeDefinition.addMethod(methodType, constructorName);
 

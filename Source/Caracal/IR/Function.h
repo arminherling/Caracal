@@ -2,6 +2,7 @@
 
 #include <Caracal/Defines.h>
 #include <Caracal/IR/BasicBlock.h>
+#include <Caracal/IR/IRParameter.h>
 
 #include <string>
 #include <unordered_map>
@@ -14,12 +15,12 @@ namespace Caracal
     {
     public:
         Function() = default;
-        Function(FunctionId id, std::string name, const std::vector<Type>& parameterTypes, Type returnType);
+        Function(FunctionId id, std::string name, const std::vector<IRParameter>& parameters, Type returnType);
         CARACAL_DELETE_COPY_DEFAULT_MOVE(Function)
 
         [[nodiscard]] FunctionId id() const noexcept { return m_id; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
-        [[nodiscard]] const std::vector<Type>& parameterTypes() const noexcept { return m_parameterTypes; }
+        [[nodiscard]] const std::vector<IRParameter>& parameters() const noexcept { return m_parameters; }
         [[nodiscard]] Type returnType() const noexcept { return m_returnType; }
         [[nodiscard]] const std::vector<BasicBlockUPtr>& blocks() const noexcept { return m_blocks; }
         [[nodiscard]] bool hasBlocks() const noexcept { return !m_blocks.empty(); }
@@ -27,13 +28,13 @@ namespace Caracal
         [[nodiscard]] BasicBlock* tryGetBlock(BlockId id) noexcept;
         [[nodiscard]] const BasicBlock* tryGetBlock(BlockId id) const noexcept;
         
-        void addParameterType(Type type);
+        void addParameter(IRParameter parameter);
         void addBlock(BasicBlock block);
 
     private:
         FunctionId m_id{ -1 };
         std::string m_name;
-        std::vector<Type> m_parameterTypes;
+        std::vector<IRParameter> m_parameters;
         Type m_returnType{ Type::Void() };
         std::vector<BasicBlockUPtr> m_blocks;
         std::unordered_map<BlockId, size_t> m_blockIndices;

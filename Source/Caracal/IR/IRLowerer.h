@@ -77,7 +77,8 @@ namespace Caracal
         [[nodiscard]] bool lowerStatement(const Statement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerEnumDefinition(const EnumDefinition& definition, Module& module) noexcept;
         [[nodiscard]] bool lowerTypeDefinition(const TypeDefinition& definition, Module& module) noexcept;
-        [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinition& definition, Module& module) noexcept;
+        [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinition& definition, const BlockNode* bodyNode, bool isExtern, Module& module) noexcept;
+        [[nodiscard]] bool lowerSynthesizedConstructorDefinition(const FunctionDefinition& definition, Module& module) noexcept;
         [[nodiscard]] bool lowerBlock(const BlockNode* block, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerIfStatement(const IfStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerWhileStatement(const WhileStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
@@ -97,6 +98,7 @@ namespace Caracal
         [[nodiscard]] bool lowerExpression(const Expression* expression, BasicBlock& block) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerFunctionCall(const FunctionCallExpression* expression, BasicBlock& block) noexcept;
         
+        void resetState();
         void restoreLocalValues(const LocalStateMap& values) noexcept;
         void mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept;
 

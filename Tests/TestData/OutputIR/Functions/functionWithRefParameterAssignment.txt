@@ -1,6 +1,6 @@
-define setTen(%0: ref i32) void
+define setTen(%0: ref i32 "x") void
 block entry(0):
-    %0 = parameter 0 : ref i32
+    %0 = parameter 0 : ref i32 "x"
     %1 = const 10 : i32
     store_value %1, %0 : i32
     return

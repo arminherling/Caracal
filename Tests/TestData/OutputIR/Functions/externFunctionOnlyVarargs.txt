@@ -1,1 +1,1 @@
-extern printf(%0: ...) i32
+extern printf(%0: ... "varargs") i32

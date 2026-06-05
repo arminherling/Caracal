@@ -1621,7 +1621,7 @@ namespace Caracal
                                 TODO("Handle multiple return types");
                             }
 
-                            if (methodDefinition.functionType() == FunctionType::Constructor)
+                            if (methodDefinition.functionType() == FunctionType::SynthesizedConstructor)
                             {
                                 binaryExpression->setBinaryOperatorKind(BinaryOperatorKind::ConstructorCall);
                                 binaryExpression->setType(leftType);
@@ -1848,7 +1848,7 @@ namespace Caracal
         auto isVariadic = functionDefinition.isVariadic();
         auto parameterCount = (isVariadic ? parameterTypes.size() - 1 : parameterTypes.size());
         const bool hasImplicitThis =
-            functionDefinition.functionType() == FunctionType::Constructor ||
+            functionDefinition.functionType() == FunctionType::SynthesizedConstructor ||
             functionDefinition.functionType() == FunctionType::PublicMethod ||
             functionDefinition.functionType() == FunctionType::PrivateMethod;
         const size_t parameterOffset = hasImplicitThis ? 1 : 0;

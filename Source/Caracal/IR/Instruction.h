@@ -20,6 +20,7 @@ namespace Caracal
         Constant,
         AllocateLocal,
         AddressOf,
+        FieldAddress,
         LoadValue,
         StoreValue,
         ValueNegation,

@@ -1,6 +1,6 @@
-define read(%0: ref i32) i32
+define read(%0: ref i32 "x") i32
 block entry(0):
-    %0 = parameter 0 : ref i32
+    %0 = parameter 0 : ref i32 "x"
     %1 = load_value %0 : i32
     return %1
 

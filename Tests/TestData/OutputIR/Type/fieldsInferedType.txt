@@ -1,3 +1,14 @@
 type Fields
     const a: bool
     b: bool
+
+define Fields.new(%0: ref Fields "this") void
+block entry(0):
+    %0 = parameter 0 : ref Fields "this"
+    %1 = const true : bool
+    %2 = field_address %0.0 a : ref bool
+    store_value %1, %2 : bool
+    %3 = const false : bool
+    %4 = field_address %0.1 b : ref bool
+    store_value %3, %4 : bool
+    return
