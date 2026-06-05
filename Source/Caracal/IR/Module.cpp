@@ -68,10 +68,11 @@ namespace Caracal
         m_externFunctions.push_back(std::move(function));
     }
 
-    void Module::addFunction(Function function)
+    Function* Module::addFunction(Function function)
     {
         m_functionIndices.emplace(function.id(), m_functions.size());
         m_functions.push_back(std::move(function));
+        return &m_functions.back();
     }
 
     void Module::addType(TypeDeclaration typeDeclaration)

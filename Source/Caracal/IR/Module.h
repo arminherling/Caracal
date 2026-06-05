@@ -27,7 +27,7 @@ namespace Caracal
 
         void addEnum(EnumDeclaration enumDeclaration);
         void addExternFunction(ExternFunction function);
-        void addFunction(Function function);
+        Function* addFunction(Function function);
         void addType(TypeDeclaration typeDeclaration);
 
     private:

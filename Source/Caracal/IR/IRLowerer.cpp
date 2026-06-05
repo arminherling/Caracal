@@ -270,11 +270,7 @@ namespace Caracal
         }
 
         const auto functionId = definition.type().id();
-        module.addFunction(Function{ functionId, definition.fullName(), parameters, Type::Void() });
-        auto* function = module.tryGetFunction(functionId);
-        if (function == nullptr)
-            return false;
-
+        auto* function = module.addFunction(Function{ functionId, definition.fullName(), parameters, Type::Void() });
         auto blockId = m_nextBlockId++;
         auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
         lowerParameters(definition, entryBlock);
@@ -371,9 +367,7 @@ namespace Caracal
             return true;
         }
 
-        module.addFunction(Function{ functionId, functionName, parameters, returnType });
-        auto* function = module.tryGetFunction(functionId);
-
+        auto* function = module.addFunction(Function{ functionId, functionName, parameters, returnType });
         auto blockId = m_nextBlockId++;
         auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
         lowerParameters(definition, entryBlock);
