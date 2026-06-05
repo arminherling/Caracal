@@ -11,6 +11,6 @@ namespace Caracal
         const std::filesystem::path& filePath,
         const DiagnosticOptions& diagnosticOptions = {});
 
-    CARACAL_API std::pair<bool, std::string> generateIRText(ParseTree& parseTree, SemanticContext& semanticContext);
+    CARACAL_API std::pair<bool, std::string> generateIRText(SemanticContext& semanticContext);
     CARACAL_API std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, SemanticContext& semanticContext, std::string targetTriple);
 };

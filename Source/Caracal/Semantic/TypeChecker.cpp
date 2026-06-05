@@ -1344,7 +1344,7 @@ namespace Caracal
 
         statement->nameExpression()->setType(fieldType);
         statement->setType(fieldType);
-        typeDefinition.addField(fieldType, fieldName, fieldIndex, fieldExpression);
+        typeDefinition.addField(fieldType, fieldName, fieldIndex, fieldExpression, statement->isConstant());
     }
 
     void TypeChecker::typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement, const TokenBuffer& tokens)

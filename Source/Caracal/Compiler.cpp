@@ -209,11 +209,11 @@ namespace Caracal
         return exeResult;
     }
 
-    std::pair<bool, std::string> generateIRText(ParseTree& parseTree, SemanticContext& semanticContext)
+    std::pair<bool, std::string> generateIRText(SemanticContext& semanticContext)
     {
         Module module{};
         IRLowerer lowerer{ semanticContext };
-        const auto wasSuccessful = lowerer.lower(parseTree, module);
+        const auto wasSuccessful = lowerer.lower(module);
         if (!wasSuccessful)
             return std::make_pair(false, std::string{});
 

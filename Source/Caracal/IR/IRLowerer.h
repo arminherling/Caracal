@@ -10,9 +10,7 @@
 #include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BlockNode.h>
-#include <Caracal/Syntax/EnumDefinitionStatement.h>
 #include <Caracal/Syntax/Expression.h>
-#include <Caracal/Syntax/FunctionDefinitionStatement.h>
 #include <Caracal/Syntax/GroupingExpression.h>
 #include <Caracal/Syntax/IfStatement.h>
 #include <Caracal/Syntax/ParseTree.h>
@@ -21,6 +19,7 @@
 #include <Caracal/Syntax/WhileStatement.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
 #include <Caracal/Syntax/FunctionCallExpression.h>
+#include <Caracal/Syntax/TypeDefinitionStatement.h>
 
 #include <optional>
 #include <string>
@@ -72,20 +71,20 @@ namespace Caracal
 
         CARACAL_DELETE_COPY_DELETE_MOVE(IRLowerer)
 
-        [[nodiscard]] bool lower(const ParseTree& parseTree, Module& module) noexcept;
+        [[nodiscard]] bool lower(Module& module) noexcept;
 
     private:
-        [[nodiscard]] bool lowerStatement(const Statement* statement, Module& module) noexcept;
         [[nodiscard]] bool lowerStatement(const Statement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
-        [[nodiscard]] bool lowerEnumDefinition(const EnumDefinitionStatement* statement, Module& module) noexcept;
-        [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept;
+        [[nodiscard]] bool lowerEnumDefinition(const EnumDefinition& definition, Module& module) noexcept;
+        [[nodiscard]] bool lowerTypeDefinition(const TypeDefinition& definition, Module& module) noexcept;
+        [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinition& definition, Module& module) noexcept;
         [[nodiscard]] bool lowerBlock(const BlockNode* block, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerIfStatement(const IfStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerWhileStatement(const WhileStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerBreakStatement(BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerSkipStatement(BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerExpressionStatement(const ExpressionStatement* statement, BasicBlock& block) noexcept;
-        void lowerParameters(const FunctionDefinitionStatement* statement, BasicBlock& block) noexcept;
+        void lowerParameters(const FunctionDefinition& definition, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept;

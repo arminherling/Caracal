@@ -26,15 +26,13 @@
 #include <Caracal/IR/StoreValueInstruction.h>
 #include <Caracal/IR/SubtractInstruction.h>
 #include <Caracal/IR/ValueNegationInstruction.h>
-#include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Semantic/FunctionDefinition.h>
+#include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BlockNode.h>
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
-#include <Caracal/Syntax/EnumDefinitionStatement.h>
 #include <Caracal/Syntax/Expression.h>
-#include <Caracal/Syntax/FunctionDefinitionStatement.h>
 #include <Caracal/Syntax/GroupingExpression.h>
 #include <Caracal/Syntax/IfStatement.h>
 #include <Caracal/Syntax/NameExpression.h>
@@ -200,92 +198,117 @@ namespace Caracal
     {
     }
 
-    bool IRLowerer::lower(const ParseTree& parseTree, Module& module) noexcept
+    bool IRLowerer::lower(Module& module) noexcept
     {
         m_nextTemporaryId = 0;
         m_nextLocalSlotId = 0;
         m_nextBlockId = 0;
         m_loopContexts.clear();
 
-        for (const auto& statement : parseTree.statements())
+        for (const auto& enumDefinition : m_semanticModule.enumDefinitions())
         {
-            if (!lowerStatement(statement.get(), module))
+            if (enumDefinition.statement() == nullptr)
+                continue;
+
+            if (!lowerEnumDefinition(enumDefinition, module))
+                return false;
+        }
+
+        for (const auto& typeDefinition : m_semanticModule.typeDefinitions())
+        {
+            if (typeDefinition.statement() == nullptr)
+                continue;
+
+            if (!lowerTypeDefinition(typeDefinition, module))
+                return false;
+        }
+
+        for (const auto& functionDefinition : m_semanticModule.functionDefinitions())
+        {
+            const auto* statement = functionDefinition.statement();
+            if (statement == nullptr || statement->kind() != NodeKind::FunctionDefinitionStatement)
+                continue;
+
+            if (!lowerFunctionDefinition(functionDefinition, module))
                 return false;
         }
 
         return true;
     }
 
-    bool IRLowerer::lowerStatement(const Statement* statement, Module& module) noexcept
+    bool IRLowerer::lowerEnumDefinition(const EnumDefinition& definition, Module& module) noexcept
     {
-        if (statement->kind() == NodeKind::FunctionDefinitionStatement)
-            return lowerFunctionDefinition(static_cast<const FunctionDefinitionStatement*>(statement), module);
-
-        if (statement->kind() == NodeKind::EnumDefinitionStatement)
-            return lowerEnumDefinition(static_cast<const EnumDefinitionStatement*>(statement), module);
-
-        return false;
-    }
-
-    bool IRLowerer::lowerEnumDefinition(const EnumDefinitionStatement* statement, Module& module) noexcept
-    {
-        const auto enumType = statement->type();
+        const auto enumType = definition.type();
         if (enumType == Type::Undefined())
             return false;
 
-        auto& semanticEnumDefinition = m_semanticModule.getEnumDefinition(enumType);
-        auto enumDeclaration = EnumDeclaration{ semanticEnumDefinition.name(), enumType, semanticEnumDefinition.baseType() };
-        for (const auto& fieldNode : statement->fieldNodes())
+        auto enumDeclaration = EnumDeclaration{ definition.name(), enumType, definition.baseType() };
+        for (const auto& field : definition.fields())
         {
-            auto loweredFieldValue = tryLowerEnumFieldValue(enumType, fieldNode->name());
+            auto loweredFieldValue = tryLowerEnumFieldValue(enumType, field.name());
             if (!loweredFieldValue.has_value())
                 return false;
 
-            enumDeclaration.addField(fieldNode->name(), loweredFieldValue.value());
+            enumDeclaration.addField(field.name(), loweredFieldValue.value());
         }
 
         module.addEnum(std::move(enumDeclaration));
         return true;
     }
 
-    bool IRLowerer::lowerFunctionDefinition(const FunctionDefinitionStatement* statement, Module& module) noexcept
+    bool IRLowerer::lowerTypeDefinition(const TypeDefinition& definition, Module& module) noexcept
+    {
+        const auto typeType = definition.type();
+        if (typeType == Type::Undefined())
+            return false;
+
+        TypeDeclaration typeDeclaration{ definition.name(), typeType };
+        for (const auto& fieldDefinition : definition.fields())
+        {
+            typeDeclaration.addField(fieldDefinition.name(), fieldDefinition.type(), fieldDefinition.isConstant());
+        }
+
+        module.addType(std::move(typeDeclaration));
+        return true;
+    }
+
+    bool IRLowerer::lowerFunctionDefinition(const FunctionDefinition& definition, Module& module) noexcept
     {
         m_localValues.clear();
         m_nextTemporaryId = 0;
         m_nextLocalSlotId = 0;
         m_nextBlockId = 0;
 
-        const auto functionType = m_semanticModule.tryGetFunctionTypeByName(statement->name());
-        if (functionType == Type::Undefined())
+        const auto* statement = static_cast<const FunctionDefinitionStatement*>(definition.statement());
+        if (statement == nullptr)
             return false;
 
-        const auto& functionDefinition = m_semanticModule.getFunctionDefinition(functionType);
         auto returnType = Type::Void();
-        if (!functionDefinition.returnTypes().empty())
+        if (!definition.returnTypes().empty())
         {
-            returnType = functionDefinition.returnTypes().front();
+            returnType = definition.returnTypes().front();
         }
 
         std::vector<Type> parameterTypes;
-        for (const auto& parameter : functionDefinition.parameters())
+        for (const auto& parameter : definition.parameters())
         {
             parameterTypes.push_back(parameter.type());
         }
 
         if (statement->isExtern())
         {
-            const auto functionId = functionDefinition.type().id();
-            module.addExternFunction(ExternFunction{ functionId, statement->name(), parameterTypes, returnType });
+            const auto functionId = definition.type().id();
+            module.addExternFunction(ExternFunction{ functionId, definition.name(), parameterTypes, returnType });
             return true;
         }
 
-        auto functionId = functionDefinition.type().id();
-        module.addFunction(Function{ functionId, statement->name(), parameterTypes, returnType });
+        auto functionId = definition.type().id();
+        module.addFunction(Function{ functionId, definition.name(), parameterTypes, returnType });
         auto* function = module.tryGetFunction(functionId);
 
         auto blockId = m_nextBlockId++;
         auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
-        lowerParameters(statement, entryBlock);
+        lowerParameters(definition, entryBlock);
         function->addBlock(std::move(entryBlock));
 
         std::optional<BlockId> entryBlockId = blockId;
@@ -295,19 +318,19 @@ namespace Caracal
         return true;
     }
 
-    void IRLowerer::lowerParameters(const FunctionDefinitionStatement* statement, BasicBlock& block) noexcept
+    void IRLowerer::lowerParameters(const FunctionDefinition& definition, BasicBlock& block) noexcept
     {
-        const auto& parameterNodes = statement->parametersNode()->parameters();
-        for (size_t index = 0; index < parameterNodes.size(); ++index)
+        const auto& parameters = definition.parameters();
+        for (size_t index = 0; index < parameters.size(); ++index)
         {
             const auto parameterId = m_nextTemporaryId++;
-            const auto parameterName = parameterNodes[index]->name();
-            const auto parameterType = parameterNodes[index]->type();
+            const auto parameterType = parameters[index].type();
             block.addInstruction(std::make_unique<ParameterInstruction>(
                 parameterId,
                 static_cast<i32>(index),
                 parameterType));
 
+            const auto& parameterName = parameters[index].name();
             const auto storageKind = parameterType.isReference() ? LocalStorageKind::Address : LocalStorageKind::Value;
             m_localValues.emplace(
                 parameterName,

@@ -59,4 +59,10 @@ namespace Caracal
         m_functionIndices.emplace(function.id(), m_functions.size());
         m_functions.push_back(std::move(function));
     }
+
+    void Module::addType(TypeDeclaration typeDeclaration)
+    {
+        m_typeIndices.emplace(typeDeclaration.type().id(), m_types.size());
+        m_types.push_back(std::move(typeDeclaration));
+    }
 }

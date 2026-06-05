@@ -180,6 +180,12 @@ namespace Caracal
             prettyPrintEnumDeclaration(enumDeclaration);
         }
 
+        for (const auto& typeDeclaration : m_module.types())
+        {
+            appendDeclarationSeparator();
+            prettyPrintTypeDeclaration(typeDeclaration);
+        }
+
         for (const auto& function : m_module.externFunctions())
         {
             appendDeclarationSeparator();
@@ -213,6 +219,29 @@ namespace Caracal
                 .append(" = ")
                 .append(FormatLiteralConstantValue(field.value, enumDeclaration.baseType()))
                 .appendLine("");
+        }
+        m_builder.popIndentation();
+    }
+
+    void IRPrinter::prettyPrintTypeDeclaration(const TypeDeclaration& typeDeclaration)
+    {
+        m_builder
+            .append("type ")
+            .append(typeDeclaration.name())
+            .appendLine("");
+
+        m_builder.pushIndentation();
+        for (const auto& field : typeDeclaration.fields())
+        {
+            m_builder.appendIndented("");
+            if (field.isConstant)
+            {
+                m_builder.append("const ");
+            }
+
+            m_builder.append(field.name).append(": ");
+            appendType(field.type);
+            m_builder.appendLine("");
         }
         m_builder.popIndentation();
     }

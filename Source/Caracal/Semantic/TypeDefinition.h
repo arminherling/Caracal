@@ -19,7 +19,7 @@ namespace Caracal
 
         [[nodiscard]] Type type() const noexcept { return m_type; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
-        void addField(Type fieldType, const std::string& fieldName, i32 fieldIndex, Expression* expression) noexcept;
+        void addField(Type fieldType, const std::string& fieldName, i32 fieldIndex, Expression* expression, bool isConstant = false) noexcept;
         [[nodiscard]] const FieldDefinition& tryGetFieldByName(std::string_view fieldName) const noexcept;
         [[nodiscard]] const std::vector<FieldDefinition>& fields() const noexcept { return m_fields; }
         void addMethod(Type methodType, const std::string& methodName) noexcept;

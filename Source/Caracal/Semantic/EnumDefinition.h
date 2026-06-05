@@ -4,6 +4,8 @@
 #include <Caracal/Semantic/Type.h>
 #include <Caracal/Semantic/EnumField.h>
 
+#include <vector>
+
 namespace Caracal
 {
     class EnumDefinition
@@ -19,6 +21,7 @@ namespace Caracal
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
         [[nodiscard]] const EnumField& getFieldByName(std::string_view fieldName) const noexcept;
         [[nodiscard]] bool hasField(std::string_view fieldName) const noexcept;
+        [[nodiscard]] const std::vector<EnumField>& fields() const noexcept { return m_fields; }
         [[nodiscard]] const EnumDefinitionStatement* statement() const noexcept { return m_statement; }
 
         void setBaseType(Type baseType) noexcept { m_baseType = baseType; }
@@ -29,7 +32,8 @@ namespace Caracal
         Type m_type;
         Type m_baseType;
         std::string m_name;
-        std::unordered_map<std::string, EnumField> m_fields;
+        std::vector<EnumField> m_fields;
+        std::unordered_map<std::string, size_t> m_fieldIndices;
         const EnumDefinitionStatement* m_statement;
     };
 }

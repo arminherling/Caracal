@@ -1,0 +1,2 @@
+type Number
+    const value: i32

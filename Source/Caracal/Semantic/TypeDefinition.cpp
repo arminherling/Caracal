@@ -12,9 +12,9 @@ namespace Caracal
     {
     }
 
-    void TypeDefinition::addField(Type fieldType, const std::string& fieldName, i32 fieldIndex, Expression* expression) noexcept
+    void TypeDefinition::addField(Type fieldType, const std::string& fieldName, i32 fieldIndex, Expression* expression, bool isConstant) noexcept
     {
-        m_fields.emplace_back(fieldType, fieldName, fieldIndex, expression);
+        m_fields.emplace_back(fieldType, fieldName, fieldIndex, expression, isConstant);
     }
 
     const FieldDefinition& TypeDefinition::tryGetFieldByName(std::string_view fieldName) const noexcept

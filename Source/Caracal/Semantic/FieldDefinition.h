@@ -11,17 +11,19 @@ namespace Caracal
     class CARACAL_API FieldDefinition
     {
     public:
-        FieldDefinition(Type type, const std::string& name, i32 index, Expression* expression) noexcept;
+        FieldDefinition(Type type, const std::string& name, i32 index, Expression* expression, bool isConstant = false) noexcept;
 
         [[nodiscard]] Type type() const noexcept { return m_type; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
         [[nodiscard]] i32 index() const noexcept { return m_index; }
         [[nodiscard]] Expression* expression() const noexcept { return m_expression; }
+        [[nodiscard]] bool isConstant() const noexcept { return m_isConstant; }
 
     private:
         Type m_type;
         std::string m_name;
         i32 m_index;
         Expression* m_expression;
+        bool m_isConstant{ false };
     };
 }

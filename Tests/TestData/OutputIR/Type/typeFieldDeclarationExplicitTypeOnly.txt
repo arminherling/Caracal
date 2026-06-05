@@ -1,0 +1,2 @@
+type Number
+    value: i32

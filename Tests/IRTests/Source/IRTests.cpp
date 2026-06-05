@@ -48,7 +48,7 @@ static void FileTests(
     }
 
     const auto startTime = std::chrono::high_resolution_clock::now();
-    const auto [irGenerated, output] = Caracal::generateIRText(*parseTrees[0], module);
+    const auto [irGenerated, output] = Caracal::generateIRText(module);
     const auto endTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "      generateIRText(): " << CaraTest::stringify(endTime - startTime) << std::endl;
