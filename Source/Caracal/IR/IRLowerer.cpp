@@ -10,6 +10,7 @@
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
+#include <Caracal/IR/GlobalConstantDeclaration.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
@@ -232,6 +233,12 @@ namespace Caracal
                 return false;
         }
 
+        for (const auto& constantDefinition : m_semanticContext.constantDefinitions())
+        {
+            // non-constant globals are handled later
+            static_cast<void>(lowerGlobalConstant(constantDefinition, module));
+        }
+
         for (const auto& functionDefinition : m_semanticContext.functionDefinitions())
         {
             if (functionDefinition.functionType() == FunctionType::SynthesizedConstructor)
@@ -350,6 +357,20 @@ namespace Caracal
         }
 
         module.addType(std::move(typeDeclaration));
+        return true;
+    }
+
+    bool IRLowerer::lowerGlobalConstant(const ConstantDefinition& definition, Module& module) noexcept
+    {
+        const auto* expression = definition.expression();
+        if (expression == nullptr)
+            return false;
+
+        const auto constantValue = tryLowerConstantExpression(expression);
+        if (!constantValue.has_value())
+            return false;
+
+        module.addGlobalConstant(GlobalConstantDeclaration{ definition.name(), definition.type(), constantValue.value() });
         return true;
     }
 

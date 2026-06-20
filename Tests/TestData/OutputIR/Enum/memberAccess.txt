@@ -1,0 +1,5 @@
+enum Values : u8
+    First = 0
+    Second = 1
+
+global s : Values = 1

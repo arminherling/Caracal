@@ -1,0 +1,1 @@
+global world : cstring = "Hello, World!\0"

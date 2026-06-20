@@ -201,6 +201,12 @@ namespace Caracal
             prettyPrintTypeDeclaration(typeDeclaration);
         }
 
+        for (const auto& globalDeclaration : m_module.globalConstants())
+        {
+            appendDeclarationSeparator();
+            prettyPrintGlobalConstantDeclaration(globalDeclaration);
+        }
+
         for (const auto& function : m_module.externFunctions())
         {
             appendDeclarationSeparator();
@@ -259,6 +265,19 @@ namespace Caracal
             m_builder.appendLine("");
         }
         m_builder.popIndentation();
+    }
+
+    void IRPrinter::prettyPrintGlobalConstantDeclaration(const GlobalConstantDeclaration& globalDeclaration)
+    {
+        m_builder
+            .append("global ")
+            .append(globalDeclaration.name())
+            .append(" : ");
+        appendType(globalDeclaration.type());
+        m_builder
+            .append(" = ")
+            .append(FormatLiteralConstantValue(globalDeclaration.value(), globalDeclaration.type()))
+            .appendLine("");
     }
 
     void IRPrinter::prettyPrintExternFunction(const ExternFunction& function)

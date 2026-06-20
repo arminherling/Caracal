@@ -75,6 +75,11 @@ namespace Caracal
         return &m_functions.back();
     }
 
+    void Module::addGlobalConstant(GlobalConstantDeclaration globalDeclaration)
+    {
+        m_globalConstants.push_back(std::move(globalDeclaration));
+    }
+
     void Module::addType(TypeDeclaration typeDeclaration)
     {
         m_typeIndices.emplace(typeDeclaration.type().id(), m_types.size());

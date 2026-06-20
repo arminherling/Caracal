@@ -77,6 +77,7 @@ namespace Caracal
         [[nodiscard]] bool lowerStatement(const Statement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerEnumDefinition(const EnumDefinition& definition, Module& module) noexcept;
         [[nodiscard]] bool lowerTypeDefinition(const TypeDefinition& definition, Module& module) noexcept;
+        [[nodiscard]] bool lowerGlobalConstant(const ConstantDefinition& definition, Module& module) noexcept;
         [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinition& definition, const BlockNode* bodyNode, bool isExtern, Module& module) noexcept;
         [[nodiscard]] bool lowerSynthesizedConstructorDefinition(const FunctionDefinition& definition, Module& module) noexcept;
         [[nodiscard]] bool ensureExitTerminator(Function& function, std::optional<BlockId> currentBlockId, Type returnType) noexcept;

@@ -27,6 +27,7 @@ namespace Caracal
     private:
         void prettyPrintEnumDeclaration(const EnumDeclaration& enumDeclaration);
         void prettyPrintTypeDeclaration(const TypeDeclaration& typeDeclaration);
+        void prettyPrintGlobalConstantDeclaration(const GlobalConstantDeclaration& globalDeclaration);
         void prettyPrintExternFunction(const ExternFunction& function);
         void prettyPrintFunction(const Function& function);
         void prettyPrintBlock(const Function& function, const BasicBlock& block);
