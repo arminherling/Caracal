@@ -1,0 +1,14 @@
+define func() void
+block entry(0):
+    %slot0 = allocate_local : i32 "x"
+    %0 = const 1 : i32
+    %1 = address_of %slot0 : ref i32
+    store_value %0, %1 : i32
+    %2 = const 2 : i32
+    %3 = load_value %1 : i32
+    %4 = not_equal %3, %2 : bool
+    branch if %4, if.true(1), if.continuation(2)
+block if.true(1):
+    return
+block if.continuation(2):
+    return

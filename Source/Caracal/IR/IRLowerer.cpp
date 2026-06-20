@@ -17,7 +17,9 @@
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
+#include <Caracal/IR/LogicalAndInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
+#include <Caracal/IR/LogicalOrInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
@@ -1514,7 +1516,14 @@ namespace Caracal
             {
                 const auto* unaryExpression = static_cast<const UnaryExpression*>(expression);
                 if (unaryExpression->unaryOperator() == UnaryOperatorKind::ReferenceOf)
-                    return lowerAddressExpression(expression, block);
+                {
+                    // a ref expression in value context yields the referent's value, so load through the address
+                    const auto loweredAddress = lowerAddressExpression(expression, block);
+                    if (!loweredAddress.has_value())
+                        return std::nullopt;
+
+                    return emitLoad(loweredAddress.value(), expression->type().toValue(), block);
+                }
 
                 const auto operandValue = lowerValueExpression(unaryExpression->expression().get(), block);
                 if (!operandValue.has_value())
@@ -1635,6 +1644,12 @@ namespace Caracal
                         break;
                     case BinaryOperatorKind::GreaterOrEqual:
                         block.addInstruction(std::make_unique<GreaterOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::LogicalAnd:
+                        block.addInstruction(std::make_unique<LogicalAndInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        break;
+                    case BinaryOperatorKind::LogicalOr:
+                        block.addInstruction(std::make_unique<LogicalOrInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
                     default:
                         return std::nullopt;

@@ -16,7 +16,9 @@
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
+#include <Caracal/IR/LogicalAndInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
+#include <Caracal/IR/LogicalOrInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
@@ -634,6 +636,34 @@ namespace Caracal
                 appendValue(greaterOrEqual.rightValue());
                 m_builder.append(" : ");
                 appendType(greaterOrEqual.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::LogicalAnd:
+            {
+                const auto& logicalAnd = static_cast<const LogicalAndInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ logicalAnd.resultId() });
+                m_builder.append(" = logical_and ");
+                appendValue(logicalAnd.leftValue());
+                m_builder.append(", ");
+                appendValue(logicalAnd.rightValue());
+                m_builder.append(" : ");
+                appendType(logicalAnd.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::LogicalOr:
+            {
+                const auto& logicalOr = static_cast<const LogicalOrInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ logicalOr.resultId() });
+                m_builder.append(" = logical_or ");
+                appendValue(logicalOr.leftValue());
+                m_builder.append(", ");
+                appendValue(logicalOr.rightValue());
+                m_builder.append(" : ");
+                appendType(logicalOr.type());
                 m_builder.appendLine("");
                 break;
             }

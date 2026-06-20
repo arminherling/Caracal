@@ -37,6 +37,8 @@ namespace Caracal
         LessOrEqual,
         GreaterThan,
         GreaterOrEqual,
+        LogicalAnd,
+        LogicalOr,
         Phi,
     };
 

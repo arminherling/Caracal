@@ -1,0 +1,12 @@
+define func() i32
+block entry(0):
+    %0 = const true : bool
+    %1 = const true : bool
+    %2 = logical_and %0, %1 : bool
+    branch if %2, if.true(1), if.continuation(2)
+block if.true(1):
+    %3 = const 1 : i32
+    return %3
+block if.continuation(2):
+    %4 = const 0 : i32
+    return %4
