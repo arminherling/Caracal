@@ -1,0 +1,38 @@
+type Number
+    value: i32
+
+define mutate(%0: ref Number "n") void
+block entry(0):
+    %0 = parameter 0 : ref Number "n"
+    call Number.double(%0)
+    return
+
+define func() i32
+block entry(0):
+    %slot0 = allocate_local : Number "n"
+    %0 = address_of %slot0 : ref Number
+    %1 = const 5 : i32
+    call Number.new(%0, %1)
+    call mutate(%0)
+    %2 = address_of_field %0.0 : ref i32 "value"
+    %3 = load_value %2 : i32
+    return %3
+
+define Number.double(%0: ref Number "this") void
+block entry(0):
+    %0 = parameter 0 : ref Number "this"
+    %1 = address_of_field %0.0 : ref i32 "value"
+    %2 = load_value %1 : i32
+    %3 = const 2 : i32
+    %4 = multiply %2, %3 : i32
+    %5 = address_of_field %0.0 : ref i32 "value"
+    store_value %4, %5 : i32
+    return
+
+define Number.new(%0: ref Number "this", %1: i32 "value") void
+block entry(0):
+    %0 = parameter 0 : ref Number "this"
+    %1 = parameter 1 : i32 "value"
+    %2 = address_of_field %0.0 : ref i32 "value"
+    store_value %1, %2 : i32
+    return

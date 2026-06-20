@@ -1,8 +1,8 @@
-﻿#include <Caracal/IR/FieldAddressInstruction.h>
+﻿#include <Caracal/IR/AddressOfFieldInstruction.h>
 
 namespace Caracal
 {
-    FieldAddressInstruction::FieldAddressInstruction(
+    AddressOfFieldInstruction::AddressOfFieldInstruction(
         TemporaryId resultId, 
         ValueRef objectAddress, 
         Type objectType, 

@@ -1,0 +1,8 @@
+define func() void
+block entry(0):
+    %0 = const false : bool
+    branch if %0, if.true(1), if.continuation(2)
+block if.true(1):
+    return
+block if.continuation(2):
+    return

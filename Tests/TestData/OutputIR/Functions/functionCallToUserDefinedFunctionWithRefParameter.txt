@@ -5,7 +5,7 @@ block entry(0):
 
 define outer() void
 block entry(0):
-    %slot0 = allocate_local x : i32
+    %slot0 = allocate_local : i32 "x"
     %0 = const 20 : i32
     %1 = address_of %slot0 : ref i32
     store_value %0, %1 : i32

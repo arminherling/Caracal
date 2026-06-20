@@ -1,0 +1,33 @@
+type Counter
+    value: i32
+
+define func() i32
+block entry(0):
+    %slot0 = allocate_local : Counter "counter"
+    %0 = address_of %slot0 : ref Counter
+    %1 = const 0 : i32
+    call Counter.new(%0, %1)
+    call Counter.inc(%0)
+    call Counter.inc(%0)
+    %2 = address_of_field %0.0 : ref i32 "value"
+    %3 = load_value %2 : i32
+    return %3
+
+define Counter.inc(%0: ref Counter "this") void
+block entry(0):
+    %0 = parameter 0 : ref Counter "this"
+    %1 = address_of_field %0.0 : ref i32 "value"
+    %2 = load_value %1 : i32
+    %3 = const 1 : i32
+    %4 = add %2, %3 : i32
+    %5 = address_of_field %0.0 : ref i32 "value"
+    store_value %4, %5 : i32
+    return
+
+define Counter.new(%0: ref Counter "this", %1: i32 "value") void
+block entry(0):
+    %0 = parameter 0 : ref Counter "this"
+    %1 = parameter 1 : i32 "value"
+    %2 = address_of_field %0.0 : ref i32 "value"
+    store_value %1, %2 : i32
+    return

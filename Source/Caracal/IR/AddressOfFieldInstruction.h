@@ -7,10 +7,10 @@
 
 namespace Caracal
 {
-    class FieldAddressInstruction final : public Instruction
+    class AddressOfFieldInstruction final : public Instruction
     {
     public:
-        FieldAddressInstruction(
+        AddressOfFieldInstruction(
             TemporaryId resultId, 
             ValueRef objectAddress,
             Type objectType,

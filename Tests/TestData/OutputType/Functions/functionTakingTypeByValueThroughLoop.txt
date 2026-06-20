@@ -1,0 +1,172 @@
+TypeDefinitionStatement: {
+    Type: Number
+    Name: Number
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    BlockNode(1): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (Number, i32) -> i32
+    Name: readLoop
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: n
+            TypeNameNode: {
+                Type: Number
+                Lexeme: Number
+            }
+        }
+        ParameterNode: {
+            Name: count
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        WhileStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: count
+                        }
+                    }
+                    Operation: GreaterThan
+                    Right: {
+                        NumberLiteral: 0
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: i32
+                                Name: count
+                            }
+                        }
+                        Right: {
+                            BinaryExpression: {
+                                Type: i32
+                                Left: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: count
+                                    }
+                                }
+                                Operation: Subtraction
+                                Right: {
+                                    NumberLiteral: 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: Number
+                        Name: n
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            FunctionCallExpression: {
+                Type: i32
+                Function type: (Number, i32) -> i32
+                NameExpression: {
+                    Type: (Number, i32) -> i32
+                    Name: readLoop
+                }
+                ArgumentsNode(2): {
+                    BinaryExpression: {
+                        Type: Number
+                        Left: {
+                            NameExpression: {
+                                Type: Number
+                                Name: Number
+                            }
+                        }
+                        Operation: ConstructorCall
+                        Right: {
+                            FunctionCallExpression: {
+                                Type: Number
+                                Function type: (ref Number, i32) -> void
+                                NameExpression: {
+                                    Type: (ref Number, i32) -> void
+                                    Name: new
+                                }
+                                ArgumentsNode(1): {
+                                    NumberLiteral: 6
+                                }
+                            }
+                        }
+                    }
+                    NumberLiteral: 2
+                }
+            }
+        }
+    }
+}

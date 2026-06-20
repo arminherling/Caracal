@@ -1,0 +1,19 @@
+type Number(value: i32)
+{
+    value := value
+}
+
+def readLoop(n: Number, count: i32) i32
+{
+    while count > 0
+    {
+        count = count - 1;
+    }
+
+    return n.value;
+}
+
+def func() i32
+{
+    return readLoop(Number.new(6), 2);
+}

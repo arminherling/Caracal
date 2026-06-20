@@ -2,6 +2,7 @@
 
 #include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/AddressOfInstruction.h>
+#include <Caracal/IR/AddressOfFieldInstruction.h>
 #include <Caracal/IR/AllocateLocalInstruction.h>
 #include <Caracal/IR/CallInstruction.h>
 #include <Caracal/IR/CallVoidInstruction.h>
@@ -9,7 +10,6 @@
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
-#include <Caracal/IR/FieldAddressInstruction.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
@@ -96,6 +96,14 @@ namespace Caracal
             return nullptr;
 
         return function.tryGetBlock(blockId.value());
+    }
+
+    static const Expression* StripGroupings(const Expression* expression) noexcept
+    {
+        while (expression->kind() == NodeKind::GroupingExpression)
+            expression = static_cast<const GroupingExpression*>(expression)->expression().get();
+
+        return expression;
     }
 
     static std::optional<ConstantValue> CreateConstantValue(const NumberLiteral& literal) noexcept
@@ -195,8 +203,8 @@ namespace Caracal
         return std::nullopt;
     }
 
-    IRLowerer::IRLowerer(SemanticContext& semanticModule)
-        : m_semanticModule{ semanticModule }
+    IRLowerer::IRLowerer(SemanticContext& semanticContext)
+        : m_semanticContext{ semanticContext }
     {
     }
 
@@ -204,7 +212,7 @@ namespace Caracal
     {
         resetState();
 
-        for (const auto& enumDefinition : m_semanticModule.enumDefinitions())
+        for (const auto& enumDefinition : m_semanticContext.enumDefinitions())
         {
             if (enumDefinition.statement() == nullptr)
                 continue;
@@ -213,7 +221,7 @@ namespace Caracal
                 return false;
         }
 
-        for (const auto& typeDefinition : m_semanticModule.typeDefinitions())
+        for (const auto& typeDefinition : m_semanticContext.typeDefinitions())
         {
             if (typeDefinition.statement() == nullptr)
                 continue;
@@ -222,7 +230,7 @@ namespace Caracal
                 return false;
         }
 
-        for (const auto& functionDefinition : m_semanticModule.functionDefinitions())
+        for (const auto& functionDefinition : m_semanticContext.functionDefinitions())
         {
             if (functionDefinition.functionType() == FunctionType::SynthesizedConstructor)
             {
@@ -273,13 +281,14 @@ namespace Caracal
         auto* function = module.addFunction(Function{ functionId, definition.fullName(), parameters, Type::Void() });
         auto blockId = m_nextBlockId++;
         auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
-        lowerParameters(definition, entryBlock);
-
-        const auto thisResult = m_localValues.find("this");
-        if (thisResult == m_localValues.end() || thisResult->second.storageKind != LocalStorageKind::Address)
+        if (!lowerParameters(definition, entryBlock))
             return false;
 
-        const auto& typeDefinition = m_semanticModule.getTypeDefinition(definition.parentType());
+        const auto thisResult = m_locals.find("this");
+        if (thisResult == m_locals.end() || thisResult->second.storageKind != LocalStorageKind::Address)
+            return false;
+
+        const auto& typeDefinition = m_semanticContext.getTypeDefinition(definition.parentType());
         for (const auto& fieldDefinition : typeDefinition.fields())
         {
             if (fieldDefinition.expression() == nullptr)
@@ -289,17 +298,16 @@ namespace Caracal
             if (!loweredValue.has_value())
                 continue;
 
-            const auto addressId = m_nextTemporaryId++;
-            entryBlock.addInstruction(std::make_unique<FieldAddressInstruction>(
-                addressId,
+            const auto fieldAddress = emitFieldAddress(
                 thisResult->second.value,
                 definition.parentType(),
                 fieldDefinition.name(),
                 fieldDefinition.index(),
-                fieldDefinition.type().toReference()));
+                fieldDefinition.type(),
+                entryBlock);
             entryBlock.addInstruction(std::make_unique<StoreValueInstruction>(
                 loweredValue.value(),
-                ValueRef{ addressId },
+                fieldAddress,
                 fieldDefinition.type()));
         }
 
@@ -370,17 +378,247 @@ namespace Caracal
         auto* function = module.addFunction(Function{ functionId, functionName, parameters, returnType });
         auto blockId = m_nextBlockId++;
         auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
-        lowerParameters(definition, entryBlock);
+        collectAddressTakenLocals(bodyNode);
+        if (!lowerParameters(definition, entryBlock))
+            return false;
         function->addBlock(std::move(entryBlock));
 
         std::optional<BlockId> entryBlockId = blockId;
         if (!lowerBlock(bodyNode, *function, entryBlockId))
             return false;
 
+        return ensureExitTerminator(*function, entryBlockId, returnType);
+    }
+
+    bool IRLowerer::ensureExitTerminator(Function& function, std::optional<BlockId> currentBlockId, Type returnType) noexcept
+    {
+        if (!currentBlockId.has_value())
+            return true;
+
+        auto* exitBlock = function.tryGetBlock(currentBlockId.value());
+        if (exitBlock == nullptr)
+            return false;
+
+        if (exitBlock->hasTerminator())
+            return true;
+
+        if (returnType != Type::Void())
+            return false;
+
+        exitBlock->setTerminator(std::make_unique<ReturnTerminator>());
         return true;
     }
 
-    void IRLowerer::lowerParameters(const FunctionDefinition& definition, BasicBlock& block) noexcept
+    void IRLowerer::collectAddressTakenLocals(const Statement* statement) noexcept
+    {
+        switch (statement->kind())
+        {
+            case NodeKind::BlockNode:
+            {
+                collectAddressTakenLocals(static_cast<const BlockNode*>(statement)->statements());
+                return;
+            }
+            case NodeKind::VariableDeclaration:
+            {
+                collectAddressTakenLocals(static_cast<const VariableDeclaration*>(statement)->rightExpression().get());
+                return;
+            }
+            case NodeKind::ConstantDeclaration:
+            {
+                collectAddressTakenLocals(static_cast<const ConstantDeclaration*>(statement)->rightExpression().get());
+                return;
+            }
+            case NodeKind::AssignmentStatement:
+            {
+                const auto* assignment = static_cast<const AssignmentStatement*>(statement);
+                collectAddressTakenLocals(assignment->leftExpression().get());
+                collectAddressTakenLocals(assignment->rightExpression().get());
+                return;
+            }
+            case NodeKind::ExpressionStatement:
+            {
+                collectAddressTakenLocals(static_cast<const ExpressionStatement*>(statement)->expression().get());
+                return;
+            }
+            case NodeKind::IfStatement:
+            {
+                const auto* ifStatement = static_cast<const IfStatement*>(statement);
+                collectAddressTakenLocals(ifStatement->condition().get());
+                collectAddressTakenLocals(ifStatement->trueStatement().get());
+                if (ifStatement->falseStatement().has_value())
+                    collectAddressTakenLocals(ifStatement->falseStatement().value().get());
+                return;
+            }
+            case NodeKind::WhileStatement:
+            {
+                const auto* whileStatement = static_cast<const WhileStatement*>(statement);
+                collectAddressTakenLocals(whileStatement->condition().get());
+                collectAddressTakenLocals(whileStatement->trueStatement().get());
+                return;
+            }
+            case NodeKind::ReturnStatement:
+            {
+                const auto& expression = static_cast<const ReturnStatement*>(statement)->expression();
+                if (expression.has_value())
+                    collectAddressTakenLocals(expression.value().get());
+                return;
+            }
+            default:
+                return;
+        }
+    }
+
+    void IRLowerer::collectAddressTakenLocals(const Expression* expression) noexcept
+    {
+        switch (expression->kind())
+        {
+            case NodeKind::GroupingExpression:
+            {
+                const auto* groupingExpression = static_cast<const GroupingExpression*>(expression);
+                collectAddressTakenLocals(groupingExpression->expression().get());
+                return;
+            }
+            case NodeKind::UnaryExpression:
+            {
+                const auto* unaryExpression = static_cast<const UnaryExpression*>(expression);
+                if (unaryExpression->unaryOperator() == UnaryOperatorKind::ReferenceOf
+                    && unaryExpression->expression()->kind() == NodeKind::NameExpression)
+                {
+                    m_addressTakenLocals.insert(static_cast<const NameExpression*>(unaryExpression->expression().get())->name());
+                }
+
+                collectAddressTakenLocals(unaryExpression->expression().get());
+                return;
+            }
+            case NodeKind::BinaryExpression:
+            {
+                const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+                collectAddressTakenLocals(binaryExpression->leftExpression().get());
+                collectAddressTakenLocals(binaryExpression->rightExpression().get());
+                return;
+            }
+            case NodeKind::FunctionCallExpression:
+            {
+                collectAddressTakenLocals(static_cast<const FunctionCallExpression*>(expression)->argumentsNode()->arguments());
+                return;
+            }
+            case NodeKind::MemberAccessExpression:
+            {
+                collectAddressTakenLocals(static_cast<const MemberAccessExpression*>(expression)->expression().get());
+                return;
+            }
+            default:
+                return;
+        }
+    }
+
+    void IRLowerer::collectAddressTakenLocals(const std::vector<std::unique_ptr<Statement>>& statements) noexcept
+    {
+        for (const auto& statement : statements)
+            collectAddressTakenLocals(statement.get());
+    }
+
+    void IRLowerer::collectAddressTakenLocals(const std::vector<std::unique_ptr<Expression>>& expressions) noexcept
+    {
+        for (const auto& expression : expressions)
+            collectAddressTakenLocals(expression.get());
+    }
+
+    std::optional<ValueRef> IRLowerer::allocateLocalSlot(std::string localName, Type valueType, BasicBlock& block, std::optional<ValueRef> initialValue) noexcept
+    {
+        if (valueType == Type::Undefined())
+            return std::nullopt;
+
+        const auto localId = m_nextLocalSlotId++;
+        block.addPrologueInstruction(std::make_unique<AllocateLocalInstruction>(localId, std::move(localName), valueType));
+
+        const auto addressId = m_nextTemporaryId++;
+        block.addInstruction(std::make_unique<AddressOfInstruction>(addressId, LocalSlotRef{ localId }, valueType.toReference()));
+
+        if (initialValue.has_value())
+            block.addInstruction(std::make_unique<StoreValueInstruction>(initialValue.value(), ValueRef{ addressId }, valueType));
+
+        return ValueRef{ addressId };
+    }
+
+    ValueRef IRLowerer::emitFieldAddress(ValueRef objectAddress, Type objectType, const std::string& fieldName, i32 fieldIndex, Type fieldType, BasicBlock& block) noexcept
+    {
+        const auto temporaryId = m_nextTemporaryId++;
+        block.addInstruction(std::make_unique<AddressOfFieldInstruction>(
+            temporaryId,
+            objectAddress,
+            objectType,
+            fieldName,
+            fieldIndex,
+            fieldType.toReference()));
+        return ValueRef{ temporaryId };
+    }
+
+    ValueRef IRLowerer::emitLoad(ValueRef address, Type valueType, BasicBlock& block) noexcept
+    {
+        const auto temporaryId = m_nextTemporaryId++;
+        block.addInstruction(std::make_unique<LoadValueInstruction>(temporaryId, address, valueType));
+        return ValueRef{ temporaryId };
+    }
+
+    void IRLowerer::setLocalValue(std::string localName, ValueRef value, Type type) noexcept
+    {
+        m_locals.insert_or_assign(std::move(localName), LocalState{ value, type, LocalStorageKind::Value });
+    }
+
+    void IRLowerer::setAddressBackedLocal(std::string localName, ValueRef address, Type valueType) noexcept
+    {
+        m_locals.insert_or_assign(std::move(localName), LocalState{ address, valueType, LocalStorageKind::Address });
+    }
+
+    std::vector<std::string> IRLowerer::sortedDefinedLocalNames(const LocalStateMap& localValues) const noexcept
+    {
+        std::vector<std::string> names;
+        names.reserve(localValues.size());
+        for (const auto& [name, localState] : localValues)
+        {
+            if (localState.type == Type::Undefined())
+                continue;
+
+            names.push_back(name);
+        }
+
+        std::sort(names.begin(), names.end());
+        return names;
+    }
+
+    std::optional<ValueRef> IRLowerer::tryGetAddressBackedLocal(const std::string& localName) const noexcept
+    {
+        const auto result = m_locals.find(localName);
+        if (result == m_locals.end() || result->second.storageKind != LocalStorageKind::Address)
+            return std::nullopt;
+
+        return result->second.value;
+    }
+
+    bool IRLowerer::isLocalDefinedOnAllEdges(const std::vector<IncomingLocalValues>& incomingValues, const std::string& name) const noexcept
+    {
+        return std::all_of(
+            incomingValues.begin(),
+            incomingValues.end(),
+            [&name](const IncomingLocalValues& incomingValue)
+            {
+                return incomingValue.values.contains(name);
+            });
+    }
+
+    bool IRLowerer::localNeedsPhi(const std::vector<IncomingLocalValues>& incomingValues, const std::string& name, const LocalState& firstState) const noexcept
+    {
+        return std::any_of(
+            incomingValues.begin() + 1,
+            incomingValues.end(),
+            [&name, &firstState](const IncomingLocalValues& incomingValue)
+            {
+                return incomingValue.values.at(name).value.id() != firstState.value.id();
+            });
+    }
+
+    bool IRLowerer::lowerParameters(const FunctionDefinition& definition, BasicBlock& block) noexcept
     {
         const auto& parameters = definition.parameters();
         for (size_t index = 0; index < parameters.size(); ++index)
@@ -393,11 +631,30 @@ namespace Caracal
                 IRParameter{ parameters[index].name(), parameterType}));
 
             const auto& parameterName = parameters[index].name();
-            const auto storageKind = parameterType.isReference() ? LocalStorageKind::Address : LocalStorageKind::Value;
-            m_localValues.emplace(
-                parameterName,
-                LocalState{ ValueRef{ parameterId }, parameterType, storageKind });
+            const auto needsAddressStorage = (parameterType.isReference() 
+                || parameterType.kind() == TypeKind::Type 
+                || m_addressTakenLocals.contains(parameterName));
+
+            if (!needsAddressStorage)
+            {
+                setLocalValue(parameterName, ValueRef{ parameterId }, parameterType);
+                continue;
+            }
+
+            if (parameterType.isReference())
+            {
+                setAddressBackedLocal(parameterName, ValueRef{ parameterId }, parameterType);
+                continue;
+            }
+
+            const auto addressId = allocateLocalSlot(parameterName, parameterType, block, ValueRef{ parameterId });
+            if (!addressId.has_value())
+                return false;
+
+            setAddressBackedLocal(parameterName, addressId.value(), parameterType);
         }
+
+        return true;
     }
 
     bool IRLowerer::lowerStatement(const Statement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept
@@ -493,7 +750,7 @@ namespace Caracal
             return false;
 
         // copy the locals before branching so each path can be lowered from the same state
-        const auto preBranchValues = m_localValues;
+        const auto preBranchValues = m_locals;
 
         const auto conditionValue = lowerValueExpression(statement->condition().get(), *currentBlock);
         if (!conditionValue.has_value())
@@ -511,7 +768,7 @@ namespace Caracal
             std::optional<BlockId> trueBlockId = trueId;
             if (!lowerStatement(statement->trueStatement().get(), function, trueBlockId))
                 return false;
-            const auto trueExitValues = m_localValues;
+            const auto trueExitValues = m_locals;
 
             function.addBlock(BasicBlock{ continuationId, "if.continuation", nullptr });
             auto* continuationBlock = function.tryGetBlock(continuationId);
@@ -542,7 +799,7 @@ namespace Caracal
         std::optional<BlockId> trueBlockId = trueId;
         if (!lowerStatement(statement->trueStatement().get(), function, trueBlockId))
             return false;
-        const auto trueExitValues = m_localValues;
+        const auto trueExitValues = m_locals;
 
         function.addBlock(BasicBlock{ falseId, "if.false", nullptr });
 
@@ -550,7 +807,7 @@ namespace Caracal
         std::optional<BlockId> falseBlockId = falseId;
         if (!lowerStatement(statement->falseStatement().value().get(), function, falseBlockId))
             return false;
-        const auto falseExitValues = m_localValues;
+        const auto falseExitValues = m_locals;
 
         auto* trueBlock = TryGetCurrentBlock(function, trueBlockId);
         auto* falseBlock = TryGetCurrentBlock(function, falseBlockId);
@@ -593,7 +850,7 @@ namespace Caracal
             return false;
 
         // copy the locals before branching so loop condition can be lowered from the same state as the body
-        const auto preLoopValues = m_localValues;
+        const auto preLoopValues = m_locals;
         const auto conditionId = m_nextBlockId++;
         const auto loopId = m_nextBlockId++;
         const auto continuationId = m_nextBlockId++;
@@ -605,16 +862,7 @@ namespace Caracal
         if (conditionBlock == nullptr)
             return false;
 
-        std::vector<std::string> headerNames;
-        headerNames.reserve(preLoopValues.size());
-        for (const auto& [name, localState] : preLoopValues)
-        {
-            if (localState.type == Type::Undefined())
-                continue;
-
-            headerNames.push_back(name);
-        }
-        std::sort(headerNames.begin(), headerNames.end());
+        const auto headerNames = sortedDefinedLocalNames(preLoopValues);
 
         LocalStateMap loopHeaderValues;
         loopHeaderValues.reserve(headerNames.size());
@@ -623,17 +871,22 @@ namespace Caracal
         for (const auto& name : headerNames)
         {
             const auto& localState = preLoopValues.at(name);
-            const auto phiId = m_nextTemporaryId++;
+            if (localState.storageKind == LocalStorageKind::Address)
+            {
+                loopHeaderValues.emplace(name, localState);
+                continue;
+            }
 
             std::vector<PhiInput> phiInputs;
             phiInputs.emplace_back(currentBlock->id(), localState.value);
-
+            
+            const auto phiId = m_nextTemporaryId++;
             auto phiInstruction = std::make_unique<PhiInstruction>(phiId, std::move(phiInputs), localState.type);
             auto* phiInstructionPtr = phiInstruction.get();
             conditionBlock->addInstruction(std::move(phiInstruction));
 
-            loopHeaderValues.emplace(name, LocalState{ ValueRef{ phiId }, localState.type });
-            loopHeaderPhis.push_back(LoopHeaderPhi{ name, phiInstructionPtr, localState.type });
+            loopHeaderValues.emplace(name, LocalState{ ValueRef{ phiId }, localState.type, LocalStorageKind::Value });
+            loopHeaderPhis.push_back(LoopHeaderPhi{ name, phiInstructionPtr });
         }
 
         restoreLocalValues(loopHeaderValues);
@@ -663,7 +916,7 @@ namespace Caracal
         auto* loopBlock = TryGetCurrentBlock(function, loopBlockId);
         if (loopBlock != nullptr && !loopBlock->hasTerminator())
         {
-            conditionInputs.push_back(IncomingLocalValues{ loopBlock->id(), m_localValues });
+            conditionInputs.push_back(IncomingLocalValues{ loopBlock->id(), m_locals });
             loopBlock->setTerminator(std::make_unique<JumpTerminator>(conditionId));
         }
 
@@ -699,7 +952,7 @@ namespace Caracal
             return false;
 
         auto& loopContext = m_loopContexts.back();
-        loopContext.continuationInputs.push_back(IncomingLocalValues{ block.id(), m_localValues });
+        loopContext.continuationInputs.push_back(IncomingLocalValues{ block.id(), m_locals });
         block.setTerminator(std::make_unique<JumpTerminator>(loopContext.continuationBlockId));
         currentBlockId.reset();
 
@@ -712,7 +965,7 @@ namespace Caracal
             return false;
 
         auto& loopContext = m_loopContexts.back();
-        loopContext.conditionInputs.push_back(IncomingLocalValues{ block.id(), m_localValues });
+        loopContext.conditionInputs.push_back(IncomingLocalValues{ block.id(), m_locals });
         block.setTerminator(std::make_unique<JumpTerminator>(loopContext.conditionBlockId));
         currentBlockId.reset();
 
@@ -721,23 +974,24 @@ namespace Caracal
 
     bool IRLowerer::lowerExpressionStatement(const ExpressionStatement* statement, BasicBlock& block) noexcept
     {
-        return lowerExpression(statement->expression().get(), block);
+        return lowerExpressionForEffect(statement->expression().get(), block);
     }
 
     bool IRLowerer::lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept
     {
         if (leftExpression->kind() == NodeKind::DiscardLiteral)
         {
-            return lowerExpression(rightExpression, block);
+            return lowerExpressionForEffect(rightExpression, block);
         }
 
         if (leftExpression->kind() != NodeKind::NameExpression)
             return false;
 
         const auto* nameExpression = static_cast<const NameExpression*>(leftExpression);
+        const auto* referenceCandidate = StripGroupings(rightExpression);
         const auto isExplicitReferenceBinding =
-            (rightExpression->kind() == NodeKind::UnaryExpression
-            && static_cast<const UnaryExpression*>(rightExpression)->unaryOperator() == UnaryOperatorKind::ReferenceOf);
+            (referenceCandidate->kind() == NodeKind::UnaryExpression
+            && static_cast<const UnaryExpression*>(referenceCandidate)->unaryOperator() == UnaryOperatorKind::ReferenceOf);
 
         if (nameExpression->type().isReference() && isExplicitReferenceBinding)
         {
@@ -745,7 +999,22 @@ namespace Caracal
             if (!loweredAddress.has_value())
                 return false;
 
-            m_localValues.insert_or_assign(nameExpression->name(), LocalState{ loweredAddress.value(), nameExpression->type(), LocalStorageKind::Address });
+            setAddressBackedLocal(nameExpression->name(), loweredAddress.value(), nameExpression->type());
+            return true;
+        }
+
+        const auto needsAddressStorage = m_addressTakenLocals.contains(nameExpression->name());
+        if (nameExpression->type().kind() == TypeKind::Type)
+        {
+            const auto addressId = allocateSlotFromExpression(
+                nameExpression->name(),
+                rightExpression,
+                nameExpression->type().toValue(),
+                block);
+            if (!addressId.has_value())
+                return false;
+
+            setAddressBackedLocal(nameExpression->name(), addressId.value(), nameExpression->type().toValue());
             return true;
         }
 
@@ -757,23 +1026,73 @@ namespace Caracal
         if (localType.isReference())
             localType = localType.toValue();
 
-        m_localValues.insert_or_assign(nameExpression->name(), LocalState{ loweredValue.value(), localType, LocalStorageKind::Value });
+        if (needsAddressStorage)
+        {
+            const auto addressId = allocateLocalSlot(nameExpression->name(), localType, block, loweredValue.value());
+            if (!addressId.has_value())
+                return false;
+
+            setAddressBackedLocal(nameExpression->name(), addressId.value(), localType);
+            return true;
+        }
+
+        setLocalValue(nameExpression->name(), loweredValue.value(), localType);
 
         return true;
+    }
+
+    bool IRLowerer::tryLowerConstructorCallIntoAddress(const Expression* expression, ValueRef destinationAddress, BasicBlock& block) noexcept
+    {
+        if (expression->kind() != NodeKind::BinaryExpression)
+            return false;
+
+        const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+        if (binaryExpression->binaryOperator() != BinaryOperatorKind::ConstructorCall)
+            return false;
+
+        if (binaryExpression->rightExpression()->kind() != NodeKind::FunctionCallExpression)
+            return false;
+
+        const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(binaryExpression->rightExpression().get());
+        const auto loweredResult = emitCall(functionCallExpression, block, destinationAddress);
+        return loweredResult.has_value();
+    }
+
+    std::optional<ValueRef> IRLowerer::allocateSlotFromExpression(std::string localName, const Expression* expression, Type valueType, BasicBlock& block) noexcept
+    {
+        const auto addressId = allocateLocalSlot(std::move(localName), valueType, block);
+        if (!addressId.has_value())
+            return std::nullopt;
+
+        if (tryLowerConstructorCallIntoAddress(expression, addressId.value(), block))
+            return addressId;
+
+        const auto loweredValue = lowerValueExpression(expression, block);
+        if (!loweredValue.has_value())
+            return std::nullopt;
+
+        block.addInstruction(std::make_unique<StoreValueInstruction>(
+            loweredValue.value(),
+            addressId.value(),
+            valueType));
+        return addressId;
     }
 
     bool IRLowerer::lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept
     {
         if (leftExpression->kind() == NodeKind::DiscardLiteral)
         {
-            return lowerExpression(rightExpression, block);
+            return lowerExpressionForEffect(rightExpression, block);
         }
 
         const auto loweredValue = lowerValueExpression(rightExpression, block);
         if (!loweredValue.has_value())
             return false;
 
-        if (leftExpression->kind() == NodeKind::MemberAccessExpression)
+        const auto isMemberAssignment = (leftExpression->kind() == NodeKind::MemberAccessExpression
+            || (leftExpression->kind() == NodeKind::BinaryExpression
+            && static_cast<const BinaryExpression*>(leftExpression)->binaryOperator() == BinaryOperatorKind::MemberAccess));
+        if (isMemberAssignment)
         {
             const auto loweredAddress = lowerAddressExpression(leftExpression, block);
             if (!loweredAddress.has_value())
@@ -790,10 +1109,10 @@ namespace Caracal
             return false;
 
         const auto* nameExpression = static_cast<const NameExpression*>(leftExpression);
-        if (!m_localValues.contains(nameExpression->name()))
+        if (!m_locals.contains(nameExpression->name()))
             return false;
 
-        auto& localState = m_localValues.at(nameExpression->name());
+        auto& localState = m_locals.at(nameExpression->name());
         if (localState.storageKind == LocalStorageKind::Address)
         {
             block.addInstruction(std::make_unique<StoreValueInstruction>(loweredValue.value(), localState.value, localState.type.toValue()));
@@ -805,26 +1124,78 @@ namespace Caracal
         return true;
     }
 
-    std::optional<ValueRef> IRLowerer::ensureAddressableLocal(const NameExpression* expression, BasicBlock& block) noexcept
+    std::optional<ValueRef> IRLowerer::spillValueToTempSlot(const Expression* expression, ValueRef value, BasicBlock& block) noexcept
     {
-        const auto result = m_localValues.find(expression->name());
-        if (result == m_localValues.end())
+        const auto valueType = expression->type().toValue();
+        return allocateLocalSlot("temp", valueType, block, value);
+    }
+
+    std::optional<ValueRef> IRLowerer::lowerMethodReceiverAddress(const Expression* receiverExpression, BasicBlock& block) noexcept
+    {
+        if (receiverExpression == nullptr)
+            return tryGetAddressBackedLocal("this");
+
+        auto receiverAddress = lowerAddressExpression(receiverExpression, block);
+        if (receiverAddress.has_value())
+            return receiverAddress;
+
+        const auto receiverValue = lowerValueExpression(receiverExpression, block);
+        if (!receiverValue.has_value())
             return std::nullopt;
 
-        auto& localState = result->second;
-        if (localState.storageKind == LocalStorageKind::Address)
-            return localState.value;
+        return spillValueToTempSlot(receiverExpression, receiverValue.value(), block);
+    }
 
-        const auto localId = m_nextLocalSlotId++;
-        block.addPrologueInstruction(std::make_unique<AllocateLocalInstruction>(localId, expression->name(), expression->type().toValue()));
+    std::optional<ValueRef> IRLowerer::lowerCallWithReceiver(const FunctionCallExpression* expression, BasicBlock& block, const Expression* receiverExpression) noexcept
+    {
+        const auto functionType = expression->functionType();
+        if (functionType == Type::Undefined())
+            return std::nullopt;
 
-        const auto addressId = m_nextTemporaryId++;
-        block.addInstruction(std::make_unique<AddressOfInstruction>(addressId, LocalSlotRef{ localId }, expression->type().toReference()));
-        block.addInstruction(std::make_unique<StoreValueInstruction>(localState.value, ValueRef{ addressId }, localState.type.toValue()));
+        const auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
+        if (functionDefinition.functionType() != FunctionType::PublicMethod
+            && functionDefinition.functionType() != FunctionType::PrivateMethod)
+        {
+            return emitCall(expression, block);
+        }
 
-        localState.value = ValueRef{ addressId };
-        localState.storageKind = LocalStorageKind::Address;
-        return localState.value;
+        const auto receiverAddress = lowerMethodReceiverAddress(receiverExpression, block);
+        if (!receiverAddress.has_value())
+            return std::nullopt;
+
+        return emitCall(expression, block, receiverAddress.value());
+    }
+
+    std::optional<ValueRef> IRLowerer::lowerMemberFieldAddress(const Expression* receiverExpression, const NameExpression* fieldNameExpression, BasicBlock& block) noexcept
+    {
+        const auto objectType = receiverExpression->type().toValue();
+        if (objectType.kind() != TypeKind::Type)
+            return std::nullopt;
+
+        auto objectAddress = lowerAddressExpression(receiverExpression, block);
+        if (!objectAddress.has_value())
+        {
+            const auto objectValue = lowerValueExpression(receiverExpression, block);
+            if (!objectValue.has_value())
+                return std::nullopt;
+
+            objectAddress = spillValueToTempSlot(receiverExpression, objectValue.value(), block);
+            if (!objectAddress.has_value())
+                return std::nullopt;
+        }
+
+        const auto& typeDefinition = m_semanticContext.getTypeDefinition(objectType);
+        const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldNameExpression->name());
+        if (fieldDefinition.type() == Type::Undefined())
+            return std::nullopt;
+
+        return emitFieldAddress(
+            objectAddress.value(),
+            objectType,
+            fieldNameExpression->name(),
+            fieldDefinition.index(),
+            fieldDefinition.type(),
+            block);
     }
 
     std::optional<ValueRef> IRLowerer::lowerAddressExpression(const Expression* expression, BasicBlock& block) noexcept
@@ -839,19 +1210,7 @@ namespace Caracal
             case NodeKind::NameExpression:
             {
                 const auto* nameExpression = static_cast<const NameExpression*>(expression);
-                const auto result = m_localValues.find(nameExpression->name());
-                if (result == m_localValues.end())
-                    return std::nullopt;
-
-                if (nameExpression->type().isReference())
-                {
-                    if (result->second.storageKind != LocalStorageKind::Address)
-                        return std::nullopt;
-
-                    return result->second.value;
-                }
-
-                return ensureAddressableLocal(nameExpression, block);
+                return tryGetAddressBackedLocal(nameExpression->name());
             }
             case NodeKind::UnaryExpression:
             {
@@ -862,7 +1221,8 @@ namespace Caracal
                 if (unaryExpression->expression()->kind() != NodeKind::NameExpression)
                     return std::nullopt;
 
-                return ensureAddressableLocal(static_cast<const NameExpression*>(unaryExpression->expression().get()), block);
+                const auto* nameExpression = static_cast<const NameExpression*>(unaryExpression->expression().get());
+                return tryGetAddressBackedLocal(nameExpression->name());
             }
             case NodeKind::MemberAccessExpression:
             {
@@ -870,26 +1230,38 @@ namespace Caracal
                 if (memberAccessExpression->expression()->kind() != NodeKind::NameExpression)
                     return std::nullopt;
 
-                const auto thisResult = m_localValues.find("this");
-                if (thisResult == m_localValues.end() || thisResult->second.storageKind != LocalStorageKind::Address)
+                const auto thisAddress = tryGetAddressBackedLocal("this");
+                if (!thisAddress.has_value())
                     return std::nullopt;
 
                 const auto* fieldNameExpression = static_cast<const NameExpression*>(memberAccessExpression->expression().get());
-                const auto objectType = thisResult->second.type;
-                const auto& typeDefinition = m_semanticModule.getTypeDefinition(objectType);
+                const auto objectType = m_locals.at("this").type;
+                const auto& typeDefinition = m_semanticContext.getTypeDefinition(objectType);
                 const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldNameExpression->name());
                 if (fieldDefinition.type() == Type::Undefined())
                     return std::nullopt;
 
-                const auto temporaryId = m_nextTemporaryId++;
-                block.addInstruction(std::make_unique<FieldAddressInstruction>(
-                    temporaryId,
-                    thisResult->second.value,
+                return emitFieldAddress(
+                    thisAddress.value(),
                     objectType,
                     fieldNameExpression->name(),
                     fieldDefinition.index(),
-                    expression->type().toReference()));
-                return ValueRef{ temporaryId };
+                    fieldDefinition.type(),
+                    block);
+            }
+            case NodeKind::BinaryExpression:
+            {
+                const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+                if (binaryExpression->binaryOperator() != BinaryOperatorKind::MemberAccess)
+                    return std::nullopt;
+
+                if (binaryExpression->rightExpression()->kind() != NodeKind::NameExpression)
+                    return std::nullopt;
+
+                return lowerMemberFieldAddress(
+                    binaryExpression->leftExpression().get(),
+                    static_cast<const NameExpression*>(binaryExpression->rightExpression().get()),
+                    block);
             }
             default:
                 return std::nullopt;
@@ -983,7 +1355,7 @@ namespace Caracal
 
     std::optional<ConstantValue> IRLowerer::tryLowerEnumFieldValue(Type enumType, const std::string& fieldName) noexcept
     {
-        auto& enumDefinition = m_semanticModule.getEnumDefinition(enumType);
+        auto& enumDefinition = m_semanticContext.getEnumDefinition(enumType);
         if (!enumDefinition.hasField(fieldName))
             return std::nullopt;
 
@@ -1012,7 +1384,7 @@ namespace Caracal
         if (literalData == nullptr)
             return std::nullopt;
 
-        auto& enumDefinition = m_semanticModule.getEnumDefinition(enumType);
+        auto& enumDefinition = m_semanticContext.getEnumDefinition(enumType);
         return ConstantValue::FromEnum(
             enumType,
             enumDefinition.name(),
@@ -1020,10 +1392,37 @@ namespace Caracal
             *literalData);
     }
 
-    bool IRLowerer::lowerExpression(const Expression* expression, BasicBlock& block) noexcept
+    bool IRLowerer::lowerExpressionForEffect(const Expression* expression, BasicBlock& block) noexcept
     {
         if (expression->kind() == NodeKind::FunctionCallExpression)
-            return lowerFunctionCall(static_cast<const FunctionCallExpression*>(expression), block).has_value();
+            return emitCall(static_cast<const FunctionCallExpression*>(expression), block).has_value();
+
+        if (expression->kind() == NodeKind::MemberAccessExpression)
+        {
+            const auto* memberAccessExpression = static_cast<const MemberAccessExpression*>(expression);
+            if (memberAccessExpression->expression()->kind() == NodeKind::FunctionCallExpression)
+            {
+                const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(memberAccessExpression->expression().get());
+                return lowerCallWithReceiver(functionCallExpression, block).has_value();
+            }
+        }
+
+        if (expression->kind() == NodeKind::BinaryExpression)
+        {
+            const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+            if ((binaryExpression->binaryOperator() == BinaryOperatorKind::MemberAccess
+                || binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
+                && binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression)
+            {
+                const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(binaryExpression->rightExpression().get());
+                if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
+                {
+                    return lowerValueExpression(expression, block).has_value();
+                }
+
+                return lowerCallWithReceiver(functionCallExpression, block, binaryExpression->leftExpression().get()).has_value();
+            }
+        }
 
         return lowerValueExpression(expression, block).has_value();
     }
@@ -1032,6 +1431,11 @@ namespace Caracal
     {
         switch (expression->kind())
         {
+            case NodeKind::GroupingExpression:
+            {
+                const auto* groupingExpression = static_cast<const GroupingExpression*>(expression);
+                return lowerValueExpression(groupingExpression->expression().get(), block);
+            }
             case NodeKind::NumberLiteral:
             {
                 const auto* literal = static_cast<const NumberLiteral*>(expression);
@@ -1069,26 +1473,34 @@ namespace Caracal
             case NodeKind::NameExpression:
             {
                 const auto* nameExpression = static_cast<const NameExpression*>(expression);
-                const auto result = m_localValues.find(nameExpression->name());
-                if (result == m_localValues.end())
+                const auto result = m_locals.find(nameExpression->name());
+                if (result == m_locals.end())
                     return std::nullopt;
 
                 if (result->second.storageKind == LocalStorageKind::Address)
-                {
-                    const auto temporaryId = m_nextTemporaryId++;
-                    block.addInstruction(std::make_unique<LoadValueInstruction>(temporaryId, result->second.value, result->second.type.toValue()));
-                    return ValueRef{ temporaryId };
-                }
+                    return emitLoad(result->second.value, result->second.type.toValue(), block);
 
                 return result->second.value;
             }
             case NodeKind::FunctionCallExpression:
+            {
                 if (expression->type() == Type::Void())
-                    return std::nullopt;
-
-                return lowerFunctionCall(static_cast<const FunctionCallExpression*>(expression), block);
+                return std::nullopt;
+                
+                return emitCall(static_cast<const FunctionCallExpression*>(expression), block);
+            }
             case NodeKind::MemberAccessExpression:
             {
+                const auto* memberAccessExpression = static_cast<const MemberAccessExpression*>(expression);
+                if (memberAccessExpression->expression()->kind() == NodeKind::FunctionCallExpression)
+                {
+                    if (expression->type() == Type::Void())
+                        return std::nullopt;
+
+                    const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(memberAccessExpression->expression().get());
+                    return lowerCallWithReceiver(functionCallExpression, block);
+                }
+
                 const auto loweredAddress = lowerAddressExpression(expression, block);
                 if (!loweredAddress.has_value())
                     return std::nullopt;
@@ -1096,12 +1508,7 @@ namespace Caracal
                 if (expression->type().isReference())
                     return loweredAddress;
 
-                const auto temporaryId = m_nextTemporaryId++;
-                block.addInstruction(std::make_unique<LoadValueInstruction>(
-                    temporaryId,
-                    loweredAddress.value(),
-                    expression->type().toValue()));
-                return ValueRef{ temporaryId };
+                return emitLoad(loweredAddress.value(), expression->type().toValue(), block);
             }
             case NodeKind::UnaryExpression:
             {
@@ -1134,31 +1541,58 @@ namespace Caracal
             case NodeKind::BinaryExpression:
             {
                 const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
-                if (binaryExpression->binaryOperator() == BinaryOperatorKind::MemberAccess)
+                if (binaryExpression->binaryOperator() == BinaryOperatorKind::MemberAccess
+                    || binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
                 {
                     if (binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression)
                     {
                         if (binaryExpression->type() == Type::Void())
                             return std::nullopt;
 
+                        if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
+                        {
+                            const auto addressId = allocateSlotFromExpression(
+                                "constructed",
+                                expression,
+                                expression->type().toValue(),
+                                block);
+                            if (!addressId.has_value())
+                                return std::nullopt;
+
+                            return emitLoad(addressId.value(), expression->type().toValue(), block);
+                        }
+
                         const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(binaryExpression->rightExpression().get());
-                        return lowerFunctionCall(functionCallExpression, block);
+                        return lowerCallWithReceiver(functionCallExpression, block, binaryExpression->leftExpression().get());
                     }
 
-                    const auto enumConstant = tryLowerEnumMemberConstant(binaryExpression);
-                    if (!enumConstant.has_value())
-                        return std::nullopt;
+                    if (binaryExpression->binaryOperator() == BinaryOperatorKind::MemberAccess
+                        && binaryExpression->rightExpression()->kind() == NodeKind::NameExpression)
+                    {
+                        if (binaryExpression->leftExpression()->type().kind() == TypeKind::Enum)
+                        {
+                            const auto enumConstant = tryLowerEnumMemberConstant(binaryExpression);
+                            if (!enumConstant.has_value())
+                                return std::nullopt;
 
-                    auto loweredType = expression->type();
-                    if (const auto* enumValue = enumConstant->tryGetEnumConstant())
-                        loweredType = enumValue->enumType;
+                            auto loweredType = expression->type();
+                            if (const auto* enumValue = enumConstant->tryGetEnumConstant())
+                                loweredType = enumValue->enumType;
 
-                    const auto temporaryId = m_nextTemporaryId++;
-                    block.addInstruction(std::make_unique<ConstantInstruction>(
-                        temporaryId,
-                        enumConstant.value(),
-                        loweredType));
-                    return ValueRef{ temporaryId };
+                            const auto temporaryId = m_nextTemporaryId++;
+                            block.addInstruction(std::make_unique<ConstantInstruction>(
+                                temporaryId,
+                                enumConstant.value(),
+                                loweredType));
+                            return ValueRef{ temporaryId };
+                        }
+
+                        const auto loweredAddress = lowerAddressExpression(expression, block);
+                        if (!loweredAddress.has_value())
+                            return std::nullopt;
+
+                        return emitLoad(loweredAddress.value(), expression->type().toValue(), block);
+                    }
                 }
 
                 const auto leftValue = lowerValueExpression(binaryExpression->leftExpression().get(), block);
@@ -1213,24 +1647,31 @@ namespace Caracal
         }
     }
 
-    std::optional<ValueRef> IRLowerer::lowerFunctionCall(const FunctionCallExpression* expression, BasicBlock& block) noexcept
+    std::optional<ValueRef> IRLowerer::emitCall(const FunctionCallExpression* expression, BasicBlock& block, std::optional<ValueRef> implicitArgument) noexcept
     {
         const auto functionType = expression->functionType();
         if (functionType == Type::Undefined())
             return std::nullopt;
 
-        auto& functionDefinition = m_semanticModule.getFunctionDefinition(functionType);
+        auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
         const auto functionId = functionDefinition.type().id();
 
         std::vector<ValueRef> loweredArguments;
         const auto& arguments = expression->argumentsNode()->arguments();
-        loweredArguments.reserve(arguments.size());
+        loweredArguments.reserve(arguments.size() + (implicitArgument.has_value() ? 1 : 0));
         const auto& parameterTypes = functionDefinition.parameters();
+        size_t parameterOffset = 0;
+        if (implicitArgument.has_value())
+        {
+            loweredArguments.push_back(implicitArgument.value());
+            parameterOffset = 1;
+        }
+
         for (size_t index = 0; index < arguments.size(); ++index)
         {
             const auto& argument = arguments[index];
             std::optional<ValueRef> loweredArgument;
-            if (index < parameterTypes.size() && parameterTypes[index].type().isReference())
+            if ((index + parameterOffset) < parameterTypes.size() && parameterTypes[index + parameterOffset].type().isReference())
             {
                 loweredArgument = lowerAddressExpression(argument.get(), block);
             }
@@ -1245,7 +1686,11 @@ namespace Caracal
             loweredArguments.push_back(loweredArgument.value());
         }
 
-        if (expression->type() == Type::Void())
+        const auto isSynthesizedConstructor = functionDefinition.functionType() == FunctionType::SynthesizedConstructor;
+        if (isSynthesizedConstructor && !implicitArgument.has_value())
+            return std::nullopt;
+
+        if (isSynthesizedConstructor || expression->type() == Type::Void())
         {
             block.addInstruction(std::make_unique<CallVoidInstruction>(functionId, std::move(loweredArguments)));
             return ValueRef{};
@@ -1258,7 +1703,8 @@ namespace Caracal
 
     void IRLowerer::resetState()
     {
-        m_localValues.clear();
+        m_locals.clear();
+        m_addressTakenLocals.clear();
         m_nextTemporaryId = 0;
         m_nextLocalSlotId = 0;
         m_nextBlockId = 0;
@@ -1266,7 +1712,7 @@ namespace Caracal
 
     void IRLowerer::restoreLocalValues(const LocalStateMap& values) noexcept
     {
-        m_localValues = values;
+        m_locals = values;
     }
 
     void IRLowerer::mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept
@@ -1274,47 +1720,24 @@ namespace Caracal
         LocalStateMap mergedLocalValues;
         if (incomingValues.empty())
         {
-            m_localValues = std::move(mergedLocalValues);
+            m_locals = std::move(mergedLocalValues);
             return;
         }
 
         const auto& firstIncomingValues = incomingValues.front().values;
 
-        std::vector<std::string> mergeCandidateNames;
-        mergeCandidateNames.reserve(firstIncomingValues.size());
-        for (const auto& [name, localState] : firstIncomingValues)
-        {
-            if (localState.type == Type::Undefined())
-                continue;
-
-            mergeCandidateNames.push_back(name);
-        }
-
-        // sorting for deterministic phi insertion and snapshot output
-        std::sort(mergeCandidateNames.begin(), mergeCandidateNames.end());
+        const auto mergeCandidateNames = sortedDefinedLocalNames(firstIncomingValues);
 
         for (const auto& name : mergeCandidateNames)
         {
             // only merge locals that are defined along every incoming edge
-            const auto isAvailableOnAllPaths = std::all_of(
-                incomingValues.begin(),
-                incomingValues.end(),
-                [&name](const IncomingLocalValues& incomingValue)
-                {
-                    return incomingValue.values.contains(name);
-                });
+            const auto isAvailableOnAllPaths = isLocalDefinedOnAllEdges(incomingValues, name);
             if (!isAvailableOnAllPaths)
                 continue;
 
             const auto& firstState = firstIncomingValues.at(name);
             // phi is only needed when at least one predecessor contributes a different SSA value
-            const auto requiresPhi = std::any_of(
-                incomingValues.begin() + 1,
-                incomingValues.end(),
-                [&name, &firstState](const IncomingLocalValues& incomingValue)
-                {
-                    return incomingValue.values.at(name).value.id() != firstState.value.id();
-                });
+            const auto requiresPhi = localNeedsPhi(incomingValues, name, firstState);
             if (!requiresPhi)
             {
                 mergedLocalValues.emplace(name, firstState);
@@ -1330,11 +1753,15 @@ namespace Caracal
             }
 
             const auto phiId = m_nextTemporaryId++;
-            block.addInstruction(std::make_unique<PhiInstruction>(phiId, std::move(phiInputs), firstState.type));
-            mergedLocalValues.emplace(name, LocalState{ ValueRef{ phiId }, firstState.type });
+            auto phiType = firstState.type;
+            if (firstState.storageKind == LocalStorageKind::Address)
+                phiType = phiType.toReference();
+
+            block.addInstruction(std::make_unique<PhiInstruction>(phiId, std::move(phiInputs), phiType));
+            mergedLocalValues.emplace(name, LocalState{ ValueRef{ phiId }, firstState.type, firstState.storageKind });
         }
 
         // replace locals with values after the merge
-        m_localValues = std::move(mergedLocalValues);
+        m_locals = std::move(mergedLocalValues);
     }
 }

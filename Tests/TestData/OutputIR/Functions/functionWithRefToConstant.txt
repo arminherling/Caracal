@@ -1,6 +1,6 @@
 define func() void
 block entry(0):
-    %slot0 = allocate_local a : bool
+    %slot0 = allocate_local : bool "a"
     %0 = const true : bool
     %1 = address_of %slot0 : ref bool
     store_value %0, %1 : bool

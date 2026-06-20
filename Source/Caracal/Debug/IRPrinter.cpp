@@ -1,6 +1,7 @@
 ﻿#include <Caracal/Debug/IRPrinter.h>
 #include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/AddressOfInstruction.h>
+#include <Caracal/IR/AddressOfFieldInstruction.h>
 #include <Caracal/IR/AllocateLocalInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
 #include <Caracal/IR/CallInstruction.h>
@@ -9,7 +10,6 @@
 #include <Caracal/IR/DivideInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
 #include <Caracal/IR/ExternFunction.h>
-#include <Caracal/IR/FieldAddressInstruction.h>
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
@@ -378,9 +378,12 @@ namespace Caracal
                 const auto& allocateLocal = static_cast<const AllocateLocalInstruction&>(instruction);
                 m_builder.appendIndented("");
                 appendSlot(LocalSlotRef{ allocateLocal.resultId() });
-                m_builder.append(" = allocate_local ").append(allocateLocal.localName()).append(" : ");
+                m_builder.append(" = allocate_local : ");
                 appendType(allocateLocal.type());
-                m_builder.appendLine("");
+                m_builder
+                    .append(" \"")
+                    .append(allocateLocal.localName())
+                    .appendLine("\"");
                 break;
             }
             case InstructionKind::AddressOf:
@@ -397,14 +400,20 @@ namespace Caracal
             }
             case InstructionKind::FieldAddress:
             {
-                const auto& fieldAddress = static_cast<const FieldAddressInstruction&>(instruction);
+                const auto& fieldAddress = static_cast<const AddressOfFieldInstruction&>(instruction);
                 m_builder.appendIndented("");
                 appendValue(ValueRef{ fieldAddress.resultId() });
-                m_builder.append(" = field_address ");
+                m_builder.append(" = address_of_field ");
                 appendValue(fieldAddress.objectAddress());
-                m_builder.append(".").append(std::to_string(fieldAddress.fieldIndex())).append(" ").append(fieldAddress.fieldName()).append(" : ");
+                m_builder
+                    .append(".")
+                    .append(std::to_string(fieldAddress.fieldIndex()))
+                    .append(" : ");
                 appendType(fieldAddress.type());
-                m_builder.appendLine("");
+                m_builder
+                    .append(" \"")
+                    .append(fieldAddress.fieldName())
+                    .appendLine("\"");
                 break;
             }
             case InstructionKind::LoadValue:

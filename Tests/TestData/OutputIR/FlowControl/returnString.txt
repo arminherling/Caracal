@@ -1,0 +1,4 @@
+define func() cstring
+block entry(0):
+    %0 = const "hello\0" : cstring
+    return %0
