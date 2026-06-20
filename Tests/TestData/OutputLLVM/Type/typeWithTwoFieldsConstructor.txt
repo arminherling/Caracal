@@ -13,11 +13,11 @@ entry:
   ret i32 %field_load
 }
 
-define void @Pair.new(ptr nonnull %this, i32 %left, i32 %right) {
+define void @Pair.new(ptr nonnull %.this, i32 %left, i32 %right) {
 entry:
-  %left1 = getelementptr inbounds nuw %Pair, ptr %this, i32 0, i32 0
+  %left1 = getelementptr inbounds nuw %Pair, ptr %.this, i32 0, i32 0
   store i32 %left, ptr %left1, align 4
-  %right2 = getelementptr inbounds nuw %Pair, ptr %this, i32 0, i32 1
+  %right2 = getelementptr inbounds nuw %Pair, ptr %.this, i32 0, i32 1
   store i32 %right, ptr %right2, align 4
   ret void
 }

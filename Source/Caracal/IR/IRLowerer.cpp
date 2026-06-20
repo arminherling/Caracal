@@ -284,7 +284,7 @@ namespace Caracal
         if (!lowerParameters(definition, entryBlock))
             return false;
 
-        const auto thisResult = m_locals.find("this");
+        const auto thisResult = m_locals.find(ImplicitThisName);
         if (thisResult == m_locals.end() || thisResult->second.storageKind != LocalStorageKind::Address)
             return false;
 
@@ -1133,7 +1133,7 @@ namespace Caracal
     std::optional<ValueRef> IRLowerer::lowerMethodReceiverAddress(const Expression* receiverExpression, BasicBlock& block) noexcept
     {
         if (receiverExpression == nullptr)
-            return tryGetAddressBackedLocal("this");
+            return tryGetAddressBackedLocal(ImplicitThisName);
 
         auto receiverAddress = lowerAddressExpression(receiverExpression, block);
         if (receiverAddress.has_value())
@@ -1230,12 +1230,12 @@ namespace Caracal
                 if (memberAccessExpression->expression()->kind() != NodeKind::NameExpression)
                     return std::nullopt;
 
-                const auto thisAddress = tryGetAddressBackedLocal("this");
+                const auto thisAddress = tryGetAddressBackedLocal(ImplicitThisName);
                 if (!thisAddress.has_value())
                     return std::nullopt;
 
                 const auto* fieldNameExpression = static_cast<const NameExpression*>(memberAccessExpression->expression().get());
-                const auto objectType = m_locals.at("this").type;
+                const auto objectType = m_locals.at(ImplicitThisName).type;
                 const auto& typeDefinition = m_semanticContext.getTypeDefinition(objectType);
                 const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldNameExpression->name());
                 if (fieldDefinition.type() == Type::Undefined())

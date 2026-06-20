@@ -1,6 +1,6 @@
 type Empty
 
-define Empty.new(%0: ref Empty "this") void
+define Empty.new(%0: ref Empty ".this") void
 block entry(0):
-    %0 = parameter 0 : ref Empty "this"
+    %0 = parameter 0 : ref Empty ".this"
     return

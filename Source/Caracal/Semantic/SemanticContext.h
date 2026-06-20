@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Caracal/Defines.h>
 #include <Caracal/API.h>
@@ -18,6 +18,11 @@
 
 namespace Caracal
 {
+    // name of the implicit this parameter for methods, which is not visible in 
+    // Caracal source code but is used in the semantic context and IR generation
+    // the leading dot cant appear in a Caracal identifier
+    inline constexpr const char* ImplicitThisName = ".this";
+
     class CARACAL_API SemanticContext
     {
     public:

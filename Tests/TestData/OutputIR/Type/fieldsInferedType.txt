@@ -2,9 +2,9 @@ type Fields
     const a: bool
     b: bool
 
-define Fields.new(%0: ref Fields "this") void
+define Fields.new(%0: ref Fields ".this") void
 block entry(0):
-    %0 = parameter 0 : ref Fields "this"
+    %0 = parameter 0 : ref Fields ".this"
     %1 = const true : bool
     %2 = address_of_field %0.0 : ref bool "a"
     store_value %1, %2 : bool

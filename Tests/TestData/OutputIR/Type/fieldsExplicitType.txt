@@ -3,9 +3,9 @@ type Fields
     y: i32
     z: i32
 
-define Fields.new(%0: ref Fields "this") void
+define Fields.new(%0: ref Fields ".this") void
 block entry(0):
-    %0 = parameter 0 : ref Fields "this"
+    %0 = parameter 0 : ref Fields ".this"
     %1 = const 0 : i32
     %2 = address_of_field %0.0 : ref i32 "x"
     store_value %1, %2 : i32

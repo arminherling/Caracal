@@ -15,20 +15,20 @@ entry:
   ret i32 %field_load
 }
 
-define void @Counter.inc(ptr nonnull %this) {
+define void @Counter.inc(ptr nonnull %.this) {
 entry:
-  %value = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
+  %value = getelementptr inbounds nuw %Counter, ptr %.this, i32 0, i32 0
   %member_field_load = load i32, ptr %value, align 4
-  %value1 = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
+  %value1 = getelementptr inbounds nuw %Counter, ptr %.this, i32 0, i32 0
   %member_field_load2 = load i32, ptr %value1, align 4
   %addtmp = add i32 %member_field_load2, 1
   store i32 %addtmp, ptr %value, align 4
   ret void
 }
 
-define void @Counter.new(ptr nonnull %this, i32 %value) {
+define void @Counter.new(ptr nonnull %.this, i32 %value) {
 entry:
-  %value1 = getelementptr inbounds nuw %Counter, ptr %this, i32 0, i32 0
+  %value1 = getelementptr inbounds nuw %Counter, ptr %.this, i32 0, i32 0
   store i32 %value, ptr %value1, align 4
   ret void
 }

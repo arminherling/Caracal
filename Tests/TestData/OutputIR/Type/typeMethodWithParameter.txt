@@ -13,9 +13,9 @@ block entry(0):
     %4 = load_value %3 : i32
     return %4
 
-define Counter.add(%0: ref Counter "this", %1: i32 "amount") void
+define Counter.add(%0: ref Counter ".this", %1: i32 "amount") void
 block entry(0):
-    %0 = parameter 0 : ref Counter "this"
+    %0 = parameter 0 : ref Counter ".this"
     %1 = parameter 1 : i32 "amount"
     %2 = address_of_field %0.0 : ref i32 "value"
     %3 = load_value %2 : i32
@@ -24,9 +24,9 @@ block entry(0):
     store_value %4, %5 : i32
     return
 
-define Counter.new(%0: ref Counter "this", %1: i32 "value") void
+define Counter.new(%0: ref Counter ".this", %1: i32 "value") void
 block entry(0):
-    %0 = parameter 0 : ref Counter "this"
+    %0 = parameter 0 : ref Counter ".this"
     %1 = parameter 1 : i32 "value"
     %2 = address_of_field %0.0 : ref i32 "value"
     store_value %1, %2 : i32

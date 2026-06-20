@@ -4,9 +4,9 @@ target triple = "x86_64-unknown-none"
 
 %Number = type { i32 }
 
-define void @Number.new(ptr nonnull %this, i32 %para) {
+define void @Number.new(ptr nonnull %.this, i32 %para) {
 entry:
-  %value = getelementptr inbounds nuw %Number, ptr %this, i32 0, i32 0
+  %value = getelementptr inbounds nuw %Number, ptr %.this, i32 0, i32 0
   store i32 %para, ptr %value, align 4
   ret void
 }

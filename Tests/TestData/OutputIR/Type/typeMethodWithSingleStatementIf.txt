@@ -13,9 +13,9 @@ block entry(0):
     %4 = load_value %3 : i32
     return %4
 
-define Number.clamp(%0: ref Number "this") void
+define Number.clamp(%0: ref Number ".this") void
 block entry(0):
-    %0 = parameter 0 : ref Number "this"
+    %0 = parameter 0 : ref Number ".this"
     %1 = address_of_field %0.0 : ref i32 "value"
     %2 = load_value %1 : i32
     %3 = const 0 : i32
@@ -29,9 +29,9 @@ block if.true(1):
 block if.continuation(2):
     return
 
-define Number.new(%0: ref Number "this", %1: i32 "value") void
+define Number.new(%0: ref Number ".this", %1: i32 "value") void
 block entry(0):
-    %0 = parameter 0 : ref Number "this"
+    %0 = parameter 0 : ref Number ".this"
     %1 = parameter 1 : i32 "value"
     %2 = address_of_field %0.0 : ref i32 "value"
     store_value %1, %2 : i32

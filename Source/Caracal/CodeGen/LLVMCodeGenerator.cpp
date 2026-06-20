@@ -449,7 +449,7 @@ namespace Caracal
 
         SetupFunctionParameters(functionDefinition, m_currentFunction, currentScope(), m_irBuilder.get());
 
-        auto* thisValue = currentScope()->getVariableBinding("this");
+        auto* thisValue = currentScope()->getVariableBinding(ImplicitThisName);
         if (thisValue == nullptr)
         {
             TODO("Synthesized constructor requires this parameter");
@@ -1898,7 +1898,7 @@ namespace Caracal
         auto* innerExpression = node->expression().get();
         if (innerExpression->kind() == NodeKind::NameExpression)
         {
-            auto* thisValue = currentScope()->getVariableBinding("this");
+            auto* thisValue = currentScope()->getVariableBinding(ImplicitThisName);
             if (thisValue == nullptr)
             {
                 TODO("Method member access requires this binding");
@@ -1937,7 +1937,7 @@ namespace Caracal
         }
         else if (innerExpression->kind() == NodeKind::FunctionCallExpression)
         {
-            auto* thisValue = currentScope()->getVariableBinding("this");
+            auto* thisValue = currentScope()->getVariableBinding(ImplicitThisName);
             if (thisValue == nullptr)
             {
                 TODO("Method member call requires this binding");

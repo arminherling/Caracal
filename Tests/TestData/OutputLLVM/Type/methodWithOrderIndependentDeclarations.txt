@@ -4,24 +4,24 @@ target triple = "x86_64-unknown-none"
 
 %Two = type { i32 }
 
-define i32 @Two.value(ptr nonnull %this) {
+define i32 @Two.value(ptr nonnull %.this) {
 entry:
-  %0 = call i32 @Two.one(ptr %this)
-  %1 = call i32 @Two.one(ptr %this)
+  %0 = call i32 @Two.one(ptr %.this)
+  %1 = call i32 @Two.one(ptr %.this)
   %addtmp = add i32 %0, %1
   ret i32 %addtmp
 }
 
-define i32 @Two.one(ptr nonnull %this) {
+define i32 @Two.one(ptr nonnull %.this) {
 entry:
-  %one = getelementptr inbounds nuw %Two, ptr %this, i32 0, i32 0
+  %one = getelementptr inbounds nuw %Two, ptr %.this, i32 0, i32 0
   %member_field_load = load i32, ptr %one, align 4
   ret i32 %member_field_load
 }
 
-define void @Two.new(ptr nonnull %this) {
+define void @Two.new(ptr nonnull %.this) {
 entry:
-  %one = getelementptr inbounds nuw %Two, ptr %this, i32 0, i32 0
+  %one = getelementptr inbounds nuw %Two, ptr %.this, i32 0, i32 0
   store i32 1, ptr %one, align 4
   ret void
 }

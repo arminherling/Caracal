@@ -10,9 +10,9 @@ block entry(0):
     %2 = load_value %1 : i32
     return %2
 
-define Number.new(%0: ref Number "this") void
+define Number.new(%0: ref Number ".this") void
 block entry(0):
-    %0 = parameter 0 : ref Number "this"
+    %0 = parameter 0 : ref Number ".this"
     %1 = const 42 : i32
     %2 = address_of_field %0.0 : ref i32 "value"
     store_value %1, %2 : i32

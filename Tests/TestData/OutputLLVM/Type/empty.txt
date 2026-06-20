@@ -2,7 +2,7 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
-define void @Empty.new(ptr nonnull %this) {
+define void @Empty.new(ptr nonnull %.this) {
 entry:
   ret void
 }

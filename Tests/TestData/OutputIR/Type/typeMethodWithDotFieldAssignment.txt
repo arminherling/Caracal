@@ -12,17 +12,17 @@ block entry(0):
     %3 = load_value %2 : i32
     return %3
 
-define Number.setToFive(%0: ref Number "this") void
+define Number.setToFive(%0: ref Number ".this") void
 block entry(0):
-    %0 = parameter 0 : ref Number "this"
+    %0 = parameter 0 : ref Number ".this"
     %1 = const 5 : i32
     %2 = address_of_field %0.0 : ref i32 "value"
     store_value %1, %2 : i32
     return
 
-define Number.new(%0: ref Number "this", %1: i32 "value") void
+define Number.new(%0: ref Number ".this", %1: i32 "value") void
 block entry(0):
-    %0 = parameter 0 : ref Number "this"
+    %0 = parameter 0 : ref Number ".this"
     %1 = parameter 1 : i32 "value"
     %2 = address_of_field %0.0 : ref i32 "value"
     store_value %1, %2 : i32

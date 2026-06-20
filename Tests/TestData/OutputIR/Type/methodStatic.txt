@@ -5,7 +5,7 @@ block entry(0):
     %0 = const 0 : i32
     return %0
 
-define Zero.new(%0: ref Zero "this") void
+define Zero.new(%0: ref Zero ".this") void
 block entry(0):
-    %0 = parameter 0 : ref Zero "this"
+    %0 = parameter 0 : ref Zero ".this"
     return

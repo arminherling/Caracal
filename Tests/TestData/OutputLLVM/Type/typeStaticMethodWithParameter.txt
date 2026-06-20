@@ -13,7 +13,7 @@ entry:
   ret i32 %x
 }
 
-define void @Math.new(ptr nonnull %this) {
+define void @Math.new(ptr nonnull %.this) {
 entry:
   ret void
 }

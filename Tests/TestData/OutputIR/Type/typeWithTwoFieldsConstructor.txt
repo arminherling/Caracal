@@ -13,9 +13,9 @@ block entry(0):
     %4 = load_value %3 : i32
     return %4
 
-define Pair.new(%0: ref Pair "this", %1: i32 "left", %2: i32 "right") void
+define Pair.new(%0: ref Pair ".this", %1: i32 "left", %2: i32 "right") void
 block entry(0):
-    %0 = parameter 0 : ref Pair "this"
+    %0 = parameter 0 : ref Pair ".this"
     %1 = parameter 1 : i32 "left"
     %2 = parameter 2 : i32 "right"
     %3 = address_of_field %0.0 : ref i32 "left"

@@ -11,7 +11,7 @@ block entry(0):
     %0 = parameter 0 : i32 "x"
     return %0
 
-define Math.new(%0: ref Math "this") void
+define Math.new(%0: ref Math ".this") void
 block entry(0):
-    %0 = parameter 0 : ref Math "this"
+    %0 = parameter 0 : ref Math ".this"
     return

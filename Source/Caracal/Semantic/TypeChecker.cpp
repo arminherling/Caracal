@@ -70,7 +70,7 @@ namespace Caracal
 
     static bool ShouldIgnoreUnusedVariableWarning(std::string_view name)
     {
-        return name == "_" || name == "this";
+        return name == "_" || name == ImplicitThisName;
     }
 
     static std::string FormatBinaryOperator(BinaryOperatorKind binaryOperator)
@@ -479,7 +479,7 @@ namespace Caracal
                 std::vector<Parameter> declarationParameters{};
                 if (modifier != MethodModifier::Static)
                 {
-                    declarationParameters.emplace_back("this", typeDefinition.type().toReference());
+                    declarationParameters.emplace_back(ImplicitThisName, typeDefinition.type().toReference());
                 }
 
                 const auto& parameterNodes = methodStatement->parametersNode()->parameters();
@@ -499,7 +499,7 @@ namespace Caracal
             }
 
             std::vector<Parameter> constructorParameters{};
-            constructorParameters.emplace_back("this", typeType.toReference());
+            constructorParameters.emplace_back(ImplicitThisName, typeType.toReference());
 
             if (typeDefinitionStatement->constructorParameters().has_value())
             {
@@ -747,7 +747,7 @@ namespace Caracal
         auto& methodDefinition = m_module.getFunctionDefinition(methodType);
         if (methodStatement->modifier() != MethodModifier::Static)
         {
-            parameters.insert(parameters.begin(), Parameter{ "this", typeType.toReference() });
+            parameters.insert(parameters.begin(), Parameter{ ImplicitThisName, typeType.toReference() });
         }
         methodDefinition.setParameters(parameters);
         methodDefinition.setReturnTypes(returns);
@@ -762,7 +762,7 @@ namespace Caracal
         }
 
         std::vector<Parameter> constructorParameters{};
-        constructorParameters.emplace_back("this", typeType.toReference());
+        constructorParameters.emplace_back(ImplicitThisName, typeType.toReference());
 
         if (typeDefinitionStatement->constructorParameters().has_value())
         {

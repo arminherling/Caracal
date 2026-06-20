@@ -13,9 +13,9 @@ entry:
   ret i32 %field_load
 }
 
-define void @Number.new(ptr nonnull %this) {
+define void @Number.new(ptr nonnull %.this) {
 entry:
-  %value = getelementptr inbounds nuw %Number, ptr %this, i32 0, i32 0
+  %value = getelementptr inbounds nuw %Number, ptr %.this, i32 0, i32 0
   store i32 42, ptr %value, align 4
   ret void
 }

@@ -2,12 +2,12 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
-define i32 @Zero.value(ptr nonnull %this) {
+define i32 @Zero.value(ptr nonnull %.this) {
 entry:
   ret i32 0
 }
 
-define void @Zero.new(ptr nonnull %this) {
+define void @Zero.new(ptr nonnull %.this) {
 entry:
   ret void
 }
