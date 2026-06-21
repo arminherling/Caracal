@@ -10,17 +10,17 @@ namespace llvm {
 
 namespace Caracal
 {
-    class LLVMScope
+    class AstToLLVMScope
     {
     public:
-        LLVMScope(LLVMScope* parent);
+        AstToLLVMScope(AstToLLVMScope* parent);
 
         bool hasVariableBinding(std::string_view identifier) const noexcept;
         void addVariableBinding(std::string_view identifier, llvm::Value* value);
         [[nodiscard]] llvm::Value* getVariableBinding(std::string_view identifier) const noexcept;
 
     private:
-        LLVMScope* m_parent;
+        AstToLLVMScope* m_parent;
         std::unordered_map<std::string_view, llvm::Value*> m_variableBindings;
     };
 }

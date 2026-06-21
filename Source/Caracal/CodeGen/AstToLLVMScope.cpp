@@ -1,13 +1,13 @@
-﻿#include "LLVMScope.h"
+﻿#include "AstToLLVMScope.h"
 
 namespace Caracal
 {
-    LLVMScope::LLVMScope(LLVMScope* parent)
+    AstToLLVMScope::AstToLLVMScope(AstToLLVMScope* parent)
         : m_parent{ parent }
     {
     }
 
-    bool LLVMScope::hasVariableBinding(std::string_view identifier) const noexcept
+    bool AstToLLVMScope::hasVariableBinding(std::string_view identifier) const noexcept
     {
         if (m_variableBindings.find(identifier) != m_variableBindings.end())
             return true;
@@ -17,12 +17,12 @@ namespace Caracal
             return false;
     }
 
-    void LLVMScope::addVariableBinding(std::string_view identifier, llvm::Value* value)
+    void AstToLLVMScope::addVariableBinding(std::string_view identifier, llvm::Value* value)
     {
         m_variableBindings.try_emplace(identifier, value);
     }
 
-    llvm::Value* LLVMScope::getVariableBinding(std::string_view identifier) const noexcept
+    llvm::Value* AstToLLVMScope::getVariableBinding(std::string_view identifier) const noexcept
     {
         if (auto search = m_variableBindings.find(identifier); search != m_variableBindings.end())
             return search->second;

@@ -18,7 +18,7 @@
 #include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
 #include <Caracal/Semantic/SemanticContext.h>
-#include <Caracal/CodeGen/LLVMScope.h>
+#include <Caracal/CodeGen/AstToLLVMScope.h>
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
 #include <Caracal/Syntax/UnaryExpression.h>
 
@@ -37,14 +37,14 @@ namespace llvm {
 
 namespace Caracal
 {
-    class LLVMCodeGenerator
+    class AstToLLVMCodeGenerator
     {
     public:
-        LLVMCodeGenerator(
+        AstToLLVMCodeGenerator(
             SemanticContext& semanticContext, 
             llvm::Module& llvmModule);
 
-        CARACAL_DELETE_COPY_DELETE_MOVE(LLVMCodeGenerator)
+        CARACAL_DELETE_COPY_DELETE_MOVE(AstToLLVMCodeGenerator)
 
         [[nodiscard]] bool generate();
     
@@ -97,7 +97,7 @@ namespace Caracal
 
         void pushScope();
         void popScope();
-        [[nodiscard]] LLVMScope* currentScope() const noexcept;
+        [[nodiscard]] AstToLLVMScope* currentScope() const noexcept;
 
     private:
         SemanticContext& m_semanticContext;
@@ -107,8 +107,8 @@ namespace Caracal
         llvm::BasicBlock* m_currentConditionBlock;
         llvm::BasicBlock* m_currentEndBlock;
         std::unique_ptr<llvm::IRBuilderBase> m_irBuilder;
-        std::vector<std::unique_ptr<LLVMScope>> m_scopes;
+        std::vector<std::unique_ptr<AstToLLVMScope>> m_scopes;
     };
 
-    bool generateLLVMModule(SemanticContext& semanticContext, llvm::Module& llvmModule) noexcept;
+    bool generateLLVMModuleFromAst(SemanticContext& semanticContext, llvm::Module& llvmModule) noexcept;
 }

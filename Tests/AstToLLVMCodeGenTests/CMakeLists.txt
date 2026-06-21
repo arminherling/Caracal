@@ -1,4 +1,4 @@
-﻿project(LLVMCodeGenTests)
+﻿project(AstToLLVMCodeGenTests)
 
 file(GLOB SOURCES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/*.cpp")
 

@@ -55,7 +55,7 @@ static void FileTests(
     const auto [irGenerated, output] = Caracal::generateLLVMIR(*parseTrees[0], semanticContext, TestTargetTriple);
     const auto endTime = std::chrono::high_resolution_clock::now();
 
-    std::cout << "      generateLLVMModule(): " << CaraTest::stringify(endTime - startTime) << std::endl;
+    std::cout << "      generateLLVMIR(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     CaraTest::isTrue(irGenerated);
     CaraTest::isTrue(!diagnostics.hasErrors());
@@ -79,7 +79,7 @@ static std::vector<std::tuple<std::string, std::filesystem::path, std::filesyste
             const auto& inputFilePath = entry.path();
             const auto inputDirName = inputFilePath.parent_path().filename();
 
-            const auto outputParseDirectoryPath = testDataDir / "OutputLLVM";
+            const auto outputParseDirectoryPath = testDataDir / "OutputAstLLVM";
             if (!std::filesystem::exists(outputParseDirectoryPath))
             {
                 std::filesystem::create_directories(outputParseDirectoryPath);

@@ -1,4 +1,4 @@
-﻿#include "LLVMCodeGenerator.h"
+﻿#include "AstToLLVMCodeGenerator.h"
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Verifier.h>
@@ -90,7 +90,7 @@ namespace Caracal
     [[nodiscard]] static void SetupFunctionParameters(
         const FunctionDefinition& functionDefinition,
         llvm::Function* llvmFunction,
-        LLVMScope* scope,
+        AstToLLVMScope* scope,
         llvm::IRBuilderBase* irBuilderBase) noexcept
     {
         const auto& functionParameters = functionDefinition.parameters();
@@ -117,7 +117,7 @@ namespace Caracal
         }
     }
 
-    LLVMCodeGenerator::LLVMCodeGenerator(
+    AstToLLVMCodeGenerator::AstToLLVMCodeGenerator(
         SemanticContext& semanticContext,
         llvm::Module& llvmModule)
         : m_semanticContext{ semanticContext }
@@ -128,10 +128,10 @@ namespace Caracal
         , m_currentEndBlock{ nullptr }
         , m_irBuilder{ std::make_unique<llvm::IRBuilder<>>(llvmModule.getContext()) }
     {
-        m_scopes.emplace_back(std::make_unique<LLVMScope>(nullptr));
+        m_scopes.emplace_back(std::make_unique<AstToLLVMScope>(nullptr));
     }
 
-    bool LLVMCodeGenerator::generate()
+    bool AstToLLVMCodeGenerator::generate()
     {
         generateTopLevelDeclarations();
         generateFunctionBodies();
@@ -139,7 +139,7 @@ namespace Caracal
         return true;
     }
 
-    void LLVMCodeGenerator::generateNode(Node* node) noexcept
+    void AstToLLVMCodeGenerator::generateNode(Node* node) noexcept
     {
         switch (node->kind())
         {
@@ -220,7 +220,7 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node) noexcept
+    void AstToLLVMCodeGenerator::generateConstantDeclaration(ConstantDeclaration* node) noexcept
     {
         const auto leftExpression = node->leftExpression().get();
         if (leftExpression->kind() != NodeKind::NameExpression)
@@ -271,7 +271,7 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::generateVariableDeclaration(VariableDeclaration* node) noexcept
+    void AstToLLVMCodeGenerator::generateVariableDeclaration(VariableDeclaration* node) noexcept
     {
         const auto leftExpression = node->leftExpression().get();
         if (leftExpression->kind() != NodeKind::NameExpression)
@@ -309,13 +309,13 @@ namespace Caracal
         m_irBuilder->CreateStore(llvmValue, localValue);
     }
 
-    void LLVMCodeGenerator::generateExpressionStatement(ExpressionStatement* node) noexcept
+    void AstToLLVMCodeGenerator::generateExpressionStatement(ExpressionStatement* node) noexcept
     {
         const auto expression = node->expression().get();
         static_cast<void>(generateExpression(expression));
     }
 
-    void LLVMCodeGenerator::generateAssignmentStatement(AssignmentStatement* node) noexcept
+    void AstToLLVMCodeGenerator::generateAssignmentStatement(AssignmentStatement* node) noexcept
     {
         const auto leftExpression = node->leftExpression().get();
         const auto rightExpression = node->rightExpression().get();
@@ -401,7 +401,7 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept
+    void AstToLLVMCodeGenerator::generateFunctionDefinition(FunctionDefinitionStatement* node) noexcept
     {
         auto functionType = node->type();
         const auto& body = node->bodyNode();
@@ -409,7 +409,7 @@ namespace Caracal
         generateFunction(functionType, body.get());
     }
 
-    void LLVMCodeGenerator::generateFunction(Type functionType, BlockNode* body) noexcept
+    void AstToLLVMCodeGenerator::generateFunction(Type functionType, BlockNode* body) noexcept
     {
         auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
         auto& functionName = functionDefinition.fullName();
@@ -436,7 +436,7 @@ namespace Caracal
         m_currentFunction = nullptr;
     }
 
-    void LLVMCodeGenerator::generateSynthesizedConstructor(const FunctionDefinition& functionDefinition) noexcept
+    void AstToLLVMCodeGenerator::generateSynthesizedConstructor(const FunctionDefinition& functionDefinition) noexcept
     {
         auto& typeDefinition = m_semanticContext.getTypeDefinition(functionDefinition.parentType());
 
@@ -504,7 +504,7 @@ namespace Caracal
         m_currentFunction = nullptr;
     }
 
-    llvm::Function* LLVMCodeGenerator::getFunctionDeclaration(const FunctionDefinition& functionDefinition)
+    llvm::Function* AstToLLVMCodeGenerator::getFunctionDeclaration(const FunctionDefinition& functionDefinition)
     {
         auto& functionName = functionDefinition.fullName();
         auto llvmFunction = m_llvmModule.getFunction(functionName);
@@ -519,7 +519,7 @@ namespace Caracal
         return nullptr;
     }
 
-    void LLVMCodeGenerator::generateTypeDefinition(TypeDefinitionStatement* node) noexcept
+    void AstToLLVMCodeGenerator::generateTypeDefinition(TypeDefinitionStatement* node) noexcept
     {
         auto thisType = node->type();
         auto typeDefinition = m_semanticContext.getTypeDefinition(thisType);
@@ -537,7 +537,7 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::generateIfStatement(IfStatement* node) noexcept
+    void AstToLLVMCodeGenerator::generateIfStatement(IfStatement* node) noexcept
     {
         const auto hasFalseBlock = node->hasFalseBlock();
         const auto condition = node->condition().get();
@@ -586,7 +586,7 @@ namespace Caracal
         m_irBuilder->SetInsertPoint(afterBlock);
     }
 
-    void LLVMCodeGenerator::generateWhileStatement(WhileStatement* node) noexcept
+    void AstToLLVMCodeGenerator::generateWhileStatement(WhileStatement* node) noexcept
     {
         const auto condition = node->condition().get();
         auto conditionBlock = llvm::BasicBlock::Create(m_llvmModule.getContext(), "while_condition", m_currentFunction);
@@ -620,7 +620,7 @@ namespace Caracal
         m_irBuilder->SetInsertPoint(afterBlock);
     }
 
-    void LLVMCodeGenerator::generateBreakStatement() noexcept
+    void AstToLLVMCodeGenerator::generateBreakStatement() noexcept
     {
         if (m_currentEndBlock == nullptr)
         {
@@ -629,7 +629,7 @@ namespace Caracal
         m_irBuilder->CreateBr(m_currentEndBlock);
     }
 
-    void LLVMCodeGenerator::generateSkipStatement() noexcept
+    void AstToLLVMCodeGenerator::generateSkipStatement() noexcept
     {
         if (m_currentConditionBlock == nullptr)
         {
@@ -638,7 +638,7 @@ namespace Caracal
         m_irBuilder->CreateBr(m_currentConditionBlock);
     }
 
-    void LLVMCodeGenerator::generateReturnStatement(ReturnStatement* node) noexcept
+    void AstToLLVMCodeGenerator::generateReturnStatement(ReturnStatement* node) noexcept
     {
         if (node->expression().has_value())
         {
@@ -653,7 +653,7 @@ namespace Caracal
         }
     }
 
-    llvm::Value* LLVMCodeGenerator::generateExpression(const Expression* node) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::generateExpression(const Expression* node) noexcept
     {
         switch (node->kind())
         {
@@ -703,7 +703,7 @@ namespace Caracal
         }
     }
 
-    llvm::Value* LLVMCodeGenerator::generateUnaryExpression(const UnaryExpression* node) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::generateUnaryExpression(const UnaryExpression* node) noexcept
     {
         switch (node->unaryOperator())
         {
@@ -747,7 +747,7 @@ namespace Caracal
         }
     }
 
-    llvm::Value* LLVMCodeGenerator::generateBinaryExpression(const BinaryExpression* node) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::generateBinaryExpression(const BinaryExpression* node) noexcept
     {
         switch (node->binaryOperator())
         {
@@ -1167,7 +1167,7 @@ namespace Caracal
         return nullptr;
     }
 
-    llvm::Value* LLVMCodeGenerator::generateNameExpression(const NameExpression* node) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::generateNameExpression(const NameExpression* node) noexcept
     {
         const auto& name = node->name();
         auto value = currentScope()->getVariableBinding(name);
@@ -1188,7 +1188,7 @@ namespace Caracal
         return nullptr;
     }
 
-    llvm::Value* LLVMCodeGenerator::generateFunctionCallExpression(const FunctionCallExpression* node) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::generateFunctionCallExpression(const FunctionCallExpression* node) noexcept
     {
         auto functionType = node->functionType();
         auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
@@ -1225,7 +1225,7 @@ namespace Caracal
         return m_irBuilder->CreateCall(llvmFunction, llvmArguments);
     }
 
-    llvm::Value* LLVMCodeGenerator::generateBoolLiteral(const BoolLiteral* node) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::generateBoolLiteral(const BoolLiteral* node) noexcept
     {
         auto& context = m_llvmModule.getContext();
         if (node->value())
@@ -1238,7 +1238,7 @@ namespace Caracal
         }
     }
 
-    llvm::Value* LLVMCodeGenerator::generateNumberLiteral(const NumberLiteral* node) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::generateNumberLiteral(const NumberLiteral* node) noexcept
     {
         auto& context = m_llvmModule.getContext();
         const auto literalType = node->type();
@@ -1275,14 +1275,14 @@ namespace Caracal
         return nullptr;
     }
 
-    llvm::Value* LLVMCodeGenerator::generateStringLiteral(const StringLiteral* node) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::generateStringLiteral(const StringLiteral* node) noexcept
     {
         auto& context = m_llvmModule.getContext();
         const auto& stringContent = node->escapedContent();
         return m_irBuilder->CreateGlobalString(stringContent, "", 0, &m_llvmModule);
     }
 
-    llvm::Value* LLVMCodeGenerator::getPointerToField(llvm::Value* objectPtr, Type objectType, std::string_view fieldName) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::getPointerToField(llvm::Value* objectPtr, Type objectType, std::string_view fieldName) noexcept
     {
         auto& typeDefinition = m_semanticContext.getTypeDefinition(objectType);
         const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldName);
@@ -1301,7 +1301,7 @@ namespace Caracal
         return m_irBuilder->CreateStructGEP(llvmStructType, objectPtr, static_cast<unsigned>(fieldDefinition.index()), std::string(fieldName));
     }
 
-    llvm::FunctionType* LLVMCodeGenerator::buildFunctionType(const FunctionDefinition& functionDefinition) noexcept
+    llvm::FunctionType* AstToLLVMCodeGenerator::buildFunctionType(const FunctionDefinition& functionDefinition) noexcept
     {
         auto& context = m_llvmModule.getContext();
         llvm::Type* llvmReturnType = nullptr;
@@ -1332,7 +1332,7 @@ namespace Caracal
         return llvm::FunctionType::get(llvmReturnType, llvmParameterTypes, isVariadic);
     }
 
-    bool LLVMCodeGenerator::tryGenerateConstructorCallInto(const BinaryExpression* binaryExpression, llvm::Value* destinationPtr) noexcept
+    bool AstToLLVMCodeGenerator::tryGenerateConstructorCallInto(const BinaryExpression* binaryExpression, llvm::Value* destinationPtr) noexcept
     {
         auto* constructorCall = static_cast<FunctionCallExpression*>(binaryExpression->rightExpression().get());
         auto constructorType = constructorCall->functionType();
@@ -1364,7 +1364,7 @@ namespace Caracal
         return true;
     }
 
-    bool LLVMCodeGenerator::tryGenerateGlobalConstructorCall(const std::string& name, BinaryExpression* binaryExpression) noexcept
+    bool AstToLLVMCodeGenerator::tryGenerateGlobalConstructorCall(const std::string& name, BinaryExpression* binaryExpression) noexcept
     {
         auto objectType = binaryExpression->type();
         auto* llvmObjectType = GetLLVMTypeForCaraType(objectType, m_llvmModule.getContext(), m_llvmModule, m_semanticContext);
@@ -1432,7 +1432,7 @@ namespace Caracal
         return generated;
     }
 
-    llvm::Function* LLVMCodeGenerator::getOrCreateGlobalInitFunction() noexcept
+    llvm::Function* AstToLLVMCodeGenerator::getOrCreateGlobalInitFunction() noexcept
     {
         auto* initFunction = m_llvmModule.getFunction(GlobalInitFunctionName);
         if (initFunction != nullptr)
@@ -1447,7 +1447,7 @@ namespace Caracal
         return initFunction;
     }
 
-    void LLVMCodeGenerator::generateFunctionBodies() noexcept
+    void AstToLLVMCodeGenerator::generateFunctionBodies() noexcept
     {
         for (const auto& functionDefinition : m_semanticContext.functionDefinitions())
         {
@@ -1486,7 +1486,7 @@ namespace Caracal
         finishGlobalInitFunctionGeneration();
     }
 
-    void LLVMCodeGenerator::finishGlobalInitFunctionGeneration()
+    void AstToLLVMCodeGenerator::finishGlobalInitFunctionGeneration()
     {
         if (auto* globalInitFunction = m_llvmModule.getFunction(GlobalInitFunctionName))
         {
@@ -1499,7 +1499,7 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::generateBlockNode(BlockNode* body) noexcept
+    void AstToLLVMCodeGenerator::generateBlockNode(BlockNode* body) noexcept
     {
         const auto& statements = body->statements();
         for (const auto& statement : statements)
@@ -1508,7 +1508,7 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::declareFunction(const FunctionDefinition& functionDefinition) noexcept
+    void AstToLLVMCodeGenerator::declareFunction(const FunctionDefinition& functionDefinition) noexcept
     {
         auto& functionName = functionDefinition.fullName();
         if (m_llvmModule.getFunction(functionName) != nullptr)
@@ -1530,14 +1530,14 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::generateTopLevelDeclarations() noexcept
+    void AstToLLVMCodeGenerator::generateTopLevelDeclarations() noexcept
     {
         generateTypeDeclarations();
         generateFunctionDeclarations();
         generateConstantDeclarations();
     }
 
-    void LLVMCodeGenerator::generateTypeDeclarations() noexcept
+    void AstToLLVMCodeGenerator::generateTypeDeclarations() noexcept
     {
         auto& context = m_llvmModule.getContext();
 
@@ -1576,7 +1576,7 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::generateConstantDeclarations() noexcept
+    void AstToLLVMCodeGenerator::generateConstantDeclarations() noexcept
     {
         for (const auto& constantDefinition : m_semanticContext.constantDefinitions())
         {
@@ -1614,7 +1614,7 @@ namespace Caracal
         }
     }
 
-    void LLVMCodeGenerator::generateFunctionDeclarations() noexcept
+    void AstToLLVMCodeGenerator::generateFunctionDeclarations() noexcept
     {
         for (const auto& functionDefinition : m_semanticContext.functionDefinitions())
         {
@@ -1622,7 +1622,7 @@ namespace Caracal
         }
     }
 
-    llvm::GlobalValue* LLVMCodeGenerator::createGlobalValue(
+    llvm::GlobalValue* AstToLLVMCodeGenerator::createGlobalValue(
         const std::string& name, 
         llvm::Constant* constant, 
         bool isConst) noexcept
@@ -1636,7 +1636,7 @@ namespace Caracal
         return value;
     }
 
-    llvm::Value* LLVMCodeGenerator::createLocalValue(const std::string& name, llvm::Type* type) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::createLocalValue(const std::string& name, llvm::Type* type) noexcept
     {
         auto& entryBlock = m_currentFunction->getEntryBlock();
         auto insertPoint = entryBlock.getFirstInsertionPt();
@@ -1653,13 +1653,13 @@ namespace Caracal
         return value;
     }
 
-    void LLVMCodeGenerator::pushScope()
+    void AstToLLVMCodeGenerator::pushScope()
     {
         auto parent = m_scopes.back().get();
-        m_scopes.emplace_back(std::make_unique<LLVMScope>(parent));
+        m_scopes.emplace_back(std::make_unique<AstToLLVMScope>(parent));
     }
 
-    void LLVMCodeGenerator::popScope()
+    void AstToLLVMCodeGenerator::popScope()
     {
         m_scopes.pop_back();
         if (m_scopes.size() == 0)
@@ -1668,18 +1668,18 @@ namespace Caracal
         }
     }
 
-    LLVMScope* LLVMCodeGenerator::currentScope() const noexcept
+    AstToLLVMScope* AstToLLVMCodeGenerator::currentScope() const noexcept
     {
         return m_scopes.back().get();
     }
 
-    bool generateLLVMModule(SemanticContext& semanticContext, llvm::Module& llvmModule) noexcept
+    bool generateLLVMModuleFromAst(SemanticContext& semanticContext, llvm::Module& llvmModule) noexcept
     {
-        LLVMCodeGenerator generator{ semanticContext, llvmModule };
+        AstToLLVMCodeGenerator generator{ semanticContext, llvmModule };
         return generator.generate();
     }
 
-    llvm::Value* LLVMCodeGenerator::dereferenceIfNeeded(Expression* expression, llvm::Value* value, llvm::Type* targetType) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::dereferenceIfNeeded(Expression* expression, llvm::Value* value, llvm::Type* targetType) noexcept
     {
         if (expression != nullptr && !expression->type().isReference())
             return value;
@@ -1732,7 +1732,7 @@ namespace Caracal
         return value;
     }
 
-    llvm::Value* LLVMCodeGenerator::getPointerForAssignment(Expression* expr, llvm::Value* value) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::getPointerForAssignment(Expression* expr, llvm::Value* value) noexcept
     {
         if (!value)
         {
@@ -1772,7 +1772,7 @@ namespace Caracal
         return nullptr;
     }
 
-    llvm::Value* LLVMCodeGenerator::getThisPointer(Expression* thisExpression) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::getThisPointer(Expression* thisExpression) noexcept
     {
         if (thisExpression == nullptr)
         {
@@ -1869,7 +1869,7 @@ namespace Caracal
         return temporaryThis;
     }
 
-    llvm::Value* LLVMCodeGenerator::generateFieldAccessPointer(const BinaryExpression* node) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::generateFieldAccessPointer(const BinaryExpression* node) noexcept
     {
         if (node->rightExpression()->kind() != NodeKind::NameExpression)
         {
@@ -1887,7 +1887,7 @@ namespace Caracal
         return getPointerToField(objectPointer, objectType, fieldNameExpression->name());
     }
 
-    llvm::Value* LLVMCodeGenerator::generateMemberAccessExpression(const MemberAccessExpression* node) noexcept
+    llvm::Value* AstToLLVMCodeGenerator::generateMemberAccessExpression(const MemberAccessExpression* node) noexcept
     {
         if (m_currentFunction == nullptr)
         {

@@ -7,7 +7,7 @@
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
-#include <Caracal/CodeGen/LLVMCodeGenerator.h>
+#include <Caracal/CodeGen/AstToLLVMCodeGenerator.h>
 #include <Caracal/IR/IRLowerer.h>
 
 #include <llvm/IR/LegacyPassManager.h>
@@ -142,7 +142,7 @@ namespace Caracal
         llvmModule->setDataLayout(targetMachine->createDataLayout());
         llvmModule->setTargetTriple(triple);
 
-        wasSuccessful = Caracal::generateLLVMModule(semanticContext, *llvmModule);
+        wasSuccessful = Caracal::generateLLVMModuleFromAst(semanticContext, *llvmModule);
         if (!wasSuccessful)
         {
             std::cout << "Module not generated!";
@@ -227,7 +227,7 @@ namespace Caracal
         auto module = std::make_unique<llvm::Module>("CaracalModule", context);
         module->setTargetTriple(llvm::Triple(targetTriple));
 
-        auto wasSuccessful = Caracal::generateLLVMModule(semanticContext, *module);
+        auto wasSuccessful = Caracal::generateLLVMModuleFromAst(semanticContext, *module);
         if (!wasSuccessful)
         {
             std::cout << "Module not generated!";
