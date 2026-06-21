@@ -8,7 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    # pinned to windows-2022 because windows-latest moved to Visual Studio 2026
+    runs-on: windows-2022
     env:
       LLVM_VERSION: '21.1.8'
 
