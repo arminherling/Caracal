@@ -3,14 +3,17 @@
 #include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/AddressOfInstruction.h>
 #include <Caracal/IR/AddressOfFieldInstruction.h>
+#include <Caracal/IR/AddressOfGlobalInstruction.h>
 #include <Caracal/IR/AllocateLocalInstruction.h>
 #include <Caracal/IR/CallInstruction.h>
 #include <Caracal/IR/CallVoidInstruction.h>
 #include <Caracal/IR/ConstantValue.h>
 #include <Caracal/IR/ConstantInstruction.h>
+#include <Caracal/IR/ConstructedGlobalDeclaration.h>
 #include <Caracal/IR/DivideInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
 #include <Caracal/IR/GlobalConstantDeclaration.h>
+#include <Caracal/IR/GlobalReferenceDeclaration.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
@@ -57,6 +60,55 @@
 
 namespace Caracal
 {
+    static constexpr const char* GlobalInitializerName = ".global_init";
+
+    static bool IsConstructorCall(const Expression* expression) noexcept
+    {
+        if (expression == nullptr || expression->kind() != NodeKind::BinaryExpression)
+            return false;
+
+        const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+        return binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall
+            && binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression;
+    }
+
+    static bool ExpressionContainsCall(const Expression* expression) noexcept
+    {
+        if (expression == nullptr)
+            return false;
+
+        switch (expression->kind())
+        {
+            case NodeKind::FunctionCallExpression:
+            {
+                return true;
+            }
+            case NodeKind::GroupingExpression:
+            {
+                const auto* groupingExpression = static_cast<const GroupingExpression*>(expression);
+                return ExpressionContainsCall(groupingExpression->expression().get());
+            }
+            case NodeKind::UnaryExpression:
+            {
+                const auto* unaryExpression = static_cast<const UnaryExpression*>(expression);
+                return ExpressionContainsCall(unaryExpression->expression().get());
+            }
+            case NodeKind::MemberAccessExpression:
+            {
+                const auto* memberAccessExpression = static_cast<const MemberAccessExpression*>(expression);
+                return ExpressionContainsCall(memberAccessExpression->expression().get());
+            }
+            case NodeKind::BinaryExpression:
+            {
+                const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+                return (ExpressionContainsCall(binaryExpression->leftExpression().get())
+                    || ExpressionContainsCall(binaryExpression->rightExpression().get()));
+            }
+            default:
+                return false;
+        }
+    }
+
     template <typename TResult, typename TVisitor>
     static std::optional<TResult> TryVisitLiteralData(const ConstantValue& value, TVisitor&& visitor) noexcept
     {
@@ -214,6 +266,7 @@ namespace Caracal
     bool IRLowerer::lower(Module& module) noexcept
     {
         resetState();
+        m_globalTypes.clear();
 
         for (const auto& enumDefinition : m_semanticContext.enumDefinitions())
         {
@@ -233,10 +286,31 @@ namespace Caracal
                 return false;
         }
 
+        std::vector<const ConstantDefinition*> constructedGlobalDefinitions;
         for (const auto& constantDefinition : m_semanticContext.constantDefinitions())
         {
-            // non-constant globals are handled later
-            static_cast<void>(lowerGlobalConstant(constantDefinition, module));
+            if (lowerGlobalConstant(constantDefinition, module))
+                continue;
+
+            if (lowerGlobalReference(constantDefinition, module))
+                continue;
+
+            if (registerConstructedGlobal(constantDefinition, module))
+                constructedGlobalDefinitions.push_back(&constantDefinition);
+        }
+
+        std::vector<const Expression*> globalDiscardEffects;
+        for (const auto* discardExpression : m_semanticContext.globalDiscardExpressions())
+        {
+            // we only need evaluade discards that contain a call
+            if (ExpressionContainsCall(discardExpression))
+                globalDiscardEffects.push_back(discardExpression);
+        }
+
+        if (!constructedGlobalDefinitions.empty() || !globalDiscardEffects.empty())
+        {
+            if (!lowerGlobalInitializer(constructedGlobalDefinitions, globalDiscardEffects, module))
+                return false;
         }
 
         for (const auto& functionDefinition : m_semanticContext.functionDefinitions())
@@ -371,6 +445,73 @@ namespace Caracal
             return false;
 
         module.addGlobalConstant(GlobalConstantDeclaration{ definition.name(), definition.type(), constantValue.value() });
+        m_globalTypes.insert_or_assign(definition.name(), definition.type());
+        return true;
+    }
+
+    bool IRLowerer::lowerGlobalReference(const ConstantDefinition& definition, Module& module) noexcept
+    {
+        const auto* expression = StripGroupings(definition.expression());
+        if (expression == nullptr || expression->kind() != NodeKind::UnaryExpression)
+            return false;
+
+        const auto* unaryExpression = static_cast<const UnaryExpression*>(expression);
+        if (unaryExpression->unaryOperator() != UnaryOperatorKind::ReferenceOf)
+            return false;
+
+        const auto* operand = StripGroupings(unaryExpression->expression().get());
+        if (operand->kind() != NodeKind::NameExpression)
+            return false;
+
+        const auto& targetName = static_cast<const NameExpression*>(operand)->name();
+        if (m_globalTypes.find(targetName) == m_globalTypes.end())
+            return false;
+
+        module.addGlobalReference(GlobalReferenceDeclaration{ definition.name(), definition.type(), targetName });
+        m_globalTypes.insert_or_assign(definition.name(), definition.type());
+        return true;
+    }
+
+    bool IRLowerer::registerConstructedGlobal(const ConstantDefinition& definition, Module& module) noexcept
+    {
+        if (!IsConstructorCall(definition.expression()))
+            return false;
+
+        if (definition.type() == Type::Undefined())
+            return false;
+
+        module.addConstructedGlobal(ConstructedGlobalDeclaration{ definition.name(), definition.type() });
+        m_globalTypes.insert_or_assign(definition.name(), definition.type());
+        return true;
+    }
+
+    bool IRLowerer::lowerGlobalInitializer(const std::vector<const ConstantDefinition*>& definitions, const std::vector<const Expression*>& discardEffects, Module& module) noexcept
+    {
+        resetState();
+
+        const auto blockId = m_nextBlockId++;
+        auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
+
+        for (const auto* definition : definitions)
+        {
+            const auto globalType = m_globalTypes.find(definition->name());
+            if (globalType == m_globalTypes.end())
+                return false;
+
+            const auto globalAddress = emitGlobalAddress(definition->name(), globalType->second, entryBlock);
+            if (!tryLowerConstructorCallIntoAddress(definition->expression(), globalAddress, entryBlock))
+                return false;
+        }
+
+        for (const auto* discardExpression : discardEffects)
+        {
+            if (!lowerExpressionForEffect(discardExpression, entryBlock))
+                return false;
+        }
+
+        Function function{ FunctionId{ -1 }, GlobalInitializerName, {}, Type::Void() };
+        function.addBlock(std::move(entryBlock));
+        module.setGlobalInit(std::move(function));
         return true;
     }
 
@@ -582,6 +723,22 @@ namespace Caracal
         const auto temporaryId = m_nextTemporaryId++;
         block.addInstruction(std::make_unique<LoadValueInstruction>(temporaryId, address, valueType));
         return ValueRef{ temporaryId };
+    }
+
+    ValueRef IRLowerer::emitGlobalAddress(const std::string& name, Type valueType, BasicBlock& block) noexcept
+    {
+        const auto temporaryId = m_nextTemporaryId++;
+        block.addInstruction(std::make_unique<AddressOfGlobalInstruction>(temporaryId, name, valueType.toReference()));
+        return ValueRef{ temporaryId };
+    }
+
+    std::optional<ValueRef> IRLowerer::tryGetGlobalAddress(const std::string& name, BasicBlock& block) noexcept
+    {
+        const auto result = m_globalTypes.find(name);
+        if (result == m_globalTypes.end())
+            return std::nullopt;
+
+        return emitGlobalAddress(name, result->second, block);
     }
 
     void IRLowerer::setLocalValue(std::string localName, ValueRef value, Type type) noexcept
@@ -1233,7 +1390,10 @@ namespace Caracal
             case NodeKind::NameExpression:
             {
                 const auto* nameExpression = static_cast<const NameExpression*>(expression);
-                return tryGetAddressBackedLocal(nameExpression->name());
+                if (const auto localAddress = tryGetAddressBackedLocal(nameExpression->name()); localAddress.has_value())
+                    return localAddress;
+
+                return tryGetGlobalAddress(nameExpression->name(), block);
             }
             case NodeKind::UnaryExpression:
             {
@@ -1498,7 +1658,13 @@ namespace Caracal
                 const auto* nameExpression = static_cast<const NameExpression*>(expression);
                 const auto result = m_locals.find(nameExpression->name());
                 if (result == m_locals.end())
-                    return std::nullopt;
+                {
+                    const auto globalAddress = tryGetGlobalAddress(nameExpression->name(), block);
+                    if (!globalAddress.has_value())
+                        return std::nullopt;
+
+                    return emitLoad(globalAddress.value(), expression->type().toValue(), block);
+                }
 
                 if (result->second.storageKind == LocalStorageKind::Address)
                     return emitLoad(result->second.value, result->second.type.toValue(), block);

@@ -884,6 +884,11 @@ namespace Caracal
             }
             nameExpression->setType(rightType);
         }
+        else if (statement->isGlobalConstant() && leftExpression->kind() == NodeKind::DiscardLiteral)
+        {
+            // a discarded global still needs to evaluate for potential side effects
+            m_module.addGlobalDiscardExpression(rightExpression);
+        }
 
         if (statement->explicitType().has_value())
         {

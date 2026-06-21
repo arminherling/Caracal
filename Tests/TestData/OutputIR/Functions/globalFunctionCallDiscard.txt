@@ -1,0 +1,9 @@
+define value() i32
+block entry(0):
+    %0 = const 42 : i32
+    return %0
+
+define .global_init() void
+block entry(0):
+    %0 = call value() : i32
+    return

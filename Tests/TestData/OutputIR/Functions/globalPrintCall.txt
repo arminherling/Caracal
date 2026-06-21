@@ -1,0 +1,7 @@
+extern print(%0: cstring "message") void
+
+define .global_init() void
+block entry(0):
+    %0 = const "hello, world!\0" : cstring
+    call print(%0)
+    return

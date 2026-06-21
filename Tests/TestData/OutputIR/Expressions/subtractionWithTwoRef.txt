@@ -1,0 +1,2 @@
+global x : i32 = 1
+global y : i32 = 2

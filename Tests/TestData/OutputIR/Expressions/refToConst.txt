@@ -1,0 +1,2 @@
+global x : i32 = 1
+global y : ref i32 = @x

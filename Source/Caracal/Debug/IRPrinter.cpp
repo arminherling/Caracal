@@ -2,6 +2,7 @@
 #include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/AddressOfInstruction.h>
 #include <Caracal/IR/AddressOfFieldInstruction.h>
+#include <Caracal/IR/AddressOfGlobalInstruction.h>
 #include <Caracal/IR/AllocateLocalInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
 #include <Caracal/IR/CallInstruction.h>
@@ -201,10 +202,22 @@ namespace Caracal
             prettyPrintTypeDeclaration(typeDeclaration);
         }
 
-        for (const auto& globalDeclaration : m_module.globalConstants())
+        // globals are single-line declarations, so print them as one group without blank lines between them
+        const bool hasGlobals = !m_module.globalConstants().empty()
+            || !m_module.globalReferences().empty()
+            || !m_module.constructedGlobals().empty();
+        if (hasGlobals)
         {
             appendDeclarationSeparator();
-            prettyPrintGlobalConstantDeclaration(globalDeclaration);
+
+            for (const auto& globalDeclaration : m_module.globalConstants())
+                prettyPrintGlobalConstantDeclaration(globalDeclaration);
+
+            for (const auto& globalReference : m_module.globalReferences())
+                prettyPrintGlobalReferenceDeclaration(globalReference);
+
+            for (const auto& constructedGlobal : m_module.constructedGlobals())
+                prettyPrintConstructedGlobalDeclaration(constructedGlobal);
         }
 
         for (const auto& function : m_module.externFunctions())
@@ -217,6 +230,12 @@ namespace Caracal
         {
             appendDeclarationSeparator();
             prettyPrintFunction(function);
+        }
+
+        if (const auto* globalInit = m_module.tryGetGlobalInit())
+        {
+            appendDeclarationSeparator();
+            prettyPrintFunction(*globalInit);
         }
 
         return m_builder.toString();
@@ -278,6 +297,29 @@ namespace Caracal
             .append(" = ")
             .append(FormatLiteralConstantValue(globalDeclaration.value(), globalDeclaration.type()))
             .appendLine("");
+    }
+
+    void IRPrinter::prettyPrintGlobalReferenceDeclaration(const GlobalReferenceDeclaration& globalReference)
+    {
+        m_builder
+            .append("global ")
+            .append(globalReference.name())
+            .append(" : ");
+        appendType(globalReference.type());
+        m_builder
+            .append(" = @")
+            .append(globalReference.targetName())
+            .appendLine("");
+    }
+
+    void IRPrinter::prettyPrintConstructedGlobalDeclaration(const ConstructedGlobalDeclaration& globalDeclaration)
+    {
+        m_builder
+            .append("global ")
+            .append(globalDeclaration.name())
+            .append(" : ");
+        appendType(globalDeclaration.type());
+        m_builder.appendLine("");
     }
 
     void IRPrinter::prettyPrintExternFunction(const ExternFunction& function)
@@ -416,6 +458,18 @@ namespace Caracal
                 appendSlot(addressOf.local());
                 m_builder.append(" : ");
                 appendType(addressOf.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::AddressOfGlobal:
+            {
+                const auto& addressOfGlobal = static_cast<const AddressOfGlobalInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ addressOfGlobal.resultId() });
+                m_builder.append(" = address_of_global @");
+                m_builder.append(addressOfGlobal.name());
+                m_builder.append(" : ");
+                appendType(addressOfGlobal.type());
                 m_builder.appendLine("");
                 break;
             }

@@ -61,10 +61,12 @@ namespace Caracal
         [[nodiscard]] ConstantDefinition& createConstant(
             std::string_view name,
             Expression* expression) noexcept;
+        void addGlobalDiscardExpression(const Expression* expression) noexcept;
         void createBuiltinType(Type type, std::string_view name, bool addVariants = false);
 
         [[nodiscard]] const std::vector<TypeDefinition>& typeDefinitions() const noexcept { return m_typeDefinitions; }
         [[nodiscard]] const std::vector<ConstantDefinition>& constantDefinitions() const noexcept { return m_constantDefinitions; }
+        [[nodiscard]] const std::vector<const Expression*>& globalDiscardExpressions() const noexcept { return m_globalDiscardExpressions; }
         [[nodiscard]] const std::vector<EnumDefinition>& enumDefinitions() const noexcept { return m_enumDefinitions; }
         [[nodiscard]] const std::vector<FunctionDefinition>& functionDefinitions() const noexcept { return m_functionDefinitions; }
 
@@ -73,6 +75,7 @@ namespace Caracal
         std::vector<EnumDefinition> m_enumDefinitions;
         std::vector<FunctionDefinition> m_functionDefinitions;
         std::vector<ConstantDefinition> m_constantDefinitions;
+        std::vector<const Expression*> m_globalDiscardExpressions;
         std::unordered_map<i32, size_t> m_typeDefinitionIndexById;
         std::unordered_map<i32, size_t> m_enumDefinitionIndexById;
         std::unordered_map<i32, size_t> m_functionDefinitionIndexById;

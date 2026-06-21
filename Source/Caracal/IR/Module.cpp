@@ -80,6 +80,26 @@ namespace Caracal
         m_globalConstants.push_back(std::move(globalDeclaration));
     }
 
+    void Module::addGlobalReference(GlobalReferenceDeclaration globalDeclaration)
+    {
+        m_globalReferences.push_back(std::move(globalDeclaration));
+    }
+
+    void Module::addConstructedGlobal(ConstructedGlobalDeclaration globalDeclaration)
+    {
+        m_constructedGlobals.push_back(std::move(globalDeclaration));
+    }
+
+    const Function* Module::tryGetGlobalInit() const noexcept
+    {
+        return m_globalInit.has_value() ? &m_globalInit.value() : nullptr;
+    }
+
+    void Module::setGlobalInit(Function function)
+    {
+        m_globalInit = std::move(function);
+    }
+
     void Module::addType(TypeDeclaration typeDeclaration)
     {
         m_typeIndices.emplace(typeDeclaration.type().id(), m_types.size());

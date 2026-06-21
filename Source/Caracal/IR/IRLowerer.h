@@ -78,6 +78,9 @@ namespace Caracal
         [[nodiscard]] bool lowerEnumDefinition(const EnumDefinition& definition, Module& module) noexcept;
         [[nodiscard]] bool lowerTypeDefinition(const TypeDefinition& definition, Module& module) noexcept;
         [[nodiscard]] bool lowerGlobalConstant(const ConstantDefinition& definition, Module& module) noexcept;
+        [[nodiscard]] bool lowerGlobalReference(const ConstantDefinition& definition, Module& module) noexcept;
+        [[nodiscard]] bool registerConstructedGlobal(const ConstantDefinition& definition, Module& module) noexcept;
+        [[nodiscard]] bool lowerGlobalInitializer(const std::vector<const ConstantDefinition*>& definitions, const std::vector<const Expression*>& discardEffects, Module& module) noexcept;
         [[nodiscard]] bool lowerFunctionDefinition(const FunctionDefinition& definition, const BlockNode* bodyNode, bool isExtern, Module& module) noexcept;
         [[nodiscard]] bool lowerSynthesizedConstructorDefinition(const FunctionDefinition& definition, Module& module) noexcept;
         [[nodiscard]] bool ensureExitTerminator(Function& function, std::optional<BlockId> currentBlockId, Type returnType) noexcept;
@@ -101,6 +104,8 @@ namespace Caracal
         [[nodiscard]] std::optional<ValueRef> allocateLocalSlot(std::string localName, Type valueType, BasicBlock& block, std::optional<ValueRef> initialValue = std::nullopt) noexcept;
         [[nodiscard]] ValueRef emitFieldAddress(ValueRef objectAddress, Type objectType, const std::string& fieldName, i32 fieldIndex, Type fieldType, BasicBlock& block) noexcept;
         [[nodiscard]] ValueRef emitLoad(ValueRef address, Type valueType, BasicBlock& block) noexcept;
+        [[nodiscard]] ValueRef emitGlobalAddress(const std::string& name, Type valueType, BasicBlock& block) noexcept;
+        [[nodiscard]] std::optional<ValueRef> tryGetGlobalAddress(const std::string& name, BasicBlock& block) noexcept;
         void setLocalValue(std::string localName, ValueRef value, Type type) noexcept;
         void setAddressBackedLocal(std::string localName, ValueRef address, Type valueType) noexcept;
         [[nodiscard]] std::vector<std::string> sortedDefinedLocalNames(const LocalStateMap& localValues) const noexcept;
@@ -125,6 +130,7 @@ namespace Caracal
         SemanticContext& m_semanticContext;
         LocalStateMap m_locals;
         std::unordered_set<std::string> m_addressTakenLocals;
+        std::unordered_map<std::string, Type> m_globalTypes;
         std::vector<LoopContext> m_loopContexts;
         TemporaryId m_nextTemporaryId{ 0 };
         LocalSlotId m_nextLocalSlotId{ 0 };

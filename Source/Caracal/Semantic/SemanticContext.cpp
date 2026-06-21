@@ -199,6 +199,11 @@ namespace Caracal
         return m_constantDefinitions.back();
     }
 
+    void SemanticContext::addGlobalDiscardExpression(const Expression* expression) noexcept
+    {
+        m_globalDiscardExpressions.push_back(expression);
+    }
+
     void SemanticContext::createBuiltinType(Type type, std::string_view name, bool addVariants)
     {
         m_nameToTypes.try_emplace(std::string(name), type);
