@@ -2,7 +2,7 @@
   "name": "caracal-vscode-extension",
   "displayName": "Caracal",
   "description": "Caracal language support for VS Code",
-  "version": "2025.3.10",
+  "version": "2026.6.21",
   "publisher": "Armin Herling",
   "readme": "README.md",
   "author": {
