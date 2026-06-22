@@ -2,6 +2,8 @@
 
 #include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/AddressOfGlobalInstruction.h>
+#include <Caracal/IR/AddressOfInstruction.h>
+#include <Caracal/IR/AllocateLocalInstruction.h>
 #include <Caracal/IR/BasicBlock.h>
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/GlobalConstantDeclaration.h>
@@ -13,6 +15,7 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
+#include <Caracal/IR/LoadValueInstruction.h>
 #include <Caracal/IR/LogicalAndInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
 #include <Caracal/IR/LogicalOrInstruction.h>
@@ -20,6 +23,7 @@
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
+#include <Caracal/IR/StoreValueInstruction.h>
 #include <Caracal/IR/SubtractInstruction.h>
 #include <Caracal/IR/Terminator.h>
 #include <Caracal/IR/ValueNegationInstruction.h>
@@ -108,6 +112,7 @@ namespace Caracal
     bool LLVMCodeGenerator::lowerFunction(const Function& function) noexcept
     {
         m_values.clear();
+        m_slots.clear();
 
         auto* returnType = lowerType(function.returnType());
         if (returnType == nullptr)
@@ -175,6 +180,49 @@ namespace Caracal
                     return false;
 
                 defineValue(addressOfGlobal.resultId(), global);
+                return true;
+            }
+            case InstructionKind::AllocateLocal:
+            {
+                const auto& allocate = static_cast<const AllocateLocalInstruction&>(instruction);
+                auto* slotType = lowerType(allocate.type());
+                if (slotType == nullptr)
+                    return false;
+
+                m_slots[allocate.resultId()] = m_irBuilder->CreateAlloca(slotType, nullptr, allocate.localName());
+                return true;
+            }
+            case InstructionKind::AddressOf:
+            {
+                // the address of a slot is just the slot's alloca pointer, no instruction is emitted
+                const auto& addressOf = static_cast<const AddressOfInstruction&>(instruction);
+                const auto slot = m_slots.find(addressOf.local().id());
+                if (slot == m_slots.end())
+                    return false;
+
+                defineValue(addressOf.resultId(), slot->second);
+                return true;
+            }
+            case InstructionKind::LoadValue:
+            {
+                const auto& load = static_cast<const LoadValueInstruction&>(instruction);
+                auto* address = tryResolve(load.address());
+                auto* valueType = lowerType(load.type());
+                if (address == nullptr || valueType == nullptr)
+                    return false;
+
+                defineValue(load.resultId(), m_irBuilder->CreateLoad(valueType, address, "load"));
+                return true;
+            }
+            case InstructionKind::StoreValue:
+            {
+                const auto& store = static_cast<const StoreValueInstruction&>(instruction);
+                auto* value = tryResolve(store.value());
+                auto* address = tryResolve(store.address());
+                if (value == nullptr || address == nullptr)
+                    return false;
+
+                m_irBuilder->CreateStore(value, address);
                 return true;
             }
             case InstructionKind::Add:

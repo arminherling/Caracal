@@ -1,0 +1,10 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define void @func() {
+entry:
+  %a = alloca i1, align 1
+  store i1 true, ptr %a, align 1
+  ret void
+}

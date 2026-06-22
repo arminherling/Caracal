@@ -49,5 +49,6 @@ namespace Caracal
         std::unique_ptr<llvm::IRBuilderBase> m_irBuilder;
         llvm::Function* m_currentFunction;
         std::unordered_map<TemporaryId, llvm::Value*> m_values;
+        std::unordered_map<LocalSlotId, llvm::Value*> m_slots;
     };
 }
