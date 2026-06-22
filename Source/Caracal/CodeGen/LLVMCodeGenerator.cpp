@@ -1,8 +1,11 @@
 #include <Caracal/CodeGen/LLVMCodeGenerator.h>
 
 #include <Caracal/IR/AddInstruction.h>
+#include <Caracal/IR/AddressOfGlobalInstruction.h>
 #include <Caracal/IR/BasicBlock.h>
 #include <Caracal/IR/ConstantInstruction.h>
+#include <Caracal/IR/GlobalConstantDeclaration.h>
+#include <Caracal/IR/GlobalReferenceDeclaration.h>
 #include <Caracal/IR/DivideInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
 #include <Caracal/IR/Function.h>
@@ -22,6 +25,7 @@
 #include <Caracal/IR/ValueNegationInstruction.h>
 
 #include <llvm/ADT/APFloat.h>
+#include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
@@ -47,12 +51,57 @@ namespace Caracal
 
     bool LLVMCodeGenerator::generate()
     {
+        for (const auto& globalConstant : m_irModule.globalConstants())
+        {
+            if (!lowerGlobalConstant(globalConstant))
+                return false;
+        }
+
+        for (const auto& globalReference : m_irModule.globalReferences())
+        {
+            if (!lowerGlobalReference(globalReference))
+                return false;
+        }
+
         for (const auto& function : m_irModule.functions())
         {
             if (!lowerFunction(function))
                 return false;
         }
 
+        return true;
+    }
+
+    bool LLVMCodeGenerator::lowerGlobalConstant(const GlobalConstantDeclaration& globalConstant) noexcept
+    {
+        auto* initializer = llvm::dyn_cast_or_null<llvm::Constant>(lowerConstant(globalConstant.value()));
+        if (initializer == nullptr)
+            return false;
+
+        new llvm::GlobalVariable(
+            m_llvmModule,
+            initializer->getType(),
+            true, // is constant
+            llvm::GlobalValue::ExternalLinkage,
+            initializer,
+            globalConstant.name());
+        return true;
+    }
+
+    bool LLVMCodeGenerator::lowerGlobalReference(const GlobalReferenceDeclaration& globalReference) noexcept
+    {
+        auto* target = m_llvmModule.getNamedGlobal(globalReference.targetName());
+        if (target == nullptr)
+            return false;
+
+        // a global reference is the constant address of another global
+        new llvm::GlobalVariable(
+            m_llvmModule,
+            target->getType(),
+            true, // is constant
+            llvm::GlobalValue::ExternalLinkage,
+            target,
+            globalReference.name());
         return true;
     }
 
@@ -116,6 +165,16 @@ namespace Caracal
                     return false;
 
                 defineValue(constant.resultId(), value);
+                return true;
+            }
+            case InstructionKind::AddressOfGlobal:
+            {
+                const auto& addressOfGlobal = static_cast<const AddressOfGlobalInstruction&>(instruction);
+                auto* global = m_llvmModule.getNamedGlobal(addressOfGlobal.name());
+                if (global == nullptr)
+                    return false;
+
+                defineValue(addressOfGlobal.resultId(), global);
                 return true;
             }
             case InstructionKind::Add:

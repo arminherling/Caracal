@@ -1,0 +1,6 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+@x = constant i32 1
+@y = constant ptr @x

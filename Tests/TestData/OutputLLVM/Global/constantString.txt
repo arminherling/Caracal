@@ -1,0 +1,6 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+@0 = private unnamed_addr constant [14 x i8] c"Hello, World!\00", align 1
+@world = constant ptr @0

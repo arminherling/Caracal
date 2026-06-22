@@ -32,6 +32,8 @@ namespace Caracal
         [[nodiscard]] bool generate();
 
     private:
+        [[nodiscard]] bool lowerGlobalConstant(const GlobalConstantDeclaration& globalConstant) noexcept;
+        [[nodiscard]] bool lowerGlobalReference(const GlobalReferenceDeclaration& globalReference) noexcept;
         [[nodiscard]] bool lowerFunction(const Function& function) noexcept;
         [[nodiscard]] bool lowerInstruction(const Instruction& instruction) noexcept;
         [[nodiscard]] bool lowerTerminator(const Terminator& terminator) noexcept;
