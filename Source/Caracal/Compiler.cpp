@@ -8,11 +8,13 @@
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/CodeGen/AstToLLVMCodeGenerator.h>
+#include <Caracal/CodeGen/LLVMCodeGenerator.h>
 #include <Caracal/IR/IRLowerer.h>
 
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/Verifier.h>
 #include <llvm/Support/Program.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/MC/TargetRegistry.h>
@@ -237,6 +239,33 @@ namespace Caracal
         std::string irOutput;
         llvm::raw_string_ostream irStream(irOutput);
         module->print(irStream, nullptr, true, true);
+        irStream.flush();
+
+        return std::make_pair(true, irOutput);
+    }
+
+    std::pair<bool, std::string> generateLLVMIRFromIR(SemanticContext& semanticContext, std::string targetTriple)
+    {
+        Module irModule{};
+        IRLowerer lowerer{ semanticContext };
+        if (!lowerer.lower(irModule))
+            return std::make_pair(false, std::string{});
+
+        llvm::LLVMContext context;
+        auto llvmModule = std::make_unique<llvm::Module>("CaracalModule", context);
+        llvmModule->setTargetTriple(llvm::Triple(targetTriple));
+
+        LLVMCodeGenerator codeGenerator{ irModule, *llvmModule };
+        if (!codeGenerator.generate())
+            return std::make_pair(false, std::string{});
+
+        // catch malformed IR before it is snapshotted; verifyModule returns true when broken
+        if (llvm::verifyModule(*llvmModule, &llvm::errs()))
+            return std::make_pair(false, std::string{});
+
+        std::string irOutput;
+        llvm::raw_string_ostream irStream(irOutput);
+        llvmModule->print(irStream, nullptr, true, true);
         irStream.flush();
 
         return std::make_pair(true, irOutput);

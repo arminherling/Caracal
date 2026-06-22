@@ -13,4 +13,5 @@ namespace Caracal
 
     CARACAL_API std::pair<bool, std::string> generateIRText(SemanticContext& semanticContext);
     CARACAL_API std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, SemanticContext& semanticContext, std::string targetTriple);
+    CARACAL_API std::pair<bool, std::string> generateLLVMIRFromIR(SemanticContext& semanticContext, std::string targetTriple);
 };

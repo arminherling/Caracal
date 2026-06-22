@@ -1,0 +1,477 @@
+#include <Caracal/CodeGen/LLVMCodeGenerator.h>
+
+#include <Caracal/IR/AddInstruction.h>
+#include <Caracal/IR/BasicBlock.h>
+#include <Caracal/IR/ConstantInstruction.h>
+#include <Caracal/IR/DivideInstruction.h>
+#include <Caracal/IR/EqualInstruction.h>
+#include <Caracal/IR/Function.h>
+#include <Caracal/IR/GreaterOrEqualInstruction.h>
+#include <Caracal/IR/GreaterThanInstruction.h>
+#include <Caracal/IR/LessOrEqualInstruction.h>
+#include <Caracal/IR/LessThanInstruction.h>
+#include <Caracal/IR/LogicalAndInstruction.h>
+#include <Caracal/IR/LogicalNegationInstruction.h>
+#include <Caracal/IR/LogicalOrInstruction.h>
+#include <Caracal/IR/MultiplyInstruction.h>
+#include <Caracal/IR/NotEqualInstruction.h>
+#include <Caracal/IR/ParameterInstruction.h>
+#include <Caracal/IR/ReturnValueTerminator.h>
+#include <Caracal/IR/SubtractInstruction.h>
+#include <Caracal/IR/Terminator.h>
+#include <Caracal/IR/ValueNegationInstruction.h>
+
+#include <llvm/ADT/APFloat.h>
+#include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+
+#include <cstdint>
+#include <type_traits>
+#include <variant>
+#include <vector>
+
+namespace Caracal
+{
+    LLVMCodeGenerator::LLVMCodeGenerator(const Module& irModule, llvm::Module& llvmModule)
+        : m_irModule{ irModule }
+        , m_llvmModule{ llvmModule }
+        , m_irBuilder{ std::make_unique<llvm::IRBuilder<>>(llvmModule.getContext()) }
+        , m_currentFunction{ nullptr }
+    {
+    }
+
+    // defaulted here so the unique_ptr<llvm::IRBuilderBase> member is
+    // destroyed where the type is complete
+    LLVMCodeGenerator::~LLVMCodeGenerator() = default;
+
+    bool LLVMCodeGenerator::generate()
+    {
+        for (const auto& function : m_irModule.functions())
+        {
+            if (!lowerFunction(function))
+                return false;
+        }
+
+        return true;
+    }
+
+    bool LLVMCodeGenerator::lowerFunction(const Function& function) noexcept
+    {
+        m_values.clear();
+
+        auto* returnType = lowerType(function.returnType());
+        if (returnType == nullptr)
+            return false;
+
+        std::vector<llvm::Type*> parameterTypes;
+        for (const auto& parameter : function.parameters())
+        {
+            auto* parameterType = lowerType(parameter.type());
+            if (parameterType == nullptr)
+                return false;
+
+            parameterTypes.push_back(parameterType);
+        }
+
+        auto* functionType = llvm::FunctionType::get(returnType, parameterTypes, false);
+        m_currentFunction = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage, function.name(), m_llvmModule);
+
+        //  no control flow yet
+        if (function.blocks().size() != 1)
+            return false;
+
+        auto& context = m_llvmModule.getContext();
+        auto* entry = llvm::BasicBlock::Create(context, "entry", m_currentFunction);
+        m_irBuilder->SetInsertPoint(entry);
+        
+        const auto& block = function.firstBlock();
+        for (const auto& instruction : block.instructions())
+        {
+            if (!lowerInstruction(*instruction))
+                return false;
+        }
+
+        if (!block.hasTerminator())
+            return false;
+
+        return lowerTerminator(*block.terminator());
+    }
+
+    bool LLVMCodeGenerator::lowerInstruction(const Instruction& instruction) noexcept
+    {
+        switch (instruction.kind())
+        {
+            case InstructionKind::Parameter:
+            {
+                const auto& parameter = static_cast<const ParameterInstruction&>(instruction);
+                defineValue(parameter.resultId(), m_currentFunction->getArg(static_cast<unsigned>(parameter.parameterIndex())));
+                return true;
+            }
+            case InstructionKind::Constant:
+            {
+                const auto& constant = static_cast<const ConstantInstruction&>(instruction);
+                auto* value = lowerConstant(constant.value());
+                if (value == nullptr)
+                    return false;
+
+                defineValue(constant.resultId(), value);
+                return true;
+            }
+            case InstructionKind::Add:
+            {
+                const auto& binary = static_cast<const AddInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::Subtract:
+            {
+                const auto& binary = static_cast<const SubtractInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::Multiply:
+            {
+                const auto& binary = static_cast<const MultiplyInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::Divide:
+            {
+                const auto& binary = static_cast<const DivideInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::Equal:
+            {
+                const auto& binary = static_cast<const EqualInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::NotEqual:
+            {
+                const auto& binary = static_cast<const NotEqualInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::LessThan:
+            {
+                const auto& binary = static_cast<const LessThanInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::LessOrEqual:
+            {
+                const auto& binary = static_cast<const LessOrEqualInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::GreaterThan:
+            {
+                const auto& binary = static_cast<const GreaterThanInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::GreaterOrEqual:
+            {
+                const auto& binary = static_cast<const GreaterOrEqualInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::LogicalAnd:
+            {
+                const auto& binary = static_cast<const LogicalAndInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::LogicalOr:
+            {
+                const auto& binary = static_cast<const LogicalOrInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::ValueNegation:
+            {
+                const auto& negation = static_cast<const ValueNegationInstruction&>(instruction);
+                auto* operand = tryResolve(negation.operandValue());
+                if (operand == nullptr)
+                    return false;
+
+                llvm::Value* result = nullptr;
+                if (operand->getType()->isFloatingPointTy())
+                    result = m_irBuilder->CreateFNeg(operand);
+                else
+                    result = m_irBuilder->CreateNeg(operand);
+
+                defineValue(negation.resultId(), result);
+                return true;
+            }
+            case InstructionKind::LogicalNegation:
+            {
+                const auto& negation = static_cast<const LogicalNegationInstruction&>(instruction);
+                auto* operand = tryResolve(negation.operandValue());
+                if (operand == nullptr)
+                    return false;
+
+                defineValue(negation.resultId(), m_irBuilder->CreateNot(operand));
+                return true;
+            }
+            default:
+            {
+                // todo other stuff
+                return false;
+            }
+        }
+    }
+
+    bool LLVMCodeGenerator::emitBinary(TemporaryId resultId, ValueRef leftRef, ValueRef rightRef, InstructionKind kind) noexcept
+    {
+        auto* lhs = tryResolve(leftRef);
+        auto* rhs = tryResolve(rightRef);
+        if (lhs == nullptr || rhs == nullptr)
+            return false;
+
+
+        // string/pointer equality needs a strcmp (lands in 3.5); never silently emit a pointer compare
+        if ((kind == InstructionKind::Equal || kind == InstructionKind::NotEqual) && lhs->getType()->isPointerTy())
+            return false;
+
+        const auto isFloat = lhs->getType()->isFloatingPointTy();
+        if (isFloat)
+        {
+            switch (kind)
+            {
+                case InstructionKind::Add:
+                {
+                    defineValue(resultId, m_irBuilder->CreateFAdd(lhs, rhs, "add"));
+                    return true;
+                }
+                case InstructionKind::Subtract:
+                {
+                    defineValue(resultId, m_irBuilder->CreateFSub(lhs, rhs, "subtract"));
+                    return true;
+                }
+                case InstructionKind::Multiply:
+                {
+                    defineValue(resultId, m_irBuilder->CreateFMul(lhs, rhs, "multiply"));
+                    return true;
+                }
+                case InstructionKind::Divide:
+                {
+                    defineValue(resultId, m_irBuilder->CreateFDiv(lhs, rhs, "divide"));
+                    return true;
+                }
+                case InstructionKind::Equal:
+                {
+                    defineValue(resultId, m_irBuilder->CreateFCmpUEQ(lhs, rhs, "equal"));
+                    return true;
+                }
+                case InstructionKind::NotEqual:
+                {
+                    defineValue(resultId, m_irBuilder->CreateFCmpUNE(lhs, rhs, "not_equal"));
+                    return true;
+                }
+                case InstructionKind::LessThan:
+                {
+                    defineValue(resultId, m_irBuilder->CreateFCmpULT(lhs, rhs, "less_than"));
+                    return true;
+                }
+                case InstructionKind::LessOrEqual:
+                {
+                    defineValue(resultId, m_irBuilder->CreateFCmpULE(lhs, rhs, "less_or_equal"));
+                    return true;
+                }
+                case InstructionKind::GreaterThan:
+                {
+                    defineValue(resultId, m_irBuilder->CreateFCmpUGT(lhs, rhs, "greater_than"));
+                    return true;
+                }
+                case InstructionKind::GreaterOrEqual:
+                {
+                    defineValue(resultId, m_irBuilder->CreateFCmpUGE(lhs, rhs, "greater_or_equal"));
+                    return true;
+                }
+                default:
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            switch (kind)
+            {
+                case InstructionKind::Add:
+                {
+                    defineValue(resultId, m_irBuilder->CreateAdd(lhs, rhs, "add"));
+                    return true;
+                }
+                case InstructionKind::Subtract:
+                {
+                    defineValue(resultId, m_irBuilder->CreateSub(lhs, rhs, "subtract"));
+                    return true;
+                }
+                case InstructionKind::Multiply:
+                {
+                    defineValue(resultId, m_irBuilder->CreateMul(lhs, rhs, "multiply"));
+                    return true;
+                }
+                case InstructionKind::Divide:
+                {
+                    defineValue(resultId, m_irBuilder->CreateSDiv(lhs, rhs, "divide"));
+                    return true;
+                }
+                case InstructionKind::Equal:
+                {
+                    defineValue(resultId, m_irBuilder->CreateICmpEQ(lhs, rhs, "equal"));
+                    return true;
+                }
+                case InstructionKind::NotEqual:
+                {
+                    defineValue(resultId, m_irBuilder->CreateICmpNE(lhs, rhs, "not_equal"));
+                    return true;
+                }
+                case InstructionKind::LessThan:
+                {
+                    defineValue(resultId, m_irBuilder->CreateICmpSLT(lhs, rhs, "less_than"));
+                    return true;
+                }
+                case InstructionKind::LessOrEqual:
+                {
+                    defineValue(resultId, m_irBuilder->CreateICmpSLE(lhs, rhs, "less_or_equal"));
+                    return true;
+                }
+                case InstructionKind::GreaterThan:
+                {
+                    defineValue(resultId, m_irBuilder->CreateICmpSGT(lhs, rhs, "greater_than"));
+                    return true;
+                }
+                case InstructionKind::GreaterOrEqual:
+                {
+                    defineValue(resultId, m_irBuilder->CreateICmpSGE(lhs, rhs, "greater_or_equal"));
+                    return true;
+                }
+                case InstructionKind::LogicalAnd:
+                {
+                    defineValue(resultId, m_irBuilder->CreateAnd(lhs, rhs, "logical_and"));
+                    return true;
+                }
+                case InstructionKind::LogicalOr:
+                {
+                    defineValue(resultId, m_irBuilder->CreateOr(lhs, rhs, "logical_or"));
+                    return true;
+                }
+                default:
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    bool LLVMCodeGenerator::lowerTerminator(const Terminator& terminator) noexcept
+    {
+        switch (terminator.kind())
+        {
+            case TerminatorKind::Return:
+            {
+                m_irBuilder->CreateRetVoid();
+                return true;
+            }
+            case TerminatorKind::ReturnValue:
+            {
+                const auto& returnValue = static_cast<const ReturnValueTerminator&>(terminator);
+                auto* value = tryResolve(returnValue.value());
+                if (value == nullptr)
+                    return false;
+
+                m_irBuilder->CreateRet(value);
+                return true;
+            }
+            default:
+            {
+                // todo other terminators
+                return false;
+            }
+        }
+    }
+
+    llvm::Type* LLVMCodeGenerator::lowerType(Type type) const noexcept
+    {
+        auto& context = m_llvmModule.getContext();
+
+        if (type.isReference())
+            return llvm::PointerType::getUnqual(context);
+        else if (type == Type::Void())
+            return llvm::Type::getVoidTy(context);
+        else if (type == Type::Bool())
+            return llvm::Type::getInt1Ty(context);
+        else if (type == Type::U8())
+            return llvm::Type::getInt8Ty(context);
+        else if (type == Type::I32())
+            return llvm::Type::getInt32Ty(context);
+        else if (type == Type::F32())
+            return llvm::Type::getFloatTy(context);
+        else if (type == Type::String())
+            return llvm::PointerType::getUnqual(context);
+
+        return nullptr;
+    }
+
+    llvm::Value* LLVMCodeGenerator::lowerConstant(const ConstantValue& value) noexcept
+    {
+        // the llvm type follows the literal payload (which is the base type for enum constants),
+        // not the declared type, so enum constants lower to their underlying integer type
+        const auto* literalData = value.tryGetLiteralData();
+        ConstantValue::LiteralData enumUnderlying;
+        if (literalData == nullptr)
+        {
+            if (const auto* enumConstant = value.tryGetEnumConstant())
+            {
+                enumUnderlying = enumConstant->underlyingValue;
+                literalData = &enumUnderlying;
+            }
+        }
+
+        if (literalData == nullptr)
+            return nullptr;
+
+        auto& context = m_llvmModule.getContext();
+        return std::visit(
+            [&](const auto& payload) -> llvm::Value*
+            {
+                using Payload = std::decay_t<decltype(payload)>;
+
+                if constexpr (std::is_same_v<Payload, bool>)
+                {
+                    if (payload)
+                        return llvm::ConstantInt::getTrue(context);
+
+                    return llvm::ConstantInt::getFalse(context);
+                }
+                else if constexpr (std::is_same_v<Payload, u8>)
+                {
+                    return llvm::ConstantInt::get(llvm::Type::getInt8Ty(context), payload);
+                }
+                else if constexpr (std::is_same_v<Payload, i32>)
+                {
+                    return llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), static_cast<std::uint64_t>(payload), true);
+                }
+                else if constexpr (std::is_same_v<Payload, float>)
+                {
+                    return llvm::ConstantFP::get(context, llvm::APFloat(payload));
+                }
+                else if constexpr (std::is_same_v<Payload, std::string>)
+                {
+                    return m_irBuilder->CreateGlobalString(payload, "", 0, &m_llvmModule);
+                }
+                else
+                {
+                    return nullptr;
+                }
+            },
+            *literalData);
+    }
+
+    llvm::Value* LLVMCodeGenerator::tryResolve(ValueRef value) const noexcept
+    {
+        const auto result = m_values.find(value.id());
+        if (result == m_values.end())
+            return nullptr;
+
+        return result->second;
+    }
+
+    void LLVMCodeGenerator::defineValue(TemporaryId id, llvm::Value* value) noexcept
+    {
+        m_values.insert_or_assign(id, value);
+    }
+}
