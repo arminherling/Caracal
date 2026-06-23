@@ -1,0 +1,8 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define void @Empty.new(ptr nonnull %0) {
+entry:
+  ret void
+}

@@ -1418,7 +1418,8 @@ namespace Caracal
                     return std::nullopt;
 
                 const auto* fieldNameExpression = static_cast<const NameExpression*>(memberAccessExpression->expression().get());
-                const auto objectType = m_locals.at(ImplicitThisName).type;
+                // the implicit this parameter is a reference but field addressing needs the value type
+                const auto objectType = m_locals.at(ImplicitThisName).type.toValue();
                 const auto& typeDefinition = m_semanticContext.getTypeDefinition(objectType);
                 const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldNameExpression->name());
                 if (fieldDefinition.type() == Type::Undefined())

@@ -40,6 +40,7 @@ namespace Caracal
         [[nodiscard]] bool generate();
 
     private:
+        [[nodiscard]] bool lowerTypes() noexcept;
         [[nodiscard]] bool declareCallables() noexcept;
         [[nodiscard]] bool declareCallable(const std::string& name, Type returnType, const std::vector<IRParameter>& parameters) noexcept;
         [[nodiscard]] bool lowerGlobals() noexcept;

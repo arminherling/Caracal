@@ -1,6 +1,7 @@
 #include <Caracal/CodeGen/LLVMCodeGenerator.h>
 
 #include <Caracal/IR/AddInstruction.h>
+#include <Caracal/IR/AddressOfFieldInstruction.h>
 #include <Caracal/IR/AddressOfGlobalInstruction.h>
 #include <Caracal/IR/AddressOfInstruction.h>
 #include <Caracal/IR/AllocateLocalInstruction.h>
@@ -36,6 +37,7 @@
 #include <llvm/ADT/APFloat.h>
 #include <llvm/IR/Attributes.h>
 #include <llvm/IR/BasicBlock.h>
+#include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Instructions.h>
@@ -63,6 +65,9 @@ namespace Caracal
 
     bool LLVMCodeGenerator::generate()
     {
+        if (!lowerTypes())
+            return false;
+
         if (!declareCallables())
             return false;
 
@@ -71,6 +76,37 @@ namespace Caracal
 
         if (!lowerFunctionBodies())
             return false;
+
+        return true;
+    }
+
+    bool LLVMCodeGenerator::lowerTypes() noexcept
+    {
+        auto& context = m_llvmModule.getContext();
+
+        // create every struct as opaque first so fields and signatures can reference any type regardless of order
+        for (const auto& typeDeclaration : m_irModule.types())
+            llvm::StructType::create(context, typeDeclaration.name());
+
+        // then fill in the bodies in declared field order
+        for (const auto& typeDeclaration : m_irModule.types())
+        {
+            auto* structType = llvm::StructType::getTypeByName(context, typeDeclaration.name());
+            if (structType == nullptr)
+                return false;
+
+            std::vector<llvm::Type*> fieldTypes;
+            for (const auto& field : typeDeclaration.fields())
+            {
+                auto* fieldType = lowerType(field.type);
+                if (fieldType == nullptr)
+                    return false;
+
+                fieldTypes.push_back(fieldType);
+            }
+
+            structType->setBody(fieldTypes);
+        }
 
         return true;
     }
@@ -276,6 +312,18 @@ namespace Caracal
                     return false;
 
                 defineValue(addressOf.resultId(), slot->second);
+                return true;
+            }
+            case InstructionKind::FieldAddress:
+            {
+                const auto& fieldAddress = static_cast<const AddressOfFieldInstruction&>(instruction);
+                auto* objectAddress = tryResolve(fieldAddress.objectAddress());
+                auto* structType = lowerType(fieldAddress.objectType());
+                if (objectAddress == nullptr || structType == nullptr)
+                    return false;
+
+                auto* fieldPointer = m_irBuilder->CreateStructGEP(structType, objectAddress, static_cast<unsigned>(fieldAddress.fieldIndex()), fieldAddress.fieldName());
+                defineValue(fieldAddress.resultId(), fieldPointer);
                 return true;
             }
             case InstructionKind::LoadValue:
@@ -651,6 +699,10 @@ namespace Caracal
         // an enum lowers to its underlying integer type
         if (const auto* enumDeclaration = m_irModule.tryGetEnum(type))
             return lowerType(enumDeclaration->baseType());
+
+        // a user type lowers to its named struct created in lowerTypes
+        if (const auto* typeName = m_irModule.tryGetTypeName(type))
+            return llvm::StructType::getTypeByName(context, *typeName);
 
         return nullptr;
     }

@@ -1,0 +1,19 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%One = type { i32 }
+
+define i32 @One.value(ptr nonnull %0) {
+entry:
+  %one = getelementptr inbounds nuw %One, ptr %0, i32 0, i32 0
+  %load = load i32, ptr %one, align 4
+  ret i32 %load
+}
+
+define void @One.new(ptr nonnull %0) {
+entry:
+  %one = getelementptr inbounds nuw %One, ptr %0, i32 0, i32 0
+  store i32 1, ptr %one, align 4
+  ret void
+}

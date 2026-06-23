@@ -1,0 +1,30 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%Number = type { i32 }
+
+define %Number @make() {
+entry:
+  %constructed = alloca %Number, align 8
+  call void @Number.new(ptr %constructed, i32 7)
+  %load = load %Number, ptr %constructed, align 4
+  ret %Number %load
+}
+
+define i32 @func() {
+entry:
+  %temp = alloca %Number, align 8
+  %call = call %Number @make()
+  store %Number %call, ptr %temp, align 4
+  %value = getelementptr inbounds nuw %Number, ptr %temp, i32 0, i32 0
+  %load = load i32, ptr %value, align 4
+  ret i32 %load
+}
+
+define void @Number.new(ptr nonnull %0, i32 %1) {
+entry:
+  %value = getelementptr inbounds nuw %Number, ptr %0, i32 0, i32 0
+  store i32 %1, ptr %value, align 4
+  ret void
+}
