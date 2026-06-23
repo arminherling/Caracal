@@ -1,0 +1,38 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%Number = type { i32 }
+
+@number = global %Number zeroinitializer
+@llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 65535, ptr @.global_init, ptr null }]
+
+define i32 @func() {
+entry:
+  call void @Number.double(ptr @number)
+  %load = load i32, ptr @number, align 4
+  ret i32 %load
+}
+
+define void @Number.double(ptr nonnull %0) {
+entry:
+  %value = getelementptr inbounds nuw %Number, ptr %0, i32 0, i32 0
+  %load = load i32, ptr %value, align 4
+  %multiply = mul i32 %load, 2
+  %value1 = getelementptr inbounds nuw %Number, ptr %0, i32 0, i32 0
+  store i32 %multiply, ptr %value1, align 4
+  ret void
+}
+
+define void @Number.new(ptr nonnull %0, i32 %1) {
+entry:
+  %value = getelementptr inbounds nuw %Number, ptr %0, i32 0, i32 0
+  store i32 %1, ptr %value, align 4
+  ret void
+}
+
+define void @.global_init() {
+entry:
+  call void @Number.new(ptr @number, i32 4)
+  ret void
+}

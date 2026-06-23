@@ -1,0 +1,18 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define void @func() {
+entry:
+  %x = alloca i32, align 4
+  store i32 1, ptr %x, align 4
+  %load = load i32, ptr %x, align 4
+  %equal = icmp eq i32 %load, 2
+  br i1 %equal, label %if.true, label %if.continuation
+
+if.true:                                          ; preds = %entry
+  ret void
+
+if.continuation:                                  ; preds = %entry
+  ret void
+}

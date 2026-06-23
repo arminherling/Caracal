@@ -1,0 +1,8 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define float @func() {
+entry:
+  ret float 3.000000e+00
+}

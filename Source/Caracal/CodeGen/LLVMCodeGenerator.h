@@ -46,8 +46,10 @@ namespace Caracal
         [[nodiscard]] bool lowerGlobals() noexcept;
         [[nodiscard]] bool lowerGlobalConstant(const GlobalConstantDeclaration& globalConstant) noexcept;
         [[nodiscard]] bool lowerGlobalReference(const GlobalReferenceDeclaration& globalReference) noexcept;
+        [[nodiscard]] bool lowerConstructedGlobal(const ConstructedGlobalDeclaration& constructedGlobal) noexcept;
         [[nodiscard]] bool lowerFunctionBodies() noexcept;
         [[nodiscard]] bool lowerFunctionBody(const Function& function) noexcept;
+        [[nodiscard]] bool lowerGlobalInit() noexcept;
         [[nodiscard]] bool lowerInstruction(const Instruction& instruction) noexcept;
         [[nodiscard]] bool lowerTerminator(const Terminator& terminator) noexcept;
         [[nodiscard]] bool emitBinary(TemporaryId resultId, ValueRef leftRef, ValueRef rightRef, InstructionKind kind) noexcept;

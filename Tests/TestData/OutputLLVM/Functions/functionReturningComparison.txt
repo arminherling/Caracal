@@ -1,0 +1,9 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i1 @isEqual(i32 %0, i32 %1) {
+entry:
+  %equal = icmp eq i32 %0, %1
+  ret i1 %equal
+}

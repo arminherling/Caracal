@@ -37,12 +37,14 @@
 #include <llvm/ADT/APFloat.h>
 #include <llvm/IR/Attributes.h>
 #include <llvm/IR/BasicBlock.h>
+#include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <llvm/Transforms/Utils/ModuleUtils.h>
 
 #include <cstdint>
 #include <type_traits>
@@ -75,6 +77,9 @@ namespace Caracal
             return false;
 
         if (!lowerFunctionBodies())
+            return false;
+
+        if (!lowerGlobalInit())
             return false;
 
         return true;
@@ -143,6 +148,12 @@ namespace Caracal
                 return false;
         }
 
+        for (const auto& constructedGlobal : m_irModule.constructedGlobals())
+        {
+            if (!lowerConstructedGlobal(constructedGlobal))
+                return false;
+        }
+
         return true;
     }
 
@@ -154,6 +165,26 @@ namespace Caracal
                 return false;
         }
 
+        return true;
+    }
+
+    bool LLVMCodeGenerator::lowerGlobalInit() noexcept
+    {
+        const auto* globalInit = m_irModule.tryGetGlobalInit();
+        if (globalInit == nullptr)
+            return true;
+
+        if (!declareCallable(globalInit->name(), globalInit->returnType(), globalInit->parameters()))
+            return false;
+
+        if (!lowerFunctionBody(*globalInit))
+            return false;
+
+        auto* initFunction = m_llvmModule.getFunction(globalInit->name());
+        if (initFunction == nullptr)
+            return false;
+
+        llvm::appendToGlobalCtors(m_llvmModule, initFunction, /*priority=*/65535);
         return true;
     }
 
@@ -187,6 +218,22 @@ namespace Caracal
             llvm::GlobalValue::ExternalLinkage,
             target,
             globalReference.name());
+        return true;
+    }
+
+    bool LLVMCodeGenerator::lowerConstructedGlobal(const ConstructedGlobalDeclaration& constructedGlobal) noexcept
+    {
+        auto* type = lowerType(constructedGlobal.type());
+        if (type == nullptr)
+            return false;
+
+        new llvm::GlobalVariable(
+            m_llvmModule,
+            type,
+            false, // not constant
+            llvm::GlobalValue::ExternalLinkage,
+            llvm::Constant::getNullValue(type),
+            constructedGlobal.name());
         return true;
     }
 

@@ -1,0 +1,12 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define void @swap(ptr nonnull %0, ptr nonnull %1) {
+entry:
+  %load = load i32, ptr %0, align 4
+  %load1 = load i32, ptr %1, align 4
+  store i32 %load1, ptr %0, align 4
+  store i32 %load, ptr %1, align 4
+  ret void
+}

@@ -1,0 +1,9 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @sum(i32 %0, i32 %1) {
+entry:
+  %add = add i32 %0, %1
+  ret i32 %add
+}
