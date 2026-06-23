@@ -1,0 +1,16 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define void @inner(ptr nonnull %0) {
+entry:
+  ret void
+}
+
+define void @outer() {
+entry:
+  %x = alloca i32, align 4
+  store i32 20, ptr %x, align 4
+  call void @inner(ptr %x)
+  ret void
+}

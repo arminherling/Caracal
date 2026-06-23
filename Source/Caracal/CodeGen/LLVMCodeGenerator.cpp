@@ -6,6 +6,8 @@
 #include <Caracal/IR/AllocateLocalInstruction.h>
 #include <Caracal/IR/BasicBlock.h>
 #include <Caracal/IR/BranchIfTerminator.h>
+#include <Caracal/IR/CallInstruction.h>
+#include <Caracal/IR/CallVoidInstruction.h>
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/GlobalConstantDeclaration.h>
 #include <Caracal/IR/GlobalReferenceDeclaration.h>
@@ -32,6 +34,7 @@
 #include <Caracal/IR/ValueNegationInstruction.h>
 
 #include <llvm/ADT/APFloat.h>
+#include <llvm/IR/Attributes.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/IRBuilder.h>
@@ -60,21 +63,58 @@ namespace Caracal
 
     bool LLVMCodeGenerator::generate()
     {
+        if (!declareCallables())
+            return false;
+
+        if (!lowerGlobals())
+            return false;
+
+        if (!lowerFunctionBodies())
+            return false;
+
+        return true;
+    }
+
+    bool LLVMCodeGenerator::declareCallables() noexcept
+    {
+        for (const auto& externFunction : m_irModule.externFunctions())
+        {
+            if (!declareCallable(externFunction.name(), externFunction.returnType(), externFunction.parameters()))
+                return false;
+        }
+
+        for (const auto& function : m_irModule.functions())
+        {
+            if (!declareCallable(function.name(), function.returnType(), function.parameters()))
+                return false;
+        }
+
+        return true;
+    }
+
+    bool LLVMCodeGenerator::lowerGlobals() noexcept
+    {
         for (const auto& globalConstant : m_irModule.globalConstants())
         {
             if (!lowerGlobalConstant(globalConstant))
                 return false;
         }
 
+        // emitted after the constants so a reference can resolve its target global by name
         for (const auto& globalReference : m_irModule.globalReferences())
         {
             if (!lowerGlobalReference(globalReference))
                 return false;
         }
 
+        return true;
+    }
+
+    bool LLVMCodeGenerator::lowerFunctionBodies() noexcept
+    {
         for (const auto& function : m_irModule.functions())
         {
-            if (!lowerFunction(function))
+            if (!lowerFunctionBody(function))
                 return false;
         }
 
@@ -114,29 +154,36 @@ namespace Caracal
         return true;
     }
 
-    bool LLVMCodeGenerator::lowerFunction(const Function& function) noexcept
+    bool LLVMCodeGenerator::declareCallable(const std::string& name, Type returnType, const std::vector<IRParameter>& parameters) noexcept
+    {
+        auto* functionType = tryLowerFunctionType(returnType, parameters);
+        if (functionType == nullptr)
+            return false;
+
+        auto* function = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage, name, m_llvmModule);
+
+        unsigned argumentIndex = 0;
+        for (const auto& parameter : parameters)
+        {
+            if (parameter.type().isReference())
+                function->addParamAttr(argumentIndex, llvm::Attribute::NonNull);
+
+            ++argumentIndex;
+        }
+
+        return true;
+    }
+
+    bool LLVMCodeGenerator::lowerFunctionBody(const Function& function) noexcept
     {
         m_values.clear();
         m_slots.clear();
         m_blocks.clear();
         m_pendingPhis.clear();
 
-        auto* returnType = lowerType(function.returnType());
-        if (returnType == nullptr)
+        m_currentFunction = m_llvmModule.getFunction(function.name());
+        if (m_currentFunction == nullptr)
             return false;
-
-        std::vector<llvm::Type*> parameterTypes;
-        for (const auto& parameter : function.parameters())
-        {
-            auto* parameterType = lowerType(parameter.type());
-            if (parameterType == nullptr)
-                return false;
-
-            parameterTypes.push_back(parameterType);
-        }
-
-        auto* functionType = llvm::FunctionType::get(returnType, parameterTypes, false);
-        m_currentFunction = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage, function.name(), m_llvmModule);
 
         if (!function.hasBlocks())
             return false;
@@ -264,6 +311,35 @@ namespace Caracal
                 auto* node = m_irBuilder->CreatePHI(phiType, static_cast<unsigned>(phi.inputs().size()), "phi");
                 defineValue(phi.resultId(), node);
                 m_pendingPhis.emplace_back(&phi, node);
+                return true;
+            }
+            case InstructionKind::Call:
+            {
+                const auto& call = static_cast<const CallInstruction&>(instruction);
+                auto* callee = tryResolveCallee(call.functionId());
+                if (callee == nullptr)
+                    return false;
+
+                std::vector<llvm::Value*> argumentValues;
+                if (!buildCallArguments(call.arguments(), callee, argumentValues))
+                    return false;
+
+                auto value = m_irBuilder->CreateCall(callee, argumentValues, "call");
+                defineValue(call.resultId(), value);
+                return true;
+            }
+            case InstructionKind::CallVoid:
+            {
+                const auto& call = static_cast<const CallVoidInstruction&>(instruction);
+                auto* callee = tryResolveCallee(call.functionId());
+                if (callee == nullptr)
+                    return false;
+
+                std::vector<llvm::Value*> argumentValues;
+                if (!buildCallArguments(call.arguments(), callee, argumentValues))
+                    return false;
+
+                m_irBuilder->CreateCall(callee, argumentValues);
                 return true;
             }
             case InstructionKind::Add:
@@ -572,6 +648,10 @@ namespace Caracal
         else if (type == Type::String())
             return llvm::PointerType::getUnqual(context);
 
+        // an enum lowers to its underlying integer type
+        if (const auto* enumDeclaration = m_irModule.tryGetEnum(type))
+            return lowerType(enumDeclaration->baseType());
+
         return nullptr;
     }
 
@@ -646,6 +726,78 @@ namespace Caracal
             return nullptr;
 
         return result->second;
+    }
+
+    llvm::FunctionType* LLVMCodeGenerator::tryLowerFunctionType(Type returnType, const std::vector<IRParameter>& parameters) const noexcept
+    {
+        auto* llvmReturnType = lowerType(returnType);
+        if (llvmReturnType == nullptr)
+            return nullptr;
+
+        std::vector<llvm::Type*> parameterTypes;
+        bool isVariadic = false;
+        for (const auto& parameter : parameters)
+        {
+            if (parameter.type() == Type::CVariadic())
+            {
+                isVariadic = true;
+                continue;
+            }
+
+            auto* parameterType = lowerType(parameter.type());
+            if (parameterType == nullptr)
+                return nullptr;
+
+            parameterTypes.push_back(parameterType);
+        }
+
+        return llvm::FunctionType::get(llvmReturnType, parameterTypes, isVariadic);
+    }
+
+    llvm::Function* LLVMCodeGenerator::tryResolveCallee(FunctionId functionId) const noexcept
+    {
+        const auto* name = m_irModule.tryGetFunctionName(functionId);
+        if (name == nullptr)
+            return nullptr;
+
+        return m_llvmModule.getFunction(*name);
+    }
+
+    llvm::Value* LLVMCodeGenerator::promoteVariadicArgument(llvm::Value* value) noexcept
+    {
+        // we need to extend i1 and i8 to i32, and f32 to f64 for variadic calls
+        auto& context = m_llvmModule.getContext();
+        auto* type = value->getType();
+        if (type->isIntegerTy(1) || type->isIntegerTy(8))
+        {
+            return m_irBuilder->CreateZExt(value, llvm::Type::getInt32Ty(context));
+        }
+        else if (type->isFloatTy())
+        {
+            return m_irBuilder->CreateFPExt(value, llvm::Type::getDoubleTy(context));
+        }
+
+        return value;
+    }
+
+    bool LLVMCodeGenerator::buildCallArguments(const std::vector<ValueRef>& arguments, llvm::Function* callee, std::vector<llvm::Value*>& argumentValues) noexcept
+    {
+        const auto isVariadic = callee->isVarArg();
+        const auto fixedParameterCount = callee->getFunctionType()->getNumParams();
+        for (size_t index = 0; index < arguments.size(); ++index)
+        {
+            auto* argumentValue = tryResolve(arguments[index]);
+            if (argumentValue == nullptr)
+                return false;
+
+            // we need to promote arguments in the variadic position
+            if (isVariadic && index >= fixedParameterCount)
+                argumentValue = promoteVariadicArgument(argumentValue);
+
+            argumentValues.push_back(argumentValue);
+        }
+
+        return true;
     }
 
     void LLVMCodeGenerator::defineValue(TemporaryId id, llvm::Value* value) noexcept

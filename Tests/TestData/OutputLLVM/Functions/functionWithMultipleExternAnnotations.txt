@@ -1,0 +1,16 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+@0 = private unnamed_addr constant [3 x i8] c"hi\00", align 1
+
+declare i32 @puts(ptr %0)
+
+declare i32 @clock()
+
+define i32 @func() {
+entry:
+  %call = call i32 @puts(ptr @0)
+  %call1 = call i32 @clock()
+  ret i32 %call1
+}

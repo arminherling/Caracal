@@ -1,0 +1,21 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i1 @choose(i1 %0) {
+entry:
+  ret i1 %0
+}
+
+define i32 @func() {
+entry:
+  %call = call i1 @choose(i1 true)
+  %equal = icmp eq i1 %call, true
+  br i1 %equal, label %if.true, label %if.continuation
+
+if.true:                                          ; preds = %entry
+  ret i32 1
+
+if.continuation:                                  ; preds = %entry
+  ret i32 0
+}

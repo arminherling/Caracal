@@ -7,6 +7,7 @@
 #include <Caracal/Semantic/Type.h>
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -17,6 +18,7 @@ namespace llvm
     class Module;
     class Value;
     class Function;
+    class FunctionType;
     class Type;
     class IRBuilderBase;
     class BasicBlock;
@@ -38,16 +40,24 @@ namespace Caracal
         [[nodiscard]] bool generate();
 
     private:
+        [[nodiscard]] bool declareCallables() noexcept;
+        [[nodiscard]] bool declareCallable(const std::string& name, Type returnType, const std::vector<IRParameter>& parameters) noexcept;
+        [[nodiscard]] bool lowerGlobals() noexcept;
         [[nodiscard]] bool lowerGlobalConstant(const GlobalConstantDeclaration& globalConstant) noexcept;
         [[nodiscard]] bool lowerGlobalReference(const GlobalReferenceDeclaration& globalReference) noexcept;
-        [[nodiscard]] bool lowerFunction(const Function& function) noexcept;
+        [[nodiscard]] bool lowerFunctionBodies() noexcept;
+        [[nodiscard]] bool lowerFunctionBody(const Function& function) noexcept;
         [[nodiscard]] bool lowerInstruction(const Instruction& instruction) noexcept;
         [[nodiscard]] bool lowerTerminator(const Terminator& terminator) noexcept;
         [[nodiscard]] bool emitBinary(TemporaryId resultId, ValueRef leftRef, ValueRef rightRef, InstructionKind kind) noexcept;
+        [[nodiscard]] bool buildCallArguments(const std::vector<ValueRef>& arguments, llvm::Function* callee, std::vector<llvm::Value*>& argumentValues) noexcept;
 
+        [[nodiscard]] llvm::FunctionType* tryLowerFunctionType(Type returnType, const std::vector<IRParameter>& parameters) const noexcept;
         [[nodiscard]] llvm::Type* lowerType(Type type) const noexcept;
         [[nodiscard]] llvm::Value* lowerConstant(const ConstantValue& value) noexcept;
+        [[nodiscard]] llvm::Value* promoteVariadicArgument(llvm::Value* value) noexcept;
         [[nodiscard]] llvm::Value* tryResolve(ValueRef value) const noexcept;
+        [[nodiscard]] llvm::Function* tryResolveCallee(FunctionId functionId) const noexcept;
         [[nodiscard]] llvm::BasicBlock* tryGetBlock(BlockId id) const noexcept;
         void defineValue(TemporaryId id, llvm::Value* value) noexcept;
 
