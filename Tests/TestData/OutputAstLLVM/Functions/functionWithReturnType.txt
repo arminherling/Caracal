@@ -1,8 +1,0 @@
-; ModuleID = 'CaracalModule'
-source_filename = "CaracalModule"
-target triple = "x86_64-unknown-none"
-
-define float @random() {
-entry:
-  ret float 0x3FF3AE1480000000
-}
