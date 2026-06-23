@@ -8,19 +8,25 @@
 
 #include <memory>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 // forward declare llvm types to keep headers clean and avoid linking llvm into tests
-namespace llvm 
+namespace llvm
 {
     class Module;
     class Value;
     class Function;
     class Type;
     class IRBuilderBase;
+    class BasicBlock;
+    class PHINode;
 }
 
 namespace Caracal
 {
+    class PhiInstruction;
+
     class LLVMCodeGenerator
     {
     public:
@@ -42,6 +48,7 @@ namespace Caracal
         [[nodiscard]] llvm::Type* lowerType(Type type) const noexcept;
         [[nodiscard]] llvm::Value* lowerConstant(const ConstantValue& value) noexcept;
         [[nodiscard]] llvm::Value* tryResolve(ValueRef value) const noexcept;
+        [[nodiscard]] llvm::BasicBlock* tryGetBlock(BlockId id) const noexcept;
         void defineValue(TemporaryId id, llvm::Value* value) noexcept;
 
         const Module& m_irModule;
@@ -50,5 +57,8 @@ namespace Caracal
         llvm::Function* m_currentFunction;
         std::unordered_map<TemporaryId, llvm::Value*> m_values;
         std::unordered_map<LocalSlotId, llvm::Value*> m_slots;
+        std::unordered_map<BlockId, llvm::BasicBlock*> m_blocks;
+        // phi incomings are resolved after every block is lowered, so back-edges and forward references work
+        std::vector<std::pair<const PhiInstruction*, llvm::PHINode*>> m_pendingPhis;
     };
 }

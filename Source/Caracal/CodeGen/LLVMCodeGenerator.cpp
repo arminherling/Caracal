@@ -5,6 +5,7 @@
 #include <Caracal/IR/AddressOfInstruction.h>
 #include <Caracal/IR/AllocateLocalInstruction.h>
 #include <Caracal/IR/BasicBlock.h>
+#include <Caracal/IR/BranchIfTerminator.h>
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/GlobalConstantDeclaration.h>
 #include <Caracal/IR/GlobalReferenceDeclaration.h>
@@ -13,6 +14,7 @@
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
+#include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
@@ -22,6 +24,7 @@
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
+#include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
 #include <Caracal/IR/StoreValueInstruction.h>
 #include <Caracal/IR/SubtractInstruction.h>
@@ -29,8 +32,10 @@
 #include <Caracal/IR/ValueNegationInstruction.h>
 
 #include <llvm/ADT/APFloat.h>
+#include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 
@@ -113,6 +118,8 @@ namespace Caracal
     {
         m_values.clear();
         m_slots.clear();
+        m_blocks.clear();
+        m_pendingPhis.clear();
 
         auto* returnType = lowerType(function.returnType());
         if (returnType == nullptr)
@@ -131,25 +138,46 @@ namespace Caracal
         auto* functionType = llvm::FunctionType::get(returnType, parameterTypes, false);
         m_currentFunction = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage, function.name(), m_llvmModule);
 
-        //  no control flow yet
-        if (function.blocks().size() != 1)
+        if (!function.hasBlocks())
             return false;
 
+        // pre-create every block (the first is the entry) so jumps, branches and phis can reference them
         auto& context = m_llvmModule.getContext();
-        auto* entry = llvm::BasicBlock::Create(context, "entry", m_currentFunction);
-        m_irBuilder->SetInsertPoint(entry);
-        
-        const auto& block = function.firstBlock();
-        for (const auto& instruction : block.instructions())
+        for (const auto& block : function.blocks())
+            m_blocks[block->id()] = llvm::BasicBlock::Create(context, block->label(), m_currentFunction);
+
+        for (const auto& block : function.blocks())
         {
-            if (!lowerInstruction(*instruction))
+            m_irBuilder->SetInsertPoint(m_blocks[block->id()]);
+
+            for (const auto& instruction : block->instructions())
+            {
+                if (!lowerInstruction(*instruction))
+                    return false;
+            }
+
+            if (!block->hasTerminator())
+                return false;
+
+            if (!lowerTerminator(*block->terminator()))
                 return false;
         }
 
-        if (!block.hasTerminator())
-            return false;
+        // wire up phi incomings now that every block is built and every value is defined
+        for (const auto& [phi, node] : m_pendingPhis)
+        {
+            for (const auto& input : phi->inputs())
+            {
+                auto* incomingValue = tryResolve(input.value());
+                auto* incomingBlock = tryGetBlock(input.blockId());
+                if (incomingValue == nullptr || incomingBlock == nullptr)
+                    return false;
 
-        return lowerTerminator(*block.terminator());
+                node->addIncoming(incomingValue, incomingBlock);
+            }
+        }
+
+        return true;
     }
 
     bool LLVMCodeGenerator::lowerInstruction(const Instruction& instruction) noexcept
@@ -223,6 +251,19 @@ namespace Caracal
                     return false;
 
                 m_irBuilder->CreateStore(value, address);
+                return true;
+            }
+            case InstructionKind::Phi:
+            {
+                // create the empty node now; its incomings are wired up in lowerFunction once all blocks exist
+                const auto& phi = static_cast<const PhiInstruction&>(instruction);
+                auto* phiType = lowerType(phi.type());
+                if (phiType == nullptr)
+                    return false;
+
+                auto* node = m_irBuilder->CreatePHI(phiType, static_cast<unsigned>(phi.inputs().size()), "phi");
+                defineValue(phi.resultId(), node);
+                m_pendingPhis.emplace_back(&phi, node);
                 return true;
             }
             case InstructionKind::Add:
@@ -483,9 +524,30 @@ namespace Caracal
                 m_irBuilder->CreateRet(value);
                 return true;
             }
+            case TerminatorKind::Jump:
+            {
+                const auto& jump = static_cast<const JumpTerminator&>(terminator);
+                auto* target = tryGetBlock(jump.targetBlockId());
+                if (target == nullptr)
+                    return false;
+
+                m_irBuilder->CreateBr(target);
+                return true;
+            }
+            case TerminatorKind::Branch:
+            {
+                const auto& branch = static_cast<const BranchIfTerminator&>(terminator);
+                auto* condition = tryResolve(branch.condition());
+                auto* trueBlock = tryGetBlock(branch.trueBlockId());
+                auto* falseBlock = tryGetBlock(branch.falseBlockId());
+                if (condition == nullptr || trueBlock == nullptr || falseBlock == nullptr)
+                    return false;
+
+                m_irBuilder->CreateCondBr(condition, trueBlock, falseBlock);
+                return true;
+            }
             default:
             {
-                // todo other terminators
                 return false;
             }
         }
@@ -572,6 +634,15 @@ namespace Caracal
     {
         const auto result = m_values.find(value.id());
         if (result == m_values.end())
+            return nullptr;
+
+        return result->second;
+    }
+
+    llvm::BasicBlock* LLVMCodeGenerator::tryGetBlock(BlockId id) const noexcept
+    {
+        const auto result = m_blocks.find(id);
+        if (result == m_blocks.end())
             return nullptr;
 
         return result->second;

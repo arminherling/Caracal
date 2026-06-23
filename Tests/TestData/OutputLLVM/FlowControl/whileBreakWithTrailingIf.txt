@@ -1,0 +1,23 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define void @func() {
+entry:
+  br label %while.condition
+
+while.condition:                                  ; preds = %if.continuation, %entry
+  br i1 true, label %while.body, label %while.continuation
+
+while.body:                                       ; preds = %while.condition
+  br i1 true, label %if.true, label %if.continuation
+
+if.true:                                          ; preds = %while.body
+  br label %while.continuation
+
+if.continuation:                                  ; preds = %while.body
+  br label %while.condition
+
+while.continuation:                               ; preds = %if.true, %while.condition
+  ret void
+}

@@ -1,0 +1,33 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @func() {
+entry:
+  br label %while.condition
+
+while.condition:                                  ; preds = %if.continuation, %if.true, %entry
+  %phi = phi i32 [ 0, %entry ], [ %add, %if.true ], [ %add, %if.continuation ]
+  %phi1 = phi i32 [ 0, %entry ], [ %phi1, %if.true ], [ %add2, %if.continuation ]
+  %less_than = icmp slt i32 %phi, 4
+  br i1 %less_than, label %while.body, label %while.continuation
+
+while.body:                                       ; preds = %while.condition
+  %add = add i32 %phi, 1
+  %equal = icmp eq i32 %add, 2
+  br i1 %equal, label %if.true, label %if.continuation
+
+if.true:                                          ; preds = %while.body
+  br label %while.condition
+
+if.continuation:                                  ; preds = %while.body
+  %add2 = add i32 %phi1, %add
+  br label %while.condition
+
+while.continuation:                               ; preds = %while.condition
+  ret i32 %phi1
+
+; uselistorder directives
+  uselistorder i32 %phi1, { 1, 2, 0 }
+  uselistorder i32 %add, { 2, 3, 1, 0 }
+}

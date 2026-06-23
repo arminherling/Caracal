@@ -1,0 +1,15 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i1 @func() {
+entry:
+  br i1 true, label %if.true, label %if.continuation
+
+if.true:                                          ; preds = %entry
+  br label %if.continuation
+
+if.continuation:                                  ; preds = %if.true, %entry
+  %phi = phi i1 [ true, %entry ], [ false, %if.true ]
+  ret i1 %phi
+}
