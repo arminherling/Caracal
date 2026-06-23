@@ -11,3 +11,7 @@ def printf(format: cstring, ...) i32 {}
 // returns the time since program start in clock ticks
 #extern()
 def clock() i32 {}
+
+// compares two C strings; returns 0 when they are equal, non-zero otherwise
+#extern()
+def strcmp(left: cstring, right: cstring) i32 {}

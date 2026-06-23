@@ -1,5 +1,38 @@
 FunctionDefinitionStatement: {
     Type: undefined
+    Name: strcmp
+    Annotation: {
+        Name: extern
+        ArgumentsNode(0): {
+        }
+    }
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: left
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: cstring
+            }
+        }
+        ParameterNode: {
+            Name: right
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: cstring
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(0): {
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
     Name: func
     ParametersNode(0): {
     }

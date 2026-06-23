@@ -1,5 +1,8 @@
+#extern()
+def strcmp(left: cstring, right: cstring) i32 {}
+
 def func()
-{ 
+{
     if "123" == "123"
     {
         return;
