@@ -27,6 +27,8 @@ namespace Caracal
                 return "P0006";
             case DiagnosticKind::P0007_DanglingAnnotation:
                 return "P0007";
+            case DiagnosticKind::P0008_UninitializedField:
+                return "P0008";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:
@@ -160,6 +162,8 @@ namespace Caracal
                 return "Invalid expression";
             case DiagnosticKind::P0007_DanglingAnnotation:
                 return "Dangling annotation";
+            case DiagnosticKind::P0008_UninitializedField:
+                return "Uninitialized field";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:

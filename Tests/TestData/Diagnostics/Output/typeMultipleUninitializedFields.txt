@@ -1,0 +1,26 @@
+ Error P0008
+  Uninitialized field
+    ,-[Diagnostics/Input/typeMultipleUninitializedFields.cara:3:5]
+  1 | type Point()
+  2 | {
+  3 |     x: i32
+    .     ------
+    .        `-- Type field 'x' must be initialized
+  4 |     y: i32
+  5 | }
+  6 | 
+    `----
+  Fix: Add '= <value>' for a mutable field or ': <value>' for a constant field.
+ Error P0008
+  Uninitialized field
+    ,-[Diagnostics/Input/typeMultipleUninitializedFields.cara:4:5]
+  1 | type Point()
+  2 | {
+  3 |     x: i32
+  4 |     y: i32
+    .     ------
+    .        `-- Type field 'y' must be initialized
+  5 | }
+  6 | 
+    `----
+  Fix: Add '= <value>' for a mutable field or ': <value>' for a constant field.

@@ -25,6 +25,7 @@ namespace Caracal
         void addExtraTokensRemainingError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addUnexpectedTopLevelTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
         void addExpectedEnumFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
+        void addUninitializedTypeFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName);
         void addUnexpectedStatementTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
         void addUnexpectedExpressionTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
 

@@ -374,9 +374,6 @@ namespace Caracal
         const auto& typeDefinition = m_semanticContext.getTypeDefinition(definition.parentType());
         for (const auto& fieldDefinition : typeDefinition.fields())
         {
-            if (fieldDefinition.expression() == nullptr)
-                continue;
-
             const auto loweredValue = lowerValueExpression(fieldDefinition.expression(), entryBlock);
             if (!loweredValue.has_value())
                 continue;

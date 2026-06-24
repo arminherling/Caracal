@@ -18,6 +18,7 @@ namespace Caracal
         P0005_InvalidStatement,
         P0006_InvalidExpression,
         P0007_DanglingAnnotation,
+        P0008_UninitializedField,
 
         // Annotation diagnostics
         T0001_UnknownAnnotation,

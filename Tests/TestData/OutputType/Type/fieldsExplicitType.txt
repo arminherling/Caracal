@@ -52,7 +52,9 @@ TypeDefinitionStatement: {
                     Lexeme: i32
                 }
             }
-            Right: null
+            Right: {
+                NumberLiteral: 0
+            }
         }
     }
 }

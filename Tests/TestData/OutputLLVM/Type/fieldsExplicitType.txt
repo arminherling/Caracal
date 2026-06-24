@@ -10,5 +10,7 @@ entry:
   store i32 0, ptr %x, align 4
   %y = getelementptr inbounds nuw %Fields, ptr %0, i32 0, i32 1
   store i32 10, ptr %y, align 4
+  %z = getelementptr inbounds nuw %Fields, ptr %0, i32 0, i32 2
+  store i32 0, ptr %z, align 4
   ret void
 }

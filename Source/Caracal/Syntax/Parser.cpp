@@ -459,19 +459,22 @@ namespace Caracal
             explicitType = parseTypeNameNode();
         }
 
-        auto secondToken = tryMatchKind(TokenKind::Colon);
-        if (!secondToken.has_value())
+        const auto current = currentToken();
+        if (current.kind != TokenKind::Colon && current.kind != TokenKind::Equal)
         {
-            secondToken = tryMatchKind(TokenKind::Equal);
+            auto fieldLocation = nameExpression->sourceLocation(m_tokens);
+            if (explicitType.has_value())
+                fieldLocation.endIndex = explicitType.value()->sourceLocation(m_tokens).endIndex;
+            else
+                fieldLocation.endIndex = m_tokens.getSourceLocation(firstColon).endIndex;
+
+            m_diagnostics.addUninitializedTypeFieldError(m_tokens.source(), fieldLocation, nameExpression->name());
+            return std::make_unique<TypeFieldDeclaration>(std::move(nameExpression), firstColon, std::move(explicitType), Token::ToError(current), std::make_unique<ErrorExpression>(current), false);
         }
 
-        std::optional<ExpressionUPtr> rightExpression;
-        if (secondToken.has_value())
-        {
-            rightExpression = parseExpression(StatementScope::Type);
-        }
-
-        auto isConstant = secondToken.has_value() && secondToken.value().kind == TokenKind::Colon;
+        auto secondToken = advanceOnMatch(TokenKind::Colon, TokenKind::Equal);
+        auto rightExpression = parseExpression(StatementScope::Type);
+        auto isConstant = secondToken.kind == TokenKind::Colon;
 
         return std::make_unique<TypeFieldDeclaration>(std::move(nameExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), isConstant);
     }

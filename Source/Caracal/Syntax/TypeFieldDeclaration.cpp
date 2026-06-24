@@ -6,10 +6,10 @@ namespace Caracal
         NameExpressionUPtr&& nameExpression,
         const Token& firstColonToken,
         std::optional<TypeNameNodeUPtr>&& explicitType,
-        const std::optional<Token>& secondToken,
-        std::optional<ExpressionUPtr>&& rightExpression,
+        const Token& secondToken,
+        ExpressionUPtr&& rightExpression,
         bool isConstant)
-        : Statement(NodeKind::TypeFieldDeclaration, (rightExpression.has_value() ? rightExpression.value()->type() : Type::Undefined()))
+        : Statement(NodeKind::TypeFieldDeclaration, rightExpression->type())
         , m_nameExpression{ std::move(nameExpression) }
         , m_firstColonToken{ firstColonToken }
         , m_explicitType{ std::move(explicitType) }

@@ -1,4 +1,4 @@
-﻿type Number()
+type Number()
 {
     value: i32
 }

@@ -1,7 +1,0 @@
-type Number
-    value: i32
-
-define Number.new(%0: ref Number ".this") void
-block entry(0):
-    %0 = parameter 0 : ref Number ".this"
-    return

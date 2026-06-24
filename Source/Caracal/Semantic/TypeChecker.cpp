@@ -1318,28 +1318,24 @@ namespace Caracal
         }
 
         auto fieldType = Type::Undefined();
-        Expression* fieldExpression = nullptr;
         if (statement->explicitType().has_value())
         {
             fieldType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
         }
 
-        if (statement->rightExpression().has_value())
+        auto fieldExpression = statement->rightExpression().get();
+        auto expressionType = typeCheckExpression(fieldExpression, tokens);
+        if (fieldType == Type::Undefined())
         {
-            fieldExpression = statement->rightExpression().value().get();
-            auto expressionType = typeCheckExpression(fieldExpression, tokens);
-            if (fieldType == Type::Undefined())
-            {
-                fieldType = expressionType;
-            }
-            else if (fieldType != expressionType)
-            {
-                m_diagnostics.addTypeFieldInitializerMismatchError(
-                    tokens.source(),
-                    fieldExpression->sourceLocation(tokens),
-                    FormatTypeName(m_module, fieldType),
-                    FormatTypeName(m_module, expressionType));
-            }
+            fieldType = expressionType;
+        }
+        else if (fieldType != expressionType)
+        {
+            m_diagnostics.addTypeFieldInitializerMismatchError(
+                tokens.source(),
+                fieldExpression->sourceLocation(tokens),
+                FormatTypeName(m_module, fieldType),
+                FormatTypeName(m_module, expressionType));
         }
 
         if (fieldType == Type::Undefined())

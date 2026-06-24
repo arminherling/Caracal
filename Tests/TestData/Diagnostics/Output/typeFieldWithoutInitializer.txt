@@ -1,0 +1,12 @@
+ Error P0008
+  Uninitialized field
+    ,-[Diagnostics/Input/typeFieldWithoutInitializer.cara:3:5]
+  1 | type Number()
+  2 | {
+  3 |     value: i32
+    .     ----------
+    .          `-- Type field 'value' must be initialized
+  4 | }
+  5 | 
+    `----
+  Fix: Add '= <value>' for a mutable field or ': <value>' for a constant field.

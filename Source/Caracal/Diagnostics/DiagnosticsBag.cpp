@@ -245,6 +245,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addUninitializedTypeFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::P0008_UninitializedField,
+            source,
+            location,
+            "Add '= <value>' for a mutable field or ': <value>' for a constant field.");
+        diagnostic.addPrimaryLabel(location, "Type field '" + fieldName + "' must be initialized");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addUnexpectedTopLevelTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
     {
         auto fix = std::string{};
