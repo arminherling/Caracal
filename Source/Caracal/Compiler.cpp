@@ -7,7 +7,6 @@
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
-#include <Caracal/CodeGen/AstToLLVMCodeGenerator.h>
 #include <Caracal/CodeGen/LLVMCodeGenerator.h>
 #include <Caracal/IR/IRLowerer.h>
 
@@ -25,12 +24,12 @@
 
 namespace Caracal
 {
-    static int executeCommand(const std::string& command)
+    static int ExecuteCommand(const std::string& command)
     {
         return std::system(command.c_str());
     }
 
-    static std::vector<std::filesystem::path> collectCaraFiles(
+    static std::vector<std::filesystem::path> CollectCaraFiles(
         const std::filesystem::path& directoryPath) noexcept
     {
         std::vector<std::filesystem::path> caraFilePaths{};
@@ -47,12 +46,30 @@ namespace Caracal
         return caraFilePaths;
     }
 
+    static bool PopulateModule(SemanticContext& semanticContext, llvm::Module& llvmModule)
+    {
+        Module irModule{};
+        IRLowerer lowerer{ semanticContext };
+        if (!lowerer.lower(irModule))
+            return false;
+
+        LLVMCodeGenerator codeGenerator{ irModule, llvmModule };
+        if (!codeGenerator.generate())
+            return false;
+
+        // catch malformed IR before it is emitted or snapshotted; verifyModule returns true when broken
+        if (llvm::verifyModule(llvmModule, &llvm::errs()))
+            return false;
+
+        return true;
+    }
+
     int compileFile(
         const std::filesystem::path& filePath,
         const DiagnosticOptions& diagnosticOptions)
     {
         const auto coreDirectoryPath = std::filesystem::path("Core");
-        auto caraFiles = collectCaraFiles(coreDirectoryPath);
+        auto caraFiles = CollectCaraFiles(coreDirectoryPath);
 
         Caracal::DiagnosticsBag diagnostics;
         std::vector<Caracal::ParseTreeUPtr> parseTrees;
@@ -144,7 +161,7 @@ namespace Caracal
         llvmModule->setDataLayout(targetMachine->createDataLayout());
         llvmModule->setTargetTriple(triple);
 
-        wasSuccessful = Caracal::generateLLVMModuleFromAst(semanticContext, *llvmModule);
+        wasSuccessful = PopulateModule(semanticContext, *llvmModule);
         if (!wasSuccessful)
         {
             std::cout << "Module not generated!";
@@ -200,14 +217,14 @@ namespace Caracal
         {
             llvm::errs() << "Linking failed with error code: " << linkingResult << "\n";
             llvm::errs() << "Error message: " << linkError << "\n";
-            return 0;
+            return 1;
         }
         else
         {
             llvm::outs() << "Executable generated: " << exeFileName << "\n\n";
         }
 
-        const auto exeResult = executeCommand(exeFileName);
+        const auto exeResult = ExecuteCommand(exeFileName);
         return exeResult;
     }
 
@@ -223,44 +240,13 @@ namespace Caracal
         return std::make_pair(true, printer.prettyPrint());
     }
 
-    std::pair<bool, std::string> generateLLVMIR(ParseTree& parseTree, SemanticContext& semanticContext, std::string targetTriple)
-    {
-        llvm::LLVMContext context;
-        auto module = std::make_unique<llvm::Module>("CaracalModule", context);
-        module->setTargetTriple(llvm::Triple(targetTriple));
-
-        auto wasSuccessful = Caracal::generateLLVMModuleFromAst(semanticContext, *module);
-        if (!wasSuccessful)
-        {
-            std::cout << "Module not generated!";
-            return std::make_pair(false, "");
-        }
-
-        std::string irOutput;
-        llvm::raw_string_ostream irStream(irOutput);
-        module->print(irStream, nullptr, true, true);
-        irStream.flush();
-
-        return std::make_pair(true, irOutput);
-    }
-
     std::pair<bool, std::string> generateLLVMIRFromIR(SemanticContext& semanticContext, std::string targetTriple)
     {
-        Module irModule{};
-        IRLowerer lowerer{ semanticContext };
-        if (!lowerer.lower(irModule))
-            return std::make_pair(false, std::string{});
-
         llvm::LLVMContext context;
         auto llvmModule = std::make_unique<llvm::Module>("CaracalModule", context);
         llvmModule->setTargetTriple(llvm::Triple(targetTriple));
 
-        LLVMCodeGenerator codeGenerator{ irModule, *llvmModule };
-        if (!codeGenerator.generate())
-            return std::make_pair(false, std::string{});
-
-        // catch malformed IR before it is snapshotted; verifyModule returns true when broken
-        if (llvm::verifyModule(*llvmModule, &llvm::errs()))
+        if (!PopulateModule(semanticContext, *llvmModule))
             return std::make_pair(false, std::string{});
 
         std::string irOutput;
