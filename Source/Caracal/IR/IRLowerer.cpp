@@ -532,7 +532,7 @@ namespace Caracal
         const auto functionId = definition.type().id();
         if (isExtern)
         {
-            module.addExternFunction(ExternFunction{ functionId, functionName, parameters, returnType });
+            module.addExternFunction(ExternFunction{ functionId, functionName, definition.symbolName(), parameters, returnType });
             return true;
         }
 

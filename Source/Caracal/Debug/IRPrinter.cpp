@@ -350,6 +350,10 @@ namespace Caracal
 
         m_builder.append(") ");
         appendType(function.returnType());
+        if (function.symbolName().has_value())
+        {
+            m_builder.append(" symbol \"").append(function.symbolName().value()).append("\"");
+        }
         m_builder.appendLine("");
     }
 

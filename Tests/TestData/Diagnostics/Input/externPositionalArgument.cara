@@ -1,0 +1,2 @@
+#extern("puts")
+def myPuts(message: cstring) i32 {}

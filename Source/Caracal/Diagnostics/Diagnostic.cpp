@@ -131,6 +131,10 @@ namespace Caracal
                 return "T0043";
             case DiagnosticKind::T0044_UnusedParameter:
                 return "T0044";
+            case DiagnosticKind::T0045_UnexpectedAnnotationArgument:
+                return "T0045";
+            case DiagnosticKind::T0046_DuplicateAnnotationArgument:
+                return "T0046";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -266,6 +270,10 @@ namespace Caracal
                 return "Unused local constant";
             case DiagnosticKind::T0044_UnusedParameter:
                 return "Unused parameter";
+            case DiagnosticKind::T0045_UnexpectedAnnotationArgument:
+                return "Unexpected annotation argument";
+            case DiagnosticKind::T0046_DuplicateAnnotationArgument:
+                return "Duplicate annotation argument";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

@@ -1,0 +1,7 @@
+#extern(symbol = "puts")
+def myPuts(message: cstring) i32 {}
+
+def func() i32
+{
+    return myPuts("hi");
+}

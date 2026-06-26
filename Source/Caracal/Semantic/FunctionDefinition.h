@@ -3,6 +3,7 @@
 #include <Caracal/Syntax/Statement.h>
 #include <Caracal/Semantic/Type.h>
 #include <Caracal/Semantic/Parameter.h>
+#include <optional>
 #include <vector>
 #include <string>
 
@@ -42,10 +43,12 @@ namespace Caracal
         [[nodiscard]] const std::vector<Parameter>& parameters() const noexcept { return m_parameters; }
         [[nodiscard]] const std::vector<Type>& returnTypes() const noexcept { return m_returnTypes; }
         [[nodiscard]] const Statement* statement() const noexcept { return m_statement; }
+        [[nodiscard]] const std::optional<std::string>& symbolName() const noexcept { return m_symbolName; }
 
         void setParameters(const std::vector<Parameter>& parameters) noexcept;
         void setReturnTypes(const std::vector<Type>& returnTypes) noexcept;
         void setIsVariadic(bool isVariadic) noexcept;
+        void setSymbolName(std::optional<std::string> symbolName) noexcept { m_symbolName = std::move(symbolName); }
 
     private:
         Type m_type;
@@ -53,6 +56,7 @@ namespace Caracal
         FunctionType m_functionType;
         std::string m_name;
         std::string m_fullName;
+        std::optional<std::string> m_symbolName;
         bool m_isVariadic;
         std::vector<Parameter> m_parameters;
         std::vector<Type> m_returnTypes;

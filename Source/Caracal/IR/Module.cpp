@@ -20,7 +20,7 @@ namespace Caracal
         return &m_externFunctions[result->second];
     }
 
-    Function* Module::tryGetFunction(FunctionId id) noexcept
+    const Function* Module::tryGetFunction(FunctionId id) const noexcept
     {
         const auto result = m_functionIndices.find(id);
         if (result == m_functionIndices.end())

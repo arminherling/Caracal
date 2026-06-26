@@ -1,0 +1,10 @@
+ Error T0045
+  Unexpected annotation argument
+    ,-[Diagnostics/Input/externUnknownNamedArgument.cara:1:9]
+  1 | #extern(unknown = "puts")
+    .         -------
+    .            `-- Annotation '#extern' does not accept an argument named 'unknown'.
+  2 | def myPuts(message: cstring) i32 {}
+  3 | 
+    `----
+  Fix: Remove the argument, or use one that the '#extern' annotation accepts.

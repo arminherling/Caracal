@@ -1,5 +1,8 @@
 ﻿#include "TypeChecker.h"
 
+#include <Caracal/Syntax/StringLiteral.h>
+
+#include <algorithm>
 #include <charconv>
 #include <cmath>
 #include <limits>
@@ -13,14 +16,15 @@ namespace Caracal
         TokenKind targetKind;
         i32 requiredArgumentCount;
         Type parameterType;
+        std::string_view namedStringArgument;
     };
 
     static const AnnotationDefinition* GetAnnotationDefinition(AnnotationKind kind)
     {
         static const AnnotationDefinition Definitions[] = {
-            { AnnotationKind::Extern, "extern", TokenKind::DefKeyword, 0, Type::Undefined() },
-            { AnnotationKind::Flag, "flag", TokenKind::EnumKeyword, 0, Type::Undefined() },
-            { AnnotationKind::Step, "step", TokenKind::EnumKeyword, 1, Type::I32() },
+            { AnnotationKind::Extern, "extern", TokenKind::DefKeyword, 0, Type::Undefined(), "symbol" },
+            { AnnotationKind::Flag, "flag", TokenKind::EnumKeyword, 0, Type::Undefined(), "" },
+            { AnnotationKind::Step, "step", TokenKind::EnumKeyword, 1, Type::I32(), "" },
         };
 
         for (const auto& definition : Definitions)
@@ -593,7 +597,8 @@ namespace Caracal
 
         auto& functionDefinition = m_module.getFunctionDefinition(functionType);
         const auto& parameterNodes = statement->parametersNode()->parameters();
-        const auto isExtern = validateFunctionAnnotation(statement, tokens);
+        std::optional<std::string> symbolName;
+        const auto isExtern = validateFunctionAnnotation(statement, tokens, symbolName);
         const auto isVariadic = !parameterNodes.empty() && parameterNodes.back()->isVariadic();
         if (isVariadic && !isExtern)
         {
@@ -606,6 +611,7 @@ namespace Caracal
         functionDefinition.setParameters(parameters);
         functionDefinition.setReturnTypes(returns);
         functionDefinition.setIsVariadic(isVariadic);
+        functionDefinition.setSymbolName(std::move(symbolName));
     }
 
     void TypeChecker::typeCheckTypeSignature(TypeDefinitionStatement* statement, const TokenBuffer& tokens)
@@ -1138,7 +1144,59 @@ namespace Caracal
         }
     }
 
-    bool TypeChecker::validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue)
+    bool TypeChecker::validateNamedAnnotationArguments(const AnnotationNode* annotation, std::string_view namedStringArgument, const TokenBuffer& tokens, std::optional<std::string>* stringArgumentValue)
+    {
+        std::vector<std::string_view> seenArgumentNames;
+        for (const auto& argument : annotation->arguments())
+        {
+            if (!argument.isNamed())
+            {
+                continue;
+            }
+
+            const auto nameLocation = tokens.getSourceLocation(argument.nameToken().value());
+            if (std::find(seenArgumentNames.begin(), seenArgumentNames.end(), argument.name()) != seenArgumentNames.end())
+            {
+                m_diagnostics.addDuplicateAnnotationArgumentError(tokens.source(), nameLocation, annotation->name(), argument.name());
+                return false;
+            }
+            seenArgumentNames.push_back(argument.name());
+
+            if (namedStringArgument.empty() || argument.name() != namedStringArgument)
+            {
+                m_diagnostics.addUnexpectedAnnotationArgumentError(tokens.source(), nameLocation, annotation->name(), argument.name());
+                return false;
+            }
+
+            auto* value = argument.value().get();
+            const auto argumentType = typeCheckExpression(value, tokens);
+            if (argumentType == Type::Undefined())
+            {
+                return false;
+            }
+
+            if (value->kind() != NodeKind::StringLiteral)
+            {
+                m_diagnostics.addAnnotationArgumentTypeMismatchError(
+                    tokens.source(),
+                    value->sourceLocation(tokens),
+                    annotation->kind(),
+                    annotation->name(),
+                    "a string literal for '" + std::string(namedStringArgument) + "'",
+                    "an expression of type '" + FormatTypeName(m_module, argumentType) + "'");
+                return false;
+            }
+
+            if (stringArgumentValue != nullptr)
+            {
+                *stringArgumentValue = static_cast<const StringLiteral*>(value)->escapedContent();
+            }
+        }
+
+        return true;
+    }
+
+    bool TypeChecker::validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue, std::optional<std::string>* stringArgumentValue)
     {
         const auto annotationLocation = annotation->sourceLocation(tokens);
         const auto* definition = GetAnnotationDefinition(annotation->kind());
@@ -1154,13 +1212,40 @@ namespace Caracal
             return false;
         }
 
-        i32 actualCount = 0;
-        if (annotation->argumentsNode().has_value())
+        if (!validateNamedAnnotationArguments(annotation, definition->namedStringArgument, tokens, stringArgumentValue))
         {
-            actualCount = static_cast<i32>(annotation->argumentsNode().value()->arguments().size());
+            return false;
         }
 
-        if (definition->requiredArgumentCount > 0 && !annotation->argumentsNode().has_value())
+        Expression* firstPositionalArgument = nullptr;
+        i32 actualCount = 0;
+        for (const auto& argument : annotation->arguments())
+        {
+            if (argument.isNamed())
+            {
+                continue;
+            }
+
+            if (firstPositionalArgument == nullptr)
+            {
+                firstPositionalArgument = argument.value().get();
+            }
+            ++actualCount;
+        }
+
+        if (!definition->namedStringArgument.empty() && actualCount > 0
+            && firstPositionalArgument->kind() == NodeKind::StringLiteral)
+        {
+            m_diagnostics.addAnnotationMissingArgumentsError(
+                tokens.source(),
+                annotation->argumentsLocation(tokens),
+                annotation->kind(),
+                annotation->name(),
+                std::string(definition->namedStringArgument));
+            return false;
+        }
+
+        if (definition->requiredArgumentCount > 0 && !annotation->hasParentheses())
         {
             m_diagnostics.addAnnotationMissingArgumentsError(tokens.source(), annotationLocation, annotation->kind(), annotation->name());
             return false;
@@ -1180,7 +1265,7 @@ namespace Caracal
 
         if (definition->parameterType != Type::Undefined())
         {
-            auto* argument = annotation->argumentsNode().value()->arguments().at(0).get();
+            auto* argument = firstPositionalArgument;
             auto argumentType = typeCheckExpression(argument, tokens);
             if (argumentType == Type::Undefined())
             {
@@ -1220,13 +1305,14 @@ namespace Caracal
         return true;
     }
 
-    bool TypeChecker::validateFunctionAnnotation(const FunctionDefinitionStatement* statement, const TokenBuffer& tokens)
+    bool TypeChecker::validateFunctionAnnotation(const FunctionDefinitionStatement* statement, const TokenBuffer& tokens, std::optional<std::string>& symbolName)
     {
         auto isExtern = false;
         for (const auto& annotationNode : statement->annotations())
         {
             const auto* annotation = annotationNode.get();
-            if (!validateAnnotation(annotation, TokenKind::DefKeyword, tokens))
+            std::optional<std::string> annotationSymbolName;
+            if (!validateAnnotation(annotation, TokenKind::DefKeyword, tokens, nullptr, &annotationSymbolName))
             {
                 continue;
             }
@@ -1234,6 +1320,10 @@ namespace Caracal
             if (annotation->kind() == AnnotationKind::Extern)
             {
                 isExtern = true;
+                if (annotationSymbolName.has_value())
+                {
+                    symbolName = std::move(annotationSymbolName);
+                }
             }
         }
 

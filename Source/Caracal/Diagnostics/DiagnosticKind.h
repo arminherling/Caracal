@@ -81,5 +81,9 @@ namespace Caracal
         T0042_UnusedLocalVariable,
         T0043_UnusedLocalConstant,
         T0044_UnusedParameter,
+
+        // Annotation argument diagnostics
+        T0045_UnexpectedAnnotationArgument,
+        T0046_DuplicateAnnotationArgument,
     };
 }

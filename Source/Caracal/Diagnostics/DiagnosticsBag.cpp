@@ -360,16 +360,24 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::addAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName)
+    void DiagnosticsBag::addAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, const std::string& argumentName)
     {
         auto fix = std::string{};
-        if (annotationKind == AnnotationKind::Step)
+        auto label = std::string{};
+        if (!argumentName.empty())
+        {
+            fix = "Provide the argument as " + argumentName + " = \"...\".";
+            label = "Annotation '#" + annotationName + "' is missing the '" + argumentName + "' argument.";
+        }
+        else if (annotationKind == AnnotationKind::Step)
         {
             fix = "Add the required annotation argument, for example #step(10).";
+            label = "Annotation '#" + annotationName + "' requires one argument.";
         }
         else
         {
             fix = "Add the required annotation argument.";
+            label = "Annotation '#" + annotationName + "' requires one argument.";
         }
 
         auto diagnostic = Diagnostic(
@@ -378,7 +386,7 @@ namespace Caracal
             source,
             location,
             fix);
-        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' requires one argument.");
+        diagnostic.addPrimaryLabel(location, label);
 
         m_diagnostics.push_back(std::move(diagnostic));
     }
@@ -436,6 +444,32 @@ namespace Caracal
             location,
             fix);
         diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' expects " + expectedDescription + ", but got " + actualDescription + ".");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addUnexpectedAnnotationArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, const std::string& argumentName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0045_UnexpectedAnnotationArgument,
+            source,
+            location,
+            "Remove the argument, or use one that the '#" + annotationName + "' annotation accepts.");
+        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' does not accept an argument named '" + argumentName + "'.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addDuplicateAnnotationArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, const std::string& argumentName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0046_DuplicateAnnotationArgument,
+            source,
+            location,
+            "Remove the duplicate argument.");
+        diagnostic.addPrimaryLabel(location, "Annotation '#" + annotationName + "' already has an argument named '" + argumentName + "'.");
 
         m_diagnostics.push_back(std::move(diagnostic));
     }

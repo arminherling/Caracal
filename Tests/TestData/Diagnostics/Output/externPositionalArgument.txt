@@ -1,0 +1,10 @@
+ Error T0003
+  Missing annotation arguments
+    ,-[Diagnostics/Input/externPositionalArgument.cara:1:9]
+  1 | #extern("puts")
+    .         ------
+    .            `-- Annotation '#extern' is missing the 'symbol' argument.
+  2 | def myPuts(message: cstring) i32 {}
+  3 | 
+    `----
+  Fix: Provide the argument as symbol = "...".

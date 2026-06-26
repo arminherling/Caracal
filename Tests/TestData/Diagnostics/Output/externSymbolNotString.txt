@@ -1,0 +1,10 @@
+ Error T0005
+  Annotation argument type mismatch
+    ,-[Diagnostics/Input/externSymbolNotString.cara:1:18]
+  1 | #extern(symbol = 1)
+    .                  -
+    .                  `-- Annotation '#extern' expects a string literal for 'symbol', but got an expression of type 'i32'.
+  2 | def myPuts(message: cstring) i32 {}
+  3 | 
+    `----
+  Fix: Change the annotation argument to the expected type.

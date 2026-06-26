@@ -750,9 +750,34 @@ namespace Caracal
         m_builder.pushIndentation();
 
         m_builder.appendIndented("Name: ").appendLine(annotation->name());
-        if (annotation->argumentsNode().has_value())
+        if (annotation->hasParentheses())
         {
-            prettyPrintArgumentsNode(annotation->argumentsNode().value().get());
+            const auto& arguments = annotation->arguments();
+
+            m_builder.appendIndented("ArgumentsNode(").append(std::to_string(arguments.size())).appendLine("): {");
+            m_builder.pushIndentation();
+
+            for (const auto& argument : arguments)
+            {
+                if (argument.isNamed())
+                {
+                    m_builder.appendIndentedLine("NamedArgument: {");
+                    m_builder.pushIndentation();
+
+                    m_builder.appendIndented("Name: ").appendLine(argument.name());
+                    prettyPrintNode(argument.value().get());
+
+                    m_builder.popIndentation();
+                    m_builder.appendIndentedLine("}");
+                }
+                else
+                {
+                    prettyPrintNode(argument.value().get());
+                }
+            }
+
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
         }
 
         m_builder.popIndentation();

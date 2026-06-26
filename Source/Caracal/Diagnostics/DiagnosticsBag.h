@@ -33,9 +33,11 @@ namespace Caracal
         void addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addUnknownAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, TokenKind targetKind);
         void addUnexpectedAnnotationTargetError(const SourceTextSharedPtr& source, const SourceLocation& location);
-        void addAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName);
+        void addAnnotationMissingArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, const std::string& argumentName = "");
         void addAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, i32 expectedCount, i32 actualCount);
         void addAnnotationArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, const std::string& expectedDescription, const std::string& actualDescription);
+        void addUnexpectedAnnotationArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, const std::string& argumentName);
+        void addDuplicateAnnotationArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, const std::string& argumentName);
         void addConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName);
 
         // Unknown symbol and member access diagnostics

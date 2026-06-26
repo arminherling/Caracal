@@ -931,18 +931,56 @@ namespace Caracal
         return std::make_unique<ReturnTypesNode>(std::move(returnTypes));
     }
 
+    void Parser::parseAnnotationArguments(StatementScope scope, std::vector<Argument>& arguments)
+    {
+        auto current = currentToken();
+        while (current.kind != TokenKind::CloseParenthesis && current.kind != TokenKind::EndOfFile)
+        {
+            if (current.kind == TokenKind::Identifier && nextToken().kind == TokenKind::Equal)
+            {
+                auto nameToken = advanceOnMatch(TokenKind::Identifier);
+                auto argumentName = m_tokens.getLexeme(nameToken);
+                advanceOnMatch(TokenKind::Equal);
+                auto value = parseExpression(scope);
+                arguments.emplace_back(nameToken, argumentName, std::move(value));
+            }
+            else
+            {
+                arguments.emplace_back(parseExpression(scope));
+            }
+
+            if (currentToken().kind == TokenKind::Comma)
+            {
+                advanceCurrentIndex();
+            }
+            current = currentToken();
+        }
+    }
+
     void Parser::buildAnnotationNode(StatementScope scope)
     {
         auto hashToken = advanceOnMatch(TokenKind::Hash);
         auto nameToken = advanceOnMatch(TokenKind::Identifier);
         auto name = m_tokens.getLexeme(nameToken);
-        std::optional<ArgumentsNodeUPtr> arguments;
+
+        std::optional<Token> openParenthesis;
+        std::optional<Token> closeParenthesis;
+        std::vector<Argument> arguments;
         if (currentToken().kind == TokenKind::OpenParenthesis)
         {
-            arguments = parseArgumentsNode(scope);
+            openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
+            parseAnnotationArguments(scope, arguments);
+            closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
         }
 
-        m_currentAnnotations.push_back(std::make_unique<AnnotationNode>(ParseAnnotationKind(name), hashToken, nameToken, name, std::move(arguments)));
+        m_currentAnnotations.push_back(std::make_unique<AnnotationNode>(
+            ParseAnnotationKind(name),
+            hashToken,
+            nameToken,
+            name,
+            std::move(openParenthesis),
+            std::move(arguments),
+            std::move(closeParenthesis)));
     }
 
     Token Parser::advanceOnMatch(TokenKind kind)

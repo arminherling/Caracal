@@ -29,7 +29,7 @@ namespace Caracal
         [[nodiscard]] const std::vector<TypeDeclaration>& types() const noexcept { return m_types; }
         [[nodiscard]] const EnumDeclaration* tryGetEnum(Type type) const noexcept;
         [[nodiscard]] const ExternFunction* tryGetExternFunction(FunctionId id) const noexcept;
-        [[nodiscard]] Function* tryGetFunction(FunctionId id) noexcept;
+        [[nodiscard]] const Function* tryGetFunction(FunctionId id) const noexcept;
         [[nodiscard]] const std::string* tryGetFunctionName(FunctionId id) const noexcept;
         [[nodiscard]] const std::string* tryGetTypeName(Type type) const noexcept;
 

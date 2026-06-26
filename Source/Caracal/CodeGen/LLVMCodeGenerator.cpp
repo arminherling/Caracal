@@ -121,7 +121,8 @@ namespace Caracal
     {
         for (const auto& externFunction : m_irModule.externFunctions())
         {
-            if (!declareCallable(externFunction.name(), externFunction.returnType(), externFunction.parameters()))
+            const auto& symbolName = externFunction.symbolName().value_or(externFunction.name());
+            if (!declareCallable(symbolName, externFunction.returnType(), externFunction.parameters()))
                 return false;
         }
 
@@ -877,11 +878,19 @@ namespace Caracal
 
     llvm::Function* LLVMCodeGenerator::tryResolveCallee(FunctionId functionId) const noexcept
     {
-        const auto* name = m_irModule.tryGetFunctionName(functionId);
-        if (name == nullptr)
-            return nullptr;
+        // an extern might link to a symbol name different from the caracal name
+        if (const auto* externFunction = m_irModule.tryGetExternFunction(functionId))
+        {
+            const auto symbolName = externFunction->symbolName().value_or(externFunction->name());
+            return m_llvmModule.getFunction(symbolName);
+        }
 
-        return m_llvmModule.getFunction(*name);
+        if (const auto* function = m_irModule.tryGetFunction(functionId))
+        {
+            return m_llvmModule.getFunction(function->name());
+        }
+
+        return nullptr;
     }
 
     llvm::Value* LLVMCodeGenerator::promoteVariadicArgument(llvm::Value* value) noexcept

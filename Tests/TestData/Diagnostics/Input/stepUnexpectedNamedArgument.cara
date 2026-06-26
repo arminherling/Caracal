@@ -1,0 +1,6 @@
+#step(name = "x")
+enum Numbers
+{
+    Zero
+    One
+}

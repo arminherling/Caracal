@@ -1,0 +1,11 @@
+ Error T0045
+  Unexpected annotation argument
+    ,-[Diagnostics/Input/stepUnexpectedNamedArgument.cara:1:7]
+  1 | #step(name = "x")
+    .       ----
+    .         `-- Annotation '#step' does not accept an argument named 'name'.
+  2 | enum Numbers
+  3 | {
+  4 |     Zero
+    `----
+  Fix: Remove the argument, or use one that the '#step' annotation accepts.

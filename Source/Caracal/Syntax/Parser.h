@@ -69,6 +69,7 @@ namespace Caracal
         ParametersNodeUPtr parseParametersNode();
         ReturnTypesNodeUPtr parseReturnTypesNode();
         ArgumentsNodeUPtr parseArgumentsNode(StatementScope scope);
+        void parseAnnotationArguments(StatementScope scope, std::vector<Argument>& arguments);
         BlockNodeUPtr parseFunctionBody();
         BlockNodeUPtr parseTypeBody();
         BlockNodeUPtr parseMethodBody();
