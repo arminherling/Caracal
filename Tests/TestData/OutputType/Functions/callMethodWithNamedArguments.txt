@@ -1,0 +1,175 @@
+TypeDefinitionStatement: {
+    Type: Calc
+    Name: Calc
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: base
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: base
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: base
+                }
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref Calc, i32, i32) -> i32
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: applyDiff
+            }
+            ParametersNode(2): {
+                ParameterNode: {
+                    Name: a
+                    TypeNameNode: {
+                        Type: i32
+                        Lexeme: i32
+                    }
+                }
+                ParameterNode: {
+                    Name: b
+                    TypeNameNode: {
+                        Type: i32
+                        Lexeme: i32
+                    }
+                }
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    Type: i32
+                    BinaryExpression: {
+                        Type: i32
+                        Left: {
+                            BinaryExpression: {
+                                Type: i32
+                                Left: {
+                                    MemberAccessExpression: {
+                                        NameExpression: {
+                                            Type: i32
+                                            Name: base
+                                        }
+                                    }
+                                }
+                                Operation: Addition
+                                Right: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: a
+                                    }
+                                }
+                            }
+                        }
+                        Operation: Subtraction
+                        Right: {
+                            NameExpression: {
+                                Type: i32
+                                Name: b
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: Calc
+            Left: {
+                NameExpression: {
+                    Type: Calc
+                    Name: calc
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: Calc
+                    Left: {
+                        NameExpression: {
+                            Type: Calc
+                            Name: Calc
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: Calc
+                            Function type: (ref Calc, i32) -> void
+                            NameExpression: {
+                                Type: (ref Calc, i32) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(1): {
+                                NumberLiteral: 0
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: Calc
+                        Name: calc
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: i32
+                        Function type: (ref Calc, i32, i32) -> i32
+                        NameExpression: {
+                            Type: (ref Calc, i32, i32) -> i32
+                            Name: applyDiff
+                        }
+                        ArgumentsNode(2): {
+                            NamedArgument: {
+                                Name: b
+                                NumberLiteral: 10
+                            }
+                            NamedArgument: {
+                                Name: a
+                                NumberLiteral: 13
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

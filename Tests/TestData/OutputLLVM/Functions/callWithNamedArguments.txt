@@ -1,0 +1,14 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @foo(i32 %0, i32 %1) {
+entry:
+  ret i32 %0
+}
+
+define i32 @func() {
+entry:
+  %call = call i32 @foo(i32 1, i32 2)
+  ret i32 %call
+}

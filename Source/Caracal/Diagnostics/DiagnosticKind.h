@@ -19,6 +19,7 @@ namespace Caracal
         P0006_InvalidExpression,
         P0007_DanglingAnnotation,
         P0008_UninitializedField,
+        P0009_PositionalArgumentAfterNamed,
 
         // Annotation diagnostics
         T0001_UnknownAnnotation,
@@ -88,5 +89,9 @@ namespace Caracal
 
         // Extern diagnostics
         T0047_ExternMethodRequiresSymbol,
+
+        // Call argument binding diagnostics
+        T0048_UnknownArgumentName,
+        T0049_DuplicateArgumentBinding,
     };
 }

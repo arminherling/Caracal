@@ -1,0 +1,29 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%Calc = type { i32 }
+
+define i32 @func() {
+entry:
+  %calc = alloca %Calc, align 8
+  call void @Calc.new(ptr %calc, i32 0)
+  %call = call i32 @Calc.applyDiff(ptr %calc, i32 13, i32 10)
+  ret i32 %call
+}
+
+define i32 @Calc.applyDiff(ptr nonnull %0, i32 %1, i32 %2) {
+entry:
+  %base = getelementptr inbounds nuw %Calc, ptr %0, i32 0, i32 0
+  %load = load i32, ptr %base, align 4
+  %add = add i32 %load, %1
+  %subtract = sub i32 %add, %2
+  ret i32 %subtract
+}
+
+define void @Calc.new(ptr nonnull %0, i32 %1) {
+entry:
+  %base = getelementptr inbounds nuw %Calc, ptr %0, i32 0, i32 0
+  store i32 %1, ptr %base, align 4
+  ret void
+}

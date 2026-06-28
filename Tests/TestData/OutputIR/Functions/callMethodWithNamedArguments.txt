@@ -1,0 +1,32 @@
+type Calc
+    base: i32
+
+define func() i32
+block entry(0):
+    %slot0 = allocate_local : Calc "calc"
+    %0 = address_of %slot0 : ref Calc
+    %1 = const 0 : i32
+    call Calc.new(%0, %1)
+    %2 = const 13 : i32
+    %3 = const 10 : i32
+    %4 = call Calc.applyDiff(%0, %2, %3) : i32
+    return %4
+
+define Calc.applyDiff(%0: ref Calc ".this", %1: i32 "a", %2: i32 "b") i32
+block entry(0):
+    %0 = parameter 0 : ref Calc ".this"
+    %1 = parameter 1 : i32 "a"
+    %2 = parameter 2 : i32 "b"
+    %3 = address_of_field %0.0 : ref i32 "base"
+    %4 = load_value %3 : i32
+    %5 = add %4, %1 : i32
+    %6 = sub %5, %2 : i32
+    return %6
+
+define Calc.new(%0: ref Calc ".this", %1: i32 "base") void
+block entry(0):
+    %0 = parameter 0 : ref Calc ".this"
+    %1 = parameter 1 : i32 "base"
+    %2 = address_of_field %0.0 : ref i32 "base"
+    store_value %1, %2 : i32
+    return

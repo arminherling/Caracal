@@ -29,6 +29,8 @@ namespace Caracal
                 return "P0007";
             case DiagnosticKind::P0008_UninitializedField:
                 return "P0008";
+            case DiagnosticKind::P0009_PositionalArgumentAfterNamed:
+                return "P0009";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:
@@ -137,6 +139,10 @@ namespace Caracal
                 return "T0046";
             case DiagnosticKind::T0047_ExternMethodRequiresSymbol:
                 return "T0047";
+            case DiagnosticKind::T0048_UnknownArgumentName:
+                return "T0048";
+            case DiagnosticKind::T0049_DuplicateArgumentBinding:
+                return "T0049";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -170,6 +176,8 @@ namespace Caracal
                 return "Dangling annotation";
             case DiagnosticKind::P0008_UninitializedField:
                 return "Uninitialized field";
+            case DiagnosticKind::P0009_PositionalArgumentAfterNamed:
+                return "Positional argument after named argument";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:
@@ -278,6 +286,10 @@ namespace Caracal
                 return "Duplicate annotation argument";
             case DiagnosticKind::T0047_ExternMethodRequiresSymbol:
                 return "Extern method requires a symbol";
+            case DiagnosticKind::T0048_UnknownArgumentName:
+                return "Unknown argument name";
+            case DiagnosticKind::T0049_DuplicateArgumentBinding:
+                return "Duplicate argument";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

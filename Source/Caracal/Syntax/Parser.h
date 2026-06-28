@@ -3,7 +3,6 @@
 #include <Caracal/API.h>
 #include <Caracal/Defines.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
-#include <Caracal/Syntax/ArgumentsNode.h>
 #include <Caracal/Syntax/BlockNode.h>
 #include <Caracal/Syntax/EnumFieldDeclaration.h>
 #include <Caracal/Syntax/Expression.h>
@@ -68,8 +67,7 @@ namespace Caracal
         MethodNameNodeUPtr parseMethodNameNode();
         ParametersNodeUPtr parseParametersNode();
         ReturnTypesNodeUPtr parseReturnTypesNode();
-        ArgumentsNodeUPtr parseArgumentsNode(StatementScope scope);
-        void parseAnnotationArguments(StatementScope scope, std::vector<Argument>& arguments);
+        void parseArgumentList(StatementScope scope, std::vector<Argument>& arguments);
         BlockNodeUPtr parseFunctionBody();
         BlockNodeUPtr parseTypeBody();
         BlockNodeUPtr parseMethodBody();

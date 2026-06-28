@@ -89,7 +89,6 @@ namespace Caracal
         [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode, const TokenBuffer& tokens);
         [[nodiscard]] std::vector<Parameter> typeCheckParametersNode(ParametersNode* parametersNode, const TokenBuffer& tokens);
         [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode, const TokenBuffer& tokens);
-        [[nodiscard]] std::vector<Type> typeCheckArgumentsNode(ArgumentsNode* argumentsNode, const TokenBuffer& tokens);
 
         void typeCheckBlockNode(BlockNode* body, const TokenBuffer& tokens);
         [[nodiscard]] i32 convertToI32(NumberLiteral* literal, const TokenBuffer& tokens);

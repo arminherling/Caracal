@@ -1,5 +1,6 @@
 ﻿#include "TypeChecker.h"
 
+#include <Caracal/Semantic/ArgumentBinder.h>
 #include <Caracal/Syntax/StringLiteral.h>
 
 #include <algorithm>
@@ -1977,84 +1978,63 @@ namespace Caracal
             return false;
         }
 
-        auto argumentsNode = functionCallExpression->argumentsNode().get();
-        const auto& arguments = argumentsNode->arguments();
+        auto binding = bindCallArguments(parameterTypes, parameterOffset, isVariadic, *functionCallExpression, functionDefinition.name(), m_diagnostics, tokens);
+        if (!binding.ok)
+        {
+            return false;
+        }
+
+        for (const auto& argument : functionCallExpression->arguments())
+        {
+            typeCheckExpression(argument.value().get(), tokens);
+        }
+
         const auto expectedArgumentCount = parameterCount - parameterOffset;
-        const auto argumentsLocation = argumentsNode->sourceLocation(tokens);
-
-        if (isVariadic)
-        {
-            if (arguments.size() < expectedArgumentCount)
-            {
-                m_diagnostics.addArgumentCountMismatchError(
-                    tokens.source(),
-                    argumentsLocation,
-                    functionDefinition.name(),
-                    static_cast<i32>(expectedArgumentCount),
-                    static_cast<i32>(arguments.size()),
-                    true);
-                return false;
-            }
-        }
-        else
-        {
-            if (arguments.size() != expectedArgumentCount)
-            {
-                m_diagnostics.addArgumentCountMismatchError(
-                    tokens.source(),
-                    argumentsLocation,
-                    functionDefinition.name(),
-                    static_cast<i32>(expectedArgumentCount),
-                    static_cast<i32>(arguments.size()),
-                    false);
-                return false;
-            }
-        }
-
         std::vector<ArgumentTypeMismatchInfo> argumentTypeMismatches{};
-        for (size_t i = 0; i < arguments.size(); ++i)
+        for (size_t i = 0; i < binding.ordered.size(); ++i)
         {
-            auto* argument = arguments[i].get();
-            auto argumentType = typeCheckExpression(argument, tokens);
-
-            if (i < expectedArgumentCount)
+            const auto* argument = binding.ordered[i];
+            const auto argumentType = argument->type();
+            const auto expectedType = parameterTypes[i + parameterOffset].type();
+            if (argumentType != expectedType)
             {
-                const auto expectedType = parameterTypes[i + parameterOffset].type();
-                if (argumentType != expectedType)
-                {
-                    argumentTypeMismatches.push_back(ArgumentTypeMismatchInfo{
-                        argument->sourceLocation(tokens),
-                        static_cast<i32>(i + 1),
-                        FormatTypeName(m_module, expectedType),
-                        FormatTypeName(m_module, argumentType),
-                        });
-                }
+                argumentTypeMismatches.push_back(ArgumentTypeMismatchInfo{
+                    argument->sourceLocation(tokens),
+                    static_cast<i32>(i + 1),
+                    FormatTypeName(m_module, expectedType),
+                    FormatTypeName(m_module, argumentType),
+                    });
             }
-            else
+        }
+
+        for (size_t j = 0; j < binding.variadic.size(); ++j)
+        {
+            const auto* argument = binding.variadic[j];
+            const auto argumentType = argument->type();
+            if (argumentType == Type::Undefined() || argumentType == Type::Void())
             {
-                if (argumentType == Type::Undefined() || argumentType == Type::Void())
-                {
-                    m_diagnostics.addInvalidVariadicArgumentTypeError(
-                        tokens.source(),
-                        argument->sourceLocation(tokens),
-                        functionDefinition.name(),
-                        static_cast<i32>(i + 1),
-                        FormatTypeName(m_module, argumentType));
-                    return false;
-                }
+                m_diagnostics.addInvalidVariadicArgumentTypeError(
+                    tokens.source(),
+                    argument->sourceLocation(tokens),
+                    functionDefinition.name(),
+                    static_cast<i32>(expectedArgumentCount + j + 1),
+                    FormatTypeName(m_module, argumentType));
+                return false;
             }
         }
 
         if (!argumentTypeMismatches.empty())
         {
+            const auto argumentLocation = functionCallExpression->argumentsLocation(tokens);
             m_diagnostics.addArgumentTypeMismatchError(
                 tokens.source(),
-                argumentsLocation,
+                argumentLocation,
                 functionDefinition.name(),
                 argumentTypeMismatches);
             return false;
         }
 
+        functionCallExpression->setBoundArguments(std::move(binding.ordered), std::move(binding.variadic));
         return true;
     }
 
@@ -2177,17 +2157,6 @@ namespace Caracal
                     returnTypeNode->name());
             }
             types.push_back(returnType);
-        }
-        return types;
-    }
-
-    std::vector<Type> TypeChecker::typeCheckArgumentsNode(ArgumentsNode* argumentsNode, const TokenBuffer& tokens)
-    {
-        std::vector<Type> types{};
-        for (const auto& argument : argumentsNode->arguments())
-        {
-            auto argumentType = typeCheckExpression(argument.get(), tokens);
-            types.push_back(argumentType);
         }
         return types;
     }

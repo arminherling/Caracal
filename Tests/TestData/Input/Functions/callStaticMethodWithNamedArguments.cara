@@ -1,0 +1,12 @@
+type Math()
+{
+    def Math.diff(a: i32, b: i32) i32
+    {
+        return a - b;
+    }
+}
+
+def func() i32
+{
+    return Math.diff(b = 10, a = 13);
+}

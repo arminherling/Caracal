@@ -1,0 +1,105 @@
+TypeDefinitionStatement: {
+    Type: undefined
+    Name: Math
+    ParametersNode(0): {
+    }
+    BlockNode(1): {
+        MethodDefinitionStatement: {
+            Type: undefined
+            Modifier: Static
+            MethodNameNode: {
+                MethodName: Math.diff
+            }
+            ParametersNode(2): {
+                ParameterNode: {
+                    Name: a
+                    TypeNameNode: {
+                        Type: undefined
+                        Lexeme: i32
+                    }
+                }
+                ParameterNode: {
+                    Name: b
+                    TypeNameNode: {
+                        Type: undefined
+                        Lexeme: i32
+                    }
+                }
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: undefined
+                    Lexeme: i32
+                }
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    Type: undefined
+                    BinaryExpression: {
+                        Type: undefined
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: a
+                            }
+                        }
+                        Operation: Subtraction
+                        Right: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: b
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: Math
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: undefined
+                        Function type: undefined
+                        NameExpression: {
+                            Type: undefined
+                            Name: diff
+                        }
+                        ArgumentsNode(2): {
+                            NamedArgument: {
+                                Name: b
+                                NumberLiteral: 10
+                            }
+                            NamedArgument: {
+                                Name: a
+                                NumberLiteral: 13
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

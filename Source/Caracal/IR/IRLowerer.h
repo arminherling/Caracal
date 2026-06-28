@@ -87,7 +87,6 @@ namespace Caracal
         void collectAddressTakenLocals(const Statement* statement) noexcept;
         void collectAddressTakenLocals(const Expression* expression) noexcept;
         void collectAddressTakenLocals(const std::vector<std::unique_ptr<Statement>>& statements) noexcept;
-        void collectAddressTakenLocals(const std::vector<std::unique_ptr<Expression>>& expressions) noexcept;
         [[nodiscard]] bool lowerBlock(const BlockNode* block, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerIfStatement(const IfStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] bool lowerWhileStatement(const WhileStatement* statement, Function& function, std::optional<BlockId>& currentBlockId) noexcept;

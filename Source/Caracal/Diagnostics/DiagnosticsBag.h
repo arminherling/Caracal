@@ -28,6 +28,7 @@ namespace Caracal
         void addUninitializedTypeFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName);
         void addUnexpectedStatementTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
         void addUnexpectedExpressionTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
+        void addPositionalArgumentAfterNamedError(const SourceTextSharedPtr& source, const SourceLocation& location);
 
         // Annotation diagnostics
         void addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location);
@@ -55,6 +56,8 @@ namespace Caracal
         void addArgumentCountMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 expectedCount, i32 actualCount, bool isVariadic);
         void addArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::vector<ArgumentTypeMismatchInfo>& mismatches);
         void addInvalidVariadicArgumentTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 argumentIndex, const std::string& actualTypeName);
+        void addUnknownArgumentNameError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::string& argumentName);
+        void addDuplicateArgumentBindingError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::string& parameterName);
 
         // Control flow diagnostics
         void addNonBoolIfConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);

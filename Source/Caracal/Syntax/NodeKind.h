@@ -46,7 +46,6 @@ namespace Caracal
         ParameterNode,
         ReturnTypesNode,
         ReturnTypeNode,
-        ArgumentsNode,
         BlockNode,
     };
 

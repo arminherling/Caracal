@@ -660,7 +660,9 @@ namespace Caracal
             }
             case NodeKind::FunctionCallExpression:
             {
-                collectAddressTakenLocals(static_cast<const FunctionCallExpression*>(expression)->argumentsNode()->arguments());
+                const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(expression);
+                for (const auto& argument : functionCallExpression->arguments())
+                    collectAddressTakenLocals(argument.value().get());
                 return;
             }
             case NodeKind::MemberAccessExpression:
@@ -677,12 +679,6 @@ namespace Caracal
     {
         for (const auto& statement : statements)
             collectAddressTakenLocals(statement.get());
-    }
-
-    void IRLowerer::collectAddressTakenLocals(const std::vector<std::unique_ptr<Expression>>& expressions) noexcept
-    {
-        for (const auto& expression : expressions)
-            collectAddressTakenLocals(expression.get());
     }
 
     std::optional<ValueRef> IRLowerer::allocateLocalSlot(std::string localName, Type valueType, BasicBlock& block, std::optional<ValueRef> initialValue) noexcept
@@ -1856,30 +1852,41 @@ namespace Caracal
         auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
         const auto functionId = functionDefinition.type().id();
 
-        std::vector<ValueRef> loweredArguments;
-        const auto& arguments = expression->argumentsNode()->arguments();
-        loweredArguments.reserve(arguments.size() + (implicitArgument.has_value() ? 1 : 0));
         const auto& parameterTypes = functionDefinition.parameters();
-        size_t parameterOffset = 0;
+        const size_t parameterOffset = implicitArgument.has_value() ? 1 : 0;
+
+        const auto& orderedArguments = expression->orderedArguments();
+        const auto& variadicArguments = expression->variadicArguments();
+
+        std::vector<ValueRef> loweredArguments;
+        loweredArguments.reserve(orderedArguments.size() + variadicArguments.size() + (implicitArgument.has_value() ? 1 : 0));
         if (implicitArgument.has_value())
         {
             loweredArguments.push_back(implicitArgument.value());
-            parameterOffset = 1;
         }
 
-        for (size_t index = 0; index < arguments.size(); ++index)
+        for (size_t i = 0; i < orderedArguments.size(); ++i)
         {
-            const auto& argument = arguments[index];
+            const auto* argument = orderedArguments[i];
             std::optional<ValueRef> loweredArgument;
-            if ((index + parameterOffset) < parameterTypes.size() && parameterTypes[index + parameterOffset].type().isReference())
+            if (parameterTypes[i + parameterOffset].type().isReference())
             {
-                loweredArgument = lowerAddressExpression(argument.get(), block);
+                loweredArgument = lowerAddressExpression(argument, block);
             }
             else
             {
-                loweredArgument = lowerValueExpression(argument.get(), block);
+                loweredArgument = lowerValueExpression(argument, block);
             }
 
+            if (!loweredArgument.has_value())
+                return std::nullopt;
+
+            loweredArguments.push_back(loweredArgument.value());
+        }
+
+        for (const auto* argument : variadicArguments)
+        {
+            auto loweredArgument = lowerValueExpression(argument, block);
             if (!loweredArgument.has_value())
                 return std::nullopt;
 

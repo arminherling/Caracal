@@ -1,0 +1,11 @@
+def storeInto(target: ref i32, source: i32)
+{
+    target = source;
+}
+
+def func() i32
+{
+    value := 0;
+    storeInto(source = 7, target = ref value);
+    return value;
+}

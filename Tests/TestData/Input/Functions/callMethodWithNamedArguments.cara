@@ -1,0 +1,15 @@
+type Calc(base: i32)
+{
+    base := base
+
+    def applyDiff(a: i32, b: i32) i32
+    {
+        return .base + a - b;
+    }
+}
+
+def func() i32
+{
+    calc := Calc.new(0);
+    return calc.applyDiff(b = 10, a = 13);
+}

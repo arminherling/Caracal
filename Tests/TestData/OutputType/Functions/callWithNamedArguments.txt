@@ -1,0 +1,70 @@
+FunctionDefinitionStatement: {
+    Type: (i32, i32) -> i32
+    Name: foo
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: x
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+        ParameterNode: {
+            Name: y
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: x
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            FunctionCallExpression: {
+                Type: i32
+                Function type: (i32, i32) -> i32
+                NameExpression: {
+                    Type: (i32, i32) -> i32
+                    Name: foo
+                }
+                ArgumentsNode(2): {
+                    NamedArgument: {
+                        Name: y
+                        NumberLiteral: 2
+                    }
+                    NamedArgument: {
+                        Name: x
+                        NumberLiteral: 1
+                    }
+                }
+            }
+        }
+    }
+}

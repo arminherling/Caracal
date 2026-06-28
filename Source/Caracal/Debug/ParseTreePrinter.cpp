@@ -624,7 +624,7 @@ namespace Caracal
         writeIndentedTypeName(functionCall->functionType(), "Function type: ");
 
         prettyPrintNameExpression(functionCall->nameExpression().get());
-        prettyPrintArgumentsNode(functionCall->argumentsNode().get());
+        prettyPrintArgumentList(functionCall->arguments());
 
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
@@ -669,15 +669,30 @@ namespace Caracal
         m_builder.appendIndented(stringify(string->kind())).append(": ").appendLine(lexeme);
     }
 
-    void ParseTreePrinter::prettyPrintArgumentsNode(ArgumentsNode* node)
+    void ParseTreePrinter::prettyPrintArgumentList(const std::vector<Argument>& arguments)
     {
-        const auto& arguments = node->arguments();
-        m_builder.appendIndented(stringify(node->kind())).append("(").append(std::to_string(arguments.size())).appendLine("): {");
+        m_builder.appendIndented("ArgumentsNode(").append(std::to_string(arguments.size())).appendLine("): {");
         m_builder.pushIndentation();
-    
+
         for (const auto& argument : arguments)
-            prettyPrintNode(argument.get());
-    
+        {
+            if (argument.isNamed())
+            {
+                m_builder.appendIndentedLine("NamedArgument: {");
+                m_builder.pushIndentation();
+
+                m_builder.appendIndented("Name: ").appendLine(argument.name());
+                prettyPrintNode(argument.value().get());
+
+                m_builder.popIndentation();
+                m_builder.appendIndentedLine("}");
+            }
+            else
+            {
+                prettyPrintNode(argument.value().get());
+            }
+        }
+
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
     }
@@ -758,32 +773,7 @@ namespace Caracal
         m_builder.appendIndented("Name: ").appendLine(annotation->name());
         if (annotation->hasParentheses())
         {
-            const auto& arguments = annotation->arguments();
-
-            m_builder.appendIndented("ArgumentsNode(").append(std::to_string(arguments.size())).appendLine("): {");
-            m_builder.pushIndentation();
-
-            for (const auto& argument : arguments)
-            {
-                if (argument.isNamed())
-                {
-                    m_builder.appendIndentedLine("NamedArgument: {");
-                    m_builder.pushIndentation();
-
-                    m_builder.appendIndented("Name: ").appendLine(argument.name());
-                    prettyPrintNode(argument.value().get());
-
-                    m_builder.popIndentation();
-                    m_builder.appendIndentedLine("}");
-                }
-                else
-                {
-                    prettyPrintNode(argument.value().get());
-                }
-            }
-
-            m_builder.popIndentation();
-            m_builder.appendIndentedLine("}");
+            prettyPrintArgumentList(annotation->arguments());
         }
 
         m_builder.popIndentation();

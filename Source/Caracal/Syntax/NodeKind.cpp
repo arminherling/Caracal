@@ -46,7 +46,6 @@ namespace Caracal
             { NodeKind::ParameterNode,                  std::string_view("ParameterNode") },
             { NodeKind::ReturnTypesNode,                std::string_view("ReturnTypesNode") },
             { NodeKind::ReturnTypeNode,                 std::string_view("ReturnTypeNode") },
-            { NodeKind::ArgumentsNode,                  std::string_view("ArgumentsNode") },
             { NodeKind::BlockNode,                      std::string_view("BlockNode") },
         };
 

@@ -1,0 +1,9 @@
+def foo(x: i32, y: i32) i32
+{
+    return x;
+}
+
+def func() i32
+{
+    return foo(y = 2, x = 1);
+}

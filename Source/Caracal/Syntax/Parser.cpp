@@ -836,32 +836,13 @@ namespace Caracal
     ExpressionUPtr Parser::parseFunctionCallExpression(StatementScope scope)
     {
         auto nameExpression = parseNameExpression();
-        auto arguments = parseArgumentsNode(scope);
-        return std::make_unique<FunctionCallExpression>(std::move(nameExpression), std::move(arguments));
-    }
 
-    ArgumentsNodeUPtr Parser::parseArgumentsNode(StatementScope scope)
-    {
         auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
-        auto current = currentToken();
-
-        std::vector<ExpressionUPtr> arguments;
-        while (current.kind != TokenKind::CloseParenthesis && current.kind != TokenKind::EndOfFile)
-        {
-            auto expression = parseExpression(scope);
-            arguments.push_back(std::move(expression));
-            if (currentToken().kind == TokenKind::Comma)
-            {
-                advanceCurrentIndex();
-
-                // if(CurrentToken().kind == TokenKind::CloseParenthesis)
-                // TODO print error for too many commas or too few arguments
-            }
-            current = currentToken();
-        }
-
+        std::vector<Argument> arguments;
+        parseArgumentList(scope, arguments);
         auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
-        return std::make_unique<ArgumentsNode>(openParenthesis, std::move(arguments), closeParenthesis);
+
+        return std::make_unique<FunctionCallExpression>(std::move(nameExpression), openParenthesis, std::move(arguments), closeParenthesis);
     }
 
     TypeNameNodeUPtr Parser::parseTypeNameNode()
@@ -928,8 +909,10 @@ namespace Caracal
         return std::make_unique<ReturnTypesNode>(std::move(returnTypes));
     }
 
-    void Parser::parseAnnotationArguments(StatementScope scope, std::vector<Argument>& arguments)
+    void Parser::parseArgumentList(StatementScope scope, std::vector<Argument>& arguments)
     {
+        auto seenNamed = false;
+        auto reportedPositionalAfterNamed = false;
         auto current = currentToken();
         while (current.kind != TokenKind::CloseParenthesis && current.kind != TokenKind::EndOfFile)
         {
@@ -940,10 +923,18 @@ namespace Caracal
                 advanceOnMatch(TokenKind::Equal);
                 auto value = parseExpression(scope);
                 arguments.emplace_back(nameToken, argumentName, std::move(value));
+                seenNamed = true;
             }
             else
             {
-                arguments.emplace_back(parseExpression(scope));
+                auto value = parseExpression(scope);
+                // positional arguments must be before named ones, flag the first error but keep parsing for recovery
+                if (seenNamed && !reportedPositionalAfterNamed)
+                {
+                    m_diagnostics.addPositionalArgumentAfterNamedError(m_tokens.source(), value->sourceLocation(m_tokens));
+                    reportedPositionalAfterNamed = true;
+                }
+                arguments.emplace_back(std::move(value));
             }
 
             if (currentToken().kind == TokenKind::Comma)
@@ -966,7 +957,7 @@ namespace Caracal
         if (currentToken().kind == TokenKind::OpenParenthesis)
         {
             openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
-            parseAnnotationArguments(scope, arguments);
+            parseArgumentList(scope, arguments);
             closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
         }
 

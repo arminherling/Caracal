@@ -65,7 +65,7 @@ namespace Caracal
         void prettyPrintBreakStatement(BreakStatement* statement);
         void prettyPrintSkipStatement(SkipStatement* statement);
         void prettyPrintReturnStatement(ReturnStatement* statement);
-        void prettyPrintArgumentsNode(ArgumentsNode* arguments);
+        void prettyPrintArgumentList(const std::vector<Argument>& arguments);
         void prettyPrintParameterNode(ParameterNode* parameter);
         void prettyPrintParametersNode(ParametersNode* parameters);
         void prettyPrintReturnTypesNode(ReturnTypesNode* returnTypes);

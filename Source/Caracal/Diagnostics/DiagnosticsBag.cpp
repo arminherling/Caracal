@@ -307,6 +307,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addPositionalArgumentAfterNamedError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::P0009_PositionalArgumentAfterNamed,
+            source,
+            location,
+            "Move positional arguments before the named arguments.");
+        diagnostic.addPrimaryLabel(location, "A positional argument cannot follow a named argument.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(
@@ -707,6 +720,40 @@ namespace Caracal
             location,
             "Pass a non-void value as this variadic argument.");
         diagnostic.addPrimaryLabel(location, "Variadic argument " + std::to_string(argumentIndex) + " of '" + functionName + "' cannot have type '" + actualTypeName + "'");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addUnknownArgumentNameError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& functionName,
+        const std::string& argumentName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0048_UnknownArgumentName,
+            source,
+            location,
+            "Use the name of one of the function's parameters.");
+        diagnostic.addPrimaryLabel(location, "Function '" + functionName + "' has no parameter named '" + argumentName + "'.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addDuplicateArgumentBindingError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& functionName,
+        const std::string& parameterName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0049_DuplicateArgumentBinding,
+            source,
+            location,
+            "Pass the argument for '" + parameterName + "' only once.");
+        diagnostic.addPrimaryLabel(location, "Parameter '" + parameterName + "' of '" + functionName + "' is already bound by an earlier argument.");
 
         m_diagnostics.push_back(std::move(diagnostic));
     }

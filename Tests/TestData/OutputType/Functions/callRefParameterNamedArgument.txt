@@ -1,0 +1,101 @@
+FunctionDefinitionStatement: {
+    Type: (ref i32, i32) -> void
+    Name: storeInto
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: target
+            TypeNameNode: {
+                Type: ref i32
+                Lexeme: i32
+                Ref: true
+            }
+        }
+        ParameterNode: {
+            Name: source
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: target
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: i32
+                    Name: source
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: value
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                Type: void
+                Function type: (ref i32, i32) -> void
+                NameExpression: {
+                    Type: (ref i32, i32) -> void
+                    Name: storeInto
+                }
+                ArgumentsNode(2): {
+                    NamedArgument: {
+                        Name: source
+                        NumberLiteral: 7
+                    }
+                    NamedArgument: {
+                        Name: target
+                        UnaryExpression: {
+                            Type: ref i32
+                            Operation: ReferenceOf
+                            Expression: {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: value
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: value
+            }
+        }
+    }
+}
