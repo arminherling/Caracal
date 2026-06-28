@@ -135,6 +135,8 @@ namespace Caracal
                 return "T0045";
             case DiagnosticKind::T0046_DuplicateAnnotationArgument:
                 return "T0046";
+            case DiagnosticKind::T0047_ExternMethodRequiresSymbol:
+                return "T0047";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -274,6 +276,8 @@ namespace Caracal
                 return "Unexpected annotation argument";
             case DiagnosticKind::T0046_DuplicateAnnotationArgument:
                 return "Duplicate annotation argument";
+            case DiagnosticKind::T0047_ExternMethodRequiresSymbol:
+                return "Extern method requires a symbol";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

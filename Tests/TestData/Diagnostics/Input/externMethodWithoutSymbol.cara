@@ -1,0 +1,5 @@
+type C
+{
+    #extern 
+    def C.printf(message: cstring) i32 {}
+}

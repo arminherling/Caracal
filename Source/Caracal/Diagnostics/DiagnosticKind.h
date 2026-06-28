@@ -85,5 +85,8 @@ namespace Caracal
         // Annotation argument diagnostics
         T0045_UnexpectedAnnotationArgument,
         T0046_DuplicateAnnotationArgument,
+
+        // Extern diagnostics
+        T0047_ExternMethodRequiresSymbol,
     };
 }

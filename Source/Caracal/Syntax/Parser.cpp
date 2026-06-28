@@ -115,9 +115,9 @@ namespace Caracal
         {
             switch (current.kind)
             {
-                case TokenKind::Hash: 
+                case TokenKind::Hash:
                 {
-                    if(scope == StatementScope::Global)
+                    if (scope == StatementScope::Global || scope == StatementScope::Type)
                     {
                         buildAnnotationNode(scope);
                         break;
@@ -313,8 +313,7 @@ namespace Caracal
         auto returnTypes = parseReturnTypesNode();
         auto body = parseFunctionBody();
 
-        auto annotations = std::move(m_currentAnnotations);
-        m_currentAnnotations.clear();
+        auto annotations = takeCurrentAnnotations();
 
         return std::make_unique<FunctionDefinitionStatement>(keyword, nameToken, name, std::move(parameters), std::move(returnTypes), std::move(body), std::move(annotations));
     }
@@ -340,8 +339,7 @@ namespace Caracal
             auto annotations = std::vector<AnnotationNodeUPtr>{};
             if (scope == StatementScope::Global)
             {
-                annotations = std::move(m_currentAnnotations);
-                m_currentAnnotations.clear();
+                annotations = takeCurrentAnnotations();
             }
 
             return std::make_unique<ConstantDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), semicolon, isGlobalConstant, std::move(annotations));
@@ -351,8 +349,7 @@ namespace Caracal
             auto annotations = std::vector<AnnotationNodeUPtr>{};
             if (scope == StatementScope::Global)
             {
-                annotations = std::move(m_currentAnnotations);
-                m_currentAnnotations.clear();
+                annotations = takeCurrentAnnotations();
             }
 
             return std::make_unique<VariableDeclaration>(std::move(leftExpression), firstColon, std::move(explicitType), secondToken, std::move(rightExpression), semicolon, std::move(annotations));
@@ -387,8 +384,7 @@ namespace Caracal
         auto enumFields = parseEnumFields();
         auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
 
-        auto annotations = std::move(m_currentAnnotations);
-        m_currentAnnotations.clear();
+        auto annotations = takeCurrentAnnotations();
 
         return std::make_unique<EnumDefinitionStatement>(keyword, nameToken, name, colonToken, std::move(baseType), openBracket, std::move(enumFields), closeBracket, std::move(annotations));
     }
@@ -440,8 +436,7 @@ namespace Caracal
 
         auto body = parseTypeBody();
 
-        auto annotations = std::move(m_currentAnnotations);
-        m_currentAnnotations.clear();
+        auto annotations = takeCurrentAnnotations();
 
         return std::make_unique<TypeDefinitionStatement>(keyword, nameToken, name, std::move(maybeParameters), std::move(body), std::move(annotations));
     }
@@ -511,14 +506,16 @@ namespace Caracal
             specialFunctionType = SpecialFunctionType::Constructor;
         }
 
+        auto annotations = takeCurrentAnnotations();
         return std::make_unique<MethodDefinitionStatement>(
-            keyword, 
+            keyword,
             std::move(methodNameNode),
-            std::move(parameters), 
-            std::move(returnTypes), 
-            std::move(body), 
+            std::move(parameters),
+            std::move(returnTypes),
+            std::move(body),
             modifier,
-            specialFunctionType);
+            specialFunctionType,
+            std::move(annotations));
     }
     
     BlockNodeUPtr Parser::parseFunctionBody()
@@ -981,6 +978,13 @@ namespace Caracal
             std::move(openParenthesis),
             std::move(arguments),
             std::move(closeParenthesis)));
+    }
+
+    std::vector<AnnotationNodeUPtr> Parser::takeCurrentAnnotations()
+    {
+        auto annotations = std::move(m_currentAnnotations);
+        m_currentAnnotations.clear();
+        return annotations;
     }
 
     Token Parser::advanceOnMatch(TokenKind kind)

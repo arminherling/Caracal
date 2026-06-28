@@ -598,7 +598,7 @@ namespace Caracal
         auto& functionDefinition = m_module.getFunctionDefinition(functionType);
         const auto& parameterNodes = statement->parametersNode()->parameters();
         std::optional<std::string> symbolName;
-        const auto isExtern = validateFunctionAnnotation(statement, tokens, symbolName);
+        const auto isExtern = validateCallableAnnotations(statement->annotations(), tokens, symbolName);
         const auto isVariadic = !parameterNodes.empty() && parameterNodes.back()->isVariadic();
         if (isVariadic && !isExtern)
         {
@@ -751,12 +751,40 @@ namespace Caracal
         }
 
         auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+
+        std::optional<std::string> symbolName;
+        const auto isExtern = validateCallableAnnotations(methodStatement->annotations(), tokens, symbolName);
+        if (isExtern && !symbolName.has_value())
+        {
+            // methods need to specify the extern symbol name
+            for (const auto& annotation : methodStatement->annotations())
+            {
+                if (annotation->kind() == AnnotationKind::Extern)
+                {
+                    m_diagnostics.addExternMethodRequiresSymbolError(tokens.source(), annotation->sourceLocation(tokens), methodDefinition.fullName());
+                    break;
+                }
+            }
+        }
+        const auto& parameterNodes = methodStatement->parametersNode()->parameters();
+        const auto isVariadic = !parameterNodes.empty() && parameterNodes.back()->isVariadic();
+        if (isVariadic && !isExtern)
+        {
+            auto* variadicParameter = parameterNodes.back().get();
+            m_diagnostics.addNonExternVariadicFunctionError(
+                tokens.source(),
+                variadicParameter->sourceLocation(tokens),
+                methodName);
+        }
+
         if (methodStatement->modifier() != MethodModifier::Static)
         {
             parameters.insert(parameters.begin(), Parameter{ ImplicitThisName, typeType.toReference() });
         }
         methodDefinition.setParameters(parameters);
         methodDefinition.setReturnTypes(returns);
+        methodDefinition.setIsVariadic(isVariadic);
+        methodDefinition.setSymbolName(std::move(symbolName));
     }
 
     void TypeChecker::typeCheckConstructorSignature(const TypeDefinitionStatement* typeDefinitionStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens)
@@ -1305,10 +1333,10 @@ namespace Caracal
         return true;
     }
 
-    bool TypeChecker::validateFunctionAnnotation(const FunctionDefinitionStatement* statement, const TokenBuffer& tokens, std::optional<std::string>& symbolName)
+    bool TypeChecker::validateCallableAnnotations(const std::vector<AnnotationNodeUPtr>& annotations, const TokenBuffer& tokens, std::optional<std::string>& symbolName)
     {
         auto isExtern = false;
-        for (const auto& annotationNode : statement->annotations())
+        for (const auto& annotationNode : annotations)
         {
             const auto* annotation = annotationNode.get();
             std::optional<std::string> annotationSymbolName;

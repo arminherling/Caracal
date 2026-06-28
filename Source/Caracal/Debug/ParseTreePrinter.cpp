@@ -348,6 +348,12 @@ namespace Caracal
         }
         m_builder.appendIndented("Modifier: ").appendLine(stringify(statement->modifier()));
         prettyPrintMethodNameNode(statement->methodNameNode().get());
+
+        for (const auto& annotation : statement->annotations())
+        {
+            prettyPrintAnnotation(annotation.get());
+        }
+
         prettyPrintParametersNode(statement->parametersNode().get());
         prettyPrintReturnTypesNode(statement->returnTypesNode().get());
         prettyPrintBlockNode(statement->bodyNode().get());

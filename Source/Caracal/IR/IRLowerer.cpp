@@ -337,7 +337,7 @@ namespace Caracal
                 case NodeKind::MethodDefinitionStatement:
                 {
                     const auto* methodStatement = static_cast<const MethodDefinitionStatement*>(statement);
-                    if (!lowerFunctionDefinition(functionDefinition, methodStatement->bodyNode().get(), false, module))
+                    if (!lowerFunctionDefinition(functionDefinition, methodStatement->bodyNode().get(), methodStatement->isExtern(), module))
                         return false;
 
                     break;

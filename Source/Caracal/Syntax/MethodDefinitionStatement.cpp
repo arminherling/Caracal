@@ -9,7 +9,8 @@ namespace Caracal
         ReturnTypesNodeUPtr&& returnTypesNode,
         BlockNodeUPtr&& bodyNode,
         MethodModifier modifier,
-        SpecialFunctionType specialFunctionType)
+        SpecialFunctionType specialFunctionType,
+        std::vector<AnnotationNodeUPtr>&& annotations)
         : Statement(NodeKind::MethodDefinitionStatement, Type::Undefined())
         , m_keywordToken{ keywordToken }
         , m_methodNameNode{ std::move(methodNameNode) }
@@ -18,7 +19,21 @@ namespace Caracal
         , m_bodyNode{ std::move(bodyNode) }
         , m_modifier{ modifier }
         , m_specialFunctionType{ specialFunctionType }
+        , m_annotations{ std::move(annotations) }
     {
+    }
+
+    bool MethodDefinitionStatement::isExtern() const noexcept
+    {
+        for (const auto& annotation : m_annotations)
+        {
+            if (annotation->kind() == AnnotationKind::Extern)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     std::string stringify(MethodModifier modifier)

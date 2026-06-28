@@ -7,6 +7,9 @@
 #include <Caracal/Syntax/ParametersNode.h>
 #include <Caracal/Syntax/ReturnTypesNode.h>
 #include <Caracal/Syntax/BlockNode.h>
+#include <Caracal/Syntax/AnnotationNode.h>
+
+#include <vector>
 
 namespace Caracal
 {
@@ -35,7 +38,8 @@ namespace Caracal
             ReturnTypesNodeUPtr&& returnTypesNode,
             BlockNodeUPtr&& bodyNode,
             MethodModifier modifier,
-            SpecialFunctionType specialFunctionType);
+            SpecialFunctionType specialFunctionType,
+            std::vector<AnnotationNodeUPtr>&& annotations);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(MethodDefinitionStatement)
 
@@ -46,6 +50,8 @@ namespace Caracal
         [[nodiscard]] const BlockNodeUPtr& bodyNode() const noexcept { return m_bodyNode; }
         [[nodiscard]] MethodModifier modifier() const noexcept { return m_modifier; }
         [[nodiscard]] SpecialFunctionType specialFunctionType() const noexcept { return m_specialFunctionType; }
+        [[nodiscard]] const std::vector<AnnotationNodeUPtr>& annotations() const noexcept { return m_annotations; }
+        [[nodiscard]] bool isExtern() const noexcept;
 
 
     private:
@@ -56,6 +62,7 @@ namespace Caracal
         BlockNodeUPtr m_bodyNode;
         MethodModifier m_modifier;
         SpecialFunctionType m_specialFunctionType;
+        std::vector<AnnotationNodeUPtr> m_annotations;
     };
 
     [[nodiscard]] CARACAL_API std::string stringify(MethodModifier modifier);

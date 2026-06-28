@@ -1,0 +1,86 @@
+TypeDefinitionStatement: {
+    Type: C
+    Name: C
+    BlockNode(1): {
+        MethodDefinitionStatement: {
+            Type: (cstring, C Variadic) -> i32
+            Modifier: Static
+            MethodNameNode: {
+                MethodName: C.printf
+            }
+            Annotation: {
+                Name: extern
+                ArgumentsNode(1): {
+                    NamedArgument: {
+                        Name: symbol
+                        StringLiteral: "printf"
+                    }
+                }
+            }
+            ParametersNode(2): {
+                ParameterNode: {
+                    Name: message
+                    TypeNameNode: {
+                        Type: cstring
+                        Lexeme: cstring
+                    }
+                }
+                ParameterNode: {
+                    Name: varargs
+                    TypeNameNode: {
+                        Type: C Variadic
+                        Lexeme: ...
+                    }
+                }
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            BlockNode(0): {
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: C
+                        Name: C
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: i32
+                        Function type: (cstring, C Variadic) -> i32
+                        NameExpression: {
+                            Type: (cstring, C Variadic) -> i32
+                            Name: printf
+                        }
+                        ArgumentsNode(1): {
+                            StringLiteral: "hi"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+type C
+{
+    #extern(symbol = "printf")
+    def C.printf(message: cstring, ...) i32 {}
+}
+
+def func() i32
+{
+    return C.printf("hi");
+}

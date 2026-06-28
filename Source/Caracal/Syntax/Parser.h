@@ -78,6 +78,7 @@ namespace Caracal
         NumberLiteralUPtr parseNumberLiteral();
         StringLiteralUPtr parseStringLiteral();
         void buildAnnotationNode(StatementScope scope);
+        std::vector<AnnotationNodeUPtr> takeCurrentAnnotations();
 
         Token peek(i32 offset);
         Token currentToken() { return peek(0); }
