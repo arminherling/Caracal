@@ -1,0 +1,28 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%Calc = type { i32 }
+
+define i32 @func() {
+entry:
+  %calc = alloca %Calc, align 8
+  call void @Calc.new(ptr %calc, i32 10)
+  %call = call i32 @Calc.addToBase(ptr %calc, i32 5)
+  ret i32 %call
+}
+
+define i32 @Calc.addToBase(ptr nonnull %0, i32 %1) {
+entry:
+  %base = getelementptr inbounds nuw %Calc, ptr %0, i32 0, i32 0
+  %load = load i32, ptr %base, align 4
+  %add = add i32 %load, %1
+  ret i32 %add
+}
+
+define void @Calc.new(ptr nonnull %0, i32 %1) {
+entry:
+  %base = getelementptr inbounds nuw %Calc, ptr %0, i32 0, i32 0
+  store i32 %1, ptr %base, align 4
+  ret void
+}

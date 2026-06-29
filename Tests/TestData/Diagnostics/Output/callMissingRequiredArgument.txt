@@ -1,0 +1,13 @@
+ Error T0050
+  Missing required argument
+    ,-[Diagnostics/Input/callMissingRequiredArgument.cara:6:13]
+  3 | }
+  4 | 
+  5 | def main() {
+  6 |     takesOne();
+    .             --
+    .              `-- Call to 'takesOne' is missing a required argument for 'value'.
+  7 | }
+  8 | 
+    `----
+  Fix: Pass an argument for 'value', or give it a default value.

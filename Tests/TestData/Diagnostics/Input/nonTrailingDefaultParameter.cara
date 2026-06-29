@@ -1,0 +1,4 @@
+def withTrailingRequired(x: i32 = 0, y: i32) i32
+{
+    return x + y;
+}

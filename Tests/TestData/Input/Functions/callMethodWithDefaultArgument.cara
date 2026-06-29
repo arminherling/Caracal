@@ -1,0 +1,15 @@
+type Calc(base: i32)
+{
+    base := base
+
+    def addToBase(amount: i32 = 5) i32
+    {
+        return .base + amount;
+    }
+}
+
+def func() i32
+{
+    calc := Calc.new(10);
+    return calc.addToBase();
+}

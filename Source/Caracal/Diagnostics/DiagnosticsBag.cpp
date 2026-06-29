@@ -758,6 +758,56 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addMissingRequiredArgumentError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& functionName,
+        const std::string& parameterName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0050_MissingRequiredArgument,
+            source,
+            location,
+            "Pass an argument for '" + parameterName + "', or give it a default value.");
+        diagnostic.addPrimaryLabel(location, "Call to '" + functionName + "' is missing a required argument for '" + parameterName + "'.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addDefaultParameterTypeMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& expectedTypeName,
+        const std::string& actualTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0051_DefaultParameterTypeMismatch,
+            source,
+            location,
+            "Change the default value to match the parameter type.");
+        diagnostic.addPrimaryLabel(location, "Default value of type '" + actualTypeName + "' does not match parameter type '" + expectedTypeName + "'.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addNonTrailingDefaultParameterError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& parameterName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0052_NonTrailingDefaultParameter,
+            source,
+            location,
+            "Move parameters with default values to the end of the parameter list.");
+        diagnostic.addPrimaryLabel(location, "Parameter '" + parameterName + "' has no default value but follows one that does.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addNonBoolIfConditionError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,

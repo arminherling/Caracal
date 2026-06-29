@@ -18,7 +18,8 @@ namespace Caracal
             std::string_view name,
             const Token& colonToken,
             TypeNameNodeUPtr&& typeName,
-            bool isVariadic = false);
+            bool isVariadic = false,
+            ExpressionUPtr defaultValue = nullptr);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(ParameterNode)
 
@@ -27,6 +28,8 @@ namespace Caracal
         [[nodiscard]] const Token& colonToken() const noexcept { return m_colonToken; }
         [[nodiscard]] const TypeNameNodeUPtr& typeName() const noexcept { return m_typeName; }
         [[nodiscard]] bool isVariadic() const noexcept { return m_isVariadic; }
+        [[nodiscard]] bool hasDefault() const noexcept { return m_defaultValue != nullptr; }
+        [[nodiscard]] const ExpressionUPtr& defaultValue() const noexcept { return m_defaultValue; }
         [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const;
 
     private:
@@ -35,6 +38,7 @@ namespace Caracal
         Token m_colonToken;
         TypeNameNodeUPtr m_typeName;
         bool m_isVariadic = false;
+        ExpressionUPtr m_defaultValue;
     };
 
     using ParameterNodeUPtr = std::unique_ptr<ParameterNode>;

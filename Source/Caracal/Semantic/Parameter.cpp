@@ -4,9 +4,11 @@ namespace Caracal
 {
     Parameter::Parameter(
         std::string_view name,
-        Type type)
+        Type type,
+        const Expression* defaultValue)
         : m_name{ name }
         , m_type{ type }
+        , m_defaultValue{ defaultValue }
     {
     }
 }

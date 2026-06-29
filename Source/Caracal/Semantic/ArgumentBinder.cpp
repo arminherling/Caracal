@@ -75,17 +75,29 @@ namespace Caracal
             }
         }
 
-        auto hasUnfilledSlot = false;
-        for (const auto* slot : binding.ordered)
+        // set default values or report missing arguments
+        for (size_t i = 0; i < fixedParameterCount; ++i)
         {
-            if (slot == nullptr)
+            if (binding.ordered[i] != nullptr)
             {
-                hasUnfilledSlot = true;
-                break;
+                continue;
             }
+
+            const auto& parameter = parameters[parameterOffset + i];
+            if (parameter.hasDefault())
+            {
+                binding.ordered[i] = parameter.defaultValue();
+                continue;
+            }
+
+            if (binding.ok)
+            {
+                diagnostics.addMissingRequiredArgumentError(tokens.source(), call.argumentsLocation(tokens), functionName, parameter.name());
+            }
+            binding.ok = false;
         }
 
-        if (binding.ok && (tooManyPositional || hasUnfilledSlot))
+        if (binding.ok && tooManyPositional)
         {
             binding.ok = false;
             diagnostics.addArgumentCountMismatchError(

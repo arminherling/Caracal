@@ -1,0 +1,15 @@
+type Box(value: i32 = 7)
+{
+    value := value
+
+    def get() i32
+    {
+        return .value;
+    }
+}
+
+def func() i32
+{
+    box := Box.new();
+    return box.get();
+}

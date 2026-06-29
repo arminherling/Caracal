@@ -1,0 +1,9 @@
+def addWithDefault(x: i32, y: i32 = 5) i32
+{
+    return x + y;
+}
+
+def func() i32
+{
+    return addWithDefault(10);
+}

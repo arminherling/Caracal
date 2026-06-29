@@ -2117,17 +2117,52 @@ namespace Caracal
     std::vector<Parameter> TypeChecker::typeCheckParametersNode(ParametersNode* parametersNode, const TokenBuffer& tokens)
     {
         std::vector<Parameter> parameters{};
+        auto seenDefault = false;
+
+        // first loop doesnt put the parameter names into the scope, so that default values cannot reference other parameters
         for (const auto& parameterNode : parametersNode->parameters())
         {
             auto parameterType = typeCheckTypeNameNode(parameterNode->typeName().get(), tokens);
-            parameters.push_back(Parameter{ parameterNode->name(), parameterType });
+            parameterNode->setType(parameterType);
 
-            // register parameter in current scope
+            const Expression* defaultValue = nullptr;
+            if (parameterNode->hasDefault())
+            {
+                auto* defaultExpression = parameterNode->defaultValue().get();
+                m_contextualNumberType = parameterType;
+                const auto defaultType = typeCheckExpression(defaultExpression, tokens);
+                m_contextualNumberType = std::nullopt;
+                if (defaultType != Type::Undefined() && defaultType != parameterType)
+                {
+                    m_diagnostics.addDefaultParameterTypeMismatchError(
+                        tokens.source(),
+                        defaultExpression->sourceLocation(tokens),
+                        FormatTypeName(m_module, parameterType),
+                        FormatTypeName(m_module, defaultType));
+                }
+                defaultValue = defaultExpression;
+                seenDefault = true;
+            }
+            else if (seenDefault && !parameterNode->isVariadic())
+            {
+                // once a parameter with a default value is seen, all following parameters must have defaults
+                m_diagnostics.addNonTrailingDefaultParameterError(
+                    tokens.source(),
+                    parameterNode->sourceLocation(tokens),
+                    parameterNode->name());
+            }
+
+            parameters.push_back(Parameter{ parameterNode->name(), parameterType, defaultValue });
+        }
+
+        // finally add parameter names into the current scope
+        for (const auto& parameterNode : parametersNode->parameters())
+        {
             const auto& name = parameterNode->name();
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(name, parameterType, tokens.getSourceLocation(parameterNode->nameToken()), tokens.source(), VariableBindingKind::Parameter);
+                scope->addVariableBinding(name, parameterNode->type(), tokens.getSourceLocation(parameterNode->nameToken()), tokens.source(), VariableBindingKind::Parameter);
             }
             else
             {
@@ -2138,8 +2173,8 @@ namespace Caracal
                     scope->tryGetVariableBindingSource(name),
                     scope->tryGetVariableBindingLocation(name));
             }
-            parameterNode->setType(parameterType);
         }
+
         return parameters;
     }
 

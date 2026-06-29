@@ -1,0 +1,13 @@
+ Error T0050
+  Missing required argument
+    ,-[Diagnostics/Input/variadicMissingRequiredArgument.cara:5:11]
+  2 | def printf(format: cstring, ...) {}
+  3 | 
+  4 | def main() {
+  5 |     printf();
+    .           --
+    .            `-- Call to 'printf' is missing a required argument for 'format'.
+  6 | }
+  7 | 
+    `----
+  Fix: Pass an argument for 'format', or give it a default value.

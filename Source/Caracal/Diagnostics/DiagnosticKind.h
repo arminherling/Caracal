@@ -93,5 +93,10 @@ namespace Caracal
         // Call argument binding diagnostics
         T0048_UnknownArgumentName,
         T0049_DuplicateArgumentBinding,
+        T0050_MissingRequiredArgument,
+
+        // Default parameter diagnostics
+        T0051_DefaultParameterTypeMismatch,
+        T0052_NonTrailingDefaultParameter,
     };
 }

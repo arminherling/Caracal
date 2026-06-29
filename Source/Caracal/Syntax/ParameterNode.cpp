@@ -5,15 +5,17 @@ namespace Caracal
     ParameterNode::ParameterNode(
         const Token& nameToken,
         std::string_view name,
-        const Token& colonToken, 
+        const Token& colonToken,
         TypeNameNodeUPtr&& typeName,
-        bool isVariadic)
+        bool isVariadic,
+        ExpressionUPtr defaultValue)
         : Node(NodeKind::ParameterNode, typeName->type())
         , m_nameToken{ nameToken }
         , m_name{ name }
         , m_colonToken{ colonToken }
         , m_typeName{ std::move(typeName) }
         , m_isVariadic{ isVariadic }
+        , m_defaultValue{ std::move(defaultValue) }
     {
     }
 

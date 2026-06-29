@@ -1,0 +1,13 @@
+ Error T0015
+  Argument count mismatch
+     ,-[Diagnostics/Input/tooManyArguments.cara:8:21]
+   5 | 
+   6 | def func() i32
+   7 | {
+   8 |     return takesOne(1, 2);
+     .                     ----
+     .                       `-- Function 'takesOne' expects 1 argument(s), but got 2
+   9 | }
+  10 | 
+     `----
+  Fix: Adjust this call to match the required argument count.

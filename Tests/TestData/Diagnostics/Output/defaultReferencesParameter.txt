@@ -1,0 +1,11 @@
+ Error T0007
+  Unknown name
+    ,-[Diagnostics/Input/defaultReferencesParameter.cara:1:26]
+  1 | def foo(x: i32, y: i32 = x) i32
+    .                          -
+    .                          `-- Unknown name 'x'
+  2 | {
+  3 |     return x + y;
+  4 | }
+    `----
+  Fix: Declare this name before using it, or rename it to an existing symbol.

@@ -309,7 +309,7 @@ namespace Caracal
         auto keyword = advanceOnMatch(TokenKind::DefKeyword);
         auto nameToken = advanceOnMatch(TokenKind::Identifier);
         auto name = m_tokens.getLexeme(nameToken);
-        auto parameters = parseParametersNode();
+        auto parameters = parseParametersNode(StatementScope::Function);
         auto returnTypes = parseReturnTypesNode();
         auto body = parseFunctionBody();
 
@@ -431,7 +431,7 @@ namespace Caracal
         std::optional<ParametersNodeUPtr> maybeParameters;
         if (currentToken().kind == TokenKind::OpenParenthesis)
         {
-            maybeParameters = parseParametersNode();
+            maybeParameters = parseParametersNode(StatementScope::Type);
         }
 
         auto body = parseTypeBody();
@@ -479,7 +479,7 @@ namespace Caracal
         auto modifier = MethodModifier::Public;
         auto keyword = advanceOnMatch(TokenKind::DefKeyword);
         auto methodNameNode = parseMethodNameNode();
-        auto parameters = parseParametersNode();
+        auto parameters = parseParametersNode(StatementScope::Method);
         auto returnTypes = parseReturnTypesNode();
         auto body = parseMethodBody();
 
@@ -542,7 +542,7 @@ namespace Caracal
         return std::make_unique<BlockNode>(openBracket, std::move(statements), closeBracket);
     }
 
-    ParameterNodeUPtr Parser::parseParameterNode()
+    ParameterNodeUPtr Parser::parseParameterNode(StatementScope scope)
     {
         if (currentToken().kind == TokenKind::Identifier)
         {
@@ -551,7 +551,14 @@ namespace Caracal
             auto colon = advanceOnMatch(TokenKind::Colon);
             auto typeName = parseTypeNameNode();
 
-            return std::make_unique<ParameterNode>(nameToken, name, colon, std::move(typeName));
+            ExpressionUPtr defaultValue;
+            if (currentToken().kind == TokenKind::Equal)
+            {
+                advanceOnMatch(TokenKind::Equal);
+                defaultValue = parseExpression(scope);
+            }
+
+            return std::make_unique<ParameterNode>(nameToken, name, colon, std::move(typeName), false, std::move(defaultValue));
         }
         else
         {
@@ -868,7 +875,7 @@ namespace Caracal
         return std::make_unique<MethodNameNode>(firstNameToken, firstName);
     }
 
-    ParametersNodeUPtr Parser::parseParametersNode()
+    ParametersNodeUPtr Parser::parseParametersNode(StatementScope scope)
     {
         auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
 
@@ -876,7 +883,7 @@ namespace Caracal
         auto current = currentToken();
         while (current.kind != TokenKind::CloseParenthesis && current.kind != TokenKind::EndOfFile)
         {
-            auto parameter = parseParameterNode();
+            auto parameter = parseParameterNode(scope);
             parameters.push_back(std::move(parameter));
             // TODO we need a function like skipUntil but for multiple tokens until we find a comma, identifier closing parent or EOF
             if (currentToken().kind == TokenKind::Comma)

@@ -1,0 +1,4 @@
+def withBadDefault(x: i32 = "hello") i32
+{
+    return x;
+}

@@ -705,6 +705,14 @@ namespace Caracal
         const auto& name = parameter->name();
         m_builder.appendIndented("Name: ").appendLine(name);
         prettyPrintTypeNameNode(parameter->typeName().get());
+        if (parameter->hasDefault())
+        {
+            m_builder.appendIndentedLine("DefaultValue: {");
+            m_builder.pushIndentation();
+            prettyPrintNode(parameter->defaultValue().get());
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
+        }
 
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");

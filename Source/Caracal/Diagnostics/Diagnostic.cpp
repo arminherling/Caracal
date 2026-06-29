@@ -143,6 +143,12 @@ namespace Caracal
                 return "T0048";
             case DiagnosticKind::T0049_DuplicateArgumentBinding:
                 return "T0049";
+            case DiagnosticKind::T0050_MissingRequiredArgument:
+                return "T0050";
+            case DiagnosticKind::T0051_DefaultParameterTypeMismatch:
+                return "T0051";
+            case DiagnosticKind::T0052_NonTrailingDefaultParameter:
+                return "T0052";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -290,6 +296,12 @@ namespace Caracal
                 return "Unknown argument name";
             case DiagnosticKind::T0049_DuplicateArgumentBinding:
                 return "Duplicate argument";
+            case DiagnosticKind::T0050_MissingRequiredArgument:
+                return "Missing required argument";
+            case DiagnosticKind::T0051_DefaultParameterTypeMismatch:
+                return "Default parameter type mismatch";
+            case DiagnosticKind::T0052_NonTrailingDefaultParameter:
+                return "Non-trailing default parameter";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

@@ -1,0 +1,11 @@
+ Error T0052
+  Non-trailing default parameter
+    ,-[Diagnostics/Input/nonTrailingDefaultParameter.cara:1:38]
+  1 | def withTrailingRequired(x: i32 = 0, y: i32) i32
+    .                                      ------
+    .                                         `-- Parameter 'y' has no default value but follows one that does.
+  2 | {
+  3 |     return x + y;
+  4 | }
+    `----
+  Fix: Move parameters with default values to the end of the parameter list.

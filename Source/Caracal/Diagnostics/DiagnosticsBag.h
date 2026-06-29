@@ -58,6 +58,9 @@ namespace Caracal
         void addInvalidVariadicArgumentTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, i32 argumentIndex, const std::string& actualTypeName);
         void addUnknownArgumentNameError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::string& argumentName);
         void addDuplicateArgumentBindingError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::string& parameterName);
+        void addMissingRequiredArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::string& parameterName);
+        void addDefaultParameterTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
+        void addNonTrailingDefaultParameterError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& parameterName);
 
         // Control flow diagnostics
         void addNonBoolIfConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);

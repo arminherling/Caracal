@@ -1,0 +1,27 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%Box = type { i32 }
+
+define i32 @func() {
+entry:
+  %box = alloca %Box, align 8
+  call void @Box.new(ptr %box, i32 7)
+  %call = call i32 @Box.get(ptr %box)
+  ret i32 %call
+}
+
+define i32 @Box.get(ptr nonnull %0) {
+entry:
+  %value = getelementptr inbounds nuw %Box, ptr %0, i32 0, i32 0
+  %load = load i32, ptr %value, align 4
+  ret i32 %load
+}
+
+define void @Box.new(ptr nonnull %0, i32 %1) {
+entry:
+  %value = getelementptr inbounds nuw %Box, ptr %0, i32 0, i32 0
+  store i32 %1, ptr %value, align 4
+  ret void
+}
