@@ -1,0 +1,6 @@
+// Caracal entry point
+// The C runtime calls this function and runs before the user's main
+def caracalMain() i32
+{
+    return main();
+}

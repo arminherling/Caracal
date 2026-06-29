@@ -61,6 +61,10 @@
 namespace Caracal
 {
     static constexpr const char* GlobalInitializerName = ".global_init";
+    static constexpr const char* EntryPointFunctionName = "caracalMain";
+    static constexpr const char* UserMainFunctionName = "main";
+    static constexpr const char* CRuntimeEntrySymbolName = "main";
+    static constexpr const char* UserMainSymbolName = "caracal.userMain";
 
     static bool IsConstructorCall(const Expression* expression) noexcept
     {
@@ -267,6 +271,20 @@ namespace Caracal
     {
         resetState();
         m_globalTypes.clear();
+
+        bool hasUserMain = false;
+        bool hasEntryPoint = false;
+        for (const auto& functionDefinition : m_semanticContext.functionDefinitions())
+        {
+            if (functionDefinition.functionType() != FunctionType::FreeFunction)
+                continue;
+
+            if (functionDefinition.fullName() == UserMainFunctionName)
+                hasUserMain = true;
+            else if (functionDefinition.fullName() == EntryPointFunctionName)
+                hasEntryPoint = true;
+        }
+        m_emitEntryPoint = hasUserMain && hasEntryPoint;
 
         for (const auto& enumDefinition : m_semanticContext.enumDefinitions())
         {
@@ -537,6 +555,14 @@ namespace Caracal
         }
 
         auto* function = module.addFunction(Function{ functionId, functionName, parameters, returnType });
+        if (m_emitEntryPoint)
+        {
+            // the C runtime calls caracalMain as the entry point, we need to rename the user's main
+            if (functionName == EntryPointFunctionName)
+                function->setSymbolName(CRuntimeEntrySymbolName);
+            else if (functionName == UserMainFunctionName)
+                function->setSymbolName(UserMainSymbolName);
+        }
         auto blockId = m_nextBlockId++;
         auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
         collectAddressTakenLocals(bodyNode);

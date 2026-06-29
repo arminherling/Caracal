@@ -205,7 +205,7 @@ namespace Caracal
         const auto exeFileName = inputFileName + ".exe";
         const auto linkingResult = llvm::sys::ExecuteAndWait(
             lldPath,
-            { "lld-link", "-flavor", "link", "/out:" + exeFileName, objectFileName, "/subsystem:console", "/entry:main", "/defaultlib:msvcrt.lib", "/defaultlib:legacy_stdio_definitions.lib","/defaultlib:ucrt.lib" },
+            { "lld-link", "-flavor", "link", "/out:" + exeFileName, objectFileName, "/subsystem:console", "/defaultlib:msvcrt.lib", "/defaultlib:legacy_stdio_definitions.lib","/defaultlib:ucrt.lib" },
             std::nullopt,
             {},
             0,

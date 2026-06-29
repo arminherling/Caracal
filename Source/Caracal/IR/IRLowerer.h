@@ -134,5 +134,6 @@ namespace Caracal
         TemporaryId m_nextTemporaryId{ 0 };
         LocalSlotId m_nextLocalSlotId{ 0 };
         BlockId m_nextBlockId{ 0 };
+        bool m_emitEntryPoint{ false };
     };
 }

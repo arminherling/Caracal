@@ -4,6 +4,7 @@
 #include <Caracal/IR/BasicBlock.h>
 #include <Caracal/IR/IRParameter.h>
 
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -20,6 +21,7 @@ namespace Caracal
 
         [[nodiscard]] FunctionId id() const noexcept { return m_id; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
+        [[nodiscard]] const std::optional<std::string>& symbolName() const noexcept { return m_symbolName; }
         [[nodiscard]] const std::vector<IRParameter>& parameters() const noexcept { return m_parameters; }
         [[nodiscard]] Type returnType() const noexcept { return m_returnType; }
         [[nodiscard]] const std::vector<BasicBlockUPtr>& blocks() const noexcept { return m_blocks; }
@@ -30,10 +32,12 @@ namespace Caracal
         
         void addParameter(IRParameter parameter);
         void addBlock(BasicBlock block);
+        void setSymbolName(std::optional<std::string> symbolName) noexcept { m_symbolName = std::move(symbolName); }
 
     private:
         FunctionId m_id{ -1 };
         std::string m_name;
+        std::optional<std::string> m_symbolName;
         std::vector<IRParameter> m_parameters;
         Type m_returnType{ Type::Void() };
         std::vector<BasicBlockUPtr> m_blocks;

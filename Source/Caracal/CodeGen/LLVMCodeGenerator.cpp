@@ -128,7 +128,8 @@ namespace Caracal
 
         for (const auto& function : m_irModule.functions())
         {
-            if (!declareCallable(function.name(), function.returnType(), function.parameters()))
+            const auto& symbolName = function.symbolName().value_or(function.name());
+            if (!declareCallable(symbolName, function.returnType(), function.parameters()))
                 return false;
         }
 
@@ -266,7 +267,8 @@ namespace Caracal
         m_blocks.clear();
         m_pendingPhis.clear();
 
-        m_currentFunction = m_llvmModule.getFunction(function.name());
+        const auto symbolName = function.symbolName().value_or(function.name());
+        m_currentFunction = m_llvmModule.getFunction(symbolName);
         if (m_currentFunction == nullptr)
             return false;
 
@@ -887,7 +889,8 @@ namespace Caracal
 
         if (const auto* function = m_irModule.tryGetFunction(functionId))
         {
-            return m_llvmModule.getFunction(function->name());
+            const auto symbolName = function->symbolName().value_or(function->name());
+            return m_llvmModule.getFunction(symbolName);
         }
 
         return nullptr;
