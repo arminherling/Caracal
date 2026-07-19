@@ -73,6 +73,7 @@ namespace Caracal
         void addAssignmentToConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName);
         void addAssignmentThroughConstantReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& referenceName);
         void addUnreachableCodeWarning(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addMissingReturnError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::string& returnTypeName);
 
         // Control flow diagnostics
         void addNonBoolIfConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);

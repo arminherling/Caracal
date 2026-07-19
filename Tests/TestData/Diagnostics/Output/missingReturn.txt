@@ -1,0 +1,11 @@
+ Error T0060
+  Not all paths return a value
+    ,-[Diagnostics/Input/missingReturn.cara:1:5]
+  1 | def f(c: bool) i32
+    .     -
+    .     `-- 'f' does not return a value on all paths.
+  2 | {
+  3 |     if c
+  4 |     {
+    `----
+  Fix: Add a 'return' so every path returns a 'i32'.

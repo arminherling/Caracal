@@ -1,0 +1,7 @@
+def f(c: bool) i32
+{
+    if c
+    {
+        return 1;
+    }
+}

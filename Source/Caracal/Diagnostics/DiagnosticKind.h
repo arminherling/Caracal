@@ -113,5 +113,6 @@ namespace Caracal
 
         // Control-flow diagnostics
         T0059_UnreachableCode,
+        T0060_MissingReturn,
     };
 }

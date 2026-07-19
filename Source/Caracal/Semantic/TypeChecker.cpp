@@ -2,7 +2,9 @@
 
 #include <Caracal/Constants.h>
 #include <Caracal/Semantic/ArgumentBinder.h>
+#include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/BreakStatement.h>
+#include <Caracal/Syntax/GroupingExpression.h>
 #include <Caracal/Syntax/SkipStatement.h>
 #include <Caracal/Syntax/StringLiteral.h>
 
@@ -1162,6 +1164,85 @@ namespace Caracal
         }
     }
 
+    static bool ConditionIsLiteralTrue(const Expression* condition)
+    {
+        while (condition->kind() == NodeKind::GroupingExpression)
+            condition = static_cast<const GroupingExpression*>(condition)->expression().get();
+
+        return condition->kind() == NodeKind::BoolLiteral && static_cast<const BoolLiteral*>(condition)->value();
+    }
+
+    static bool ContainsLoopBreak(const Statement* statement)
+    {
+        switch (statement->kind())
+        {
+            case NodeKind::BreakStatement:
+            {
+                return true;
+            }
+            case NodeKind::BlockNode:
+            {
+                for (const auto& inner : static_cast<const BlockNode*>(statement)->statements())
+                {
+                    if (ContainsLoopBreak(inner.get()))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            case NodeKind::IfStatement:
+            {
+                const auto* ifStatement = static_cast<const IfStatement*>(statement);
+                if (ContainsLoopBreak(ifStatement->trueStatement().get()))
+                {
+                    return true;
+                }
+
+                return ifStatement->falseStatement().has_value() && ContainsLoopBreak(ifStatement->falseStatement().value().get());
+            }
+            default:
+                return false;
+        }
+    }
+
+    static bool StatementGuaranteesReturn(const Statement* statement)
+    {
+        switch (statement->kind())
+        {
+            case NodeKind::ReturnStatement:
+            {
+                return true;
+            }
+            case NodeKind::BlockNode:
+            {
+                for (const auto& inner : static_cast<const BlockNode*>(statement)->statements())
+                {
+                    if (StatementGuaranteesReturn(inner.get()))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            case NodeKind::IfStatement:
+            {
+                const auto* ifStatement = static_cast<const IfStatement*>(statement);
+                return ifStatement->falseStatement().has_value()
+                    && StatementGuaranteesReturn(ifStatement->trueStatement().get())
+                    && StatementGuaranteesReturn(ifStatement->falseStatement().value().get());
+            }
+            case NodeKind::WhileStatement:
+            {
+                const auto* whileStatement = static_cast<const WhileStatement*>(statement);
+                return ConditionIsLiteralTrue(whileStatement->condition().get())
+                    && !ContainsLoopBreak(whileStatement->trueStatement().get());
+            }
+            default:
+                return false;
+        }
+    }
+
     void TypeChecker::typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement, const TokenBuffer& tokens)
     {
         m_currentReturnType = Type::Void();
@@ -1200,6 +1281,18 @@ namespace Caracal
         m_currentFunctionName = functionDefinition.fullName();
         typeCheckBlockNode(statement->bodyNode().get(), tokens);
         m_currentFunctionName.clear();
+
+        if (!statement->isExtern()
+            && m_currentReturnType != Type::Void()
+            && m_currentReturnType != Type::Undefined()
+            && !StatementGuaranteesReturn(statement->bodyNode().get()))
+        {
+            m_diagnostics.addMissingReturnError(
+                tokens.source(),
+                tokens.getSourceLocation(statement->nameToken()),
+                functionDefinition.name(),
+                FormatTypeName(m_module, m_currentReturnType));
+        }
 
         popScope(!statement->isExtern());
         m_currentReturnType = Type::Void();
