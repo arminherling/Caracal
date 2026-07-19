@@ -2648,6 +2648,15 @@ namespace Caracal
         for (const auto& parameterNode : parametersNode->parameters())
         {
             auto parameterType = typeCheckTypeNameNode(parameterNode->typeName().get(), tokens);
+            if (parameterType == Type::Void())
+            {
+                m_diagnostics.addVoidParameterTypeError(
+                    tokens.source(),
+                    parameterNode->sourceLocation(tokens),
+                    parameterNode->name());
+
+                parameterType = Type::Undefined();
+            }
             parameterNode->setType(parameterType);
 
             const Expression* defaultValue = nullptr;

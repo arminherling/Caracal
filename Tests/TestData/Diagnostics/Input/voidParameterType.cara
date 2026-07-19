@@ -1,0 +1,4 @@
+﻿def takesVoid(x: void) i32
+{
+    return 0;
+}

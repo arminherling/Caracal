@@ -918,6 +918,9 @@ namespace Caracal
             if (parameterType == nullptr)
                 return nullptr;
 
+            if (parameterType->isVoidTy())
+                return nullptr;
+
             parameterTypes.push_back(parameterType);
         }
 

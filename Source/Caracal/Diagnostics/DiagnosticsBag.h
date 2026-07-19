@@ -77,6 +77,7 @@ namespace Caracal
         void addDivisionByZeroError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addConstantOverflowError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
         void addUnaryOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& operandTypeName, const std::string& expectedDescription);
+        void addVoidParameterTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& parameterName);
 
         // Control flow diagnostics
         void addNonBoolIfConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);

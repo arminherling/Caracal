@@ -673,6 +673,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addVoidParameterTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& parameterName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0064_VoidParameterType,
+            source,
+            location,
+            "Give the parameter a concrete type, or remove it.");
+        diagnostic.addPrimaryLabel(location, "Parameter '" + parameterName + "' cannot have type 'void'");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName)
     {
         auto diagnostic = Diagnostic(

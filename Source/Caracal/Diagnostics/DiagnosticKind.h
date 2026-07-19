@@ -119,5 +119,6 @@ namespace Caracal
         T0061_DivisionByZero,
         T0062_ConstantOverflow,
         T0063_UnaryOperandTypeMismatch,
+        T0064_VoidParameterType,
     };
 }

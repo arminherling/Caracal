@@ -175,6 +175,8 @@ namespace Caracal
                 return "T0062";
             case DiagnosticKind::T0063_UnaryOperandTypeMismatch:
                 return "T0063";
+            case DiagnosticKind::T0064_VoidParameterType:
+                return "T0064";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -354,6 +356,8 @@ namespace Caracal
                 return "Constant expression overflows its type";
             case DiagnosticKind::T0063_UnaryOperandTypeMismatch:
                 return "Unary operator cannot be applied to this type";
+            case DiagnosticKind::T0064_VoidParameterType:
+                return "Parameter cannot have type 'void'";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

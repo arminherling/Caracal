@@ -1,0 +1,11 @@
+ Error T0064
+  Parameter cannot have type 'void'
+    ,-[Diagnostics/Input/refVoidParameterType.cara:1:21]
+  1 | ﻿def takesRefVoid(x: ref void) i32
+    .                     -----------
+    .                          `-- Parameter 'x' cannot have type 'void'
+  2 | {
+  3 |     return 0;
+  4 | }
+    `----
+  Fix: Give the parameter a concrete type, or remove it.

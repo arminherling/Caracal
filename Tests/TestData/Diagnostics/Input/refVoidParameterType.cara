@@ -1,0 +1,4 @@
+﻿def takesRefVoid(x: ref void) i32
+{
+    return 0;
+}
