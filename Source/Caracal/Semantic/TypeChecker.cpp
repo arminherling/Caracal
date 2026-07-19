@@ -172,6 +172,10 @@ namespace Caracal
                 if (!operand.has_value())
                     return std::nullopt;
 
+                // the literal already has a sign, dont negate again
+                if (unary->signFolded())
+                    return operand;
+
                 const auto negated = -operand.value();
                 if (!ConstantFitsType(negated, expression->type()))
                     return std::nullopt;
@@ -241,6 +245,27 @@ namespace Caracal
         }
 
         return value;
+    }
+
+    static std::optional<i32> TryParseNegatedI32Literal(std::string_view lexeme)
+    {
+        std::int64_t magnitude = 0;
+        const auto* begin = lexeme.data();
+        const auto* end = begin + lexeme.size();
+        const auto result = std::from_chars(begin, end, magnitude);
+        if (result.ec != std::errc{} || result.ptr != end)
+        {
+            return std::nullopt;
+        }
+
+        const auto negated = -magnitude;
+        if (negated < static_cast<std::int64_t>(std::numeric_limits<i32>::min())
+            || negated > static_cast<std::int64_t>(std::numeric_limits<i32>::max()))
+        {
+            return std::nullopt;
+        }
+
+        return static_cast<i32>(negated);
     }
 
     static std::optional<u8> TryParseU8Literal(std::string_view lexeme)
@@ -2025,9 +2050,27 @@ namespace Caracal
         switch (unaryExpression->unaryOperator())
         {
             case UnaryOperatorKind::LogicalNegation:
-            case UnaryOperatorKind::ValueNegation:
             {
                 auto type = typeCheckExpression(unaryExpression->expression().get(), tokens);
+
+                unaryExpression->setType(type);
+                return type;
+            }
+            case UnaryOperatorKind::ValueNegation:
+            {
+                auto* operand = unaryExpression->expression().get();
+                const auto previousContext = m_negatedLiteralContext;
+                m_negatedLiteralContext = dynamic_cast<NumberLiteral*>(operand) != nullptr;
+                m_negatedLiteralSignConsumed = false;
+
+                auto type = typeCheckExpression(operand, tokens);
+
+                m_negatedLiteralContext = previousContext;
+                if (m_negatedLiteralSignConsumed)
+                {
+                    unaryExpression->setSignFolded(true);
+                    m_negatedLiteralSignConsumed = false;
+                }
 
                 unaryExpression->setType(type);
                 return type;
@@ -2511,6 +2554,16 @@ namespace Caracal
         if (numberType == Type::U8() || numberType == Type::I32() || numberType == Type::F32())
         {
             parsedValue = TryParseNumberLiteralValue(literal->literalLexeme(), numberType);
+            if (!parsedValue.has_value() && m_negatedLiteralContext && numberType == Type::I32())
+            {
+                const auto negatedValue = TryParseNegatedI32Literal(literal->literalLexeme());
+                if (negatedValue.has_value())
+                {
+                    parsedValue = NumberLiteral::ParsedValue{ negatedValue.value() };
+                    m_negatedLiteralSignConsumed = true;
+                }
+            }
+
             if (!parsedValue.has_value())
             {
                 m_diagnostics.addNumberLiteralOutOfRangeError(

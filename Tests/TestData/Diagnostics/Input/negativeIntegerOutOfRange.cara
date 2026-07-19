@@ -1,0 +1,4 @@
+﻿def negativeIntegerOutOfRange() i32
+{
+    return -2147483649;
+}

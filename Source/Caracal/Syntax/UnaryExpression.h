@@ -29,12 +29,15 @@ namespace Caracal
         [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const override;
         void setReferencesConstant(bool value) noexcept { m_referencesConstant = value; }
         [[nodiscard]] bool referencesConstant() const noexcept { return m_referencesConstant; }
+        void setSignFolded(bool value) noexcept { m_signFolded = value; }
+        [[nodiscard]] bool signFolded() const noexcept { return m_signFolded; }
 
     private:
         Token m_unaryOperatorToken;
         ExpressionUPtr m_expression;
         UnaryOperatorKind m_unaryOperator;
         bool m_referencesConstant{ false };
+        bool m_signFolded{ false };
     };
 
     [[nodiscard]] CARACAL_API std::string stringify(UnaryOperatorKind kind);

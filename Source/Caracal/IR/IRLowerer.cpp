@@ -1593,6 +1593,12 @@ namespace Caracal
                 switch (unaryExpression->unaryOperator())
                 {
                     case UnaryOperatorKind::ValueNegation:
+                    {
+                        if (unaryExpression->signFolded())
+                            return operandValue;
+                        
+                        return ConstantFoldUnary(unaryExpression->unaryOperator(), operandValue.value());
+                    }
                     case UnaryOperatorKind::LogicalNegation:
                         return ConstantFoldUnary(unaryExpression->unaryOperator(), operandValue.value());
                     default:
@@ -1813,6 +1819,9 @@ namespace Caracal
                 {
                     case UnaryOperatorKind::ValueNegation:
                     {
+                        if (unaryExpression->signFolded())
+                            return operandValue;
+
                         const auto temporaryId = m_nextTemporaryId++;
                         block.addInstruction(std::make_unique<ValueNegationInstruction>(temporaryId, operandValue.value(), expression->type()));
                         return ValueRef{ temporaryId };

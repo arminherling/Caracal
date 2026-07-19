@@ -1,0 +1,4 @@
+define negativeMinInteger() i32
+block entry(0):
+    %0 = const -2147483648 : i32
+    return %0

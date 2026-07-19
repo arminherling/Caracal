@@ -1,0 +1,24 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: negativeMinInteger
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            UnaryExpression: {
+                Type: i32
+                Operation: ValueNegation
+                Expression: {
+                    NumberLiteral: 2147483648
+                }
+            }
+        }
+    }
+}
