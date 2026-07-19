@@ -1,0 +1,14 @@
+ Error T0058
+  Assignment through reference to constant
+    ,-[Diagnostics/Input/assignThroughRefToConstant.cara:5:5]
+  2 | {
+  3 |     x :: 5;
+  4 |     r := ref x;
+  5 |     r = 6;
+    .     -
+    .     `-- 'r' references a constant and cannot be written through.
+  6 |     return x;
+  7 | }
+  8 | 
+    `----
+  Fix: Reference a variable instead if it needs to change, or remove the assignment.

@@ -595,6 +595,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addAssignmentThroughConstantReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& referenceName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0058_AssignmentThroughConstantReference,
+            source,
+            location,
+            "Reference a variable instead if it needs to change, or remove the assignment.");
+        diagnostic.addPrimaryLabel(location, "'" + referenceName + "' references a constant and cannot be written through.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName)
     {
         auto diagnostic = Diagnostic(

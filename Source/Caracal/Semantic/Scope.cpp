@@ -23,9 +23,9 @@ namespace Caracal
             return false;
     }
 
-    void Scope::addVariableBinding(std::string_view identifier, Type type, std::optional<SourceLocation> location, const SourceTextSharedPtr& source, VariableBindingKind kind)
+    void Scope::addVariableBinding(std::string_view identifier, Type type, std::optional<SourceLocation> location, const SourceTextSharedPtr& source, VariableBindingKind kind, bool referencesConstant)
     {
-        m_variableBindings.try_emplace(identifier, VariableBinding{ type, source, location, kind, false });
+        m_variableBindings.try_emplace(identifier, VariableBinding{ type, source, location, kind, false, referencesConstant });
     }
 
     //void Scope::addFunctionBinding(std::string_view identifier, Type type)
@@ -79,6 +79,16 @@ namespace Caracal
             return m_parent->tryGetVariableBindingKind(identifier);
         else
             return std::nullopt;
+    }
+
+    bool Scope::variableReferencesConstant(std::string_view identifier) const noexcept
+    {
+        if (auto search = m_variableBindings.find(identifier); search != m_variableBindings.end())
+            return search->second.referencesConstant;
+        else if (m_parent != nullptr)
+            return m_parent->variableReferencesConstant(identifier);
+        else
+            return false;
     }
 
     bool Scope::markVariableBindingRead(std::string_view identifier) noexcept

@@ -163,6 +163,8 @@ namespace Caracal
                 return "T0056";
             case DiagnosticKind::T0057_AssignmentToConstant:
                 return "T0057";
+            case DiagnosticKind::T0058_AssignmentThroughConstantReference:
+                return "T0058";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -330,6 +332,8 @@ namespace Caracal
                 return "Non-global init constant";
             case DiagnosticKind::T0057_AssignmentToConstant:
                 return "Assignment to constant";
+            case DiagnosticKind::T0058_AssignmentThroughConstantReference:
+                return "Assignment through reference to constant";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

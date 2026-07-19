@@ -1,0 +1,7 @@
+def func() i32
+{
+    x :: 5;
+    r := ref x;
+    r = 6;
+    return x;
+}

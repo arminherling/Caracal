@@ -1,0 +1,84 @@
+FunctionDefinitionStatement: {
+    Type: (ref i32) -> void
+    Name: mutate
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: p
+            TypeNameNode: {
+                Type: ref i32
+                Lexeme: i32
+                Ref: true
+            }
+        }
+    }
+    ReturnTypesNode(0): {
+    }
+    BlockNode(1): {
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: ref i32
+                    Name: p
+                }
+            }
+            Right: {
+                NumberLiteral: 6
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: caller
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        ConstantDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: x
+                }
+            }
+            Right: {
+                NumberLiteral: 5
+            }
+        }
+        ExpressionStatement: {
+            FunctionCallExpression: {
+                Type: void
+                Function type: (ref i32) -> void
+                NameExpression: {
+                    Type: (ref i32) -> void
+                    Name: mutate
+                }
+                ArgumentsNode(1): {
+                    UnaryExpression: {
+                        Type: ref i32
+                        Operation: ReferenceOf
+                        Expression: {
+                            NameExpression: {
+                                Type: i32
+                                Name: x
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: x
+            }
+        }
+    }
+}

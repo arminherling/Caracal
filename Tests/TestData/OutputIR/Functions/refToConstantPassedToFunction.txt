@@ -1,0 +1,20 @@
+define mutate(%0: ref i32 "p") void
+block entry(0):
+    %0 = parameter 0 : ref i32 "p"
+    %1 = const 6 : i32
+    store_value %1, %0 : i32
+    return
+
+define caller() i32
+block entry(0):
+    %slot0 = allocate_local : i32 "x"
+    %slot1 = allocate_local : i32 "refConstTemp"
+    %0 = const 5 : i32
+    %1 = address_of %slot0 : ref i32
+    store_value %0, %1 : i32
+    %2 = load_value %1 : i32
+    %3 = address_of %slot1 : ref i32
+    store_value %2, %3 : i32
+    call mutate(%3)
+    %4 = load_value %1 : i32
+    return %4

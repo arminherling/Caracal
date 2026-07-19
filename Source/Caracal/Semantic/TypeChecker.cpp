@@ -1012,7 +1012,19 @@ namespace Caracal
 
     void TypeChecker::typeCheckVariableDeclaration(VariableDeclaration* statement, const TokenBuffer& tokens)
     {
-        auto rightType = typeCheckExpression(statement->rightExpression().get(), tokens);
+        auto* rightExpression = statement->rightExpression().get();
+        auto rightType = typeCheckExpression(rightExpression, tokens);
+
+        auto referencesConstant = false;
+        if (rightExpression->kind() == NodeKind::UnaryExpression)
+        {
+            const auto* unary = static_cast<const UnaryExpression*>(rightExpression);
+            referencesConstant = unary->unaryOperator() == UnaryOperatorKind::ReferenceOf && unary->referencesConstant();
+        }
+        else if (rightExpression->kind() == NodeKind::NameExpression)
+        {
+            referencesConstant = currentScope()->variableReferencesConstant(static_cast<const NameExpression*>(rightExpression)->name());
+        }
 
         auto leftExpression = statement->leftExpression().get();
         if (leftExpression->kind() == NodeKind::NameExpression)
@@ -1022,7 +1034,7 @@ namespace Caracal
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(name, rightType, nameExpression->sourceLocation(tokens), tokens.source(), VariableBindingKind::LocalVariable);
+                scope->addVariableBinding(name, rightType, nameExpression->sourceLocation(tokens), tokens.source(), VariableBindingKind::LocalVariable, referencesConstant);
             }
             else
             {
@@ -1090,6 +1102,13 @@ namespace Caracal
             else if (currentScope()->tryGetVariableBindingKind(targetName) == VariableBindingKind::LocalConstant)
             {
                 m_diagnostics.addAssignmentToConstantError(
+                    tokens.source(),
+                    leftExpression->sourceLocation(tokens),
+                    targetName);
+            }
+            else if (currentScope()->variableReferencesConstant(targetName))
+            {
+                m_diagnostics.addAssignmentThroughConstantReferenceError(
                     tokens.source(),
                     leftExpression->sourceLocation(tokens),
                     targetName);
@@ -1787,7 +1806,8 @@ namespace Caracal
             }
             case UnaryOperatorKind::ReferenceOf:
             {
-                auto type = typeCheckExpression(unaryExpression->expression().get(), tokens);
+                auto* operand = unaryExpression->expression().get();
+                auto type = typeCheckExpression(operand, tokens);
                 if (type.isReference())
                 {
                     m_diagnostics.addAlreadyReferenceError(
@@ -1795,6 +1815,16 @@ namespace Caracal
                         unaryExpression->sourceLocation(tokens));
                     return Type::Undefined();
                 }
+
+                if (operand->kind() == NodeKind::NameExpression)
+                {
+                    const auto& name = static_cast<const NameExpression*>(operand)->name();
+                    if (currentScope()->tryGetVariableBindingKind(name) == VariableBindingKind::LocalConstant)
+                    {
+                        unaryExpression->setReferencesConstant(true);
+                    }
+                }
+
                 auto referenceType = type.toReference();
                 unaryExpression->setType(referenceType);
                 return referenceType;

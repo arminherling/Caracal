@@ -27,11 +27,14 @@ namespace Caracal
         [[nodiscard]] const ExpressionUPtr& expression() const noexcept { return m_expression; }
         [[nodiscard]] UnaryOperatorKind unaryOperator() const noexcept { return m_unaryOperator; }
         [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const override;
+        void setReferencesConstant(bool value) noexcept { m_referencesConstant = value; }
+        [[nodiscard]] bool referencesConstant() const noexcept { return m_referencesConstant; }
 
     private:
         Token m_unaryOperatorToken;
         ExpressionUPtr m_expression;
         UnaryOperatorKind m_unaryOperator;
+        bool m_referencesConstant{ false };
     };
 
     [[nodiscard]] CARACAL_API std::string stringify(UnaryOperatorKind kind);

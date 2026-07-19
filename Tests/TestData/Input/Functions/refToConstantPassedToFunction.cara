@@ -1,0 +1,11 @@
+def mutate(p: ref i32)
+{
+    p = 6;
+}
+
+def caller() i32
+{
+    x :: 5;
+    mutate(ref x);
+    return x;
+}

@@ -43,6 +43,7 @@ namespace Caracal
             ValueRef value;
             Type type;
             LocalStorageKind storageKind{ LocalStorageKind::Value };
+            bool referencesConstant{ false };
         };
         using LocalStateMap = std::unordered_map<std::string, LocalState>;
 
@@ -118,6 +119,7 @@ namespace Caracal
         [[nodiscard]] std::optional<ValueRef> lowerCallWithReceiver(const FunctionCallExpression* expression, BasicBlock& block, const Expression* receiverExpression = nullptr) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerMemberFieldAddress(const Expression* receiverExpression, const NameExpression* fieldNameExpression, BasicBlock& block) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerAddressExpression(const Expression* expression, BasicBlock& block) noexcept;
+        [[nodiscard]] bool referenceArgumentAliasesConstant(const Expression* argument) const noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerValueExpression(const Expression* expression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerExpressionForEffect(const Expression* expression, BasicBlock& block) noexcept;
         [[nodiscard]] std::optional<ValueRef> emitCall(const FunctionCallExpression* expression, BasicBlock& block, std::optional<ValueRef> implicitArgument = std::nullopt) noexcept;

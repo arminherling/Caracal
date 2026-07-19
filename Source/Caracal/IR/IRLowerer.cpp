@@ -1199,6 +1199,10 @@ namespace Caracal
                 return false;
 
             setAddressBackedLocal(nameExpression->name(), loweredAddress.value(), nameExpression->type());
+
+            if (static_cast<const UnaryExpression*>(referenceCandidate)->referencesConstant())
+                m_locals.at(nameExpression->name()).referencesConstant = true;
+
             return true;
         }
 
@@ -1399,6 +1403,24 @@ namespace Caracal
             fieldDefinition.index(),
             fieldDefinition.type(),
             block);
+    }
+
+    bool IRLowerer::referenceArgumentAliasesConstant(const Expression* argument) const noexcept
+    {
+        const auto* stripped = StripGroupings(argument);
+        if (stripped->kind() == NodeKind::UnaryExpression)
+        {
+            const auto* unary = static_cast<const UnaryExpression*>(stripped);
+            return unary->unaryOperator() == UnaryOperatorKind::ReferenceOf && unary->referencesConstant();
+        }
+
+        if (stripped->kind() == NodeKind::NameExpression)
+        {
+            const auto result = m_locals.find(static_cast<const NameExpression*>(stripped)->name());
+            return result != m_locals.end() && result->second.referencesConstant;
+        }
+
+        return false;
     }
 
     std::optional<ValueRef> IRLowerer::lowerAddressExpression(const Expression* expression, BasicBlock& block) noexcept
@@ -1901,7 +1923,21 @@ namespace Caracal
             std::optional<ValueRef> loweredArgument;
             if (parameterTypes[i + parameterOffset].type().isReference())
             {
-                loweredArgument = lowerAddressExpression(argument, block);
+                if (referenceArgumentAliasesConstant(argument))
+                {
+                    // for now we create a defensive copy when we pass a ref to constants to function calls
+                    const auto referentAddress = lowerAddressExpression(argument, block);
+                    if (!referentAddress.has_value())
+                        return std::nullopt;
+
+                    const auto valueType = argument->type().toValue();
+                    const auto referentValue = emitLoad(referentAddress.value(), valueType, block);
+                    loweredArgument = allocateLocalSlot("refConstTemp", valueType, block, referentValue);
+                }
+                else
+                {
+                    loweredArgument = lowerAddressExpression(argument, block);
+                }
             }
             else
             {
