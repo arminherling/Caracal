@@ -812,6 +812,11 @@ namespace Caracal
                 m_builder.appendLine("");
                 break;
             }
+            case TerminatorKind::Unreachable:
+            {
+                m_builder.appendIndentedLine("unreachable");
+                break;
+            }
         }
     }
 

@@ -1,0 +1,17 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @whileTrue() {
+entry:
+  br label %while.condition
+
+while.condition:                                  ; preds = %entry
+  br i1 true, label %while.body, label %while.continuation
+
+while.body:                                       ; preds = %while.condition
+  ret i32 7
+
+while.continuation:                               ; preds = %while.condition
+  unreachable
+}

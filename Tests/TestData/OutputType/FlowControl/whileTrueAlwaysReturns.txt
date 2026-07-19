@@ -1,0 +1,27 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: whileTrue
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        WhileStatement: {
+            Condition: {
+                BoolLiteral: true
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 7
+                    }
+                }
+            }
+        }
+    }
+}

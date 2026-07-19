@@ -1,0 +1,11 @@
+define whileTrue() i32
+block entry(0):
+    jump while.condition(1)
+block while.condition(1):
+    %0 = const true : bool
+    branch if %0, while.body(2), while.continuation(3)
+block while.body(2):
+    %1 = const 7 : i32
+    return %1
+block while.continuation(3):
+    unreachable

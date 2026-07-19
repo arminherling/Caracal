@@ -1,0 +1,7 @@
+def whileTrue() i32
+{
+    while true
+    {
+        return 7;
+    }
+}

@@ -49,6 +49,7 @@ namespace Caracal
         Branch,
         Return,
         ReturnValue,
+        Unreachable,
     };
 
     class CARACAL_API Instruction

@@ -31,6 +31,7 @@
 #include <Caracal/IR/PhiInstruction.h>
 #include <Caracal/IR/ReturnTerminator.h>
 #include <Caracal/IR/ReturnValueTerminator.h>
+#include <Caracal/IR/UnreachableTerminator.h>
 #include <Caracal/IR/StoreValueInstruction.h>
 #include <Caracal/IR/SubtractInstruction.h>
 #include <Caracal/IR/ValueNegationInstruction.h>
@@ -564,7 +565,7 @@ namespace Caracal
                 function->setSymbolName(UserMainSymbolName);
         }
         auto blockId = m_nextBlockId++;
-        auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
+        auto entryBlock = BasicBlock{ blockId, "entry", nullptr };
         collectAddressTakenLocals(bodyNode);
         if (!lowerParameters(definition, entryBlock))
             return false;
@@ -589,10 +590,13 @@ namespace Caracal
         if (exitBlock->hasTerminator())
             return true;
 
-        if (returnType != Type::Void())
-            return false;
+        if (returnType == Type::Void())
+        {
+            exitBlock->setTerminator(std::make_unique<ReturnTerminator>());
+            return true;
+        }
 
-        exitBlock->setTerminator(std::make_unique<ReturnTerminator>());
+        exitBlock->setTerminator(std::make_unique<UnreachableTerminator>());
         return true;
     }
 

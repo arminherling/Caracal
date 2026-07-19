@@ -710,6 +710,11 @@ namespace Caracal
                 m_irBuilder->CreateRetVoid();
                 return true;
             }
+            case TerminatorKind::Unreachable:
+            {
+                m_irBuilder->CreateUnreachable();
+                return true;
+            }
             case TerminatorKind::ReturnValue:
             {
                 const auto& returnValue = static_cast<const ReturnValueTerminator&>(terminator);
