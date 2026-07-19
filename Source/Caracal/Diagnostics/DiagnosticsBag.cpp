@@ -320,6 +320,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addAnnotationNotAllowedHereError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::P0010_AnnotationNotAllowedHere,
+            source,
+            location,
+            "Annotations are only allowed on top-level and type-member declarations.");
+        diagnostic.addPrimaryLabel(location, "An annotation is not allowed in this scope.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(

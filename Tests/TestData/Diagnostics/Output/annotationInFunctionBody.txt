@@ -1,0 +1,13 @@
+ Error P0010
+  Annotation not allowed here
+    ,-[Diagnostics/Input/annotationInFunctionBody.cara:3:5]
+  1 | def main() i32
+  2 | {
+  3 |     #flag
+    .     -----
+    .       `-- An annotation is not allowed in this scope.
+  4 |     return 0;
+  5 | }
+  6 | 
+    `----
+  Fix: Annotations are only allowed on top-level and type-member declarations.

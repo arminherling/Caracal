@@ -20,6 +20,7 @@ namespace Caracal
         P0007_DanglingAnnotation,
         P0008_UninitializedField,
         P0009_PositionalArgumentAfterNamed,
+        P0010_AnnotationNotAllowedHere,
 
         // Annotation diagnostics
         T0001_UnknownAnnotation,

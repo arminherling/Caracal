@@ -31,6 +31,8 @@ namespace Caracal
                 return "P0008";
             case DiagnosticKind::P0009_PositionalArgumentAfterNamed:
                 return "P0009";
+            case DiagnosticKind::P0010_AnnotationNotAllowedHere:
+                return "P0010";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:
@@ -192,6 +194,8 @@ namespace Caracal
                 return "Uninitialized field";
             case DiagnosticKind::P0009_PositionalArgumentAfterNamed:
                 return "Positional argument after named argument";
+            case DiagnosticKind::P0010_AnnotationNotAllowedHere:
+                return "Annotation not allowed here";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:

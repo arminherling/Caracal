@@ -122,7 +122,13 @@ namespace Caracal
                         buildAnnotationNode(scope);
                         break;
                     }
-                    TODO("Annotations in other scopes");
+
+                    // annotations arent allowed here but we want to continue parsing to catch other diagnostics
+                    buildAnnotationNode(scope);
+                    const auto location = GetAnnotationLocation(m_currentAnnotations.back().get(), m_tokens);
+                    m_diagnostics.addAnnotationNotAllowedHereError(m_tokens.source(), location);
+                    m_currentAnnotations.pop_back();
+                    break;
                 }
                 case TokenKind::CloseBracket:
                 {
