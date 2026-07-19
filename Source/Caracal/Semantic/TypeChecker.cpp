@@ -1243,6 +1243,19 @@ namespace Caracal
         }
     }
 
+    static bool HasExternAnnotation(const std::vector<AnnotationNodeUPtr>& annotations)
+    {
+        for (const auto& annotation : annotations)
+        {
+            if (annotation->kind() == AnnotationKind::Extern)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void TypeChecker::typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement, const TokenBuffer& tokens)
     {
         m_currentReturnType = Type::Void();
@@ -1745,6 +1758,18 @@ namespace Caracal
 
         m_currentFunctionName.clear();
         typeCheckBlockNode(statement->bodyNode().get(), tokens);
+
+        if (!HasExternAnnotation(statement->annotations())
+            && m_currentReturnType != Type::Void()
+            && m_currentReturnType != Type::Undefined()
+            && !StatementGuaranteesReturn(statement->bodyNode().get()))
+        {
+            m_diagnostics.addMissingReturnError(
+                tokens.source(),
+                tokens.getSourceLocation(statement->methodNameNode()->methodNameToken()),
+                methodDefinition.name(),
+                FormatTypeName(m_module, m_currentReturnType));
+        }
 
         popScope(true);
         m_currentReturnType = Type::Void();

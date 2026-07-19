@@ -1,0 +1,10 @@
+type C()
+{
+    def C.bad(flag: bool) i32
+    {
+        if flag
+        {
+            return 1;
+        }
+    }
+}
