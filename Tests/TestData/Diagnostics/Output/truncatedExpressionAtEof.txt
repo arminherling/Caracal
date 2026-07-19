@@ -1,0 +1,16 @@
+ Error P0006
+  Invalid expression
+    ,-[Diagnostics/Input/truncatedExpressionAtEof.cara:1:13]
+  1 | x : i32 = 1 +
+    .             -
+    .             `-- Unexpected token end of file in expression
+    `----
+  Fix: Remove this token or replace it with a valid expression.
+ Error P0001
+  Unexpected token
+    ,-[Diagnostics/Input/truncatedExpressionAtEof.cara:1:13]
+  1 | x : i32 = 1 +
+    .             -
+    .             `-- Expected ';' but got end of file
+    `----
+  Fix: Add a ';' before the end of file.

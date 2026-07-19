@@ -75,6 +75,15 @@ namespace Caracal
 
     const SourceLocation& TokenBuffer::getSourceLocation(const Token& token) const noexcept
     {
+        if (token.locationIndex < 0 || token.locationIndex >= static_cast<i32>(m_sourceLocations.size()))
+        {
+            if (!m_sourceLocations.empty())
+                return m_sourceLocations.back();
+
+            static const SourceLocation fallback{};
+            return fallback;
+        }
+
         return m_sourceLocations.at(token.locationIndex);
     }
 }

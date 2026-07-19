@@ -823,9 +823,14 @@ namespace Caracal
             }
             default:
             {
-                advanceCurrentIndex();
                 const auto& location = m_tokens.getSourceLocation(current);
                 m_diagnostics.addUnexpectedExpressionTokenError(m_tokens.source(), location, current.kind);
+
+                if (current.kind != TokenKind::EndOfFile)
+                {
+                    advanceCurrentIndex();
+                }
+
                 return std::make_unique<ErrorExpression>(current);
             }
         }
