@@ -98,5 +98,11 @@ namespace Caracal
         // Default parameter diagnostics
         T0051_DefaultParameterTypeMismatch,
         T0052_NonTrailingDefaultParameter,
+
+        // init (write-once) constant diagnostics
+        T0053_AssignmentToInitConstant,
+        T0054_InitConstantAlreadyInitialized,
+        T0055_UninitializedInitConstant,
+        T0056_NonGlobalInitConstant,
     };
 }

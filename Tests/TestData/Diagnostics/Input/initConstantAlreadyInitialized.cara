@@ -1,0 +1,8 @@
+g :: init i32;
+
+def main() i32
+{
+    g = 1;
+    g = 2;
+    return g;
+}

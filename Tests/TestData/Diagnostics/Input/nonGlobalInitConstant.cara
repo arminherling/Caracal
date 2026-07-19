@@ -1,0 +1,5 @@
+def main() i32
+{
+    x :: init i32;
+    return 0;
+}

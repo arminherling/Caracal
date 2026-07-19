@@ -500,6 +500,62 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addAssignmentToInitConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0053_AssignmentToInitConstant,
+            source,
+            location,
+            "An 'init' constant can only be assigned inside 'main'.");
+        diagnostic.addPrimaryLabel(location, "'" + constantName + "' is an 'init' constant and cannot be assigned here.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addInitConstantAlreadyInitializedError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName, const std::optional<SourceLocation>& previousLocation)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0054_InitConstantAlreadyInitialized,
+            source,
+            location,
+            "An 'init' constant may be assigned only once, remove the extra assignment.");
+        diagnostic.addPrimaryLabel(location, "'" + constantName + "' has already been initialized.");
+        if (previousLocation.has_value())
+        {
+            diagnostic.addSecondaryLabel(previousLocation.value(), "'" + constantName + "' was first initialized here.");
+        }
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addUninitializedInitConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0055_UninitializedInitConstant,
+            source,
+            location,
+            "Assign '" + constantName + "' once inside 'main'.");
+        diagnostic.addPrimaryLabel(location, "'" + constantName + "' is an 'init' constant but is never initialized.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addNonGlobalInitConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0056_NonGlobalInitConstant,
+            source,
+            location,
+            "An 'init' constant can only be declared at global scope.");
+        diagnostic.addPrimaryLabel(location, "'" + constantName + "' is an 'init' constant and cannot be declared here.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName)
     {
         auto diagnostic = Diagnostic(

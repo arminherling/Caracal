@@ -1,5 +1,6 @@
 ﻿#include "TypeChecker.h"
 
+#include <Caracal/Constants.h>
 #include <Caracal/Semantic/ArgumentBinder.h>
 #include <Caracal/Syntax/StringLiteral.h>
 
@@ -76,6 +77,11 @@ namespace Caracal
     static bool ShouldIgnoreUnusedVariableWarning(std::string_view name)
     {
         return name == "_" || name == ImplicitThisName;
+    }
+
+    static bool IsInitConstantAssignmentSite(std::string_view functionName)
+    {
+        return functionName == EntryPointFunctionName || functionName == UserMainFunctionName;
     }
 
     static std::string FormatBinaryOperator(BinaryOperatorKind binaryOperator)
@@ -267,8 +273,21 @@ namespace Caracal
         typeCheckTypeFieldDefinitions();
         typeCheckFunctionDefinitions();
         typeCheckTypeMethodDefinitions();
+        
+        checkUninitializedInitConstants();
 
         return !m_diagnostics.hasErrors();
+    }
+
+    void TypeChecker::checkUninitializedInitConstants()
+    {
+        for (const auto& [name, declaration] : m_initConstants)
+        {
+            if (m_initConstantAssignments.contains(name))
+                continue;
+
+            m_diagnostics.addUninitializedInitConstantError(declaration.source, declaration.location, name);
+        }
     }
 
     void TypeChecker::collectDeclarations()
@@ -889,6 +908,56 @@ namespace Caracal
             }
         }
 
+        if (statement->isInit())
+        {
+            auto declaredType = Type::Undefined();
+            if (statement->explicitType().has_value())
+            {
+                declaredType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
+            }
+
+            const auto isValidInitConstant = statement->isGlobalConstant();
+            auto* leftExpression = statement->leftExpression().get();
+            if (leftExpression->kind() == NodeKind::NameExpression)
+            {
+                auto* nameExpression = static_cast<NameExpression*>(leftExpression);
+                const auto& name = nameExpression->name();
+
+                if (!isValidInitConstant)
+                {
+                    m_diagnostics.addNonGlobalInitConstantError(
+                        tokens.source(),
+                        nameExpression->sourceLocation(tokens),
+                        name);
+                }
+
+                auto scope = currentScope();
+                if (!scope->hasVariableBinding(name))
+                {
+                    scope->addVariableBinding(name, declaredType, nameExpression->sourceLocation(tokens), tokens.source(), VariableBindingKind::LocalConstant);
+
+                    if (isValidInitConstant)
+                    {
+                        static_cast<void>(m_module.createInitConstant(name, declaredType));
+                        m_initConstants.insert_or_assign(name, InitConstantDeclaration{ nameExpression->sourceLocation(tokens), tokens.source() });
+                    }
+                }
+                else
+                {
+                    m_diagnostics.addDuplicateConstantDeclarationError(
+                        tokens.source(),
+                        nameExpression->sourceLocation(tokens),
+                        name,
+                        scope->tryGetVariableBindingSource(name),
+                        scope->tryGetVariableBindingLocation(name));
+                }
+                nameExpression->setType(declaredType);
+            }
+
+            statement->setType(declaredType);
+            return;
+        }
+
         auto rightExpression = statement->rightExpression().get();
         auto rightType = typeCheckExpression(rightExpression, tokens);
 
@@ -991,10 +1060,33 @@ namespace Caracal
 
     void TypeChecker::typeCheckAssignmentStatement(AssignmentStatement* statement, const TokenBuffer& tokens)
     {
-        auto leftType = typeCheckExpression(statement->leftExpression().get(), tokens);
+        auto* leftExpression = statement->leftExpression().get();
+        auto leftType = typeCheckExpression(leftExpression, tokens);
         if (leftType.isReference())
         {
             leftType = leftType.toValue();
+        }
+
+        // global init constants are only allowed to be assigned once in caracalMain/main 
+        if (leftExpression->kind() == NodeKind::NameExpression)
+        {
+            const auto& targetName = static_cast<const NameExpression*>(leftExpression)->name();
+            if (m_initConstants.contains(targetName))
+            {
+                const auto location = leftExpression->sourceLocation(tokens);
+                if (!IsInitConstantAssignmentSite(m_currentFunctionName))
+                {
+                    m_diagnostics.addAssignmentToInitConstantError(tokens.source(), location, targetName);
+                }
+                else if (const auto existing = m_initConstantAssignments.find(targetName); existing != m_initConstantAssignments.end())
+                {
+                    m_diagnostics.addInitConstantAlreadyInitializedError(tokens.source(), location, targetName, existing->second);
+                }
+                else
+                {
+                    m_initConstantAssignments.emplace(targetName, location);
+                }
+            }
         }
         auto rightType = typeCheckExpression(statement->rightExpression().get(), tokens);
         if (rightType.isReference())
@@ -1050,7 +1142,9 @@ namespace Caracal
             TODO("Handle multiple return types in function definition");
         }
 
+        m_currentFunctionName = functionDefinition.fullName();
         typeCheckBlockNode(statement->bodyNode().get(), tokens);
+        m_currentFunctionName.clear();
 
         popScope(!statement->isExtern());
         m_currentReturnType = Type::Void();
@@ -1501,6 +1595,7 @@ namespace Caracal
             TODO("Handle multiple return types in function definition");
         }
 
+        m_currentFunctionName.clear();
         typeCheckBlockNode(statement->bodyNode().get(), tokens);
 
         popScope(true);

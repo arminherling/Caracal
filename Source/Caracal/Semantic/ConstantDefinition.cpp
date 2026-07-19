@@ -7,12 +7,23 @@ namespace Caracal
         const Expression* expression) noexcept
         : m_name{ name }
         , m_expression{ expression }
+        , m_type{ expression->type() }
+    {
+    }
+
+    ConstantDefinition::ConstantDefinition(
+        std::string_view name,
+        Type type) noexcept
+        : m_name{ name }
+        , m_expression{ nullptr }
+        , m_type{ type }
+        , m_isInit{ true }
     {
     }
 
     Type ConstantDefinition::type() const noexcept
     {
-        return m_expression->type();
+        return m_type;
     }
 
     const std::string& ConstantDefinition::name() const noexcept
@@ -23,5 +34,10 @@ namespace Caracal
     const Expression* ConstantDefinition::expression() const noexcept
     {
         return m_expression;
+    }
+
+    bool ConstantDefinition::isInit() const noexcept
+    {
+        return m_isInit;
     }
 }

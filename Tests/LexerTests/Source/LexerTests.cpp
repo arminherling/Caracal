@@ -143,6 +143,7 @@ static std::vector<std::tuple<std::string, std::string_view>> Identifiers_Data()
         std::make_tuple("_10", "_10"),
         std::make_tuple("\n returned", "returned"),
         std::make_tuple("enumeration", "enumeration"),
+        std::make_tuple("init", "init"),
     };
 }
 

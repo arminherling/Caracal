@@ -1,0 +1,12 @@
+g :: init i32;
+
+def helper()
+{
+    g = 1;
+}
+
+def main() i32
+{
+    g = 0;
+    return g;
+}

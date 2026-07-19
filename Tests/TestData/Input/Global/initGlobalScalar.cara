@@ -1,0 +1,12 @@
+g :: init i32;
+
+def readG() i32
+{
+    return g;
+}
+
+def main() i32
+{
+    g = 7;
+    return readG();
+}

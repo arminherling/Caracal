@@ -1,0 +1,74 @@
+ConstantDeclaration: {
+    Type: i32
+    Left: {
+        NameExpression: {
+            Type: i32
+            Name: g
+        }
+    }
+    InitType: {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: readG
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: g
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: g
+                }
+            }
+            Right: {
+                NumberLiteral: 7
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            FunctionCallExpression: {
+                Type: i32
+                Function type: () -> i32
+                NameExpression: {
+                    Type: () -> i32
+                    Name: readG
+                }
+                ArgumentsNode(0): {
+                }
+            }
+        }
+    }
+}

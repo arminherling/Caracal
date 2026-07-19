@@ -6,6 +6,7 @@
 #include <Caracal/Semantic/AnnotationKind.h>
 #include <Caracal/Syntax/TokenKind.h>
 
+#include <optional>
 #include <vector>
 
 namespace Caracal
@@ -61,6 +62,12 @@ namespace Caracal
         void addMissingRequiredArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::string& parameterName);
         void addDefaultParameterTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
         void addNonTrailingDefaultParameterError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& parameterName);
+
+        // init (write-once) constant diagnostics
+        void addAssignmentToInitConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName);
+        void addInitConstantAlreadyInitializedError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName, const std::optional<SourceLocation>& previousLocation);
+        void addUninitializedInitConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName);
+        void addNonGlobalInitConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName);
 
         // Control flow diagnostics
         void addNonBoolIfConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);

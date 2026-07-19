@@ -1,0 +1,13 @@
+ Error T0056
+  Non-global init constant
+    ,-[Diagnostics/Input/nonGlobalInitConstant.cara:3:5]
+  1 | def main() i32
+  2 | {
+  3 |     x :: init i32;
+    .     -
+    .     `-- 'x' is an 'init' constant and cannot be declared here.
+  4 |     return 0;
+  5 | }
+  6 | 
+    `----
+  Fix: An 'init' constant can only be declared at global scope.

@@ -30,10 +30,17 @@
 #include <Caracal/Syntax/MethodDefinitionStatement.h>
 #include <Caracal/Syntax/TypeFieldDeclaration.h>
 
+#include <string>
 #include <unordered_map>
 
 namespace Caracal
 {
+    struct InitConstantDeclaration
+    {
+        SourceLocation location;
+        SourceTextSharedPtr source;
+    };
+
     class CARACAL_API TypeChecker
     {
     public:
@@ -54,6 +61,7 @@ namespace Caracal
         void typeCheckTypeSignatures();
         void typeCheckGlobalConstants();
         void typeCheckFunctionDefinitions();
+        void checkUninitializedInitConstants();
         void typeCheckEnumDefinitions();
         void typeCheckTypeFieldDefinitions();
         void typeCheckTypeMethodDefinitions();
@@ -119,6 +127,9 @@ namespace Caracal
         std::vector<const EnumDefinitionStatement*> m_enumDeclarations;
         std::vector<const TypeDefinitionStatement*> m_typeDeclarations;
         std::vector<const FunctionDefinitionStatement*> m_functionDeclarations;
+        std::string m_currentFunctionName;
+        std::unordered_map<std::string, InitConstantDeclaration> m_initConstants;
+        std::unordered_map<std::string, SourceLocation> m_initConstantAssignments;
     };
 
     // we modify the parse trees in place and add type information to the nodes

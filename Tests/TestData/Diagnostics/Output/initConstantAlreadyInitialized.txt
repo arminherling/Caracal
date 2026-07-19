@@ -1,0 +1,17 @@
+ Error T0054
+  Init constant already initialized
+    ,-[Diagnostics/Input/initConstantAlreadyInitialized.cara:6:5]
+  2 | 
+  3 | def main() i32
+  4 | {
+  5 |     g = 1;
+    .     -
+    .     `-- 'g' was first initialized here.
+  6 |     g = 2;
+    .     -
+    .     `-- 'g' has already been initialized.
+  7 |     return g;
+  8 | }
+  9 | 
+    `----
+  Fix: An 'init' constant may be assigned only once, remove the extra assignment.

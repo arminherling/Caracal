@@ -53,7 +53,7 @@ std::string stringify(TokenKind kind)
         { TokenKind::AndKeyword,        std::string_view("AndKeyword") },
         { TokenKind::OrKeyword,         std::string_view("OrKeyword") },
         { TokenKind::RefKeyword,        std::string_view("RefKeyword") },
-                                        
+
         { TokenKind::EndOfFile,         std::string_view("EndOfFile") },
     };
 

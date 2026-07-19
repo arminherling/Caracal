@@ -330,6 +330,31 @@ namespace Caracal
         }
         
         auto secondToken = advanceOnMatch(TokenKind::Colon, TokenKind::Equal);
+        auto afterSecondToken = currentToken();
+        auto isInitDeclaration = afterSecondToken.kind == TokenKind::Identifier && m_tokens.getLexeme(afterSecondToken) == "init";
+        if (secondToken.kind == TokenKind::Colon && isInitDeclaration)
+        {
+            auto initKeyword = advanceOnMatch(TokenKind::Identifier);
+            auto initType = parseTypeNameNode();
+            auto semicolon = advanceOnMatch(TokenKind::Semicolon);
+
+            auto annotations = std::vector<AnnotationNodeUPtr>{};
+            if (scope == StatementScope::Global)
+            {
+                annotations = takeCurrentAnnotations();
+            }
+
+            return std::make_unique<ConstantDeclaration>(
+                std::move(leftExpression),
+                firstColon,
+                secondToken,
+                initKeyword,
+                std::move(initType),
+                semicolon,
+                scope == StatementScope::Global,
+                std::move(annotations));
+        }
+
         auto rightExpression = parseExpression(scope);
         auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 

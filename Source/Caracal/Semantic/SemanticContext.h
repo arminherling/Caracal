@@ -2,6 +2,7 @@
 
 #include <Caracal/Defines.h>
 #include <Caracal/API.h>
+#include <Caracal/Constants.h>
 #include <Caracal/Semantic/Type.h>
 #include <Caracal/Semantic/ConstantDefinition.h>
 #include <Caracal/Semantic/EnumDefinition.h>
@@ -18,11 +19,6 @@
 
 namespace Caracal
 {
-    // name of the implicit this parameter for methods, which is not visible in 
-    // Caracal source code but is used in the semantic context and IR generation
-    // the leading dot cant appear in a Caracal identifier
-    inline constexpr const char* ImplicitThisName = ".this";
-
     class CARACAL_API SemanticContext
     {
     public:
@@ -61,6 +57,9 @@ namespace Caracal
         [[nodiscard]] ConstantDefinition& createConstant(
             std::string_view name,
             Expression* expression) noexcept;
+        [[nodiscard]] ConstantDefinition& createInitConstant(
+            std::string_view name,
+            Type type) noexcept;
         void addGlobalDiscardExpression(const Expression* expression) noexcept;
         void createBuiltinType(Type type, std::string_view name, bool addVariants = false);
 

@@ -181,7 +181,14 @@ namespace Caracal
 
         if (statement->explicitType().has_value())
         {
-            m_builder.appendIndentedLine("ExplicitType: {");
+            if(statement->isInit())
+            {
+                m_builder.appendIndentedLine("InitType: {");
+            }
+            else
+            {
+                m_builder.appendIndentedLine("ExplicitType: {");
+            }
             m_builder.pushIndentation();
 
             prettyPrintNode(statement->explicitType().value().get());
@@ -190,14 +197,17 @@ namespace Caracal
             m_builder.appendIndentedLine("}");
         }
 
-        m_builder.appendIndentedLine("Right: {");
-        m_builder.pushIndentation();
+        if (!statement->isInit())
+        {
+            m_builder.appendIndentedLine("Right: {");
+            m_builder.pushIndentation();
 
-        prettyPrintNode(statement->rightExpression().get());
+            prettyPrintNode(statement->rightExpression().get());
 
-        m_builder.popIndentation();
-        m_builder.appendIndentedLine("}");
-        
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
+        }
+
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
     }

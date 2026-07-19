@@ -199,6 +199,17 @@ namespace Caracal
         return m_constantDefinitions.back();
     }
 
+    ConstantDefinition& SemanticContext::createInitConstant(
+        std::string_view name,
+        Type type) noexcept
+    {
+        auto constantName = std::string(name);
+        m_constantDefinitions.emplace_back(constantName, type);
+        m_constantDefinitionIndexByName.try_emplace(constantName, m_constantDefinitions.size() - 1);
+
+        return m_constantDefinitions.back();
+    }
+
     void SemanticContext::addGlobalDiscardExpression(const Expression* expression) noexcept
     {
         m_globalDiscardExpressions.push_back(expression);

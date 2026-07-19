@@ -1,5 +1,6 @@
 ﻿#include <Caracal/IR/IRLowerer.h>
 
+#include <Caracal/Constants.h>
 #include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/AddressOfInstruction.h>
 #include <Caracal/IR/AddressOfFieldInstruction.h>
@@ -60,12 +61,6 @@
 
 namespace Caracal
 {
-    static constexpr const char* GlobalInitializerName = ".global_init";
-    static constexpr const char* EntryPointFunctionName = "caracalMain";
-    static constexpr const char* UserMainFunctionName = "main";
-    static constexpr const char* CRuntimeEntrySymbolName = "main";
-    static constexpr const char* UserMainSymbolName = "caracal.userMain";
-
     static bool IsConstructorCall(const Expression* expression) noexcept
     {
         if (expression == nullptr || expression->kind() != NodeKind::BinaryExpression)
@@ -159,7 +154,7 @@ namespace Caracal
 
     static const Expression* StripGroupings(const Expression* expression) noexcept
     {
-        while (expression->kind() == NodeKind::GroupingExpression)
+        while (expression != nullptr && expression->kind() == NodeKind::GroupingExpression)
             expression = static_cast<const GroupingExpression*>(expression)->expression().get();
 
         return expression;
@@ -314,7 +309,12 @@ namespace Caracal
                 continue;
 
             if (registerConstructedGlobal(constantDefinition, module))
-                constructedGlobalDefinitions.push_back(&constantDefinition);
+            {
+                if (!constantDefinition.isInit())
+                    constructedGlobalDefinitions.push_back(&constantDefinition);
+
+                continue;
+            }
         }
 
         std::vector<const Expression*> globalDiscardEffects;
@@ -489,7 +489,7 @@ namespace Caracal
 
     bool IRLowerer::registerConstructedGlobal(const ConstantDefinition& definition, Module& module) noexcept
     {
-        if (!IsConstructorCall(definition.expression()))
+        if (!definition.isInit() && !IsConstructorCall(definition.expression()))
             return false;
 
         if (definition.type() == Type::Undefined())
@@ -1284,42 +1284,46 @@ namespace Caracal
             return lowerExpressionForEffect(rightExpression, block);
         }
 
+        // handle local variables first, since they may be address-backed and we want to avoid unnecessary loads/stores
+        if (leftExpression->kind() == NodeKind::NameExpression)
+        {
+            const auto local = m_locals.find(static_cast<const NameExpression*>(leftExpression)->name());
+            if (local != m_locals.end())
+            {
+                const auto loweredValue = lowerValueExpression(rightExpression, block);
+                if (!loweredValue.has_value())
+                    return false;
+
+                if (local->second.storageKind == LocalStorageKind::Address)
+                    block.addInstruction(std::make_unique<StoreValueInstruction>(loweredValue.value(), local->second.value, local->second.type.toValue()));
+                else
+                    local->second.value = loweredValue.value();
+
+                return true;
+            }
+        }
+
+        if (IsConstructorCall(rightExpression))
+        {
+            const auto destinationAddress = lowerAddressExpression(leftExpression, block);
+            if (!destinationAddress.has_value())
+                return false;
+
+            return tryLowerConstructorCallIntoAddress(rightExpression, destinationAddress.value(), block);
+        }
+
         const auto loweredValue = lowerValueExpression(rightExpression, block);
         if (!loweredValue.has_value())
             return false;
 
-        const auto isMemberAssignment = (leftExpression->kind() == NodeKind::MemberAccessExpression
-            || (leftExpression->kind() == NodeKind::BinaryExpression
-            && static_cast<const BinaryExpression*>(leftExpression)->binaryOperator() == BinaryOperatorKind::MemberAccess));
-        if (isMemberAssignment)
-        {
-            const auto loweredAddress = lowerAddressExpression(leftExpression, block);
-            if (!loweredAddress.has_value())
-                return false;
-
-            block.addInstruction(std::make_unique<StoreValueInstruction>(
-                loweredValue.value(),
-                loweredAddress.value(),
-                leftExpression->type().toValue()));
-            return true;
-        }
-
-        if (leftExpression->kind() != NodeKind::NameExpression)
+        const auto destinationAddress = lowerAddressExpression(leftExpression, block);
+        if (!destinationAddress.has_value())
             return false;
 
-        const auto* nameExpression = static_cast<const NameExpression*>(leftExpression);
-        if (!m_locals.contains(nameExpression->name()))
-            return false;
-
-        auto& localState = m_locals.at(nameExpression->name());
-        if (localState.storageKind == LocalStorageKind::Address)
-        {
-            block.addInstruction(std::make_unique<StoreValueInstruction>(loweredValue.value(), localState.value, localState.type.toValue()));
-            return true;
-        }
-
-        localState.value = loweredValue.value();
-
+        block.addInstruction(std::make_unique<StoreValueInstruction>(
+            loweredValue.value(),
+            destinationAddress.value(),
+            leftExpression->type().toValue()));
         return true;
     }
 

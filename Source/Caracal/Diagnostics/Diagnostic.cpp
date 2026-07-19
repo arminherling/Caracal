@@ -149,6 +149,14 @@ namespace Caracal
                 return "T0051";
             case DiagnosticKind::T0052_NonTrailingDefaultParameter:
                 return "T0052";
+            case DiagnosticKind::T0053_AssignmentToInitConstant:
+                return "T0053";
+            case DiagnosticKind::T0054_InitConstantAlreadyInitialized:
+                return "T0054";
+            case DiagnosticKind::T0055_UninitializedInitConstant:
+                return "T0055";
+            case DiagnosticKind::T0056_NonGlobalInitConstant:
+                return "T0056";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -302,6 +310,14 @@ namespace Caracal
                 return "Default parameter type mismatch";
             case DiagnosticKind::T0052_NonTrailingDefaultParameter:
                 return "Non-trailing default parameter";
+            case DiagnosticKind::T0053_AssignmentToInitConstant:
+                return "Assignment to init constant";
+            case DiagnosticKind::T0054_InitConstantAlreadyInitialized:
+                return "Init constant already initialized";
+            case DiagnosticKind::T0055_UninitializedInitConstant:
+                return "Uninitialized init constant";
+            case DiagnosticKind::T0056_NonGlobalInitConstant:
+                return "Non-global init constant";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";
