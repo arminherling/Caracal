@@ -914,15 +914,30 @@ namespace Caracal
         auto current = currentToken();
         while (current.kind != TokenKind::CloseParenthesis && current.kind != TokenKind::EndOfFile)
         {
-            auto parameter = parseParameterNode(scope);
-            parameters.push_back(std::move(parameter));
-            // TODO we need a function like skipUntil but for multiple tokens until we find a comma, identifier closing parent or EOF
+            const auto positionBeforeParameter = m_currentIndex;
+            // variadic is three dots 
+            if (current.kind == TokenKind::Identifier || current.kind == TokenKind::Dot)
+            {
+                parameters.push_back(parseParameterNode(scope));
+            }
+
             if (currentToken().kind == TokenKind::Comma)
             {
                 advanceCurrentIndex();
-        
-                // if(CurrentToken().kind == TokenKind::CloseParenthesis)
-                // Too many commas or too few parameters
+            }
+            else if (m_currentIndex == positionBeforeParameter)
+            {
+                const auto& unexpected = currentToken();
+                m_diagnostics.addUnexpectedParameterTokenError(
+                    m_tokens.source(),
+                    m_tokens.getSourceLocation(unexpected),
+                    unexpected.kind);
+
+                skipUntil({ TokenKind::Comma, TokenKind::CloseParenthesis });
+                if (currentToken().kind == TokenKind::Comma)
+                {
+                    advanceCurrentIndex();
+                }
             }
             current = currentToken();
         }
@@ -1056,8 +1071,25 @@ namespace Caracal
             advanceCurrentIndex();
             return std::make_optional<Token>(current);
         }
-    
         return std::optional<Token>();
+    }
+
+    void Parser::skipUntil(std::initializer_list<TokenKind> syncKinds)
+    {
+        while (true)
+        {
+            const auto kind = currentToken().kind;
+            if (kind == TokenKind::EndOfFile)
+                return;
+
+            for (const auto syncKind : syncKinds)
+            {
+                if (kind == syncKind)
+                    return;
+            }
+
+            advanceCurrentIndex();
+        }
     }
 
     Token Parser::peek(i32 offset)
@@ -1075,20 +1107,6 @@ namespace Caracal
         return parser.parse();
     }
 }
-
-//
-//void Parser::skipUntil(TokenKind kind)
-//{
-//    auto current = currentToken();
-//    while (current.kind != kind || current.kind == TokenKind::EndOfFile)
-//    {
-//        const auto& location = m_tokens.getSourceLocation(current);
-//        m_diagnostics.AddError(DiagnosticKind::Unknown, location);
-//
-//        advanceCurrentIndex();
-//        current = currentToken();
-//    }
-//}
 
 //
 //i32 Parser::lineDistanceSinceLastToken()

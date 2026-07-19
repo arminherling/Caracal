@@ -1,0 +1,11 @@
+ Error P0011
+  Invalid parameter
+    ,-[Diagnostics/Input/invalidParameterLiteral.cara:1:7]
+  1 | def f(5) i32
+    .       -
+    .       `-- Unexpected token number in parameter list
+  2 | {
+  3 |     return 0;
+  4 | }
+    `----
+  Fix: Start each parameter with a name and ': type', or use '...' for variadics.

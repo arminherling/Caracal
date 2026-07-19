@@ -17,6 +17,8 @@
 #include <Caracal/Syntax/TypeNameNode.h>
 #include <Caracal/Syntax/AnnotationNode.h>
 
+#include <initializer_list>
+
 namespace Caracal
 {
     class CARACAL_API Parser
@@ -86,6 +88,7 @@ namespace Caracal
         Token advanceOnMatch(TokenKind kind);
         Token advanceOnMatch(TokenKind kind1, TokenKind kind2);
         std::optional<Token> tryMatchKind(TokenKind kind);
+        void skipUntil(std::initializer_list<TokenKind> syncKinds);
 
         TokenBuffer m_tokens;
         DiagnosticsBag& m_diagnostics;

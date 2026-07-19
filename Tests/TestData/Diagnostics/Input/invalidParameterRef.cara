@@ -1,0 +1,4 @@
+def f(ref x: i32) i32
+{
+    return 0;
+}

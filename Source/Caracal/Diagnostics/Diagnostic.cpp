@@ -33,6 +33,8 @@ namespace Caracal
                 return "P0009";
             case DiagnosticKind::P0010_AnnotationNotAllowedHere:
                 return "P0010";
+            case DiagnosticKind::P0011_InvalidParameter:
+                return "P0011";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:
@@ -196,6 +198,8 @@ namespace Caracal
                 return "Positional argument after named argument";
             case DiagnosticKind::P0010_AnnotationNotAllowedHere:
                 return "Annotation not allowed here";
+            case DiagnosticKind::P0011_InvalidParameter:
+                return "Invalid parameter";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:

@@ -307,6 +307,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addUnexpectedParameterTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::P0011_InvalidParameter,
+            source,
+            location,
+            "Start each parameter with a name and ': type', or use '...' for variadics.");
+        diagnostic.addPrimaryLabel(location, "Unexpected token " + ToTokenSource(actualKind) + " in parameter list");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addPositionalArgumentAfterNamedError(const SourceTextSharedPtr& source, const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(

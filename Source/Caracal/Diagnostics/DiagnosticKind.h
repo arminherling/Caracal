@@ -21,6 +21,7 @@ namespace Caracal
         P0008_UninitializedField,
         P0009_PositionalArgumentAfterNamed,
         P0010_AnnotationNotAllowedHere,
+        P0011_InvalidParameter,
 
         // Annotation diagnostics
         T0001_UnknownAnnotation,

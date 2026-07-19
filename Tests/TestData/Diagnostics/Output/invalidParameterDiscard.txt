@@ -1,0 +1,11 @@
+ Error P0011
+  Invalid parameter
+    ,-[Diagnostics/Input/invalidParameterDiscard.cara:1:7]
+  1 | def f(_: i32) i32
+    .       -
+    .       `-- Unexpected token '_' in parameter list
+  2 | {
+  3 |     return 0;
+  4 | }
+    `----
+  Fix: Start each parameter with a name and ': type', or use '...' for variadics.

@@ -29,6 +29,7 @@ namespace Caracal
         void addUninitializedTypeFieldError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName);
         void addUnexpectedStatementTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
         void addUnexpectedExpressionTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
+        void addUnexpectedParameterTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
         void addPositionalArgumentAfterNamedError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addAnnotationNotAllowedHereError(const SourceTextSharedPtr& source, const SourceLocation& location);
 
