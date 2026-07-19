@@ -1095,6 +1095,33 @@ namespace Caracal
                     targetName);
             }
         }
+        else if (leftExpression->kind() == NodeKind::BinaryExpression)
+        {
+            const auto* memberAccess = static_cast<const BinaryExpression*>(leftExpression);
+            if (memberAccess->binaryOperator() == BinaryOperatorKind::MemberAccess &&
+                memberAccess->rightExpression()->kind() == NodeKind::NameExpression)
+            {
+                auto receiverType = memberAccess->leftExpression()->type();
+                if (receiverType.isReference())
+                {
+                    receiverType = receiverType.toValue();
+                }
+
+                if (receiverType.kind() == TypeKind::Type)
+                {
+                    auto& typeDefinition = m_module.getTypeDefinition(receiverType);
+                    const auto& fieldName = static_cast<const NameExpression*>(memberAccess->rightExpression().get())->name();
+                    const auto& fieldDefinition = typeDefinition.tryGetFieldByName(fieldName);
+                    if (fieldDefinition.type() != Type::Undefined() && fieldDefinition.isConstant())
+                    {
+                        m_diagnostics.addAssignmentToConstantError(
+                            tokens.source(),
+                            leftExpression->sourceLocation(tokens),
+                            fieldName);
+                    }
+                }
+            }
+        }
         auto rightType = typeCheckExpression(statement->rightExpression().get(), tokens);
         if (rightType.isReference())
         {

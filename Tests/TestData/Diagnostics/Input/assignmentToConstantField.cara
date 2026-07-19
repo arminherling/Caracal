@@ -1,0 +1,11 @@
+type C()
+{
+    x :: 5
+}
+
+def main() i32
+{
+    c := C.new();
+    c.x = 9;
+    return c.x;
+}
