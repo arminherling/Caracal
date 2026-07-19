@@ -1087,6 +1087,13 @@ namespace Caracal
                     m_initConstantAssignments.emplace(targetName, location);
                 }
             }
+            else if (currentScope()->tryGetVariableBindingKind(targetName) == VariableBindingKind::LocalConstant)
+            {
+                m_diagnostics.addAssignmentToConstantError(
+                    tokens.source(),
+                    leftExpression->sourceLocation(tokens),
+                    targetName);
+            }
         }
         auto rightType = typeCheckExpression(statement->rightExpression().get(), tokens);
         if (rightType.isReference())

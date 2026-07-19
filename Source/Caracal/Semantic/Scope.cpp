@@ -71,6 +71,16 @@ namespace Caracal
             return std::nullopt;
     }
 
+    std::optional<VariableBindingKind> Scope::tryGetVariableBindingKind(std::string_view identifier) const noexcept
+    {
+        if (auto search = m_variableBindings.find(identifier); search != m_variableBindings.end())
+            return search->second.kind;
+        else if (m_parent != nullptr)
+            return m_parent->tryGetVariableBindingKind(identifier);
+        else
+            return std::nullopt;
+    }
+
     bool Scope::markVariableBindingRead(std::string_view identifier) noexcept
     {
         if (auto search = m_variableBindings.find(identifier); search != m_variableBindings.end())

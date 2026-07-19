@@ -1,0 +1,7 @@
+G :: 5;
+
+def main() i32
+{
+    G = 6;
+    return G;
+}

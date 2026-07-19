@@ -53,6 +53,7 @@ namespace Caracal
         [[nodiscard]] std::optional<Type> tryGetVariableBinding(std::string_view identifier) const noexcept;
         [[nodiscard]] SourceTextSharedPtr tryGetVariableBindingSource(std::string_view identifier) const noexcept;
         [[nodiscard]] std::optional<SourceLocation> tryGetVariableBindingLocation(std::string_view identifier) const noexcept;
+        [[nodiscard]] std::optional<VariableBindingKind> tryGetVariableBindingKind(std::string_view identifier) const noexcept;
         bool markVariableBindingRead(std::string_view identifier) noexcept;
         [[nodiscard]] const std::unordered_map<std::string_view, VariableBinding>& variableBindings() const noexcept { return m_variableBindings; }
         //[[nodiscard]] std::optional<Type> tryGetFunctionBinding(std::string_view identifier) const noexcept;

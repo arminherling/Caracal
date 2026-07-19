@@ -1,0 +1,14 @@
+ Error T0057
+  Assignment to constant
+    ,-[Diagnostics/Input/assignmentToGlobalConstant.cara:5:5]
+  2 | 
+  3 | def main() i32
+  4 | {
+  5 |     G = 6;
+    .     -
+    .     `-- 'G' is a constant and cannot be reassigned.
+  6 |     return G;
+  7 | }
+  8 | 
+    `----
+  Fix: Declare 'G' as a variable if it needs to change, or remove the assignment.
