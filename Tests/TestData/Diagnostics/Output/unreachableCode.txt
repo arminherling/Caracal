@@ -1,0 +1,13 @@
+ Warning T0059
+  Unreachable code
+    ,-[Diagnostics/Input/unreachableCode.cara:4:5]
+  1 | def func() i32
+  2 | {
+  3 |     return 1;
+  4 |     return 2;
+    .     ------
+    .        `-- Unreachable code after a 'return', 'break', or 'skip'.
+  5 | }
+  6 | 
+    `----
+  Fix: This code can never run; remove it.

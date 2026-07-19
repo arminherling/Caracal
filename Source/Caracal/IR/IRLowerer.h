@@ -97,7 +97,7 @@ namespace Caracal
         [[nodiscard]] bool lowerParameters(const FunctionDefinition& definition, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
         [[nodiscard]] bool lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept;
-        [[nodiscard]] bool lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept;
+        [[nodiscard]] bool lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept;
         [[nodiscard]] std::optional<ConstantValue> tryLowerConstantExpression(const Expression* expression) noexcept;
         [[nodiscard]] std::optional<ConstantValue> tryLowerEnumFieldValue(Type enumType, const std::string& fieldName) noexcept;
         [[nodiscard]] std::optional<ConstantValue> tryLowerEnumMemberConstant(const BinaryExpression* expression) noexcept;

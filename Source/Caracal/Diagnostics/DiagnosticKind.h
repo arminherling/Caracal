@@ -110,5 +110,8 @@ namespace Caracal
         // Constness diagnostics
         T0057_AssignmentToConstant,
         T0058_AssignmentThroughConstantReference,
+
+        // Control-flow diagnostics
+        T0059_UnreachableCode,
     };
 }

@@ -922,7 +922,7 @@ namespace Caracal
             case NodeKind::ReturnStatement:
             {
                 const auto* returnStatement = static_cast<const ReturnStatement*>(statement);
-                return lowerReturnStatement(returnStatement, *currentBlock);
+                return lowerReturnStatement(returnStatement, *currentBlock, currentBlockId);
             }
             default:
             {
@@ -1497,11 +1497,12 @@ namespace Caracal
         }
     }
 
-    bool IRLowerer::lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block) noexcept
+    bool IRLowerer::lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept
     {
         if (!statement->expression().has_value())
         {
             block.setTerminator(std::make_unique<ReturnTerminator>());
+            currentBlockId.reset();
             return true;
         }
 
@@ -1510,6 +1511,7 @@ namespace Caracal
             return false;
 
         block.setTerminator(std::make_unique<ReturnValueTerminator>(loweredValue.value()));
+        currentBlockId.reset();
         return true;
     }
 

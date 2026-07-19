@@ -165,6 +165,8 @@ namespace Caracal
                 return "T0057";
             case DiagnosticKind::T0058_AssignmentThroughConstantReference:
                 return "T0058";
+            case DiagnosticKind::T0059_UnreachableCode:
+                return "T0059";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -334,6 +336,8 @@ namespace Caracal
                 return "Assignment to constant";
             case DiagnosticKind::T0058_AssignmentThroughConstantReference:
                 return "Assignment through reference to constant";
+            case DiagnosticKind::T0059_UnreachableCode:
+                return "Unreachable code";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

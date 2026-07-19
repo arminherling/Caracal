@@ -2,6 +2,8 @@
 
 #include <Caracal/Constants.h>
 #include <Caracal/Semantic/ArgumentBinder.h>
+#include <Caracal/Syntax/BreakStatement.h>
+#include <Caracal/Syntax/SkipStatement.h>
 #include <Caracal/Syntax/StringLiteral.h>
 
 #include <algorithm>
@@ -2435,11 +2437,67 @@ namespace Caracal
         return *it->second;
     }
 
+    static bool IsTerminatingStatement(const Statement* statement)
+    {
+        switch (statement->kind())
+        {
+            case NodeKind::ReturnStatement:
+            case NodeKind::BreakStatement:
+            case NodeKind::SkipStatement:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    static std::optional<SourceLocation> DeadStatementLocation(const Statement* statement, const TokenBuffer& tokens)
+    {
+        switch (statement->kind())
+        {
+            case NodeKind::ReturnStatement:
+                return tokens.getSourceLocation(static_cast<const ReturnStatement*>(statement)->keywordToken());
+            case NodeKind::BreakStatement:
+                return tokens.getSourceLocation(static_cast<const BreakStatement*>(statement)->keywordToken());
+            case NodeKind::SkipStatement:
+                return tokens.getSourceLocation(static_cast<const SkipStatement*>(statement)->keywordToken());
+            case NodeKind::IfStatement:
+                return tokens.getSourceLocation(static_cast<const IfStatement*>(statement)->ifKeyword());
+            case NodeKind::WhileStatement:
+                return tokens.getSourceLocation(static_cast<const WhileStatement*>(statement)->whileKeyword());
+            case NodeKind::ExpressionStatement:
+                return static_cast<const ExpressionStatement*>(statement)->expression()->sourceLocation(tokens);
+            case NodeKind::AssignmentStatement:
+                return static_cast<const AssignmentStatement*>(statement)->leftExpression()->sourceLocation(tokens);
+            case NodeKind::ConstantDeclaration:
+                return static_cast<const ConstantDeclaration*>(statement)->leftExpression()->sourceLocation(tokens);
+            case NodeKind::VariableDeclaration:
+                return static_cast<const VariableDeclaration*>(statement)->leftExpression()->sourceLocation(tokens);
+            default:
+                return std::nullopt;
+        }
+    }
+
     void TypeChecker::typeCheckBlockNode(BlockNode* body, const TokenBuffer& tokens)
     {
+        auto reachedTerminator = false;
+        auto warnedUnreachable = false;
         for (const auto& statement : body->statements())
         {
+            if (reachedTerminator && !warnedUnreachable)
+            {
+                if (const auto location = DeadStatementLocation(statement.get(), tokens); location.has_value())
+                {
+                    m_diagnostics.addUnreachableCodeWarning(tokens.source(), location.value());
+                    warnedUnreachable = true;
+                }
+            }
+
             typeCheckStatement(statement.get(), tokens);
+
+            if (IsTerminatingStatement(statement.get()))
+            {
+                reachedTerminator = true;
+            }
         }
     }
 

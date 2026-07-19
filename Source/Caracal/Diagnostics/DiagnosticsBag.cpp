@@ -608,6 +608,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addUnreachableCodeWarning(const SourceTextSharedPtr& source, const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Warning,
+            DiagnosticKind::T0059_UnreachableCode,
+            source,
+            location,
+            "This code can never run; remove it.");
+        diagnostic.addPrimaryLabel(location, "Unreachable code after a 'return', 'break', or 'skip'.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName)
     {
         auto diagnostic = Diagnostic(
