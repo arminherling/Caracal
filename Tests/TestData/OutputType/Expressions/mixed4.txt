@@ -16,7 +16,7 @@ ConstantDeclaration: {
                     BinaryExpression: {
                         Type: i32
                         Left: {
-                            NumberLiteral: 2
+                            NumberLiteral: 4
                         }
                         Operation: Subtraction
                         Right: {

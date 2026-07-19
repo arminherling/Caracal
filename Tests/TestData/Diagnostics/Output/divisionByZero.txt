@@ -1,0 +1,12 @@
+ Error T0061
+  Division by zero
+    ,-[Diagnostics/Input/divisionByZero.cara:3:16]
+  1 | def f() i32
+  2 | {
+  3 |     return 1 / 0;
+    .                -
+    .                `-- Integer division by zero.
+  4 | }
+  5 | 
+    `----
+  Fix: Divide by a non-zero value.

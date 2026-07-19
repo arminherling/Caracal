@@ -1,0 +1,9 @@
+ Error T0062
+  Constant expression overflows its type
+    ,-[Diagnostics/Input/constantOverflow.cara:1:21]
+  1 | overflowAddition :: 2147483647 + 1;
+    .                     --------------
+    .                            `-- This constant expression does not fit in 'i32'.
+  2 | 
+    `----
+  Fix: Use a wider type, or values that fit in 'i32'.

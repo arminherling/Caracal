@@ -57,7 +57,9 @@
 #include <Caracal/Syntax/WhileStatement.h>
 
 #include <algorithm>
+#include <limits>
 #include <optional>
+#include <type_traits>
 #include <variant>
 
 namespace Caracal
@@ -127,21 +129,53 @@ namespace Caracal
     template <typename TValue>
     static std::optional<ConstantValue> ConstantFold(BinaryOperatorKind operation, TValue lhs, TValue rhs) noexcept
     {
-        switch (operation)
+        if constexpr (std::is_floating_point_v<TValue>)
         {
-            case BinaryOperatorKind::Addition:
-                return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs + rhs) });
-            case BinaryOperatorKind::Subtraction:
-                return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs - rhs) });
-            case BinaryOperatorKind::Multiplication:
-                return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs * rhs) });
-            case BinaryOperatorKind::Division:
-                if (rhs == static_cast<TValue>(0))
-                    return std::nullopt;
+            switch (operation)
+            {
+                case BinaryOperatorKind::Addition:
+                    return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs + rhs) });
+                case BinaryOperatorKind::Subtraction:
+                    return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs - rhs) });
+                case BinaryOperatorKind::Multiplication:
+                    return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs * rhs) });
+                case BinaryOperatorKind::Division:
+                    if (rhs == static_cast<TValue>(0))
+                        return std::nullopt;
 
-                return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs / rhs) });
-            default:
-                return std::nullopt;
+                    return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(lhs / rhs) });
+                default:
+                    return std::nullopt;
+            }
+        }
+        else
+        {
+            const auto left = static_cast<std::int64_t>(lhs);
+            const auto right = static_cast<std::int64_t>(rhs);
+            std::int64_t result = 0;
+
+            switch (operation)
+            {
+                case BinaryOperatorKind::Addition:
+                    result = left + right;
+                    break;
+                case BinaryOperatorKind::Subtraction:
+                    result = left - right;
+                    break;
+                case BinaryOperatorKind::Multiplication:
+                    result = left * right;
+                    break;
+                case BinaryOperatorKind::Division:
+                    if (right == 0)
+                        return std::nullopt;
+
+                    result = left / right;
+                    break;
+                default:
+                    return std::nullopt;
+            }
+
+            return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<TValue>(result) });
         }
     }
 
@@ -192,8 +226,15 @@ namespace Caracal
                 switch (operation)
                 {
                     case UnaryOperatorKind::ValueNegation:
-                        if constexpr (std::is_same_v<Payload, i32> || std::is_same_v<Payload, float>)
+                        if constexpr (std::is_same_v<Payload, float>)
+                        {
                             return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ -payload });
+                        }
+                        else if constexpr (std::is_same_v<Payload, i32>)
+                        {
+                            const auto negated = -static_cast<std::int64_t>(payload);
+                            return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<i32>(negated) });
+                        }
                         break;
                     case UnaryOperatorKind::LogicalNegation:
                         if constexpr (std::is_same_v<Payload, bool>)

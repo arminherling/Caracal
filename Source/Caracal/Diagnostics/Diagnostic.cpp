@@ -169,6 +169,10 @@ namespace Caracal
                 return "T0059";
             case DiagnosticKind::T0060_MissingReturn:
                 return "T0060";
+            case DiagnosticKind::T0061_DivisionByZero:
+                return "T0061";
+            case DiagnosticKind::T0062_ConstantOverflow:
+                return "T0062";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -342,6 +346,10 @@ namespace Caracal
                 return "Unreachable code";
             case DiagnosticKind::T0060_MissingReturn:
                 return "Not all paths return a value";
+            case DiagnosticKind::T0061_DivisionByZero:
+                return "Division by zero";
+            case DiagnosticKind::T0062_ConstantOverflow:
+                return "Constant expression overflows its type";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

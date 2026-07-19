@@ -121,6 +121,114 @@ namespace Caracal
         }
     }
 
+    static bool ConstantFitsType(std::int64_t value, Type type)
+    {
+        const auto baseType = type.toBaseType();
+
+        if (baseType == Type::I32())
+            return value >= static_cast<std::int64_t>(std::numeric_limits<i32>::min())
+                && value <= static_cast<std::int64_t>(std::numeric_limits<i32>::max());
+
+        if (baseType == Type::U8())
+            return value >= 0 && value <= static_cast<std::int64_t>(std::numeric_limits<u8>::max());
+
+        return false;
+    }
+
+    static std::optional<std::int64_t> TryEvaluateConstantInteger(const Expression* expression)
+    {
+        while (expression != nullptr && expression->kind() == NodeKind::GroupingExpression)
+            expression = static_cast<const GroupingExpression*>(expression)->expression().get();
+
+        if (expression == nullptr)
+            return std::nullopt;
+
+        switch (expression->kind())
+        {
+            case NodeKind::NumberLiteral:
+            {
+                const auto* literal = static_cast<const NumberLiteral*>(expression);
+                if (!literal->hasParsedValue())
+                    return std::nullopt;
+
+                const auto baseType = literal->type().toBaseType();
+                const auto& parsedValue = literal->parsedValue().value();
+
+                if (baseType == Type::I32())
+                    return static_cast<std::int64_t>(std::get<i32>(parsedValue));
+
+                if (baseType == Type::U8())
+                    return static_cast<std::int64_t>(std::get<u8>(parsedValue));
+
+                return std::nullopt;
+            }
+            case NodeKind::UnaryExpression:
+            {
+                const auto* unary = static_cast<const UnaryExpression*>(expression);
+                if (unary->unaryOperator() != UnaryOperatorKind::ValueNegation)
+                    return std::nullopt;
+
+                const auto operand = TryEvaluateConstantInteger(unary->expression().get());
+                if (!operand.has_value())
+                    return std::nullopt;
+
+                const auto negated = -operand.value();
+                if (!ConstantFitsType(negated, expression->type()))
+                    return std::nullopt;
+
+                return negated;
+            }
+            case NodeKind::BinaryExpression:
+            {
+                const auto* binary = static_cast<const BinaryExpression*>(expression);
+                const auto left = TryEvaluateConstantInteger(binary->leftExpression().get());
+                if (!left.has_value())
+                    return std::nullopt;
+
+                const auto right = TryEvaluateConstantInteger(binary->rightExpression().get());
+                if (!right.has_value())
+                    return std::nullopt;
+
+                std::int64_t result = 0;
+                switch (binary->binaryOperator())
+                {
+                    case BinaryOperatorKind::Addition:
+                    {
+                        result = left.value() + right.value();
+                        break;
+                    }
+                    case BinaryOperatorKind::Subtraction:
+                    {
+                        result = left.value() - right.value();
+                        break;
+                    }
+                    case BinaryOperatorKind::Multiplication:
+                    {
+                        result = left.value() * right.value();
+                        break;
+                    }
+                    case BinaryOperatorKind::Division:
+                    {
+                        if (right.value() == 0)
+                            return std::nullopt;
+
+                        result = left.value() / right.value();
+                        break;
+                    }
+                    default:
+                        return std::nullopt;
+                }
+
+                if (!ConstantFitsType(result, expression->type()))
+                    return std::nullopt;
+
+                return result;
+            }
+            default:
+                return std::nullopt;
+        }
+    }
+
     static std::optional<i32> TryParseI32Literal(std::string_view lexeme)
     {
         i32 value = 0;
@@ -2108,6 +2216,58 @@ namespace Caracal
 
                     binaryExpression->setType(Type::Undefined());
                     return Type::Undefined();
+                }
+
+                if (leftType == Type::I32() || leftType == Type::U8())
+                {
+                    const auto leftValue = TryEvaluateConstantInteger(binaryExpression->leftExpression().get());
+                    const auto rightValue = TryEvaluateConstantInteger(binaryExpression->rightExpression().get());
+                    const auto operation = binaryExpression->binaryOperator();
+
+                    if (leftValue.has_value() && rightValue.has_value())
+                    {
+                        if (operation == BinaryOperatorKind::Division && rightValue.value() == 0)
+                        {
+                            m_diagnostics.addDivisionByZeroError(
+                                tokens.source(),
+                                binaryExpression->rightExpression()->sourceLocation(tokens));
+                        }
+                        else
+                        {
+                            std::int64_t result = 0;
+                            switch (operation)
+                            {
+                                case BinaryOperatorKind::Addition:
+                                {
+                                    result = leftValue.value() + rightValue.value();
+                                    break;
+                                }
+                                case BinaryOperatorKind::Subtraction:
+                                {
+                                    result = leftValue.value() - rightValue.value();
+                                    break;
+                                }
+                                case BinaryOperatorKind::Multiplication:
+                                {
+                                    result = leftValue.value() * rightValue.value();
+                                    break;
+                                }
+                                default:
+                                {
+                                    result = leftValue.value() / rightValue.value();
+                                    break;
+                                }
+                            }
+
+                            if (!ConstantFitsType(result, leftType))
+                            {
+                                m_diagnostics.addConstantOverflowError(
+                                    tokens.source(),
+                                    binaryExpression->sourceLocation(tokens),
+                                    FormatTypeName(m_module, leftType));
+                            }
+                        }
+                    }
                 }
 
                 binaryExpression->setType(leftType);

@@ -16,7 +16,7 @@ ConstantDeclaration: {
                     BinaryExpression: {
                         Type: undefined
                         Left: {
-                            NumberLiteral: 2
+                            NumberLiteral: 4
                         }
                         Operation: Subtraction
                         Right: {

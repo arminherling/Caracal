@@ -634,6 +634,32 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addDivisionByZeroError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0061_DivisionByZero,
+            source,
+            location,
+            "Divide by a non-zero value.");
+        diagnostic.addPrimaryLabel(location, "Integer division by zero.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addConstantOverflowError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0062_ConstantOverflow,
+            source,
+            location,
+            "Use a wider type, or values that fit in '" + typeName + "'.");
+        diagnostic.addPrimaryLabel(location, "This constant expression does not fit in '" + typeName + "'.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName)
     {
         auto diagnostic = Diagnostic(
