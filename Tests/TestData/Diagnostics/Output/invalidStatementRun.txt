@@ -1,0 +1,13 @@
+ Error P0005
+  Invalid statement
+    ,-[Diagnostics/Input/invalidStatementRun.cara:3:5]
+  1 | def main() i32
+  2 | {
+  3 |     ) ) ) )
+    .     -
+    .     `-- Unexpected token ')' in statement
+  4 |     return 0;
+  5 | }
+  6 | 
+    `----
+  Fix: Remove this token or rewrite the statement so it starts with a valid statement token.

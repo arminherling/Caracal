@@ -79,6 +79,7 @@ namespace Caracal
         StringLiteralUPtr parseStringLiteral();
         void buildAnnotationNode(StatementScope scope);
         std::vector<AnnotationNodeUPtr> takeCurrentAnnotations();
+        void flushDanglingAnnotations();
 
         Token peek(i32 offset);
         Token currentToken() { return peek(0); }
@@ -89,6 +90,7 @@ namespace Caracal
         Token advanceOnMatch(TokenKind kind1, TokenKind kind2);
         std::optional<Token> tryMatchKind(TokenKind kind);
         void skipUntil(std::initializer_list<TokenKind> syncKinds);
+        void synchronizeToNextStatement();
 
         TokenBuffer m_tokens;
         DiagnosticsBag& m_diagnostics;

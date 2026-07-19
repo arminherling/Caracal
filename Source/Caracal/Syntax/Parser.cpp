@@ -91,12 +91,7 @@ namespace Caracal
     {
         auto statements = parseStatements(StatementScope::Global);
 
-        for (const auto& annotation : m_currentAnnotations)
-        {
-            m_diagnostics.addDanglingAnnotationError(
-                m_tokens.source(),
-                GetAnnotationLocation(annotation.get(), m_tokens));
-        }
+        flushDanglingAnnotations();
 
         if (m_currentIndex < m_tokens.size() - 1)
         {
@@ -288,6 +283,8 @@ namespace Caracal
             }
         }
 
+        flushDanglingAnnotations();
+
         const auto& location = m_tokens.getSourceLocation(current);
         if (scope == StatementScope::Global)
         {
@@ -299,7 +296,13 @@ namespace Caracal
         }
 
         auto errorExpression = std::make_unique<ErrorExpression>(current);
-        advanceCurrentIndex();
+
+        if (current.kind != TokenKind::CloseBracket && current.kind != TokenKind::EndOfFile)
+        {
+            advanceCurrentIndex();
+            synchronizeToNextStatement();
+        }
+
         return std::make_unique<ExpressionStatement>(std::move(errorExpression), Token::ToError(current));
     }
 
@@ -1031,6 +1034,17 @@ namespace Caracal
         return annotations;
     }
 
+    void Parser::flushDanglingAnnotations()
+    {
+        for (const auto& annotation : m_currentAnnotations)
+        {
+            m_diagnostics.addDanglingAnnotationError(
+                m_tokens.source(),
+                GetAnnotationLocation(annotation.get(), m_tokens));
+        }
+        m_currentAnnotations.clear();
+    }
+
     Token Parser::advanceOnMatch(TokenKind kind)
     {
         auto current = currentToken();
@@ -1088,6 +1102,29 @@ namespace Caracal
                     return;
             }
 
+            advanceCurrentIndex();
+        }
+    }
+
+    void Parser::synchronizeToNextStatement()
+    {
+        skipUntil({
+            TokenKind::Semicolon,
+            TokenKind::OpenBracket,
+            TokenKind::CloseBracket,
+            TokenKind::Hash,
+            TokenKind::DefKeyword,
+            TokenKind::EnumKeyword,
+            TokenKind::TypeKeyword,
+            TokenKind::IfKeyword,
+            TokenKind::WhileKeyword,
+            TokenKind::BreakKeyword,
+            TokenKind::SkipKeyword,
+            TokenKind::ReturnKeyword,
+            });
+
+        if (currentToken().kind == TokenKind::Semicolon)
+        {
             advanceCurrentIndex();
         }
     }

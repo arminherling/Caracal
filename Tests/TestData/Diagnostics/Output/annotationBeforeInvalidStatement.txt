@@ -1,0 +1,23 @@
+ Error P0007
+  Dangling annotation
+    ,-[Diagnostics/Input/annotationBeforeInvalidStatement.cara:1:1]
+  1 | #flag
+    . -----
+    .   `-- This annotation is not attached to any declaration.
+  2 | )
+  3 | def foo() i32
+  4 | {
+    `----
+  Fix: Remove the extra annotation or attach it to the next supported declaration.
+ Error P0003
+  Unexpected top-level token
+    ,-[Diagnostics/Input/annotationBeforeInvalidStatement.cara:2:1]
+  1 | #flag
+  2 | )
+    . -
+    . `-- Unexpected top-level token ')'
+  3 | def foo() i32
+  4 | {
+  5 |     return 0;
+    `----
+  Fix: Remove the unexpected top-level token or start a declaration with 'def', 'enum', or 'type'.
