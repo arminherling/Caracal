@@ -1,0 +1,12 @@
+ Error T0063
+  Unary operator cannot be applied to this type
+    ,-[Diagnostics/Input/logicalNegationOnNonBool.cara:3:12]
+  1 | ﻿def probe() i32
+  2 | {
+  3 |     return !5;
+    .            --
+    .             `-- Operator '!' cannot be applied to 'i32'
+  4 | }
+  5 | 
+    `----
+  Fix: Operator '!' expects a 'bool' operand.

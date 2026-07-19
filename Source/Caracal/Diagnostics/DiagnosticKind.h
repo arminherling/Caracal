@@ -118,5 +118,6 @@ namespace Caracal
         // Arithmetic diagnostics
         T0061_DivisionByZero,
         T0062_ConstantOverflow,
+        T0063_UnaryOperandTypeMismatch,
     };
 }

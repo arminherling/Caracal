@@ -173,6 +173,8 @@ namespace Caracal
                 return "T0061";
             case DiagnosticKind::T0062_ConstantOverflow:
                 return "T0062";
+            case DiagnosticKind::T0063_UnaryOperandTypeMismatch:
+                return "T0063";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -350,6 +352,8 @@ namespace Caracal
                 return "Division by zero";
             case DiagnosticKind::T0062_ConstantOverflow:
                 return "Constant expression overflows its type";
+            case DiagnosticKind::T0063_UnaryOperandTypeMismatch:
+                return "Unary operator cannot be applied to this type";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

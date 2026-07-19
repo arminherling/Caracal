@@ -1,0 +1,4 @@
+﻿def probe() i32
+{
+    return -"hello";
+}

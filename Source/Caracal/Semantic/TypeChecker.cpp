@@ -121,6 +121,11 @@ namespace Caracal
         }
     }
 
+    static bool IsNegatableNumericType(Type type)
+    {
+        return type == Type::I32() || type == Type::U8() || type == Type::F32();
+    }
+
     static bool ConstantFitsType(std::int64_t value, Type type)
     {
         const auto baseType = type.toBaseType();
@@ -2053,6 +2058,20 @@ namespace Caracal
             {
                 auto type = typeCheckExpression(unaryExpression->expression().get(), tokens);
 
+                const auto operandType = type.toValue();
+                if (operandType != Type::Undefined() && operandType != Type::Bool())
+                {
+                    m_diagnostics.addUnaryOperandTypeMismatchError(
+                        tokens.source(),
+                        unaryExpression->sourceLocation(tokens),
+                        "!",
+                        FormatTypeName(m_module, operandType),
+                        "a 'bool' operand");
+
+                    unaryExpression->setType(Type::Undefined());
+                    return Type::Undefined();
+                }
+
                 unaryExpression->setType(type);
                 return type;
             }
@@ -2070,6 +2089,20 @@ namespace Caracal
                 {
                     unaryExpression->setSignFolded(true);
                     m_negatedLiteralSignConsumed = false;
+                }
+
+                const auto operandType = type.toValue();
+                if (operandType != Type::Undefined() && !IsNegatableNumericType(operandType))
+                {
+                    m_diagnostics.addUnaryOperandTypeMismatchError(
+                        tokens.source(),
+                        unaryExpression->sourceLocation(tokens),
+                        "-",
+                        FormatTypeName(m_module, operandType),
+                        "a numeric operand");
+
+                    unaryExpression->setType(Type::Undefined());
+                    return Type::Undefined();
                 }
 
                 unaryExpression->setType(type);
