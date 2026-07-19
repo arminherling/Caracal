@@ -250,7 +250,9 @@ static std::vector<std::tuple<std::string, std::string_view>> UnterminatedString
         std::make_tuple(" \" ", "\" "),
         std::make_tuple("  \"1234 ", "\"1234 "),
         std::make_tuple("\"string with whitespace ", "\"string with whitespace "),
-        std::make_tuple(" \"1234567890", "\"1234567890")
+        std::make_tuple(" \"1234567890", "\"1234567890"),
+        std::make_tuple("\"a\\", "\"a\\"),
+        std::make_tuple("\"\\", "\"\\")
     };
 }
 

@@ -49,9 +49,10 @@ namespace Caracal
             return {};
         }
 
+        const auto sourceSize = static_cast<i32>(source.text.size());
+
         if (location.startIndex == location.endIndex && location.startIndex > 0)
         {
-            const auto sourceSize = static_cast<i32>(source.text.size());
             if (location.startIndex <= sourceSize)
             {
                 return {
@@ -59,6 +60,14 @@ namespace Caracal
                     .endIndex = location.startIndex
                 };
             }
+        }
+
+        if (location.endIndex > sourceSize)
+        {
+            return {
+                .startIndex = location.startIndex > sourceSize ? sourceSize : location.startIndex,
+                .endIndex = sourceSize
+            };
         }
 
         return location;

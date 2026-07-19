@@ -1,5 +1,6 @@
 #include <Caracal/Syntax/Lexer.h>
 
+#include <algorithm>
 #include <unordered_map>
 
 namespace Caracal
@@ -98,8 +99,10 @@ namespace Caracal
 
     [[nodiscard]] static auto CaptureTrivia(TokenBuffer& tokenBuffer, std::string_view source, i32 currentIndex, i32 triviaStartIndex) noexcept
     {
-        const auto triviaLength = currentIndex - triviaStartIndex;
-        const auto trivia = source.substr(triviaStartIndex, triviaLength);
+        const auto sourceLength = static_cast<i32>(source.length());
+        const auto start = std::clamp(triviaStartIndex, 0, sourceLength);
+        const auto end = std::clamp(currentIndex, start, sourceLength);
+        const auto trivia = source.substr(start, end - start);
 
         return tokenBuffer.addTrivia(trivia);
     }
@@ -195,7 +198,7 @@ namespace Caracal
         auto current = PeekCurrentChar(source, currentIndex);
         while (current != '"' && current != '\r' && current != '\n' && current != '\0')
         {
-            if (current == '\\')
+            if (current == '\\' && PeekNextChar(source, currentIndex) != '\0')
             {
                 currentIndex++;
             }
