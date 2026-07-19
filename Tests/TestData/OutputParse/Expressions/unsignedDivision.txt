@@ -1,0 +1,129 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: unsignedDivide
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u8
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: u8
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: a
+                    }
+                }
+                Operation: Division
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: signedDivide
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: i32
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: i32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: a
+                    }
+                }
+                Operation: Division
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: foldedHighByteDivision
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: u8
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NumberLiteral: 200
+                    TypeNameNode: {
+                        Type: undefined
+                        Lexeme: u8
+                    }
+                }
+                Operation: Division
+                Right: {
+                    NumberLiteral: 2
+                    TypeNameNode: {
+                        Type: undefined
+                        Lexeme: u8
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,14 @@
+﻿def unsignedDivide(a: u8, b: u8) u8
+{
+    return a / b;
+}
+
+def signedDivide(a: i32, b: i32) i32
+{
+    return a / b;
+}
+
+def foldedHighByteDivision() u8
+{
+    return 200'u8 / 2'u8;
+}

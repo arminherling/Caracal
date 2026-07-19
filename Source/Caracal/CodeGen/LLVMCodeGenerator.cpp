@@ -459,7 +459,7 @@ namespace Caracal
             case InstructionKind::Divide:
             {
                 const auto& binary = static_cast<const DivideInstruction&>(instruction);
-                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind(), binary.type());
             }
             case InstructionKind::Equal:
             {
@@ -629,7 +629,15 @@ namespace Caracal
                 }
                 case InstructionKind::Divide:
                 {
-                    defineValue(resultId, m_irBuilder->CreateSDiv(lhs, rhs, "divide"));
+                    if (isUnsigned)
+                    {
+                        defineValue(resultId, m_irBuilder->CreateUDiv(lhs, rhs, "divide"));
+                    }
+                    else
+                    {
+                        defineValue(resultId, m_irBuilder->CreateSDiv(lhs, rhs, "divide"));
+                    }
+
                     return true;
                 }
                 case InstructionKind::Equal:
