@@ -464,32 +464,32 @@ namespace Caracal
             case InstructionKind::Equal:
             {
                 const auto& binary = static_cast<const EqualInstruction&>(instruction);
-                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind(), binary.operandType());
             }
             case InstructionKind::NotEqual:
             {
                 const auto& binary = static_cast<const NotEqualInstruction&>(instruction);
-                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind(), binary.operandType());
             }
             case InstructionKind::LessThan:
             {
                 const auto& binary = static_cast<const LessThanInstruction&>(instruction);
-                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind(), binary.operandType());
             }
             case InstructionKind::LessOrEqual:
             {
                 const auto& binary = static_cast<const LessOrEqualInstruction&>(instruction);
-                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind(), binary.operandType());
             }
             case InstructionKind::GreaterThan:
             {
                 const auto& binary = static_cast<const GreaterThanInstruction&>(instruction);
-                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind(), binary.operandType());
             }
             case InstructionKind::GreaterOrEqual:
             {
                 const auto& binary = static_cast<const GreaterOrEqualInstruction&>(instruction);
-                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind(), binary.operandType());
             }
             case InstructionKind::LogicalAnd:
             {
@@ -535,7 +535,7 @@ namespace Caracal
         }
     }
 
-    bool LLVMCodeGenerator::emitBinary(TemporaryId resultId, ValueRef leftRef, ValueRef rightRef, InstructionKind kind) noexcept
+    bool LLVMCodeGenerator::emitBinary(TemporaryId resultId, ValueRef leftRef, ValueRef rightRef, InstructionKind kind, Type operandType) noexcept
     {
         auto* lhs = tryResolve(leftRef);
         auto* rhs = tryResolve(rightRef);
@@ -546,6 +546,7 @@ namespace Caracal
         if ((kind == InstructionKind::Equal || kind == InstructionKind::NotEqual) && lhs->getType()->isPointerTy())
             return emitStringEquality(resultId, lhs, rhs, kind);
 
+        const auto isUnsigned = operandType.toValue() == Type::U8();
         const auto isFloat = lhs->getType()->isFloatingPointTy();
         if (isFloat)
         {
@@ -643,22 +644,54 @@ namespace Caracal
                 }
                 case InstructionKind::LessThan:
                 {
-                    defineValue(resultId, m_irBuilder->CreateICmpSLT(lhs, rhs, "less_than"));
+                    if (isUnsigned)
+                    {
+                        defineValue(resultId, m_irBuilder->CreateICmpULT(lhs, rhs, "less_than"));
+                    }
+                    else
+                    {
+                        defineValue(resultId, m_irBuilder->CreateICmpSLT(lhs, rhs, "less_than"));
+                    }
+
                     return true;
                 }
                 case InstructionKind::LessOrEqual:
                 {
-                    defineValue(resultId, m_irBuilder->CreateICmpSLE(lhs, rhs, "less_or_equal"));
+                    if (isUnsigned)
+                    {
+                        defineValue(resultId, m_irBuilder->CreateICmpULE(lhs, rhs, "less_or_equal"));
+                    }
+                    else
+                    {
+                        defineValue(resultId, m_irBuilder->CreateICmpSLE(lhs, rhs, "less_or_equal"));
+                    }
+
                     return true;
                 }
                 case InstructionKind::GreaterThan:
                 {
-                    defineValue(resultId, m_irBuilder->CreateICmpSGT(lhs, rhs, "greater_than"));
+                    if (isUnsigned)
+                    {
+                        defineValue(resultId, m_irBuilder->CreateICmpUGT(lhs, rhs, "greater_than"));
+                    }
+                    else
+                    {
+                        defineValue(resultId, m_irBuilder->CreateICmpSGT(lhs, rhs, "greater_than"));
+                    }
+
                     return true;
                 }
                 case InstructionKind::GreaterOrEqual:
                 {
-                    defineValue(resultId, m_irBuilder->CreateICmpSGE(lhs, rhs, "greater_or_equal"));
+                    if (isUnsigned)
+                    {
+                        defineValue(resultId, m_irBuilder->CreateICmpUGE(lhs, rhs, "greater_or_equal"));
+                    }
+                    else
+                    {
+                        defineValue(resultId, m_irBuilder->CreateICmpSGE(lhs, rhs, "greater_or_equal"));
+                    }
+
                     return true;
                 }
                 case InstructionKind::LogicalAnd:

@@ -2,12 +2,13 @@
 
 namespace Caracal
 {
-    LessThanInstruction::LessThanInstruction(TemporaryId resultId, ValueRef leftValue, ValueRef rightValue, Type type) noexcept
+    LessThanInstruction::LessThanInstruction(TemporaryId resultId, ValueRef leftValue, ValueRef rightValue, Type type, Type operandType) noexcept
         : Instruction{ InstructionKind::LessThan }
         , m_resultId{ resultId }
         , m_leftValue{ leftValue }
         , m_rightValue{ rightValue }
         , m_type{ type }
+        , m_operandType{ operandType }
     {
     }
 }

@@ -1,0 +1,223 @@
+FunctionDefinitionStatement: {
+    Type: (u8, u8) -> bool
+    Name: unsignedGreater
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: u8
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: u8
+                Lexeme: u8
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    NameExpression: {
+                        Type: u8
+                        Name: a
+                    }
+                }
+                Operation: GreaterThan
+                Right: {
+                    NameExpression: {
+                        Type: u8
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (u8, u8) -> bool
+    Name: unsignedLess
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: u8
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: u8
+                Lexeme: u8
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    NameExpression: {
+                        Type: u8
+                        Name: a
+                    }
+                }
+                Operation: LessThan
+                Right: {
+                    NameExpression: {
+                        Type: u8
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (u8, u8) -> bool
+    Name: unsignedGreaterOrEqual
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: u8
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: u8
+                Lexeme: u8
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    NameExpression: {
+                        Type: u8
+                        Name: a
+                    }
+                }
+                Operation: GreaterOrEqual
+                Right: {
+                    NameExpression: {
+                        Type: u8
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (u8, u8) -> bool
+    Name: unsignedLessOrEqual
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: u8
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: u8
+                Lexeme: u8
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    NameExpression: {
+                        Type: u8
+                        Name: a
+                    }
+                }
+                Operation: LessOrEqual
+                Right: {
+                    NameExpression: {
+                        Type: u8
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> bool
+    Name: foldedHighByteIsGreater
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    NumberLiteral: 200
+                    TypeNameNode: {
+                        Type: u8
+                        Lexeme: u8
+                    }
+                }
+                Operation: GreaterThan
+                Right: {
+                    NumberLiteral: 100
+                    TypeNameNode: {
+                        Type: u8
+                        Lexeme: u8
+                    }
+                }
+            }
+        }
+    }
+}

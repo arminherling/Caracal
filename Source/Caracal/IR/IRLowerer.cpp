@@ -1902,6 +1902,8 @@ namespace Caracal
                     return std::nullopt;
 
                 const auto temporaryId = m_nextTemporaryId++;
+                const auto comparisonOperandType = binaryExpression->leftExpression()->type().toValue();
+
                 switch (binaryExpression->binaryOperator())
                 {
                     case BinaryOperatorKind::Addition:
@@ -1917,22 +1919,22 @@ namespace Caracal
                         block.addInstruction(std::make_unique<DivideInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
                     case BinaryOperatorKind::Equal:
-                        block.addInstruction(std::make_unique<EqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        block.addInstruction(std::make_unique<EqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::NotEqual:
-                        block.addInstruction(std::make_unique<NotEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        block.addInstruction(std::make_unique<NotEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::LessThan:
-                        block.addInstruction(std::make_unique<LessThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        block.addInstruction(std::make_unique<LessThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::LessOrEqual:
-                        block.addInstruction(std::make_unique<LessOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        block.addInstruction(std::make_unique<LessOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::GreaterThan:
-                        block.addInstruction(std::make_unique<GreaterThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        block.addInstruction(std::make_unique<GreaterThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::GreaterOrEqual:
-                        block.addInstruction(std::make_unique<GreaterOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        block.addInstruction(std::make_unique<GreaterOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::LogicalAnd:
                         block.addInstruction(std::make_unique<LogicalAndInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));

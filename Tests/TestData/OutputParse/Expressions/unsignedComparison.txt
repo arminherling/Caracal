@@ -1,0 +1,223 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: unsignedGreater
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u8
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: a
+                    }
+                }
+                Operation: GreaterThan
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: unsignedLess
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u8
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: a
+                    }
+                }
+                Operation: LessThan
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: unsignedGreaterOrEqual
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u8
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: a
+                    }
+                }
+                Operation: GreaterOrEqual
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: unsignedLessOrEqual
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u8
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: a
+                    }
+                }
+                Operation: LessOrEqual
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: b
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: foldedHighByteIsGreater
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NumberLiteral: 200
+                    TypeNameNode: {
+                        Type: undefined
+                        Lexeme: u8
+                    }
+                }
+                Operation: GreaterThan
+                Right: {
+                    NumberLiteral: 100
+                    TypeNameNode: {
+                        Type: undefined
+                        Lexeme: u8
+                    }
+                }
+            }
+        }
+    }
+}

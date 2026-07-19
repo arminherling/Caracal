@@ -1,0 +1,24 @@
+﻿def unsignedGreater(a: u8, b: u8) bool
+{
+    return a > b;
+}
+
+def unsignedLess(a: u8, b: u8) bool
+{
+    return a < b;
+}
+
+def unsignedGreaterOrEqual(a: u8, b: u8) bool
+{
+    return a >= b;
+}
+
+def unsignedLessOrEqual(a: u8, b: u8) bool
+{
+    return a <= b;
+}
+
+def foldedHighByteIsGreater() bool
+{
+    return 200'u8 > 100'u8;
+}

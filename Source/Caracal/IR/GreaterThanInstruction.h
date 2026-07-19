@@ -8,17 +8,19 @@ namespace Caracal
     class GreaterThanInstruction final : public Instruction
     {
     public:
-        GreaterThanInstruction(TemporaryId resultId, ValueRef leftValue, ValueRef rightValue, Type type) noexcept;
+        GreaterThanInstruction(TemporaryId resultId, ValueRef leftValue, ValueRef rightValue, Type type, Type operandType) noexcept;
 
         [[nodiscard]] TemporaryId resultId() const noexcept { return m_resultId; }
         [[nodiscard]] ValueRef leftValue() const noexcept { return m_leftValue; }
         [[nodiscard]] ValueRef rightValue() const noexcept { return m_rightValue; }
         [[nodiscard]] Type type() const noexcept { return m_type; }
+        [[nodiscard]] Type operandType() const noexcept { return m_operandType; }
 
     private:
         TemporaryId m_resultId;
         ValueRef m_leftValue;
         ValueRef m_rightValue;
         Type m_type;
+        Type m_operandType;
     };
 }

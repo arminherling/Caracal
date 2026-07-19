@@ -2,12 +2,13 @@
 
 namespace Caracal
 {
-    GreaterOrEqualInstruction::GreaterOrEqualInstruction(TemporaryId resultId, ValueRef leftValue, ValueRef rightValue, Type type) noexcept
+    GreaterOrEqualInstruction::GreaterOrEqualInstruction(TemporaryId resultId, ValueRef leftValue, ValueRef rightValue, Type type, Type operandType) noexcept
         : Instruction{ InstructionKind::GreaterOrEqual }
         , m_resultId{ resultId }
         , m_leftValue{ leftValue }
         , m_rightValue{ rightValue }
         , m_type{ type }
+        , m_operandType{ operandType }
     {
     }
 }

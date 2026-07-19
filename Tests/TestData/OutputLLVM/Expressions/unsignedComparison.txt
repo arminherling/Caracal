@@ -1,0 +1,32 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i1 @unsignedGreater(i8 %0, i8 %1) {
+entry:
+  %greater_than = icmp ugt i8 %0, %1
+  ret i1 %greater_than
+}
+
+define i1 @unsignedLess(i8 %0, i8 %1) {
+entry:
+  %less_than = icmp ult i8 %0, %1
+  ret i1 %less_than
+}
+
+define i1 @unsignedGreaterOrEqual(i8 %0, i8 %1) {
+entry:
+  %greater_or_equal = icmp uge i8 %0, %1
+  ret i1 %greater_or_equal
+}
+
+define i1 @unsignedLessOrEqual(i8 %0, i8 %1) {
+entry:
+  %less_or_equal = icmp ule i8 %0, %1
+  ret i1 %less_or_equal
+}
+
+define i1 @foldedHighByteIsGreater() {
+entry:
+  ret i1 true
+}
