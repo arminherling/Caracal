@@ -596,7 +596,7 @@ namespace Caracal
                 }
                 case InstructionKind::Equal:
                 {
-                    defineValue(resultId, m_irBuilder->CreateFCmpUEQ(lhs, rhs, "equal"));
+                    defineValue(resultId, m_irBuilder->CreateFCmpOEQ(lhs, rhs, "equal"));
                     return true;
                 }
                 case InstructionKind::NotEqual:
@@ -606,22 +606,22 @@ namespace Caracal
                 }
                 case InstructionKind::LessThan:
                 {
-                    defineValue(resultId, m_irBuilder->CreateFCmpULT(lhs, rhs, "less_than"));
+                    defineValue(resultId, m_irBuilder->CreateFCmpOLT(lhs, rhs, "less_than"));
                     return true;
                 }
                 case InstructionKind::LessOrEqual:
                 {
-                    defineValue(resultId, m_irBuilder->CreateFCmpULE(lhs, rhs, "less_or_equal"));
+                    defineValue(resultId, m_irBuilder->CreateFCmpOLE(lhs, rhs, "less_or_equal"));
                     return true;
                 }
                 case InstructionKind::GreaterThan:
                 {
-                    defineValue(resultId, m_irBuilder->CreateFCmpUGT(lhs, rhs, "greater_than"));
+                    defineValue(resultId, m_irBuilder->CreateFCmpOGT(lhs, rhs, "greater_than"));
                     return true;
                 }
                 case InstructionKind::GreaterOrEqual:
                 {
-                    defineValue(resultId, m_irBuilder->CreateFCmpUGE(lhs, rhs, "greater_or_equal"));
+                    defineValue(resultId, m_irBuilder->CreateFCmpOGE(lhs, rhs, "greater_or_equal"));
                     return true;
                 }
                 default:

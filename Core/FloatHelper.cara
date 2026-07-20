@@ -1,0 +1,18 @@
+// true only for NaN, other values satisfies at least one of the two comparisons
+def isNan(value: f32) bool
+{
+    return !(value <= 0.0 or value > 0.0);
+}
+
+def approxEquals(left: f32, right: f32, tolerance: f32) bool
+{
+    difference := left - right;
+    if difference < 0.0
+    {
+        difference = -difference;
+    }
+
+    return difference <= tolerance;
+}
+
+// TODO add tests when the language supports them
