@@ -1,0 +1,98 @@
+TypeDefinitionStatement: {
+    Type: i32
+    Name: i32
+    Annotation: {
+        Name: builtin
+    }
+    BlockNode(2): {
+        MethodDefinitionStatement: {
+            Type: (i32, i32) -> i32
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: add
+            }
+            ParametersNode(2): {
+                ParameterNode: {
+                    Name: lhs
+                    TypeNameNode: {
+                        Type: i32
+                        Lexeme: i32
+                    }
+                }
+                ParameterNode: {
+                    Name: rhs
+                    TypeNameNode: {
+                        Type: i32
+                        Lexeme: i32
+                    }
+                }
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            BlockNode(0): {
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (i32, i32) -> bool
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: lessThan
+            }
+            ParametersNode(2): {
+                ParameterNode: {
+                    Name: lhs
+                    TypeNameNode: {
+                        Type: i32
+                        Lexeme: i32
+                    }
+                }
+                ParameterNode: {
+                    Name: rhs
+                    TypeNameNode: {
+                        Type: i32
+                        Lexeme: i32
+                    }
+                }
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: bool
+                    Lexeme: bool
+                }
+            }
+            BlockNode(0): {
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: probe
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NumberLiteral: 1
+                }
+                Operation: Addition
+                Right: {
+                    NumberLiteral: 2
+                }
+            }
+        }
+    }
+}

@@ -134,6 +134,15 @@ namespace Caracal
         return m_typeDefinitions.back();
     }
 
+    TypeDefinition& SemanticContext::bindBuiltinTypeDefinition(Type type, const TypeDefinitionStatement* statement) noexcept
+    {
+        const auto typeId = type.id();
+        m_typeDefinitions.emplace_back(statement, type, m_typeNames.at(typeId));
+        m_typeDefinitionIndexById.try_emplace(typeId, m_typeDefinitions.size() - 1);
+
+        return m_typeDefinitions.back();
+    }
+
     FunctionDefinition& SemanticContext::createFunction(
         std::string_view name,
         const std::vector<Parameter>& parameters,

@@ -80,6 +80,13 @@ namespace Caracal
         void addVoidParameterTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& parameterName);
         void addBinaryOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& operandTypeName, const std::string& expectedDescription);
 
+        // #builtin annotation diagnostics
+        void addNotABuiltinTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
+        void addDuplicateBuiltinTypeBindingError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName, const std::optional<SourceLocation>& otherLocation);
+        void addBuiltinTypeFieldIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName);
+        void addBuiltinTypeConstructorIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
+        void addBuiltinMethodBodyIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName);
+
         // Control flow diagnostics
         void addNonBoolIfConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);
         void addNonBoolWhileConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);

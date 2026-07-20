@@ -1,0 +1,11 @@
+﻿#builtin
+type i32
+{
+    def add(lhs: i32, rhs: i32) i32 {}
+    def lessThan(lhs: i32, rhs: i32) bool {}
+}
+
+def probe() i32
+{
+    return 1 + 2;
+}

@@ -29,6 +29,7 @@ namespace Caracal
         [[nodiscard]] Type tryGetFunctionTypeByName(std::string_view typeName) const noexcept;
         [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;
         [[nodiscard]] TypeDefinition& getTypeDefinition(Type type) noexcept;
+        TypeDefinition& bindBuiltinTypeDefinition(Type type, const TypeDefinitionStatement* statement) noexcept;
         [[nodiscard]] FunctionDefinition& getFunctionDefinition(Type type) noexcept;
         [[nodiscard]] Type tryGetTypeByName(std::string_view name) const noexcept;
         [[nodiscard]] std::string_view getNameByType(Type type) noexcept;

@@ -179,6 +179,16 @@ namespace Caracal
                 return "T0064";
             case DiagnosticKind::T0065_BinaryOperandTypeMismatch:
                 return "T0065";
+            case DiagnosticKind::T0066_NotABuiltinType:
+                return "T0066";
+            case DiagnosticKind::T0067_DuplicateBuiltinTypeBinding:
+                return "T0067";
+            case DiagnosticKind::T0068_BuiltinTypeFieldIgnored:
+                return "T0068";
+            case DiagnosticKind::T0069_BuiltinTypeConstructorIgnored:
+                return "T0069";
+            case DiagnosticKind::T0070_BuiltinMethodBodyIgnored:
+                return "T0070";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -362,6 +372,16 @@ namespace Caracal
                 return "Parameter cannot have type 'void'";
             case DiagnosticKind::T0065_BinaryOperandTypeMismatch:
                 return "Binary operator cannot be applied to this type";
+            case DiagnosticKind::T0066_NotABuiltinType:
+                return "Not a builtin type";
+            case DiagnosticKind::T0067_DuplicateBuiltinTypeBinding:
+                return "Builtin type is already bound";
+            case DiagnosticKind::T0068_BuiltinTypeFieldIgnored:
+                return "Field in builtin type is ignored";
+            case DiagnosticKind::T0069_BuiltinTypeConstructorIgnored:
+                return "Constructor in builtin type is ignored";
+            case DiagnosticKind::T0070_BuiltinMethodBodyIgnored:
+                return "Method body in builtin type is ignored";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

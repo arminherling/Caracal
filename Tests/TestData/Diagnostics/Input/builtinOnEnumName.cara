@@ -1,0 +1,9 @@
+﻿enum Numbers
+{
+    One
+}
+
+#builtin
+type Numbers
+{
+}

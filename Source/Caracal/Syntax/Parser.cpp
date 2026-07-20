@@ -466,7 +466,8 @@ namespace Caracal
         auto keyword = advanceOnMatch(TokenKind::TypeKeyword);
         auto nameToken = advanceOnMatch(TokenKind::Identifier);
         auto name = m_tokens.getLexeme(nameToken);
-        
+        auto annotations = takeCurrentAnnotations();
+
         std::optional<ParametersNodeUPtr> maybeParameters;
         if (currentToken().kind == TokenKind::OpenParenthesis)
         {
@@ -474,8 +475,6 @@ namespace Caracal
         }
 
         auto body = parseTypeBody();
-
-        auto annotations = takeCurrentAnnotations();
 
         return std::make_unique<TypeDefinitionStatement>(keyword, nameToken, name, std::move(maybeParameters), std::move(body), std::move(annotations));
     }

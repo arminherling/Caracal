@@ -686,6 +686,75 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addNotABuiltinTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0066_NotABuiltinType,
+            source,
+            location,
+            "Apply #builtin only to declarations of builtin type names, or remove the annotation.");
+        diagnostic.addPrimaryLabel(location, "'" + typeName + "' is not a builtin type");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addDuplicateBuiltinTypeBindingError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName, const std::optional<SourceLocation>& otherLocation)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0067_DuplicateBuiltinTypeBinding,
+            source,
+            location,
+            "Merge the members into the existing #builtin declaration.");
+        diagnostic.addPrimaryLabel(location, "Builtin type '" + typeName + "' is already bound to a declaration");
+        if (otherLocation.has_value())
+        {
+            diagnostic.addSecondaryLabel(otherLocation.value(), "Previous declaration is here");
+        }
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addBuiltinTypeFieldIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Warning,
+            DiagnosticKind::T0068_BuiltinTypeFieldIgnored,
+            source,
+            location,
+            "Remove the field, builtin types have no fields.");
+        diagnostic.addPrimaryLabel(location, "Field '" + fieldName + "' in a #builtin type is ignored");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addBuiltinTypeConstructorIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Warning,
+            DiagnosticKind::T0069_BuiltinTypeConstructorIgnored,
+            source,
+            location,
+            "Remove the constructor parameters; builtin types are not constructible.");
+        diagnostic.addPrimaryLabel(location, "Constructor on builtin type '" + typeName + "' is ignored");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addBuiltinMethodBodyIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Warning,
+            DiagnosticKind::T0070_BuiltinMethodBodyIgnored,
+            source,
+            location,
+            "Leave the body empty; #builtin methods are signatures only.");
+        diagnostic.addPrimaryLabel(location, "Body of builtin method '" + methodName + "' is ignored");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addVoidParameterTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& parameterName)
     {
         auto diagnostic = Diagnostic(

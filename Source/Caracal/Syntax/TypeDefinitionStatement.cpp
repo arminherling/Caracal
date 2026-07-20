@@ -18,4 +18,17 @@ namespace Caracal
         , m_annotations(std::move(annotations))
     {
     }
+
+    bool TypeDefinitionStatement::isBuiltin() const noexcept
+    {
+        for (const auto& annotation : m_annotations)
+        {
+            if (annotation->kind() == AnnotationKind::Builtin)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

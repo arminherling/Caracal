@@ -1,5 +1,4 @@
 ﻿#builtin(1)
-type Point
+type i32
 {
-    x: i32 = 0
 }

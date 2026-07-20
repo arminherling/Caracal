@@ -1,0 +1,14 @@
+ Error T0066
+  Not a builtin type
+     ,-[Diagnostics/Input/builtinOnEnumName.cara:7:6]
+   4 | }
+   5 | 
+   6 | #builtin
+   7 | type Numbers
+     .      -------
+     .         `-- 'Numbers' is not a builtin type
+   8 | {
+   9 | }
+  10 | 
+     `----
+  Fix: Apply #builtin only to declarations of builtin type names, or remove the annotation.

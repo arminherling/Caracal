@@ -4,8 +4,8 @@
   1 | ﻿#builtin(1)
     .             -
     .             `-- Annotation '#builtin' expects 0 argument(s), but got 1.
-  2 | type Point
+  2 | type i32
   3 | {
-  4 |     x: i32 = 0
+  4 | }
     `----
   Fix: Remove the unexpected annotation arguments.

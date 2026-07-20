@@ -337,6 +337,9 @@ namespace Caracal
             if (typeDefinition.statement() == nullptr)
                 continue;
 
+            if (typeDefinition.type().kind() == TypeKind::Builtin)
+                continue;
+
             if (!lowerTypeDefinition(typeDefinition, module))
                 return false;
         }
@@ -396,6 +399,10 @@ namespace Caracal
                 }
                 case NodeKind::MethodDefinitionStatement:
                 {
+                    const auto parentType = functionDefinition.parentType();
+                    if (parentType.kind() == TypeKind::Builtin && parentType.id() >= 0)
+                        break;
+
                     const auto* methodStatement = static_cast<const MethodDefinitionStatement*>(statement);
                     if (!lowerFunctionDefinition(functionDefinition, methodStatement->bodyNode().get(), methodStatement->isExtern(), module))
                         return false;

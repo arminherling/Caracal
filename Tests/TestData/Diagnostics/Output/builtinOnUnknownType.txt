@@ -1,0 +1,12 @@
+ Error T0066
+  Not a builtin type
+    ,-[Diagnostics/Input/builtinOnUnknownType.cara:2:6]
+  1 | ﻿#builtin
+  2 | type Vector
+    .      ------
+    .         `-- 'Vector' is not a builtin type
+  3 | {
+  4 | }
+  5 | 
+    `----
+  Fix: Apply #builtin only to declarations of builtin type names, or remove the annotation.

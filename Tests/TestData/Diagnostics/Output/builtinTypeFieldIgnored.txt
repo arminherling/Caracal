@@ -1,0 +1,13 @@
+ Warning T0068
+  Field in builtin type is ignored
+    ,-[Diagnostics/Input/builtinTypeFieldIgnored.cara:4:5]
+  1 | ﻿#builtin
+  2 | type i32
+  3 | {
+  4 |     x: i32 = 0
+    .     -
+    .     `-- Field 'x' in a #builtin type is ignored
+  5 | }
+  6 | 
+    `----
+  Fix: Remove the field, builtin types have no fields.

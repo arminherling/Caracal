@@ -121,5 +121,12 @@ namespace Caracal
         T0063_UnaryOperandTypeMismatch,
         T0064_VoidParameterType,
         T0065_BinaryOperandTypeMismatch,
+
+        // #builtin annotation diagnostics
+        T0066_NotABuiltinType,
+        T0067_DuplicateBuiltinTypeBinding,
+        T0068_BuiltinTypeFieldIgnored,
+        T0069_BuiltinTypeConstructorIgnored,
+        T0070_BuiltinMethodBodyIgnored,
     };
 }

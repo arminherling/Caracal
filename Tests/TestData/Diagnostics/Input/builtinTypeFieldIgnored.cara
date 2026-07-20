@@ -1,0 +1,5 @@
+﻿#builtin
+type i32
+{
+    x: i32 = 0
+}

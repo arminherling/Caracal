@@ -514,6 +514,42 @@ namespace Caracal
                     {
                         auto* typeStatement = static_cast<TypeDefinitionStatement*>(statement.get());
                         m_statementTokens.emplace(typeStatement, &parseTree->tokens());
+                        if (typeStatement->isBuiltin())
+                        {
+                            const auto builtinType = m_module.tryGetTypeByName(typeStatement->name());
+                            if (builtinType.kind() != TypeKind::Builtin || builtinType.id() < 0)
+                            {
+                                m_diagnostics.addNotABuiltinTypeError(
+                                    parseTree->tokens().source(),
+                                    parseTree->tokens().getSourceLocation(typeStatement->nameToken()),
+                                    std::string(typeStatement->name()));
+                                break;
+                            }
+
+                            const auto& existingDefinition = m_module.getTypeDefinition(builtinType);
+                            if (existingDefinition.type() != Type::Undefined())
+                            {
+                                auto otherLocation = std::optional<SourceLocation>{};
+                                const auto* otherStatement = existingDefinition.statement();
+                                if (otherStatement != nullptr)
+                                {
+                                    otherLocation = tokensFor(otherStatement).getSourceLocation(otherStatement->nameToken());
+                                }
+
+                                m_diagnostics.addDuplicateBuiltinTypeBindingError(
+                                    parseTree->tokens().source(),
+                                    parseTree->tokens().getSourceLocation(typeStatement->nameToken()),
+                                    std::string(typeStatement->name()),
+                                    otherLocation);
+                                break;
+                            }
+
+                            m_module.bindBuiltinTypeDefinition(builtinType, typeStatement);
+                            typeStatement->setType(builtinType);
+                            m_typeDeclarations.push_back(typeStatement);
+                            break;
+                        }
+
                         auto existingType = m_module.tryGetTypeByName(typeStatement->name());
                         if (existingType != Type::Undefined())
                         {
@@ -665,6 +701,11 @@ namespace Caracal
                 methodStatement->setType(methodDefinition.type());
             }
 
+            if (typeDefinitionStatement->isBuiltin())
+            {
+                continue;
+            }
+
             std::vector<Parameter> constructorParameters{};
             constructorParameters.emplace_back(ImplicitThisName, typeType.toReference());
 
@@ -788,7 +829,20 @@ namespace Caracal
         validateTypeAnnotation(statement, tokens);
 
         auto& typeDefinition = m_module.getTypeDefinition(typeType);
-        typeCheckConstructorSignature(statement, typeDefinition, typeType, tokens);
+        if (statement->isBuiltin())
+        {
+            if (statement->constructorParameters().has_value())
+            {
+                m_diagnostics.addBuiltinTypeConstructorIgnoredWarning(
+                    tokens.source(),
+                    statement->constructorParameters().value()->sourceLocation(tokens),
+                    std::string(statement->name()));
+            }
+        }
+        else
+        {
+            typeCheckConstructorSignature(statement, typeDefinition, typeType, tokens);
+        }
 
         const auto& bodyStatements = statement->bodyNode()->statements();
         for (const auto& bodyStatement : bodyStatements)
@@ -821,6 +875,25 @@ namespace Caracal
             TODO("This shouldn't happen");
         }
 
+        if (statement->isBuiltin())
+        {
+            for (const auto& definitionStatement : statement->bodyNode()->statements())
+            {
+                if (definitionStatement->kind() != NodeKind::TypeFieldDeclaration)
+                {
+                    continue;
+                }
+
+                auto* fieldStatement = static_cast<TypeFieldDeclaration*>(definitionStatement.get());
+                m_diagnostics.addBuiltinTypeFieldIgnoredWarning(
+                    tokens.source(),
+                    fieldStatement->nameExpression()->sourceLocation(tokens),
+                    fieldStatement->nameExpression()->name());
+            }
+
+            return;
+        }
+
         pushScope(ScopeKind::Type);
 
         if (statement->constructorParameters().has_value())
@@ -851,6 +924,28 @@ namespace Caracal
         if (typeType == Type::Undefined())
         {
             TODO("This shouldn't happen");
+        }
+
+        if (statement->isBuiltin())
+        {
+            for (const auto& bodyStatement : statement->bodyNode()->statements())
+            {
+                if (bodyStatement->kind() != NodeKind::MethodDefinitionStatement)
+                {
+                    continue;
+                }
+
+                auto* methodStatement = static_cast<MethodDefinitionStatement*>(bodyStatement.get());
+                if (!methodStatement->bodyNode()->statements().empty())
+                {
+                    m_diagnostics.addBuiltinMethodBodyIgnoredWarning(
+                        tokens.source(),
+                        tokens.getSourceLocation(methodStatement->methodNameNode()->methodNameToken()),
+                        methodStatement->methodNameNode()->methodName());
+                }
+            }
+
+            return;
         }
 
         m_currentType = typeType;

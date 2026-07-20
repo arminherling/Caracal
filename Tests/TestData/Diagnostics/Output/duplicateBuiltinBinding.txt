@@ -1,0 +1,19 @@
+ Error T0067
+  Builtin type is already bound
+     ,-[Diagnostics/Input/duplicateBuiltinBinding.cara:7:6]
+   1 | ﻿#builtin
+   2 | type i32
+     .      ---
+     .       `-- Previous declaration is here
+   3 | {
+   4 | }
+   5 | 
+   6 | #builtin
+   7 | type i32
+     .      ---
+     .       `-- Builtin type 'i32' is already bound to a declaration
+   8 | {
+   9 | }
+  10 | 
+     `----
+  Fix: Merge the members into the existing #builtin declaration.

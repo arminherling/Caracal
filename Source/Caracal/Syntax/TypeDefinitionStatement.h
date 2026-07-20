@@ -31,6 +31,7 @@ namespace Caracal
         [[nodiscard]] const std::optional<ParametersNodeUPtr>& constructorParameters() const noexcept { return m_constructorParameters; }
         [[nodiscard]] const BlockNodeUPtr& bodyNode() const noexcept { return m_bodyNode; }
         [[nodiscard]] const std::vector<AnnotationNodeUPtr>& annotations() const noexcept { return m_annotations; }
+        [[nodiscard]] bool isBuiltin() const noexcept;
 
     private:
         Token m_typeKeyword;
