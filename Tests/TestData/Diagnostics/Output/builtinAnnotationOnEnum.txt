@@ -1,0 +1,11 @@
+ Error T0002
+  Unexpected annotation target
+    ,-[Diagnostics/Input/builtinAnnotationOnEnum.cara:1:4]
+  1 | ﻿#builtin
+    .    --------
+    .        `-- This annotation is not supported on this declaration.
+  2 | enum Numbers
+  3 | {
+  4 |     One
+    `----
+  Fix: Remove the annotation or move it to a supported declaration kind.

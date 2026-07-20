@@ -1,0 +1,11 @@
+ Error T0004
+  Wrong number of annotation arguments
+    ,-[Diagnostics/Input/builtinAnnotationWithArgument.cara:1:13]
+  1 | ﻿#builtin(1)
+    .             -
+    .             `-- Annotation '#builtin' expects 0 argument(s), but got 1.
+  2 | type Point
+  3 | {
+  4 |     x: i32 = 0
+    `----
+  Fix: Remove the unexpected annotation arguments.

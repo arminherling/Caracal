@@ -1,0 +1,11 @@
+ Error T0002
+  Unexpected annotation target
+    ,-[Diagnostics/Input/builtinAnnotationOnFunction.cara:1:4]
+  1 | ﻿#builtin
+    .    --------
+    .        `-- This annotation is not supported on this declaration.
+  2 | def f() i32
+  3 | {
+  4 |     return 0;
+    `----
+  Fix: Remove the annotation or move it to a supported declaration kind.

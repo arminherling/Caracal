@@ -1,0 +1,5 @@
+﻿#builtin
+enum Numbers
+{
+    One
+}

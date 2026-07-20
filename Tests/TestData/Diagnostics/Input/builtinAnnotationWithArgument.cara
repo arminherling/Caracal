@@ -1,0 +1,5 @@
+﻿#builtin(1)
+type Point
+{
+    x: i32 = 0
+}

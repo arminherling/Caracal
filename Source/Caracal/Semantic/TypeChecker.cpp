@@ -31,6 +31,7 @@ namespace Caracal
             { AnnotationKind::Extern, "extern", TokenKind::DefKeyword, 0, Type::Undefined(), "symbol" },
             { AnnotationKind::Flag, "flag", TokenKind::EnumKeyword, 0, Type::Undefined(), "" },
             { AnnotationKind::Step, "step", TokenKind::EnumKeyword, 1, Type::I32(), "" },
+            { AnnotationKind::Builtin, "builtin", TokenKind::TypeKeyword, 0, Type::Undefined(), "" },
         };
 
         for (const auto& definition : Definitions)

@@ -12,6 +12,7 @@ namespace Caracal
             { AnnotationKind::Extern,       std::string_view("Extern") },
             { AnnotationKind::Flag,         std::string_view("Flag") },
             { AnnotationKind::Step,         std::string_view("Step") },
+            { AnnotationKind::Builtin,      std::string_view("Builtin") },
         };
 
         const auto it = kindToString.find(kind);

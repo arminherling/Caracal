@@ -50,6 +50,11 @@ namespace Caracal
             return AnnotationKind::Step;
         }
 
+        if (name == "builtin")
+        {
+            return AnnotationKind::Builtin;
+        }
+
         return AnnotationKind::Error;
     }
 
