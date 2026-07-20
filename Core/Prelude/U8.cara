@@ -1,0 +1,17 @@
+#builtin
+type u8
+{
+    def u8.add(lhs: u8, rhs: u8) u8 {}
+    def u8.subtract(lhs: u8, rhs: u8) u8 {}
+    def u8.multiply(lhs: u8, rhs: u8) u8 {}
+    def u8.divide(lhs: u8, rhs: u8) u8 {}
+
+    def u8.negate(value: u8) u8 {}
+
+    def u8.equals(lhs: u8, rhs: u8) bool {}
+    def u8.notEquals(lhs: u8, rhs: u8) bool {}
+    def u8.lessThan(lhs: u8, rhs: u8) bool {}
+    def u8.lessOrEqual(lhs: u8, rhs: u8) bool {}
+    def u8.greaterThan(lhs: u8, rhs: u8) bool {}
+    def u8.greaterOrEqual(lhs: u8, rhs: u8) bool {}
+}

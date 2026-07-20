@@ -1,10 +1,10 @@
  Error T0072
   Invalid operator method signature
-    ,-[Diagnostics/Input/builtinOperatorMissingReturnType.cara:4:13]
+    ,-[Diagnostics/InputBuiltin/builtinOperatorWrongArity.cara:4:13]
   1 | ﻿#builtin
   2 | type i32
   3 | {
-  4 |     def i32.add(lhs: i32, rhs: i32) {}
+  4 |     def i32.add(lhs: i32) i32 {}
     .             ---
     .              `-- Operator method 'add' does not match the required signature
   5 | }

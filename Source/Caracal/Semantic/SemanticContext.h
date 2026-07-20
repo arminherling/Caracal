@@ -4,6 +4,7 @@
 #include <Caracal/API.h>
 #include <Caracal/Constants.h>
 #include <Caracal/Semantic/Type.h>
+#include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/ConstantDefinition.h>
 #include <Caracal/Semantic/EnumDefinition.h>
 #include <Caracal/Semantic/TypeDefinition.h>
@@ -12,7 +13,10 @@
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
 #include <Caracal/Syntax/MethodDefinitionStatement.h>
+#include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Semantic/Parameter.h>
+#include <filesystem>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
@@ -24,7 +28,10 @@ namespace Caracal
     public:
         SemanticContext() = default;
 
-        [[nodiscard]] static SemanticContext WithBuiltins() noexcept;
+        CARACAL_DELETE_COPY_DEFAULT_MOVE(SemanticContext)
+
+        [[nodiscard]] static SemanticContext WithBuiltins(const std::vector<std::string>& preludeSources, const TypeCheckerOptions& options) noexcept;
+        [[nodiscard]] static std::vector<std::string> CollectPreludeSources(const std::filesystem::path& preludeDirectory) noexcept;
 
         [[nodiscard]] Type tryGetFunctionTypeByName(std::string_view typeName) const noexcept;
         [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;
@@ -83,5 +90,7 @@ namespace Caracal
         std::unordered_map<i32, std::string> m_typeNames;
         std::unordered_map<std::string, Type> m_nameToTypes;
         i32 m_nextId = 0;
+        // TODO keep the parsetrees alive here for now
+        std::vector<ParseTreeUPtr> m_preludeParseTrees;
     };
 }

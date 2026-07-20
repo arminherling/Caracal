@@ -39,8 +39,14 @@ namespace Caracal
 
         for (const auto& file : std::filesystem::recursive_directory_iterator(directoryPath))
         {
-            if (file.is_regular_file() && file.path().extension() == ".cara")
-                caraFilePaths.push_back(file.path());
+            if (!file.is_regular_file() || file.path().extension() != ".cara")
+                continue;
+
+            // the prelude is loaded separately through WithBuiltins
+            if (file.path().parent_path().filename() == "Prelude")
+                continue;
+
+            caraFilePaths.push_back(file.path());
         }
 
         return caraFilePaths;
@@ -117,12 +123,16 @@ namespace Caracal
             return 1;
         }
 
-        Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins();
+        auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(coreDirectoryPath / "Prelude");
+        if (preludeSources.empty())
+            std::cout << "Warning: no prelude found!! operators will not type check!!\n";
+
         Caracal::TypeCheckerOptions options{
             .defaultIntegerType = Caracal::Type::I32(),
             .defaultFloatingType = Caracal::Type::F32(),
             .defaultEnumBaseType = Caracal::Type::U8()
         };
+        Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
         auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
         if (!wasSuccessful)

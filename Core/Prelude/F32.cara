@@ -1,0 +1,16 @@
+#builtin
+type f32
+{
+    def f32.add(lhs: f32, rhs: f32) f32 {}
+    def f32.subtract(lhs: f32, rhs: f32) f32 {}
+    def f32.multiply(lhs: f32, rhs: f32) f32 {}
+    def f32.divide(lhs: f32, rhs: f32) f32 {}
+
+    def f32.negate(value: f32) f32 {}
+
+    // omit equals/ not equals for floats because they are usually cause bugs
+    def f32.lessThan(lhs: f32, rhs: f32) bool {}
+    def f32.lessOrEqual(lhs: f32, rhs: f32) bool {}
+    def f32.greaterThan(lhs: f32, rhs: f32) bool {}
+    def f32.greaterOrEqual(lhs: f32, rhs: f32) bool {}
+}

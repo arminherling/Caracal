@@ -1,6 +1,6 @@
  Error T0072
   Invalid operator method signature
-    ,-[Diagnostics/Input/builtinOperatorWrongTypeName.cara:4:14]
+    ,-[Diagnostics/InputBuiltin/builtinOperatorWrongTypeName.cara:4:14]
   1 | ﻿#builtin
   2 | type i32
   3 | {

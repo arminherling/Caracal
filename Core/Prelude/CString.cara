@@ -1,0 +1,6 @@
+#builtin
+type cstring
+{
+    def cstring.equals(lhs: cstring, rhs: cstring) bool {}
+    def cstring.notEquals(lhs: cstring, rhs: cstring) bool {}
+}

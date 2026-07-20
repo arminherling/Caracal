@@ -1,0 +1,9 @@
+﻿def equalsProbe() bool
+{
+    return 1.5 == 2.5;
+}
+
+def notEqualsProbe() bool
+{
+    return 1.5 != 2.5;
+}

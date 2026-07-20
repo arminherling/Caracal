@@ -37,12 +37,14 @@ static void FileTests(
 
     CaraTest::isTrue(!diagnostics.hasErrors());
 
-    Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins();
     Caracal::TypeCheckerOptions options{
         .defaultIntegerType = Caracal::Type::I32(),
         .defaultFloatingType = Caracal::Type::F32(),
         .defaultEnumBaseType = Caracal::Type::U8()
     };
+    const auto preludePath = std::filesystem::path(__FILE__).parent_path() / "../../../Core/Prelude";
+    const auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(preludePath);
+    Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
     auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
     if (!wasSuccessful)

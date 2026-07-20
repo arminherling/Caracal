@@ -1,0 +1,10 @@
+#builtin
+type bool
+{
+    def bool.equals(lhs: bool, rhs: bool) bool {}
+    def bool.notEquals(lhs: bool, rhs: bool) bool {}
+    
+    def bool.logicalAnd(lhs: bool, rhs: bool) bool {}
+    def bool.logicalOr(lhs: bool, rhs: bool) bool {}
+    def bool.logicalNegate(value: bool) bool {}
+}

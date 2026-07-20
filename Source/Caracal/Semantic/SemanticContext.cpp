@@ -1,5 +1,15 @@
 ﻿#include "SemanticContext.h"
 
+#include <Caracal/Diagnostics/DiagnosticPrinter.h>
+#include <Caracal/Text/File.h>
+#include <Caracal/Semantic/TypeChecker.h>
+#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Syntax/Parser.h>
+
+#include <algorithm>
+#include <cstdlib>
+#include <iostream>
+
 namespace Caracal
 {
     // value, reference, optional value, optional reference
@@ -20,7 +30,31 @@ namespace Caracal
         }
     }
 
-    SemanticContext SemanticContext::WithBuiltins() noexcept
+    std::vector<std::string> SemanticContext::CollectPreludeSources(const std::filesystem::path& preludeDirectory) noexcept
+    {
+        std::vector<std::filesystem::path> caraFilePaths{};
+        if (std::filesystem::exists(preludeDirectory) && std::filesystem::is_directory(preludeDirectory))
+        {
+            for (const auto& file : std::filesystem::directory_iterator(preludeDirectory))
+            {
+                if (file.is_regular_file() && file.path().extension() == ".cara")
+                    caraFilePaths.push_back(file.path());
+            }
+        }
+        std::sort(caraFilePaths.begin(), caraFilePaths.end());
+
+        std::vector<std::string> sources{};
+        for (const auto& caraFilePath : caraFilePaths)
+        {
+            auto content = File::readText(caraFilePath);
+            if (content.has_value())
+                sources.push_back(std::move(content.value()));
+        }
+
+        return sources;
+    }
+
+    SemanticContext SemanticContext::WithBuiltins(const std::vector<std::string>& preludeSources, const TypeCheckerOptions& options) noexcept
     {
         SemanticContext module{};
         module.createBuiltinType(Type::CVariadic(), "...", false);
@@ -29,13 +63,37 @@ namespace Caracal
         module.createBuiltinType(Type::Undefined(), "undefined", false);
         module.createBuiltinType(Type::Void(), "void", false);
 
-        // TODO remove this once we got a prelude
         module.createBuiltinType(Type::Bool(), "bool");
         module.createBuiltinType(Type::U8(), "u8");
         module.createBuiltinType(Type::I32(), "i32");
         module.createBuiltinType(Type::F32(), "f32");
         module.createBuiltinType(Type::String(), "cstring");
         module.m_nextId = 2000;
+
+        // TODO we should move this part in the future
+        // prelude is core library code, we will abort if there are errors
+        DiagnosticsBag preludeDiagnostics{};
+        std::vector<ParseTreeUPtr> preludeTrees{};
+        for (const auto& preludeSource : preludeSources)
+        {
+            auto source = std::make_shared<SourceText>(preludeSource, std::filesystem::path("<prelude>"));
+            const auto tokens = lex(source, preludeDiagnostics);
+            preludeTrees.push_back(parse(tokens, preludeDiagnostics));
+        }
+
+        if (!preludeDiagnostics.hasErrors())
+        {
+            static_cast<void>(typeCheck(preludeTrees, options, module, preludeDiagnostics));
+        }
+
+        if (!preludeDiagnostics.diagnostics().empty())
+        {
+            std::cerr << "error: the prelude failed to compile\n";
+            writeDiagnostics(std::cerr, preludeDiagnostics);
+            std::abort();
+        }
+
+        module.m_preludeParseTrees = std::move(preludeTrees);
 
         return module;
     }

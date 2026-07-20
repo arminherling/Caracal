@@ -160,11 +160,6 @@ namespace Caracal
         }
     }
 
-    static bool IsNumericType(Type type)
-    {
-        return type == Type::I32() || type == Type::U8() || type == Type::F32();
-    }
-
     static bool ConstantFitsType(std::int64_t value, Type type)
     {
         const auto baseType = type.toBaseType();
@@ -571,7 +566,11 @@ namespace Caracal
                                 const auto* otherStatement = existingDefinition.statement();
                                 if (otherStatement != nullptr)
                                 {
-                                    otherLocation = tokensFor(otherStatement).getSourceLocation(otherStatement->nameToken());
+                                    const auto* otherTokens = tryTokensFor(otherStatement);
+                                    if (otherTokens != nullptr)
+                                    {
+                                        otherLocation = otherTokens->getSourceLocation(otherStatement->nameToken());
+                                    }
                                 }
 
                                 m_diagnostics.addDuplicateBuiltinTypeBindingError(
@@ -2290,7 +2289,8 @@ namespace Caracal
                 auto type = typeCheckExpression(unaryExpression->expression().get(), tokens);
 
                 const auto operandType = type.toValue();
-                if (operandType != Type::Undefined() && operandType != Type::Bool())
+                if (operandType != Type::Undefined()
+                    && tryGetOperatorSignature(operandType, UnaryOperatorKind::LogicalNegation) == nullptr)
                 {
                     m_diagnostics.addUnaryOperandTypeMismatchError(
                         tokens.source(),
@@ -2323,7 +2323,8 @@ namespace Caracal
                 }
 
                 const auto operandType = type.toValue();
-                if (operandType != Type::Undefined() && !IsNumericType(operandType))
+                if (operandType != Type::Undefined()
+                    && tryGetOperatorSignature(operandType, UnaryOperatorKind::ValueNegation) == nullptr)
                 {
                     m_diagnostics.addUnaryOperandTypeMismatchError(
                         tokens.source(),
@@ -2525,7 +2526,8 @@ namespace Caracal
                     return Type::Undefined();
                 }
 
-                if (!IsNumericType(leftType))
+                const auto* operatorSignature = tryGetOperatorSignature(leftType, binaryExpression->binaryOperator());
+                if (operatorSignature == nullptr)
                 {
                     m_diagnostics.addBinaryOperandTypeMismatchError(
                         tokens.source(),
@@ -2590,8 +2592,8 @@ namespace Caracal
                     }
                 }
 
-                binaryExpression->setType(leftType);
-                return leftType;
+                binaryExpression->setType(operatorSignature->resultType);
+                return operatorSignature->resultType;
             }
             case BinaryOperatorKind::Equal:
             case BinaryOperatorKind::NotEqual:
@@ -2630,28 +2632,26 @@ namespace Caracal
                 }
 
                 const auto operation = binaryExpression->binaryOperator();
-                const auto* expectedOperands = static_cast<const char*>(nullptr);
-                if (operation == BinaryOperatorKind::LogicalAnd || operation == BinaryOperatorKind::LogicalOr)
+
+                auto lookupType = leftType;
+                if (lookupType.kind() == TypeKind::Enum)
                 {
-                    if (leftType != Type::Bool())
+                    lookupType = m_module.getEnumDefinition(lookupType).baseType();
+                }
+
+                const auto* operatorSignature = tryGetOperatorSignature(lookupType, operation);
+                if (operatorSignature == nullptr)
+                {
+                    const auto* expectedOperands = "numeric operands";
+                    if (operation == BinaryOperatorKind::LogicalAnd || operation == BinaryOperatorKind::LogicalOr)
                     {
                         expectedOperands = "'bool' operands";
                     }
-                }
-                else if (operation == BinaryOperatorKind::Equal || operation == BinaryOperatorKind::NotEqual)
-                {
-                    if (!isEqualityComparableType(leftType))
+                    else if (operation == BinaryOperatorKind::Equal || operation == BinaryOperatorKind::NotEqual)
                     {
                         expectedOperands = "operands that can be compared for equality";
                     }
-                }
-                else if (!isOrderableType(leftType))
-                {
-                    expectedOperands = "numeric operands";
-                }
 
-                if (expectedOperands != nullptr)
-                {
                     m_diagnostics.addBinaryOperandTypeMismatchError(
                         tokens.source(),
                         tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
@@ -2663,7 +2663,7 @@ namespace Caracal
                     return Type::Undefined();
                 }
 
-                auto resultType = Type::Bool();
+                auto resultType = operatorSignature->resultType;
                 binaryExpression->setType(resultType);
                 return resultType;
             }
@@ -3049,30 +3049,36 @@ namespace Caracal
         return conditionType;
     }
 
-    bool TypeChecker::isOrderableType(Type type)
+    const OperatorSignature* TypeChecker::tryGetOperatorSignature(Type type, BinaryOperatorKind operation)
     {
-        if (type.kind() == TypeKind::Enum)
+        if (type != type.toBaseType())
         {
-            return IsNumericType(m_module.getEnumDefinition(type).baseType());
+            return nullptr;
         }
 
-        return IsNumericType(type);
+        auto& typeDefinition = m_module.getTypeDefinition(type);
+        if (typeDefinition.type() == Type::Undefined())
+        {
+            return nullptr;
+        }
+
+        return typeDefinition.tryGetOperatorSignature(operation);
     }
 
-    bool TypeChecker::isEqualityComparableType(Type type)
+    const OperatorSignature* TypeChecker::tryGetOperatorSignature(Type type, UnaryOperatorKind operation)
     {
-        if (type.kind() == TypeKind::Enum)
+        if (type != type.toBaseType())
         {
-            return true;
+            return nullptr;
         }
 
-        // TODO struct equality is allowed for now but fails during codegen
-        if (type.kind() == TypeKind::Type)
+        auto& typeDefinition = m_module.getTypeDefinition(type);
+        if (typeDefinition.type() == Type::Undefined())
         {
-            return true;
+            return nullptr;
         }
 
-        return type == Type::Bool() || type == Type::String() || IsNumericType(type);
+        return typeDefinition.tryGetOperatorSignature(operation);
     }
 
     bool TypeChecker::areComparableTypes(Type leftType, Type rightType)
@@ -3101,6 +3107,17 @@ namespace Caracal
         }
 
         return false;
+    }
+
+    const TokenBuffer* TypeChecker::tryTokensFor(const Statement* statement) const
+    {
+        const auto it = m_statementTokens.find(statement);
+        if (it == m_statementTokens.end())
+        {
+            return nullptr;
+        }
+
+        return it->second;
     }
 
     const TokenBuffer& TypeChecker::tokensFor(const Statement* statement) const

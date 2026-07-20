@@ -1,0 +1,9 @@
+﻿type Point
+{
+    x: i32 = 0
+}
+
+def probe(a: Point, b: Point) bool
+{
+    return a == b;
+}

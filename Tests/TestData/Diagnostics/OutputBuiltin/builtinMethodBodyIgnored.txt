@@ -1,6 +1,6 @@
  Warning T0070
   Method body in builtin type is ignored
-    ,-[Diagnostics/Input/builtinMethodBodyIgnored.cara:4:13]
+    ,-[Diagnostics/InputBuiltin/builtinMethodBodyIgnored.cara:4:13]
   1 | ﻿#builtin
   2 | type i32
   3 | {

@@ -47,6 +47,16 @@ namespace
         return DiagnosticsDataDirectory() / "Output";
     }
 
+    std::filesystem::path DiagnosticsBuiltinInputDirectory()
+    {
+        return DiagnosticsDataDirectory() / "InputBuiltin";
+    }
+
+    std::filesystem::path DiagnosticsBuiltinOutputDirectory()
+    {
+        return DiagnosticsDataDirectory() / "OutputBuiltin";
+    }
+
     std::filesystem::path RepositoryRootDirectory()
     {
         return std::filesystem::absolute(CurrentDirectory() / "../../..");
@@ -86,7 +96,7 @@ namespace
         parseTrees.push_back(std::move(parseTree));
     }
 
-    std::string RenderDiagnosticsForFile(const std::filesystem::path& inputFilePath)
+    std::string RenderDiagnosticsForFile(const std::filesystem::path& inputFilePath, bool withPrelude)
     {
         Caracal::DiagnosticsBag diagnostics;
         std::vector<Caracal::ParseTreeUPtr> parseTrees{};
@@ -102,12 +112,18 @@ namespace
         if (!diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
-        Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins();
         const Caracal::TypeCheckerOptions options{
             .defaultIntegerType = Caracal::Type::I32(),
             .defaultFloatingType = Caracal::Type::F32(),
             .defaultEnumBaseType = Caracal::Type::U8()
         };
+
+        auto preludeSources = std::vector<std::string>{};
+        if (withPrelude)
+        {
+            preludeSources = Caracal::SemanticContext::CollectPreludeSources(RepositoryRootDirectory() / "Core" / "Prelude");
+        }
+        Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
         const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
         if (!wasSuccessful || !diagnostics.diagnostics().empty())
@@ -139,14 +155,15 @@ namespace
         if (!diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
-            Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins();
         const Caracal::TypeCheckerOptions options{
             .defaultIntegerType = Caracal::Type::I32(),
             .defaultFloatingType = Caracal::Type::F32(),
             .defaultEnumBaseType = Caracal::Type::U8()
         };
+        const auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(RepositoryRootDirectory() / "Core" / "Prelude");
+        Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
-            const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
+        const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
         if (!wasSuccessful || !diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
@@ -176,18 +193,36 @@ namespace
         if (!std::filesystem::exists(outputFilePath))
             CaraTest::skip();
 
-        const auto output = RenderDiagnosticsForFile(inputFilePath);
+        const auto output = RenderDiagnosticsForFile(inputFilePath, true);
         if (output.empty())
             CaraTest::fail();
 
         CaraTest::equalsFile(outputFilePath, output);
     }
 
-    static std::vector<DiagnosticsTestData> FileTests_Data()
+    static void BuiltinFileTests(
+        const std::string& fileName,
+        const std::filesystem::path& inputFilePath,
+        const std::filesystem::path& outputFilePath)
     {
-        const auto inputDirectory = DiagnosticsInputDirectory();
-        const auto outputDirectory = DiagnosticsOutputDirectory();
+        static_cast<void>(fileName);
 
+        if (!std::filesystem::exists(inputFilePath))
+            CaraTest::fail();
+        if (!std::filesystem::exists(outputFilePath))
+            CaraTest::skip();
+
+        const auto output = RenderDiagnosticsForFile(inputFilePath, false);
+        if (output.empty())
+            CaraTest::fail();
+
+        CaraTest::equalsFile(outputFilePath, output);
+    }
+
+    static std::vector<DiagnosticsTestData> CollectFileTestData(
+        const std::filesystem::path& inputDirectory,
+        const std::filesystem::path& outputDirectory)
+    {
         std::vector<DiagnosticsTestData> data{};
         if (!std::filesystem::exists(inputDirectory))
             return data;
@@ -214,6 +249,16 @@ namespace
         return data;
     }
 
+    static std::vector<DiagnosticsTestData> FileTests_Data()
+    {
+        return CollectFileTestData(DiagnosticsInputDirectory(), DiagnosticsOutputDirectory());
+    }
+
+    static std::vector<DiagnosticsTestData> BuiltinFileTests_Data()
+    {
+        return CollectFileTestData(DiagnosticsBuiltinInputDirectory(), DiagnosticsBuiltinOutputDirectory());
+    }
+
     static void ExternFunctionUnusedParameterDoesNotWarn()
     {
         const auto output = RenderDiagnosticsForSource(
@@ -228,5 +273,6 @@ namespace
 static auto tests =
 {
     CaraTest::addTest("FileTests", FileTests, FileTests_Data),
+    CaraTest::addTest("BuiltinFileTests", BuiltinFileTests, BuiltinFileTests_Data),
     CaraTest::addTest("ExternFunctionUnusedParameterDoesNotWarn", ExternFunctionUnusedParameterDoesNotWarn),
 };

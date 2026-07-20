@@ -103,9 +103,10 @@ namespace Caracal
         [[nodiscard]] i32 convertToI32(NumberLiteral* literal, const TokenBuffer& tokens);
         [[nodiscard]] Type coerceConditionType(Type conditionType, Expression* conditionExpression);
         [[nodiscard]] bool areComparableTypes(Type leftType, Type rightType);
-        [[nodiscard]] bool isOrderableType(Type type);
-        [[nodiscard]] bool isEqualityComparableType(Type type);
+        [[nodiscard]] const OperatorSignature* tryGetOperatorSignature(Type type, BinaryOperatorKind operation);
+        [[nodiscard]] const OperatorSignature* tryGetOperatorSignature(Type type, UnaryOperatorKind operation);
         [[nodiscard]] const TokenBuffer& tokensFor(const Statement* statement) const;
+        [[nodiscard]] const TokenBuffer* tryTokensFor(const Statement* statement) const;
         [[nodiscard]] bool validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue = nullptr, std::optional<std::string>* stringArgumentValue = nullptr);
         [[nodiscard]] bool validateNamedAnnotationArguments(const AnnotationNode* annotation, std::string_view namedStringArgument, const TokenBuffer& tokens, std::optional<std::string>* stringArgumentValue);
         [[nodiscard]] bool validateCallableAnnotations(const std::vector<AnnotationNodeUPtr>& annotations, const TokenBuffer& tokens, std::optional<std::string>& symbolName);
