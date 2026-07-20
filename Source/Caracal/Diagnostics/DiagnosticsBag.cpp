@@ -755,6 +755,32 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addUnknownBuiltinMethodIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Warning,
+            DiagnosticKind::T0071_UnknownBuiltinMethodIgnored,
+            source,
+            location,
+            "Use one of the fixed operator method names, or remove the method.");
+        diagnostic.addPrimaryLabel(location, "'" + methodName + "' is not a known operator of builtin type '" + typeName + "' and is ignored");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addInvalidOperatorMethodSignatureError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& expectedSignature)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0072_InvalidOperatorMethodSignature,
+            source,
+            location,
+            "Declare the operator as '" + expectedSignature + "'.");
+        diagnostic.addPrimaryLabel(location, "Operator method '" + methodName + "' does not match the required signature");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addVoidParameterTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& parameterName)
     {
         auto diagnostic = Diagnostic(

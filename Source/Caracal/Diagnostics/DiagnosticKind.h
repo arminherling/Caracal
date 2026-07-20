@@ -128,5 +128,7 @@ namespace Caracal
         T0068_BuiltinTypeFieldIgnored,
         T0069_BuiltinTypeConstructorIgnored,
         T0070_BuiltinMethodBodyIgnored,
+        T0071_UnknownBuiltinMethodIgnored,
+        T0072_InvalidOperatorMethodSignature,
     };
 }

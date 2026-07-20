@@ -7,9 +7,9 @@ TypeDefinitionStatement: {
     BlockNode(2): {
         MethodDefinitionStatement: {
             Type: undefined
-            Modifier: Public
+            Modifier: Static
             MethodNameNode: {
-                MethodName: add
+                MethodName: i32.add
             }
             ParametersNode(2): {
                 ParameterNode: {
@@ -38,9 +38,9 @@ TypeDefinitionStatement: {
         }
         MethodDefinitionStatement: {
             Type: undefined
-            Modifier: Public
+            Modifier: Static
             MethodNameNode: {
-                MethodName: lessThan
+                MethodName: i32.lessThan
             }
             ParametersNode(2): {
                 ParameterNode: {

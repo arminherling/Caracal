@@ -71,6 +71,7 @@ namespace Caracal
         void typeCheckTypeFieldDefinition(TypeDefinitionStatement* statement, const TokenBuffer& tokens);
         void typeCheckTypeMethodDefinition(TypeDefinitionStatement* statement, const TokenBuffer& tokens);
         void typeCheckMethodSignature(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens);
+        void validateBuiltinOperatorMethod(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens);
         void typeCheckConstructorSignature(const TypeDefinitionStatement* typeDefinitionStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens);
         void typeCheckStatement(Statement* statement, const TokenBuffer& tokens);
         void typeCheckConstantDeclaration(ConstantDeclaration* statement, const TokenBuffer& tokens);

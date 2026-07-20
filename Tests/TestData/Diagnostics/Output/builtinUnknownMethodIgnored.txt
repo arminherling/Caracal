@@ -1,0 +1,13 @@
+ Warning T0071
+  Unknown method in builtin type is ignored
+    ,-[Diagnostics/Input/builtinUnknownMethodIgnored.cara:4:13]
+  1 | ﻿#builtin
+  2 | type i32
+  3 | {
+  4 |     def i32.whatever(lhs: i32, rhs: i32) i32 {}
+    .             --------
+    .                 `-- 'whatever' is not a known operator of builtin type 'i32' and is ignored
+  5 | }
+  6 | 
+    `----
+  Fix: Use one of the fixed operator method names, or remove the method.

@@ -1,0 +1,5 @@
+﻿#builtin
+type i32
+{
+    def i32.whatever(lhs: i32, rhs: i32) i32 {}
+}

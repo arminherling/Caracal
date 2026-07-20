@@ -45,6 +45,44 @@ namespace Caracal
         return nullptr;
     }
 
+    struct BuiltinOperatorDefinition
+    {
+        std::string_view methodName;
+        bool isUnary;
+        BinaryOperatorKind binaryOperator;
+        UnaryOperatorKind unaryOperator;
+    };
+
+    static const BuiltinOperatorDefinition* TryGetBuiltinOperatorDefinition(std::string_view methodName)
+    {
+        static constexpr BuiltinOperatorDefinition Definitions[] = {
+            { "add", false, BinaryOperatorKind::Addition, UnaryOperatorKind::Invalid },
+            { "subtract", false, BinaryOperatorKind::Subtraction, UnaryOperatorKind::Invalid },
+            { "multiply", false, BinaryOperatorKind::Multiplication, UnaryOperatorKind::Invalid },
+            { "divide", false, BinaryOperatorKind::Division, UnaryOperatorKind::Invalid },
+            { "equals", false, BinaryOperatorKind::Equal, UnaryOperatorKind::Invalid },
+            { "notEquals", false, BinaryOperatorKind::NotEqual, UnaryOperatorKind::Invalid },
+            { "lessThan", false, BinaryOperatorKind::LessThan, UnaryOperatorKind::Invalid },
+            { "lessOrEqual", false, BinaryOperatorKind::LessOrEqual, UnaryOperatorKind::Invalid },
+            { "greaterThan", false, BinaryOperatorKind::GreaterThan, UnaryOperatorKind::Invalid },
+            { "greaterOrEqual", false, BinaryOperatorKind::GreaterOrEqual, UnaryOperatorKind::Invalid },
+            { "logicalAnd", false, BinaryOperatorKind::LogicalAnd, UnaryOperatorKind::Invalid },
+            { "logicalOr", false, BinaryOperatorKind::LogicalOr, UnaryOperatorKind::Invalid },
+            { "negate", true, BinaryOperatorKind::Invalid, UnaryOperatorKind::ValueNegation },
+            { "logicalNegate", true, BinaryOperatorKind::Invalid, UnaryOperatorKind::LogicalNegation },
+        };
+
+        for (const auto& definition : Definitions)
+        {
+            if (definition.methodName == methodName)
+            {
+                return &definition;
+            }
+        }
+
+        return nullptr;
+    }
+
     static std::optional<SourceLocation> GetTypeFieldLocation(const TypeDefinition& typeDefinition, const FieldDefinition& fieldDefinition, const TokenBuffer& tokens)
     {
         const auto fieldIndex = static_cast<size_t>(fieldDefinition.index());
@@ -864,6 +902,103 @@ namespace Caracal
             }
 
             typeCheckMethodSignature(methodStatement, typeDefinition, typeType, tokens);
+
+            if (statement->isBuiltin())
+            {
+                validateBuiltinOperatorMethod(methodStatement, typeDefinition, typeType, tokens);
+            }
+        }
+    }
+
+    void TypeChecker::validateBuiltinOperatorMethod(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens)
+    {
+        const auto& methodName = methodStatement->methodNameNode()->methodName();
+        const auto methodLocation = tokens.getSourceLocation(methodStatement->methodNameNode()->methodNameToken());
+
+        const auto* operatorDefinition = TryGetBuiltinOperatorDefinition(methodName);
+        if (operatorDefinition == nullptr)
+        {
+            m_diagnostics.addUnknownBuiltinMethodIgnoredWarning(
+                tokens.source(),
+                methodLocation,
+                methodName,
+                typeDefinition.name());
+            return;
+        }
+
+        const auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
+        if (methodType == Type::Undefined())
+        {
+            return;
+        }
+
+        const auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+        const auto& parameters = methodDefinition.parameters();
+        const auto& returnTypes = methodDefinition.returnTypes();
+
+        for (const auto& parameter : parameters)
+        {
+            if (parameter.type() == Type::Undefined())
+            {
+                return;
+            }
+        }
+
+        const auto typeName = FormatTypeName(m_module, typeType);
+        auto expectedSignature = std::string{};
+        if (operatorDefinition->isUnary)
+        {
+            expectedSignature = typeName + "." + methodDefinition.name() + "(value: " + typeName + ")";
+        }
+        else
+        {
+            expectedSignature = typeName + "." + methodDefinition.name() + "(lhs: " + typeName + ", rhs: " + typeName + ")";
+        }
+
+        auto isValidSignature = returnTypes.size() == 1 && returnTypes.front() != Type::Void();
+        if (isValidSignature)
+        {
+            isValidSignature = methodStatement->modifier() == MethodModifier::Static
+                && methodStatement->methodNameNode()->hasTypeName()
+                && methodStatement->methodNameNode()->typeName().value() == typeDefinition.name();
+        }
+
+        if (isValidSignature)
+        {
+            if (operatorDefinition->isUnary)
+            {
+                isValidSignature = parameters.size() == 1
+                    && parameters[0].type() == typeType;
+            }
+            else
+            {
+                isValidSignature = parameters.size() == 2
+                    && parameters[0].type() == typeType
+                    && parameters[1].type() == typeType;
+            }
+        }
+
+        if (!isValidSignature)
+        {
+            m_diagnostics.addInvalidOperatorMethodSignatureError(
+                tokens.source(),
+                methodLocation,
+                methodName,
+                expectedSignature);
+            return;
+        }
+
+        if (operatorDefinition->isUnary)
+        {
+            typeDefinition.addOperatorSignature(
+                operatorDefinition->unaryOperator,
+                OperatorSignature{ parameters[0].type(), Type::Undefined(), returnTypes.front() });
+        }
+        else
+        {
+            typeDefinition.addOperatorSignature(
+                operatorDefinition->binaryOperator,
+                OperatorSignature{ parameters[0].type(), parameters[1].type(), returnTypes.front() });
         }
     }
 

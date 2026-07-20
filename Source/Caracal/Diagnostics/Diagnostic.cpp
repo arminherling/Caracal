@@ -189,6 +189,10 @@ namespace Caracal
                 return "T0069";
             case DiagnosticKind::T0070_BuiltinMethodBodyIgnored:
                 return "T0070";
+            case DiagnosticKind::T0071_UnknownBuiltinMethodIgnored:
+                return "T0071";
+            case DiagnosticKind::T0072_InvalidOperatorMethodSignature:
+                return "T0072";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -382,6 +386,10 @@ namespace Caracal
                 return "Constructor in builtin type is ignored";
             case DiagnosticKind::T0070_BuiltinMethodBodyIgnored:
                 return "Method body in builtin type is ignored";
+            case DiagnosticKind::T0071_UnknownBuiltinMethodIgnored:
+                return "Unknown method in builtin type is ignored";
+            case DiagnosticKind::T0072_InvalidOperatorMethodSignature:
+                return "Invalid operator method signature";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

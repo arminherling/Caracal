@@ -42,4 +42,30 @@ namespace Caracal
 
         return Type::Undefined();
     }
+
+    void TypeDefinition::addOperatorSignature(BinaryOperatorKind binaryOperator, const OperatorSignature& signature) noexcept
+    {
+        m_binaryOperators.try_emplace(binaryOperator, signature);
+    }
+
+    void TypeDefinition::addOperatorSignature(UnaryOperatorKind unaryOperator, const OperatorSignature& signature) noexcept
+    {
+        m_unaryOperators.try_emplace(unaryOperator, signature);
+    }
+
+    const OperatorSignature* TypeDefinition::tryGetOperatorSignature(BinaryOperatorKind binaryOperator) const noexcept
+    {
+        if (const auto result = m_binaryOperators.find(binaryOperator); result != m_binaryOperators.end())
+            return &result->second;
+
+        return nullptr;
+    }
+
+    const OperatorSignature* TypeDefinition::tryGetOperatorSignature(UnaryOperatorKind unaryOperator) const noexcept
+    {
+        if (const auto result = m_unaryOperators.find(unaryOperator); result != m_unaryOperators.end())
+            return &result->second;
+
+        return nullptr;
+    }
 }

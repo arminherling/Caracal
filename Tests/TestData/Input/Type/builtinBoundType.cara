@@ -1,8 +1,8 @@
 ﻿#builtin
 type i32
 {
-    def add(lhs: i32, rhs: i32) i32 {}
-    def lessThan(lhs: i32, rhs: i32) bool {}
+    def i32.add(lhs: i32, rhs: i32) i32 {}
+    def i32.lessThan(lhs: i32, rhs: i32) bool {}
 }
 
 def probe() i32
