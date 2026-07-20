@@ -1,0 +1,4 @@
+﻿def probe() cstring
+{
+    return "a" - "b";
+}

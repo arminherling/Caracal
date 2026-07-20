@@ -673,6 +673,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addBinaryOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& operandTypeName, const std::string& expectedDescription)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0065_BinaryOperandTypeMismatch,
+            source,
+            location,
+            "Operator '" + operatorName + "' expects " + expectedDescription + ".");
+        diagnostic.addPrimaryLabel(location, "Operator '" + operatorName + "' cannot be applied to '" + operandTypeName + "'");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addVoidParameterTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& parameterName)
     {
         auto diagnostic = Diagnostic(

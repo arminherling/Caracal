@@ -1,0 +1,12 @@
+ Error T0065
+  Binary operator cannot be applied to this type
+    ,-[Diagnostics/Input/logicalOnNonBool.cara:3:14]
+  1 | ﻿def probe() i32
+  2 | {
+  3 |     return 5 and 3;
+    .              ---
+    .               `-- Operator 'and' cannot be applied to 'i32'
+  4 | }
+  5 | 
+    `----
+  Fix: Operator 'and' expects 'bool' operands.

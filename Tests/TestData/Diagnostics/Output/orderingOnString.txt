@@ -1,0 +1,12 @@
+ Error T0065
+  Binary operator cannot be applied to this type
+    ,-[Diagnostics/Input/orderingOnString.cara:3:16]
+  1 | ﻿def probe() bool
+  2 | {
+  3 |     return "a" < "b";
+    .                -
+    .                `-- Operator '<' cannot be applied to 'cstring'
+  4 | }
+  5 | 
+    `----
+  Fix: Operator '<' expects numeric operands.

@@ -121,7 +121,7 @@ namespace Caracal
         }
     }
 
-    static bool IsNegatableNumericType(Type type)
+    static bool IsNumericType(Type type)
     {
         return type == Type::I32() || type == Type::U8() || type == Type::F32();
     }
@@ -2092,7 +2092,7 @@ namespace Caracal
                 }
 
                 const auto operandType = type.toValue();
-                if (operandType != Type::Undefined() && !IsNegatableNumericType(operandType))
+                if (operandType != Type::Undefined() && !IsNumericType(operandType))
                 {
                     m_diagnostics.addUnaryOperandTypeMismatchError(
                         tokens.source(),
@@ -2294,6 +2294,19 @@ namespace Caracal
                     return Type::Undefined();
                 }
 
+                if (!IsNumericType(leftType))
+                {
+                    m_diagnostics.addBinaryOperandTypeMismatchError(
+                        tokens.source(),
+                        tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
+                        FormatBinaryOperator(binaryExpression->binaryOperator()),
+                        FormatTypeName(m_module, leftType),
+                        "numeric operands");
+
+                    binaryExpression->setType(Type::Undefined());
+                    return Type::Undefined();
+                }
+
                 if (leftType == Type::I32() || leftType == Type::U8())
                 {
                     const auto leftValue = TryEvaluateConstantInteger(binaryExpression->leftExpression().get());
@@ -2380,6 +2393,40 @@ namespace Caracal
                             FormatTypeName(m_module, leftType),
                             FormatTypeName(m_module, rightType));
                     }
+
+                    binaryExpression->setType(Type::Undefined());
+                    return Type::Undefined();
+                }
+
+                const auto operation = binaryExpression->binaryOperator();
+                const auto* expectedOperands = static_cast<const char*>(nullptr);
+                if (operation == BinaryOperatorKind::LogicalAnd || operation == BinaryOperatorKind::LogicalOr)
+                {
+                    if (leftType != Type::Bool())
+                    {
+                        expectedOperands = "'bool' operands";
+                    }
+                }
+                else if (operation == BinaryOperatorKind::Equal || operation == BinaryOperatorKind::NotEqual)
+                {
+                    if (!isEqualityComparableType(leftType))
+                    {
+                        expectedOperands = "operands that can be compared for equality";
+                    }
+                }
+                else if (!isOrderableType(leftType))
+                {
+                    expectedOperands = "numeric operands";
+                }
+
+                if (expectedOperands != nullptr)
+                {
+                    m_diagnostics.addBinaryOperandTypeMismatchError(
+                        tokens.source(),
+                        tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
+                        FormatBinaryOperator(operation),
+                        FormatTypeName(m_module, leftType),
+                        expectedOperands);
 
                     binaryExpression->setType(Type::Undefined());
                     return Type::Undefined();
@@ -2769,6 +2816,32 @@ namespace Caracal
         }
 
         return conditionType;
+    }
+
+    bool TypeChecker::isOrderableType(Type type)
+    {
+        if (type.kind() == TypeKind::Enum)
+        {
+            return IsNumericType(m_module.getEnumDefinition(type).baseType());
+        }
+
+        return IsNumericType(type);
+    }
+
+    bool TypeChecker::isEqualityComparableType(Type type)
+    {
+        if (type.kind() == TypeKind::Enum)
+        {
+            return true;
+        }
+
+        // TODO struct equality is allowed for now but fails during codegen
+        if (type.kind() == TypeKind::Type)
+        {
+            return true;
+        }
+
+        return type == Type::Bool() || type == Type::String() || IsNumericType(type);
     }
 
     bool TypeChecker::areComparableTypes(Type leftType, Type rightType)

@@ -1,0 +1,4 @@
+﻿def probe() bool
+{
+    return true + true;
+}

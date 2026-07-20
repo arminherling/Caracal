@@ -1,0 +1,12 @@
+ Error T0065
+  Binary operator cannot be applied to this type
+    ,-[Diagnostics/Input/arithmeticOnBool.cara:3:17]
+  1 | ﻿def probe() bool
+  2 | {
+  3 |     return true + true;
+    .                 -
+    .                 `-- Operator '+' cannot be applied to 'bool'
+  4 | }
+  5 | 
+    `----
+  Fix: Operator '+' expects numeric operands.
