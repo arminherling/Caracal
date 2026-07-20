@@ -10,17 +10,17 @@ ConstantDeclaration: {
                 BinaryExpression: {
                     Type: undefined
                     Left: {
-                        NumberLiteral: 1
+                        NumberLiteral: 1.0
                     }
                     Operation: Division
                     Right: {
-                        NumberLiteral: 2
+                        NumberLiteral: 2.0
                     }
                 }
             }
             Operation: Division
             Right: {
-                NumberLiteral: 3
+                NumberLiteral: 3.0
             }
         }
     }

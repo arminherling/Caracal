@@ -17,6 +17,7 @@
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
+#include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
@@ -500,6 +501,27 @@ namespace Caracal
             {
                 const auto& binary = static_cast<const LogicalOrInstruction&>(instruction);
                 return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::IntToFloat:
+            {
+                const auto& conversion = static_cast<const IntToFloatInstruction&>(instruction);
+                auto* operand = tryResolve(conversion.operandValue());
+                if (operand == nullptr)
+                    return false;
+
+                auto* floatType = llvm::Type::getFloatTy(m_llvmModule.getContext());
+                llvm::Value* result = nullptr;
+                if (conversion.sourceType().toBaseType() == Type::U8())
+                {
+                    result = m_irBuilder->CreateUIToFP(operand, floatType, "int_to_float");
+                }
+                else
+                {
+                    result = m_irBuilder->CreateSIToFP(operand, floatType, "int_to_float");
+                }
+
+                defineValue(conversion.resultId(), result);
+                return true;
             }
             case InstructionKind::ValueNegation:
             {

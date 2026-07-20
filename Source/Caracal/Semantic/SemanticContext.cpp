@@ -102,6 +102,10 @@ namespace Caracal
     {
         for (const auto& functionDefinition : m_functionDefinitions)
         {
+            // TODO add method definitions to a different list
+            if (functionDefinition.functionType() != FunctionType::FreeFunction)
+                continue;
+
             if (functionDefinition.name() == typeName)
                 return functionDefinition.type();
         }

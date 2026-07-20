@@ -14,6 +14,7 @@
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
+#include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
@@ -516,6 +517,20 @@ namespace Caracal
                 appendValue(store.address());
                 m_builder.append(" : ");
                 appendType(store.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::IntToFloat:
+            {
+                const auto& conversion = static_cast<const IntToFloatInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ conversion.resultId() });
+                m_builder.append(" = int_to_float ");
+                appendValue(conversion.operandValue());
+                m_builder.append(" : ");
+                appendType(conversion.sourceType());
+                m_builder.append(" -> ");
+                appendType(conversion.type());
                 m_builder.appendLine("");
                 break;
             }

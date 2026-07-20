@@ -92,6 +92,7 @@ namespace Caracal
         [[nodiscard]] Type typeCheckBinaryExpressionExpression(BinaryExpression* binaryExpression, const TokenBuffer& tokens);
         [[nodiscard]] Type typeCheckNameExpression(NameExpression* nameExpression, const TokenBuffer& tokens);
         [[nodiscard]] Type typeCheckFunctionCallExpression(FunctionCallExpression* functionCallExpression, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckResolvedFunctionCall(FunctionCallExpression* functionCallExpression, Type functionType, const TokenBuffer& tokens);
         [[nodiscard]] Type typeCheckMemberAccessExpression(MemberAccessExpression* memberAccessExpression, const TokenBuffer& tokens);
         [[nodiscard]] bool typeCheckCallArguments(FunctionCallExpression* functionCallExpression, const FunctionDefinition& functionDefinition, const TokenBuffer& tokens);
         [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal, const TokenBuffer& tokens);

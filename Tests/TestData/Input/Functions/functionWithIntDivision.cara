@@ -1,4 +1,4 @@
-def func() i32
+﻿def func() f32
 {
     return 8 / 2;
 }

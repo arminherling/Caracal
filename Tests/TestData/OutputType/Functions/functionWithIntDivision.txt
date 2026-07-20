@@ -1,19 +1,19 @@
 FunctionDefinitionStatement: {
-    Type: () -> i32
+    Type: () -> f32
     Name: func
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: i32
-            Lexeme: i32
+            Type: f32
+            Lexeme: f32
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: i32
+            Type: f32
             BinaryExpression: {
-                Type: i32
+                Type: f32
                 Left: {
                     NumberLiteral: 8
                 }

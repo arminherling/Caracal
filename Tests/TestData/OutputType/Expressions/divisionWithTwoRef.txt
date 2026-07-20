@@ -23,13 +23,13 @@ ConstantDeclaration: {
     }
 }
 ConstantDeclaration: {
-    Type: i32
+    Type: f32
     Left: {
         Discard: _
     }
     Right: {
         BinaryExpression: {
-            Type: i32
+            Type: f32
             Left: {
                 UnaryExpression: {
                     Type: ref i32

@@ -1,20 +1,26 @@
-define unsignedDivide(%0: u8 "a", %1: u8 "b") u8
+define unsignedDivide(%0: u8 "a", %1: u8 "b") f32
 block entry(0):
     %0 = parameter 0 : u8 "a"
     %1 = parameter 1 : u8 "b"
-    %2 = divide %0, %1 : u8
-    return %2
+    %2 = int_to_float %0 : u8 -> f32
+    %3 = int_to_float %1 : u8 -> f32
+    %4 = divide %2, %3 : f32
+    return %4
 
-define signedDivide(%0: i32 "a", %1: i32 "b") i32
+define signedDivide(%0: i32 "a", %1: i32 "b") f32
 block entry(0):
     %0 = parameter 0 : i32 "a"
     %1 = parameter 1 : i32 "b"
-    %2 = divide %0, %1 : i32
-    return %2
+    %2 = int_to_float %0 : i32 -> f32
+    %3 = int_to_float %1 : i32 -> f32
+    %4 = divide %2, %3 : f32
+    return %4
 
-define foldedHighByteDivision() u8
+define foldedHighByteDivision() f32
 block entry(0):
     %0 = const 200 : u8
     %1 = const 2 : u8
-    %2 = divide %0, %1 : u8
-    return %2
+    %2 = int_to_float %0 : u8 -> f32
+    %3 = int_to_float %1 : u8 -> f32
+    %4 = divide %2, %3 : f32
+    return %4

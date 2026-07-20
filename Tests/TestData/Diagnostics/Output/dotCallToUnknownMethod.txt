@@ -1,0 +1,14 @@
+ Error T0010
+  Unknown method
+    ,-[Diagnostics/Input/dotCallToUnknownMethod.cara:5:17]
+  2 | {
+  3 |     def value() i32
+  4 |     {
+  5 |         return .missing();
+    .                 ---------
+    .                     `-- Type 'Calculator' has no method 'missing'
+  6 |     }
+  7 | }
+  8 | 
+    `----
+  Fix: Add this method to the type, or rename the call to an existing method.

@@ -1,4 +1,4 @@
-def f() i32
+﻿def f() f32
 {
     return 1 / 0;
 }

@@ -1,0 +1,14 @@
+ Error T0073
+  Method call is missing the leading dot
+     ,-[Diagnostics/Input/bareCallToSiblingMethod.cara:10:16]
+   7 | 
+   8 |     def value() i32
+   9 |     {
+  10 |         return one();
+     .                -----
+     .                  `-- 'one' is a method of 'Calculator', not a free function
+  11 |     }
+  12 | }
+  13 | 
+     `----
+  Fix: Write '.one()' to call the method.

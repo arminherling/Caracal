@@ -17,6 +17,7 @@
 #include <Caracal/IR/GlobalReferenceDeclaration.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
+#include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
 #include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
@@ -169,8 +170,9 @@ namespace Caracal
                     if (right == 0)
                         return std::nullopt;
 
-                    result = left / right;
-                    break;
+                    // division produces f32 a float constant
+                    // TODO use the prelude definitions
+                    return ConstantValue::FromLiteralData(ConstantValue::LiteralData{ static_cast<float>(left) / static_cast<float>(right) });
                 default:
                     return std::nullopt;
             }
@@ -1923,8 +1925,24 @@ namespace Caracal
                         block.addInstruction(std::make_unique<MultiplyInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
                     case BinaryOperatorKind::Division:
+                    {
+                        const auto operandType = binaryExpression->leftExpression()->type().toValue();
+                        if (operandType == Type::I32() || operandType == Type::U8())
+                        {
+                            const auto lhsConvertedId = temporaryId;
+                            block.addInstruction(std::make_unique<IntToFloatInstruction>(lhsConvertedId, leftValue.value(), operandType, expression->type()));
+
+                            const auto rhsConvertedId = m_nextTemporaryId++;
+                            block.addInstruction(std::make_unique<IntToFloatInstruction>(rhsConvertedId, rightValue.value(), operandType, expression->type()));
+
+                            const auto divideId = m_nextTemporaryId++;
+                            block.addInstruction(std::make_unique<DivideInstruction>(divideId, ValueRef{ lhsConvertedId }, ValueRef{ rhsConvertedId }, expression->type()));
+                            return ValueRef{ divideId };
+                        }
+
                         block.addInstruction(std::make_unique<DivideInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
+                    }
                     case BinaryOperatorKind::Equal:
                         block.addInstruction(std::make_unique<EqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;

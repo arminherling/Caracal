@@ -1,7 +1,7 @@
  Error T0061
   Division by zero
     ,-[Diagnostics/Input/divisionByZero.cara:3:16]
-  1 | def f() i32
+  1 | ﻿def f() f32
   2 | {
   3 |     return 1 / 0;
     .                -

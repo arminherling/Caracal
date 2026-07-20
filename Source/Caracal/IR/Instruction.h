@@ -25,6 +25,7 @@ namespace Caracal
         LoadValue,
         StoreValue,
         ValueNegation,
+        IntToFloat,
         LogicalNegation,
         Call,
         CallVoid,

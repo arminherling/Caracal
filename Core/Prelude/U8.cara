@@ -4,7 +4,7 @@ type u8
     def u8.add(lhs: u8, rhs: u8) u8 {}
     def u8.subtract(lhs: u8, rhs: u8) u8 {}
     def u8.multiply(lhs: u8, rhs: u8) u8 {}
-    def u8.divide(lhs: u8, rhs: u8) u8 {}
+    def u8.divide(lhs: u8, rhs: u8) f32 {}
 
     def u8.negate(value: u8) u8 {}
 

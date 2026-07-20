@@ -38,9 +38,9 @@ FunctionDefinitionStatement: {
                             Left: {
                                 NumberLiteral: 6
                             }
-                            Operation: Division
+                            Operation: Subtraction
                             Right: {
-                                NumberLiteral: 2
+                                NumberLiteral: 3
                             }
                         }
                     }

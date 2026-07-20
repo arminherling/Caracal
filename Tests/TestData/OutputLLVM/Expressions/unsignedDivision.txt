@@ -2,19 +2,23 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
-define i8 @unsignedDivide(i8 %0, i8 %1) {
+define float @unsignedDivide(i8 %0, i8 %1) {
 entry:
-  %divide = udiv i8 %0, %1
-  ret i8 %divide
+  %int_to_float = uitofp i8 %0 to float
+  %int_to_float1 = uitofp i8 %1 to float
+  %divide = fdiv float %int_to_float, %int_to_float1
+  ret float %divide
 }
 
-define i32 @signedDivide(i32 %0, i32 %1) {
+define float @signedDivide(i32 %0, i32 %1) {
 entry:
-  %divide = sdiv i32 %0, %1
-  ret i32 %divide
+  %int_to_float = sitofp i32 %0 to float
+  %int_to_float1 = sitofp i32 %1 to float
+  %divide = fdiv float %int_to_float, %int_to_float1
+  ret float %divide
 }
 
-define i8 @foldedHighByteDivision() {
+define float @foldedHighByteDivision() {
 entry:
-  ret i8 100
+  ret float 1.000000e+02
 }

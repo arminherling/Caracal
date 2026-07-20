@@ -88,6 +88,7 @@ namespace Caracal
         void addBuiltinMethodBodyIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName);
         void addUnknownBuiltinMethodIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName);
         void addInvalidOperatorMethodSignatureError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& expectedSignature);
+        void addMethodCallMissingDotError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName);
 
         // Control flow diagnostics
         void addNonBoolIfConditionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& actualTypeName);

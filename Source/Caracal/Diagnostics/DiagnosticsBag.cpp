@@ -781,6 +781,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addMethodCallMissingDotError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0073_MethodCallMissingDot,
+            source,
+            location,
+            "Write '." + methodName + "()' to call the method.");
+        diagnostic.addPrimaryLabel(location, "'" + methodName + "' is a method of '" + typeName + "', not a free function");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addVoidParameterTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& parameterName)
     {
         auto diagnostic = Diagnostic(

@@ -1,0 +1,7 @@
+﻿type Calculator
+{
+    def value() i32
+    {
+        return .missing();
+    }
+}

@@ -1,6 +1,8 @@
-define func() i32
+define func() f32
 block entry(0):
     %0 = const 8 : i32
     %1 = const 2 : i32
-    %2 = divide %0, %1 : i32
-    return %2
+    %2 = int_to_float %0 : i32 -> f32
+    %3 = int_to_float %1 : i32 -> f32
+    %4 = divide %2, %3 : f32
+    return %4

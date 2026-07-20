@@ -250,14 +250,6 @@ namespace Caracal
                         result = left.value() * right.value();
                         break;
                     }
-                    case BinaryOperatorKind::Division:
-                    {
-                        if (right.value() == 0)
-                            return std::nullopt;
-
-                        result = left.value() / right.value();
-                        break;
-                    }
                     default:
                         return std::nullopt;
                 }
@@ -2548,11 +2540,14 @@ namespace Caracal
 
                     if (leftValue.has_value() && rightValue.has_value())
                     {
-                        if (operation == BinaryOperatorKind::Division && rightValue.value() == 0)
+                        if (operation == BinaryOperatorKind::Division)
                         {
-                            m_diagnostics.addDivisionByZeroError(
-                                tokens.source(),
-                                binaryExpression->rightExpression()->sourceLocation(tokens));
+                            if (rightValue.value() == 0)
+                            {
+                                m_diagnostics.addDivisionByZeroError(
+                                    tokens.source(),
+                                    binaryExpression->rightExpression()->sourceLocation(tokens));
+                            }
                         }
                         else
                         {
@@ -2576,7 +2571,6 @@ namespace Caracal
                                 }
                                 default:
                                 {
-                                    result = leftValue.value() / rightValue.value();
                                     break;
                                 }
                             }
@@ -2707,12 +2701,32 @@ namespace Caracal
         auto functionType = m_module.tryGetFunctionTypeByName(name);
         if (functionType == Type::Undefined())
         {
+            if (m_currentType != Type::Undefined())
+            {
+                auto& typeDefinition = m_module.getTypeDefinition(m_currentType);
+                if (typeDefinition.tryGetMethodTypeByName(name) != Type::Undefined())
+                {
+                    m_diagnostics.addMethodCallMissingDotError(
+                        tokens.source(),
+                        functionCallExpression->sourceLocation(tokens),
+                        name,
+                        typeDefinition.name());
+                    return Type::Undefined();
+                }
+            }
+
             m_diagnostics.addUnknownFunctionError(
                 tokens.source(),
                 functionCallExpression->sourceLocation(tokens),
                 name);
             return Type::Undefined();
         }
+
+        return typeCheckResolvedFunctionCall(functionCallExpression, functionType, tokens);
+    }
+
+    Type TypeChecker::typeCheckResolvedFunctionCall(FunctionCallExpression* functionCallExpression, Type functionType, const TokenBuffer& tokens)
+    {
         const auto& functionDefinition = m_module.getFunctionDefinition(functionType);
 
         if (!typeCheckCallArguments(functionCallExpression, functionDefinition, tokens))
@@ -2746,6 +2760,28 @@ namespace Caracal
         }
 
         auto& typeDefinition = m_module.getTypeDefinition(m_currentType);
+        if (memberAccessExpression->expression()->kind() == NodeKind::FunctionCallExpression)
+        {
+            auto* functionCallExpression = static_cast<FunctionCallExpression*>(memberAccessExpression->expression().get());
+            const auto& methodName = functionCallExpression->nameExpression()->name();
+            const auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
+            if (methodType == Type::Undefined())
+            {
+                m_diagnostics.addUnknownMethodError(
+                    tokens.source(),
+                    functionCallExpression->sourceLocation(tokens),
+                    typeDefinition.name(),
+                    methodName);
+
+                memberAccessExpression->setType(Type::Undefined());
+                return Type::Undefined();
+            }
+
+            const auto type = typeCheckResolvedFunctionCall(functionCallExpression, methodType, tokens);
+            memberAccessExpression->setType(type);
+            return type;
+        }
+
         auto type = typeCheckExpression(memberAccessExpression->expression().get(), tokens);
         memberAccessExpression->setType(type);
 
