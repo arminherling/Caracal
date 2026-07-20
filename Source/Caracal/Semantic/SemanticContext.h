@@ -36,10 +36,12 @@ namespace Caracal
         [[nodiscard]] Type tryGetFunctionTypeByName(std::string_view typeName) const noexcept;
         [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;
         [[nodiscard]] TypeDefinition& getTypeDefinition(Type type) noexcept;
+        [[nodiscard]] const OperatorSignature* tryGetOperatorSignature(Type type, BinaryOperatorKind operation) const noexcept;
+        [[nodiscard]] const OperatorSignature* tryGetOperatorSignature(Type type, UnaryOperatorKind operation) const noexcept;
         TypeDefinition& bindBuiltinTypeDefinition(Type type, const TypeDefinitionStatement* statement) noexcept;
         [[nodiscard]] FunctionDefinition& getFunctionDefinition(Type type) noexcept;
         [[nodiscard]] Type tryGetTypeByName(std::string_view name) const noexcept;
-        [[nodiscard]] std::string_view getNameByType(Type type) noexcept;
+        [[nodiscard]] std::string_view getNameByType(Type type) const noexcept;
 
         [[nodiscard]] EnumDefinition& createEnum(
             std::string_view name,

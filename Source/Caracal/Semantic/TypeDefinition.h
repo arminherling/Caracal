@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <Caracal/Optimization/OperatorFolding.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/TypeDefinitionStatement.h>
 #include <Caracal/Syntax/UnaryExpression.h>
@@ -17,6 +18,8 @@ namespace Caracal
         Type lhsType;
         Type rhsType;
         Type resultType;
+        BinaryFoldFunction binaryFold = nullptr;
+        UnaryFoldFunction unaryFold = nullptr;
     };
 
     class TypeDefinition

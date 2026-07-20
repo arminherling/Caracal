@@ -4,6 +4,7 @@
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Semantic/TypeChecker.h>
+#include <Caracal/Optimization/ConstantFolder.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
@@ -43,6 +44,10 @@ static void FileTests(
     Caracal::SemanticContext module = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
     auto wasSuccessful = Caracal::typeCheck(parseTrees, options, module, diagnostics);
+    if (wasSuccessful)
+    {
+        wasSuccessful = Caracal::foldConstants(parseTrees, module, diagnostics);
+    }
     if (!wasSuccessful)
     {
         std::cout << "Type checking failed!";

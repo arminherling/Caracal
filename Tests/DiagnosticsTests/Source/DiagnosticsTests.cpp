@@ -5,6 +5,7 @@
 #include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Semantic/Type.h>
 #include <Caracal/Semantic/TypeChecker.h>
+#include <Caracal/Optimization/ConstantFolder.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
@@ -125,7 +126,12 @@ namespace
         }
         Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
-        const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
+        auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
+        if (wasSuccessful)
+        {
+            wasSuccessful = Caracal::foldConstants(parseTrees, semanticContext, diagnostics);
+        }
+
         if (!wasSuccessful || !diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
@@ -163,7 +169,12 @@ namespace
         const auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(RepositoryRootDirectory() / "Core" / "Prelude");
         Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
-        const auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
+        auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
+        if (wasSuccessful)
+        {
+            wasSuccessful = Caracal::foldConstants(parseTrees, semanticContext, diagnostics);
+        }
+
         if (!wasSuccessful || !diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/TypeChecker.h>
+#include <Caracal/Optimization/ConstantFolder.h>
 
 namespace
 {
@@ -47,6 +48,10 @@ static void FileTests(
     Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
     auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
+    if (wasSuccessful)
+    {
+        wasSuccessful = Caracal::foldConstants(parseTrees, semanticContext, diagnostics);
+    }
     if (!wasSuccessful)
     {
         std::cout << "Type checking failed!";

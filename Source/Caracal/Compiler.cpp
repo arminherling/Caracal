@@ -5,6 +5,7 @@
 #include <Caracal/Text/File.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
+#include <Caracal/Optimization/ConstantFolder.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/CodeGen/LLVMCodeGenerator.h>
@@ -135,6 +136,13 @@ namespace Caracal
         Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
         auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
+        if (!wasSuccessful)
+        {
+            Caracal::writeDiagnostics(std::cout, diagnostics, diagnosticOptions);
+            return 1;
+        }
+
+        wasSuccessful = Caracal::foldConstants(parseTrees, semanticContext, diagnostics);
         if (!wasSuccessful)
         {
             Caracal::writeDiagnostics(std::cout, diagnostics, diagnosticOptions);

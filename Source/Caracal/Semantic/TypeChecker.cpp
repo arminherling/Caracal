@@ -51,25 +51,27 @@ namespace Caracal
         bool isUnary;
         BinaryOperatorKind binaryOperator;
         UnaryOperatorKind unaryOperator;
+        BinaryFoldFunction binaryFold;
+        UnaryFoldFunction unaryFold;
     };
 
     static const BuiltinOperatorDefinition* TryGetBuiltinOperatorDefinition(std::string_view methodName)
     {
         static constexpr BuiltinOperatorDefinition Definitions[] = {
-            { "add", false, BinaryOperatorKind::Addition, UnaryOperatorKind::Invalid },
-            { "subtract", false, BinaryOperatorKind::Subtraction, UnaryOperatorKind::Invalid },
-            { "multiply", false, BinaryOperatorKind::Multiplication, UnaryOperatorKind::Invalid },
-            { "divide", false, BinaryOperatorKind::Division, UnaryOperatorKind::Invalid },
-            { "equals", false, BinaryOperatorKind::Equal, UnaryOperatorKind::Invalid },
-            { "notEquals", false, BinaryOperatorKind::NotEqual, UnaryOperatorKind::Invalid },
-            { "lessThan", false, BinaryOperatorKind::LessThan, UnaryOperatorKind::Invalid },
-            { "lessOrEqual", false, BinaryOperatorKind::LessOrEqual, UnaryOperatorKind::Invalid },
-            { "greaterThan", false, BinaryOperatorKind::GreaterThan, UnaryOperatorKind::Invalid },
-            { "greaterOrEqual", false, BinaryOperatorKind::GreaterOrEqual, UnaryOperatorKind::Invalid },
-            { "logicalAnd", false, BinaryOperatorKind::LogicalAnd, UnaryOperatorKind::Invalid },
-            { "logicalOr", false, BinaryOperatorKind::LogicalOr, UnaryOperatorKind::Invalid },
-            { "negate", true, BinaryOperatorKind::Invalid, UnaryOperatorKind::ValueNegation },
-            { "logicalNegate", true, BinaryOperatorKind::Invalid, UnaryOperatorKind::LogicalNegation },
+            { "add", false, BinaryOperatorKind::Addition, UnaryOperatorKind::Invalid, &FoldAddition, nullptr },
+            { "subtract", false, BinaryOperatorKind::Subtraction, UnaryOperatorKind::Invalid, &FoldSubtraction, nullptr },
+            { "multiply", false, BinaryOperatorKind::Multiplication, UnaryOperatorKind::Invalid, &FoldMultiplication, nullptr },
+            { "divide", false, BinaryOperatorKind::Division, UnaryOperatorKind::Invalid, &FoldDivision, nullptr },
+            { "equals", false, BinaryOperatorKind::Equal, UnaryOperatorKind::Invalid, nullptr, nullptr },
+            { "notEquals", false, BinaryOperatorKind::NotEqual, UnaryOperatorKind::Invalid, nullptr, nullptr },
+            { "lessThan", false, BinaryOperatorKind::LessThan, UnaryOperatorKind::Invalid, nullptr, nullptr },
+            { "lessOrEqual", false, BinaryOperatorKind::LessOrEqual, UnaryOperatorKind::Invalid, nullptr, nullptr },
+            { "greaterThan", false, BinaryOperatorKind::GreaterThan, UnaryOperatorKind::Invalid, nullptr, nullptr },
+            { "greaterOrEqual", false, BinaryOperatorKind::GreaterOrEqual, UnaryOperatorKind::Invalid, nullptr, nullptr },
+            { "logicalAnd", false, BinaryOperatorKind::LogicalAnd, UnaryOperatorKind::Invalid, nullptr, nullptr },
+            { "logicalOr", false, BinaryOperatorKind::LogicalOr, UnaryOperatorKind::Invalid, nullptr, nullptr },
+            { "negate", true, BinaryOperatorKind::Invalid, UnaryOperatorKind::ValueNegation, nullptr, &FoldValueNegation },
+            { "logicalNegate", true, BinaryOperatorKind::Invalid, UnaryOperatorKind::LogicalNegation, nullptr, &FoldLogicalNegation },
         };
 
         for (const auto& definition : Definitions)
@@ -157,110 +159,6 @@ namespace Caracal
                 return "or";
             default:
                 return stringify(binaryOperator);
-        }
-    }
-
-    static bool ConstantFitsType(std::int64_t value, Type type)
-    {
-        const auto baseType = type.toBaseType();
-
-        if (baseType == Type::I32())
-            return value >= static_cast<std::int64_t>(std::numeric_limits<i32>::min())
-                && value <= static_cast<std::int64_t>(std::numeric_limits<i32>::max());
-
-        if (baseType == Type::U8())
-            return value >= 0 && value <= static_cast<std::int64_t>(std::numeric_limits<u8>::max());
-
-        return false;
-    }
-
-    static std::optional<std::int64_t> TryEvaluateConstantInteger(const Expression* expression)
-    {
-        while (expression != nullptr && expression->kind() == NodeKind::GroupingExpression)
-            expression = static_cast<const GroupingExpression*>(expression)->expression().get();
-
-        if (expression == nullptr)
-            return std::nullopt;
-
-        switch (expression->kind())
-        {
-            case NodeKind::NumberLiteral:
-            {
-                const auto* literal = static_cast<const NumberLiteral*>(expression);
-                if (!literal->hasParsedValue())
-                    return std::nullopt;
-
-                const auto baseType = literal->type().toBaseType();
-                const auto& parsedValue = literal->parsedValue().value();
-
-                if (baseType == Type::I32())
-                    return static_cast<std::int64_t>(std::get<i32>(parsedValue));
-
-                if (baseType == Type::U8())
-                    return static_cast<std::int64_t>(std::get<u8>(parsedValue));
-
-                return std::nullopt;
-            }
-            case NodeKind::UnaryExpression:
-            {
-                const auto* unary = static_cast<const UnaryExpression*>(expression);
-                if (unary->unaryOperator() != UnaryOperatorKind::ValueNegation)
-                    return std::nullopt;
-
-                const auto operand = TryEvaluateConstantInteger(unary->expression().get());
-                if (!operand.has_value())
-                    return std::nullopt;
-
-                // the literal already has a sign, dont negate again
-                if (unary->signFolded())
-                    return operand;
-
-                const auto negated = -operand.value();
-                if (!ConstantFitsType(negated, expression->type()))
-                    return std::nullopt;
-
-                return negated;
-            }
-            case NodeKind::BinaryExpression:
-            {
-                const auto* binary = static_cast<const BinaryExpression*>(expression);
-                const auto left = TryEvaluateConstantInteger(binary->leftExpression().get());
-                if (!left.has_value())
-                    return std::nullopt;
-
-                const auto right = TryEvaluateConstantInteger(binary->rightExpression().get());
-                if (!right.has_value())
-                    return std::nullopt;
-
-                std::int64_t result = 0;
-                switch (binary->binaryOperator())
-                {
-                    case BinaryOperatorKind::Addition:
-                    {
-                        result = left.value() + right.value();
-                        break;
-                    }
-                    case BinaryOperatorKind::Subtraction:
-                    {
-                        result = left.value() - right.value();
-                        break;
-                    }
-                    case BinaryOperatorKind::Multiplication:
-                    {
-                        result = left.value() * right.value();
-                        break;
-                    }
-                    default:
-                        return std::nullopt;
-                }
-
-                if (!ConstantFitsType(result, expression->type()))
-                    return std::nullopt;
-
-                return result;
-            }
-            default:
-                return std::nullopt;
         }
     }
 
@@ -983,13 +881,13 @@ namespace Caracal
         {
             typeDefinition.addOperatorSignature(
                 operatorDefinition->unaryOperator,
-                OperatorSignature{ parameters[0].type(), Type::Undefined(), returnTypes.front() });
+                OperatorSignature{ parameters[0].type(), Type::Undefined(), returnTypes.front(), nullptr, operatorDefinition->unaryFold });
         }
         else
         {
             typeDefinition.addOperatorSignature(
                 operatorDefinition->binaryOperator,
-                OperatorSignature{ parameters[0].type(), parameters[1].type(), returnTypes.front() });
+                OperatorSignature{ parameters[0].type(), parameters[1].type(), returnTypes.front(), operatorDefinition->binaryFold, nullptr });
         }
     }
 
@@ -2282,7 +2180,7 @@ namespace Caracal
 
                 const auto operandType = type.toValue();
                 if (operandType != Type::Undefined()
-                    && tryGetOperatorSignature(operandType, UnaryOperatorKind::LogicalNegation) == nullptr)
+                    && m_module.tryGetOperatorSignature(operandType, UnaryOperatorKind::LogicalNegation) == nullptr)
                 {
                     m_diagnostics.addUnaryOperandTypeMismatchError(
                         tokens.source(),
@@ -2316,7 +2214,7 @@ namespace Caracal
 
                 const auto operandType = type.toValue();
                 if (operandType != Type::Undefined()
-                    && tryGetOperatorSignature(operandType, UnaryOperatorKind::ValueNegation) == nullptr)
+                    && m_module.tryGetOperatorSignature(operandType, UnaryOperatorKind::ValueNegation) == nullptr)
                 {
                     m_diagnostics.addUnaryOperandTypeMismatchError(
                         tokens.source(),
@@ -2518,7 +2416,7 @@ namespace Caracal
                     return Type::Undefined();
                 }
 
-                const auto* operatorSignature = tryGetOperatorSignature(leftType, binaryExpression->binaryOperator());
+                const auto* operatorSignature = m_module.tryGetOperatorSignature(leftType, binaryExpression->binaryOperator());
                 if (operatorSignature == nullptr)
                 {
                     m_diagnostics.addBinaryOperandTypeMismatchError(
@@ -2530,60 +2428,6 @@ namespace Caracal
 
                     binaryExpression->setType(Type::Undefined());
                     return Type::Undefined();
-                }
-
-                if (leftType == Type::I32() || leftType == Type::U8())
-                {
-                    const auto leftValue = TryEvaluateConstantInteger(binaryExpression->leftExpression().get());
-                    const auto rightValue = TryEvaluateConstantInteger(binaryExpression->rightExpression().get());
-                    const auto operation = binaryExpression->binaryOperator();
-
-                    if (leftValue.has_value() && rightValue.has_value())
-                    {
-                        if (operation == BinaryOperatorKind::Division)
-                        {
-                            if (rightValue.value() == 0)
-                            {
-                                m_diagnostics.addDivisionByZeroError(
-                                    tokens.source(),
-                                    binaryExpression->rightExpression()->sourceLocation(tokens));
-                            }
-                        }
-                        else
-                        {
-                            std::int64_t result = 0;
-                            switch (operation)
-                            {
-                                case BinaryOperatorKind::Addition:
-                                {
-                                    result = leftValue.value() + rightValue.value();
-                                    break;
-                                }
-                                case BinaryOperatorKind::Subtraction:
-                                {
-                                    result = leftValue.value() - rightValue.value();
-                                    break;
-                                }
-                                case BinaryOperatorKind::Multiplication:
-                                {
-                                    result = leftValue.value() * rightValue.value();
-                                    break;
-                                }
-                                default:
-                                {
-                                    break;
-                                }
-                            }
-
-                            if (!ConstantFitsType(result, leftType))
-                            {
-                                m_diagnostics.addConstantOverflowError(
-                                    tokens.source(),
-                                    binaryExpression->sourceLocation(tokens),
-                                    FormatTypeName(m_module, leftType));
-                            }
-                        }
-                    }
                 }
 
                 binaryExpression->setType(operatorSignature->resultType);
@@ -2633,7 +2477,7 @@ namespace Caracal
                     lookupType = m_module.getEnumDefinition(lookupType).baseType();
                 }
 
-                const auto* operatorSignature = tryGetOperatorSignature(lookupType, operation);
+                const auto* operatorSignature = m_module.tryGetOperatorSignature(lookupType, operation);
                 if (operatorSignature == nullptr)
                 {
                     const auto* expectedOperands = "numeric operands";
@@ -3083,38 +2927,6 @@ namespace Caracal
         }
 
         return conditionType;
-    }
-
-    const OperatorSignature* TypeChecker::tryGetOperatorSignature(Type type, BinaryOperatorKind operation)
-    {
-        if (type != type.toBaseType())
-        {
-            return nullptr;
-        }
-
-        auto& typeDefinition = m_module.getTypeDefinition(type);
-        if (typeDefinition.type() == Type::Undefined())
-        {
-            return nullptr;
-        }
-
-        return typeDefinition.tryGetOperatorSignature(operation);
-    }
-
-    const OperatorSignature* TypeChecker::tryGetOperatorSignature(Type type, UnaryOperatorKind operation)
-    {
-        if (type != type.toBaseType())
-        {
-            return nullptr;
-        }
-
-        auto& typeDefinition = m_module.getTypeDefinition(type);
-        if (typeDefinition.type() == Type::Undefined())
-        {
-            return nullptr;
-        }
-
-        return typeDefinition.tryGetOperatorSignature(operation);
     }
 
     bool TypeChecker::areComparableTypes(Type leftType, Type rightType)

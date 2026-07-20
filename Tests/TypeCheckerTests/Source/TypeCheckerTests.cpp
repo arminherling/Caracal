@@ -2,6 +2,7 @@
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Debug/ParseTreePrinter.h>
 #include <Caracal/Semantic/TypeChecker.h>
+#include <Caracal/Optimization/ConstantFolder.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Syntax/Lexer.h>
@@ -44,6 +45,10 @@ static void FileTests(
 
     auto startTime = std::chrono::high_resolution_clock::now();
     auto wasSuccessful = Caracal::typeCheck(parseTrees, options, module, diagnostics);
+    if (wasSuccessful)
+    {
+        wasSuccessful = Caracal::foldConstants(parseTrees, module, diagnostics);
+    }
     auto endTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "      Type check(): " << CaraTest::stringify(endTime - startTime) << std::endl;

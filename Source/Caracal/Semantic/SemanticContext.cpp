@@ -137,6 +137,38 @@ namespace Caracal
             return invalidType;
     }
 
+    const OperatorSignature* SemanticContext::tryGetOperatorSignature(Type type, BinaryOperatorKind operation) const noexcept
+    {
+        if (type != type.toBaseType())
+        {
+            return nullptr;
+        }
+
+        const auto index = m_typeDefinitionIndexById.find(type.id());
+        if (index == m_typeDefinitionIndexById.end())
+        {
+            return nullptr;
+        }
+
+        return m_typeDefinitions.at(index->second).tryGetOperatorSignature(operation);
+    }
+
+    const OperatorSignature* SemanticContext::tryGetOperatorSignature(Type type, UnaryOperatorKind operation) const noexcept
+    {
+        if (type != type.toBaseType())
+        {
+            return nullptr;
+        }
+
+        const auto index = m_typeDefinitionIndexById.find(type.id());
+        if (index == m_typeDefinitionIndexById.end())
+        {
+            return nullptr;
+        }
+
+        return m_typeDefinitions.at(index->second).tryGetOperatorSignature(operation);
+    }
+
     FunctionDefinition& SemanticContext::getFunctionDefinition(Type type) noexcept
     {
         static auto invalidFunction = FunctionDefinition{ nullptr, Type::Undefined(), Type::Undefined(), FunctionType::None, std::string("???"), std::string("???"), false };
@@ -156,7 +188,7 @@ namespace Caracal
         return Type::Undefined();
     }
 
-    std::string_view SemanticContext::getNameByType(Type type) noexcept
+    std::string_view SemanticContext::getNameByType(Type type) const noexcept
     {
         auto baseType = type.toBaseType();
         auto id = baseType.id();
