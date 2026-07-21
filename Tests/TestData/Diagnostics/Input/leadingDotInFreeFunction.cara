@@ -1,0 +1,4 @@
+def offset(a: i32 = .base) i32
+{
+    return a;
+}

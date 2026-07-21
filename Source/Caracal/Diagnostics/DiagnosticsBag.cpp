@@ -794,6 +794,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addMemberAccessInDefaultParameterError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0076_MemberAccessInDefaultParameter,
+            source,
+            location,
+            "Use a default value without member access, or pass the argument at the call site.");
+        diagnostic.addPrimaryLabel(location, "Member access is not allowed for default parameters");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addStaticMethodTypeNameMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& declaredTypeName, const std::string& enclosingTypeName, const std::string& methodName)
     {
         auto diagnostic = Diagnostic(

@@ -2638,7 +2638,11 @@ namespace Caracal
     {
         if (m_currentType == Type::Undefined())
         {
-            TODO("Member access expression only supported in type scope");
+            m_diagnostics.addMemberAccessInDefaultParameterError(
+                tokens.source(),
+                memberAccessExpression->sourceLocation(tokens));
+
+            memberAccessExpression->setType(Type::Undefined());
             return Type::Undefined();
         }
 

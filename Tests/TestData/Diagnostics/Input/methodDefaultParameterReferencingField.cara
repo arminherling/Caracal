@@ -1,0 +1,9 @@
+type Point
+{
+    x : i32 = 0
+
+    def withOffset(a: i32 = .x) i32
+    {
+        return a;
+    }
+}

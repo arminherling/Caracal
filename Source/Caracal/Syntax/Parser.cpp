@@ -593,7 +593,8 @@ namespace Caracal
             if (currentToken().kind == TokenKind::Equal)
             {
                 advanceOnMatch(TokenKind::Equal);
-                defaultValue = parseExpression(scope);
+                // always parse with method scope so leading-dot member access reaches the type checker, which rejects it with T0076
+                defaultValue = parseExpression(StatementScope::Method);
             }
 
             return std::make_unique<ParameterNode>(nameToken, name, colon, std::move(typeName), false, std::move(defaultValue));

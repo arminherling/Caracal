@@ -1,0 +1,11 @@
+ Error T0076
+  Member access is not allowed for default parameters
+    ,-[Diagnostics/Input/leadingDotInFreeFunction.cara:1:21]
+  1 | def offset(a: i32 = .base) i32
+    .                     -----
+    .                       `-- Member access is not allowed for default parameters
+  2 | {
+  3 |     return a;
+  4 | }
+    `----
+  Fix: Use a default value without member access, or pass the argument at the call site.

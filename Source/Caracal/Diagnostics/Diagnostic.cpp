@@ -199,6 +199,8 @@ namespace Caracal
                 return "T0074";
             case DiagnosticKind::T0075_DuplicateMethodDeclaration:
                 return "T0075";
+            case DiagnosticKind::T0076_MemberAccessInDefaultParameter:
+                return "T0076";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -402,6 +404,8 @@ namespace Caracal
                 return "Static method type name does not match the enclosing type";
             case DiagnosticKind::T0075_DuplicateMethodDeclaration:
                 return "Duplicate method declaration";
+            case DiagnosticKind::T0076_MemberAccessInDefaultParameter:
+                return "Member access is not allowed for default parameters";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

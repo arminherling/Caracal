@@ -41,6 +41,7 @@ namespace Caracal
         T0013_InvalidEnumMemberAccess,
         T0014_InvalidMemberAccessReceiver,
         T0073_MethodCallMissingDot,
+        T0076_MemberAccessInDefaultParameter,
 
         // Call diagnostics
         T0015_ArgumentCountMismatch,

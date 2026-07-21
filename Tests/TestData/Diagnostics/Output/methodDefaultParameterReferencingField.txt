@@ -1,0 +1,14 @@
+ Error T0076
+  Member access is not allowed for default parameters
+    ,-[Diagnostics/Input/methodDefaultParameterReferencingField.cara:5:29]
+  2 | {
+  3 |     x : i32 = 0
+  4 | 
+  5 |     def withOffset(a: i32 = .x) i32
+    .                             --
+    .                              `-- Member access is not allowed for default parameters
+  6 |     {
+  7 |         return a;
+  8 |     }
+    `----
+  Fix: Use a default value without member access, or pass the argument at the call site.
