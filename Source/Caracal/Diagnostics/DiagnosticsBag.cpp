@@ -833,6 +833,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addPrivateMethodCallOutsideTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0077_PrivateMethodCallOutsideType,
+            source,
+            location,
+            "Call it from a method of '" + typeName + "', or remove the leading '_' to make it public.");
+        diagnostic.addPrimaryLabel(location, "'" + methodName + "' is private to type '" + typeName + "'");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addStaticMethodTypeNameMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& declaredTypeName, const std::string& enclosingTypeName, const std::string& methodName)
     {
         auto diagnostic = Diagnostic(

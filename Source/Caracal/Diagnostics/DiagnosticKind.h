@@ -44,6 +44,7 @@ namespace Caracal
         T0014_InvalidMemberAccessReceiver,
         T0073_MethodCallMissingDot,
         T0076_MemberAccessInDefaultParameter,
+        T0077_PrivateMethodCallOutsideType,
 
         // Call diagnostics
         T0015_ArgumentCountMismatch,

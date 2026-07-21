@@ -1,0 +1,13 @@
+ Error T0077
+  Private methods cannot be called from outside their type
+     ,-[Diagnostics/Input/privateMethodCallOutsideType.cara:17:14]
+  14 | def main() i32
+  15 | {
+  16 |     c := Counter.new();
+  17 |     return c._bump();
+     .              -------
+     .                 `-- '_bump' is private to type 'Counter'
+  18 | }
+  19 | 
+     `----
+  Fix: Call it from a method of 'Counter', or remove the leading '_' to make it public.

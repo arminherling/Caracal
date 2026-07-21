@@ -1,0 +1,18 @@
+type Counter
+{
+    def _bump() i32
+    {
+        return 1;
+    }
+
+    def bump() i32
+    {
+        return ._bump();
+    }
+}
+
+def main() i32
+{
+    c := Counter.new();
+    return c._bump();
+}

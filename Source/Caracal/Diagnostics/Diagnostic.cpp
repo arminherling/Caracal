@@ -205,6 +205,8 @@ namespace Caracal
                 return "T0075";
             case DiagnosticKind::T0076_MemberAccessInDefaultParameter:
                 return "T0076";
+            case DiagnosticKind::T0077_PrivateMethodCallOutsideType:
+                return "T0077";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -414,6 +416,8 @@ namespace Caracal
                 return "Duplicate method declaration";
             case DiagnosticKind::T0076_MemberAccessInDefaultParameter:
                 return "Member access is not allowed for default parameters";
+            case DiagnosticKind::T0077_PrivateMethodCallOutsideType:
+                return "Private methods cannot be called from outside their type";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

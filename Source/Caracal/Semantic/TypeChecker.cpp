@@ -2349,6 +2349,16 @@ namespace Caracal
                         if (methodType != Type::Undefined())
                         {
                             auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+                            if (methodDefinition.functionType() == FunctionType::PrivateMethod && m_currentType != leftType)
+                            {
+                                m_diagnostics.addPrivateMethodCallOutsideTypeError(
+                                    tokens.source(),
+                                    functionCallExpression->sourceLocation(tokens),
+                                    name,
+                                    typeDefinition.name());
+                                return Type::Undefined();
+                            }
+
                             if (!typeCheckCallArguments(functionCallExpression, methodDefinition, tokens))
                             {
                                 return Type::Undefined();
