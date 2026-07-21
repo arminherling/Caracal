@@ -59,9 +59,7 @@ namespace Caracal
             }
             else if (positionalSlot < fixedParameterCount)
             {
-                if (binding.ordered[positionalSlot] == nullptr)
-                    binding.ordered[positionalSlot] = value;
-
+                binding.ordered[positionalSlot] = value;
                 ++positionalSlot;
             }
             else if (isVariadic)
