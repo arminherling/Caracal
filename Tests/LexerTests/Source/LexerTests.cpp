@@ -23,7 +23,7 @@ static void ExpectedTokenKind(const std::string& /*testName*/, const std::string
 
     CaraTest::areEqual(expectedKind, token.kind);
     // expected token + eof token
-    CaraTest::areEqual(tokens.size(), 2);
+    CaraTest::areEqual(2, tokens.size());
 }
 
 static std::vector<std::tuple<std::string, std::string, TokenKind>> Symbols_Data()

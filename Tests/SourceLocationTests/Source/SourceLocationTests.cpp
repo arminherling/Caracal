@@ -22,8 +22,8 @@ static void SingleSourceLocation(
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
     auto& location = tokens.getSourceLocation(token);
-    CaraTest::areEqual(location.startIndex, expectedLocation.startIndex);
-    CaraTest::areEqual(location.endIndex, expectedLocation.endIndex);
+    CaraTest::areEqual(expectedLocation.startIndex, location.startIndex);
+    CaraTest::areEqual(expectedLocation.endIndex, location.endIndex);
 }
 
 static std::vector<std::tuple<std::string, Caracal::SourceTextSharedPtr, Caracal::SourceLocation>> SingleSourceLocation_Data()
@@ -98,13 +98,13 @@ static void MultipleSourceLocations()
     auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
 
-    CaraTest::areEqual(tokens.size(), expectedList.size());
+    CaraTest::areEqual(expectedList.size(), tokens.size());
     for (auto i = 0; i < tokens.size(); i++)
     {
         auto& location = tokens.getSourceLocation(tokens.getToken(i));
 
-        CaraTest::areEqual(location.startIndex, expectedList[i].startIndex);
-        CaraTest::areEqual(location.endIndex, expectedList[i].endIndex);
+        CaraTest::areEqual(expectedList[i].startIndex, location.startIndex);
+        CaraTest::areEqual(expectedList[i].endIndex, location.endIndex);
     }
 }
 
