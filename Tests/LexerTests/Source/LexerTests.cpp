@@ -354,7 +354,7 @@ static const auto tests =
     CaraTest::addTest("Identifiers", Identifiers, Identifiers_Data),
     CaraTest::addTest("Numbers", Numbers, Numbers_Data),
     CaraTest::addTest("Strings", Strings, Strings_Data),
-    CaraTest::addTest("StringsWithEscapes", StringsWithEscapes_Data),
+    CaraTest::addTest("StringsWithEscapes", Strings, StringsWithEscapes_Data),
     CaraTest::addTest("UnterminatedStrings", UnterminatedStrings, UnterminatedStrings_Data),
     CaraTest::addTest("Keywords", ExpectedTokenKind, Keyword_Data),
     CaraTest::addTest("WhiteSpaceTrivia", WhiteSpaceTrivia, WhiteSpaceTrivia_Data),
