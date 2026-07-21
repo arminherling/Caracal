@@ -195,6 +195,8 @@ namespace Caracal
                 return "T0072";
             case DiagnosticKind::T0073_MethodCallMissingDot:
                 return "T0073";
+            case DiagnosticKind::T0074_StaticMethodTypeNameMismatch:
+                return "T0074";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -394,6 +396,8 @@ namespace Caracal
                 return "Invalid operator method signature";
             case DiagnosticKind::T0073_MethodCallMissingDot:
                 return "Method call is missing the leading dot";
+            case DiagnosticKind::T0074_StaticMethodTypeNameMismatch:
+                return "Static method type name does not match the enclosing type";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

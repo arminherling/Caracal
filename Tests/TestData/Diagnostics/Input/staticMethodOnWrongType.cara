@@ -1,0 +1,12 @@
+type Foo
+{
+    def Foo.valid() i32
+    {
+        return 1;
+    }
+
+    def Bar.stolen() i32
+    {
+        return 2;
+    }
+}

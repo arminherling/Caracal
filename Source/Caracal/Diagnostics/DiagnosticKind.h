@@ -131,5 +131,6 @@ namespace Caracal
         T0071_UnknownBuiltinMethodIgnored,
         T0072_InvalidOperatorMethodSignature,
         T0073_MethodCallMissingDot,
+        T0074_StaticMethodTypeNameMismatch,
     };
 }

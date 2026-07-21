@@ -64,7 +64,7 @@ namespace Caracal
         if (!codeGenerator.generate())
             return false;
 
-        // catch malformed IR before it is emitted or snapshotted; verifyModule returns true when broken
+        // catch malformed IR before it is emitted or snapshotted, verifyModule returns true when broken
         if (llvm::verifyModule(llvmModule, &llvm::errs()))
             return false;
 

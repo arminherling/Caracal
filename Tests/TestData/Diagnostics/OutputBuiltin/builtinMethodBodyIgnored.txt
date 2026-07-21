@@ -11,4 +11,4 @@
   6 |         return 1;
   7 |     }
     `----
-  Fix: Leave the body empty; #builtin methods are signatures only.
+  Fix: Leave the body empty, #builtin methods are signatures only.

@@ -615,7 +615,7 @@ namespace Caracal
             DiagnosticKind::T0059_UnreachableCode,
             source,
             location,
-            "This code can never run; remove it.");
+            "This code can never run, remove it.");
         diagnostic.addPrimaryLabel(location, "Unreachable code after a 'return', 'break', or 'skip'.");
 
         m_diagnostics.push_back(std::move(diagnostic));
@@ -736,7 +736,7 @@ namespace Caracal
             DiagnosticKind::T0069_BuiltinTypeConstructorIgnored,
             source,
             location,
-            "Remove the constructor parameters; builtin types are not constructible.");
+            "Remove the constructor parameters, builtin types are not constructible.");
         diagnostic.addPrimaryLabel(location, "Constructor on builtin type '" + typeName + "' is ignored");
 
         m_diagnostics.push_back(std::move(diagnostic));
@@ -749,7 +749,7 @@ namespace Caracal
             DiagnosticKind::T0070_BuiltinMethodBodyIgnored,
             source,
             location,
-            "Leave the body empty; #builtin methods are signatures only.");
+            "Leave the body empty, #builtin methods are signatures only.");
         diagnostic.addPrimaryLabel(location, "Body of builtin method '" + methodName + "' is ignored");
 
         m_diagnostics.push_back(std::move(diagnostic));
@@ -790,6 +790,19 @@ namespace Caracal
             location,
             "Write '." + methodName + "()' to call the method.");
         diagnostic.addPrimaryLabel(location, "'" + methodName + "' is a method of '" + typeName + "', not a free function");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addStaticMethodTypeNameMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& declaredTypeName, const std::string& enclosingTypeName, const std::string& methodName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0074_StaticMethodTypeNameMismatch,
+            source,
+            location,
+            "Write '" + enclosingTypeName + "." + methodName + "', or move the method into type '" + declaredTypeName + "'.");
+        diagnostic.addPrimaryLabel(location, "'" + declaredTypeName + "' does not match the enclosing type '" + enclosingTypeName + "'");
 
         m_diagnostics.push_back(std::move(diagnostic));
     }

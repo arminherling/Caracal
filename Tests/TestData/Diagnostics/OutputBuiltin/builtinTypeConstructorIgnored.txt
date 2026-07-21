@@ -9,4 +9,4 @@
   4 | }
   5 | 
     `----
-  Fix: Remove the constructor parameters; builtin types are not constructible.
+  Fix: Remove the constructor parameters, builtin types are not constructible.

@@ -796,7 +796,32 @@ namespace Caracal
             {
                 validateBuiltinOperatorMethod(methodStatement, typeDefinition, typeType, tokens);
             }
+            else
+            {
+                validateStaticMethodTypeName(methodStatement, typeDefinition, tokens);
+            }
         }
+    }
+
+    void TypeChecker::validateStaticMethodTypeName(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, const TokenBuffer& tokens)
+    {
+        const auto& methodNameNode = methodStatement->methodNameNode();
+        if (!methodNameNode->hasTypeName())
+        {
+            return;
+        }
+
+        if (methodNameNode->typeName().value() == typeDefinition.name())
+        {
+            return;
+        }
+
+        m_diagnostics.addStaticMethodTypeNameMismatchError(
+            tokens.source(),
+            tokens.getSourceLocation(methodNameNode->typeNameToken().value()),
+            methodNameNode->typeName().value(),
+            typeDefinition.name(),
+            methodNameNode->methodName());
     }
 
     void TypeChecker::validateBuiltinOperatorMethod(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens)

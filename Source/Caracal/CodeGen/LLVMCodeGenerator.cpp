@@ -402,7 +402,7 @@ namespace Caracal
             }
             case InstructionKind::Phi:
             {
-                // create the empty node now; its incomings are wired up in lowerFunction once all blocks exist
+                // create the empty node now, its incomings are wired up in lowerFunction once all blocks exist
                 const auto& phi = static_cast<const PhiInstruction&>(instruction);
                 auto* phiType = lowerType(phi.type());
                 if (phiType == nullptr)

@@ -1,0 +1,14 @@
+ Error T0074
+  Static method type name does not match the enclosing type
+     ,-[Diagnostics/Input/staticMethodOnWrongType.cara:8:9]
+   5 |         return 1;
+   6 |     }
+   7 | 
+   8 |     def Bar.stolen() i32
+     .         ---
+     .          `-- 'Bar' does not match the enclosing type 'Foo'
+   9 |     {
+  10 |         return 2;
+  11 |     }
+     `----
+  Fix: Write 'Foo.stolen', or move the method into type 'Bar'.
