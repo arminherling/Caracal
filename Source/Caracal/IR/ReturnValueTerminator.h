@@ -11,6 +11,7 @@ namespace Caracal
         explicit ReturnValueTerminator(ValueRef value) noexcept;
 
         [[nodiscard]] ValueRef value() const noexcept { return m_value; }
+        void remapValueIds(const ValueIdMap& remap) noexcept override;
 
     private:
         ValueRef m_value;

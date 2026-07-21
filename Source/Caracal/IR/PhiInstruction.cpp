@@ -14,4 +14,13 @@ namespace Caracal
     {
         m_inputs = std::move(inputs);
     }
+
+    void PhiInstruction::remapValueIds(const ValueIdMap& remap) noexcept
+    {
+        m_resultId = remapTemporaryId(remap, m_resultId);
+        for (auto& input : m_inputs)
+        {
+            input = PhiInput{ input.blockId(), ValueRef{ remapTemporaryId(remap, input.value().id()) } };
+        }
+    }
 }

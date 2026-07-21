@@ -13,6 +13,7 @@ namespace Caracal
         [[nodiscard]] ValueRef value() const noexcept { return m_value; }
         [[nodiscard]] ValueRef address() const noexcept { return m_address; }
         [[nodiscard]] Type type() const noexcept { return m_type; }
+        void remapValueIds(const ValueIdMap& remap) noexcept override;
 
     private:
         ValueRef m_value;

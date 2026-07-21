@@ -9,4 +9,9 @@ namespace Caracal
         , m_parameter{ std::move(parameter) }
     {
     }
+
+    void ParameterInstruction::remapValueIds(const ValueIdMap& remap) noexcept
+    {
+        m_resultId = remapTemporaryId(remap, m_resultId);
+    }
 }

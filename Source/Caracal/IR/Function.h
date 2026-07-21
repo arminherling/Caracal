@@ -25,6 +25,7 @@ namespace Caracal
         [[nodiscard]] const std::vector<IRParameter>& parameters() const noexcept { return m_parameters; }
         [[nodiscard]] Type returnType() const noexcept { return m_returnType; }
         [[nodiscard]] const std::vector<BasicBlockUPtr>& blocks() const noexcept { return m_blocks; }
+        [[nodiscard]] std::vector<BasicBlockUPtr>& blocks() noexcept { return m_blocks; }
         [[nodiscard]] bool hasBlocks() const noexcept { return !m_blocks.empty(); }
         [[nodiscard]] const BasicBlock& firstBlock() const noexcept { return *m_blocks.front(); }
         [[nodiscard]] BasicBlock* tryGetBlock(BlockId id) noexcept;

@@ -11,4 +11,11 @@ namespace Caracal
         , m_operandType{ operandType }
     {
     }
+
+    void GreaterOrEqualInstruction::remapValueIds(const ValueIdMap& remap) noexcept
+    {
+        m_resultId = remapTemporaryId(remap, m_resultId);
+        m_leftValue = ValueRef{ remapTemporaryId(remap, m_leftValue.id()) };
+        m_rightValue = ValueRef{ remapTemporaryId(remap, m_rightValue.id()) };
+    }
 }

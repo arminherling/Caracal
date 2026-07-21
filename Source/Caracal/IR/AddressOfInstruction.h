@@ -14,6 +14,7 @@ namespace Caracal
         [[nodiscard]] TemporaryId resultId() const noexcept { return m_resultId; }
         [[nodiscard]] LocalSlotRef local() const noexcept { return m_local; }
         [[nodiscard]] Type type() const noexcept { return m_type; }
+        void remapValueIds(const ValueIdMap& remap) noexcept override;
 
     private:
         TemporaryId m_resultId;

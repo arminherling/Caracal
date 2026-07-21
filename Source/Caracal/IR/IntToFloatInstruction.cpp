@@ -10,4 +10,10 @@ namespace Caracal
         , m_type{ type }
     {
     }
+
+    void IntToFloatInstruction::remapValueIds(const ValueIdMap& remap) noexcept
+    {
+        m_resultId = remapTemporaryId(remap, m_resultId);
+        m_operandValue = ValueRef{ remapTemporaryId(remap, m_operandValue.id()) };
+    }
 }

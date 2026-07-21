@@ -14,6 +14,7 @@ namespace Caracal
         [[nodiscard]] ValueRef leftValue() const noexcept { return m_leftValue; }
         [[nodiscard]] ValueRef rightValue() const noexcept { return m_rightValue; }
         [[nodiscard]] Type type() const noexcept { return m_type; }
+        void remapValueIds(const ValueIdMap& remap) noexcept override;
 
     private:
         TemporaryId m_resultId;

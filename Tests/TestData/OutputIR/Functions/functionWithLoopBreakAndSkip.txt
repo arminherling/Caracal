@@ -27,5 +27,4 @@ block if.continuation(7):
     %12 = add %3, %7 : i32
     jump while.condition(1)
 block while.continuation(3):
-    %13 = phi [while.condition(1): %2], [if.true(6): %7] : i32
     return %3

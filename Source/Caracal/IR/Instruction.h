@@ -5,6 +5,7 @@
 #include <Caracal/Semantic/Type.h>
 
 #include <memory>
+#include <unordered_map>
 
 namespace Caracal
 {
@@ -13,6 +14,10 @@ namespace Caracal
     using BlockId = i32;
     using FunctionId = i32;
     using EnumId = i32;
+
+    using ValueIdMap = std::unordered_map<TemporaryId, TemporaryId>;
+
+    [[nodiscard]] CARACAL_API TemporaryId remapTemporaryId(const ValueIdMap& remap, TemporaryId id) noexcept;
 
     enum class InstructionKind
     {
@@ -60,6 +65,7 @@ namespace Caracal
         virtual ~Instruction() = default;
 
         [[nodiscard]] InstructionKind kind() const noexcept { return m_kind; }
+        virtual void remapValueIds(const ValueIdMap&) noexcept {}
 
     private:
         InstructionKind m_kind;

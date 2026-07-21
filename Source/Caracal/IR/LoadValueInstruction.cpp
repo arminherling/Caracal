@@ -9,4 +9,10 @@ namespace Caracal
         , m_type{ type }
     {
     }
+
+    void LoadValueInstruction::remapValueIds(const ValueIdMap& remap) noexcept
+    {
+        m_resultId = remapTemporaryId(remap, m_resultId);
+        m_address = ValueRef{ remapTemporaryId(remap, m_address.id()) };
+    }
 }

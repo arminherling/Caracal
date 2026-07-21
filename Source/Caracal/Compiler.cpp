@@ -6,6 +6,7 @@
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Optimization/ConstantFolder.h>
+#include <Caracal/Optimization/DeadCodeElimination.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
 #include <Caracal/CodeGen/LLVMCodeGenerator.h>
@@ -78,6 +79,8 @@ namespace Caracal
         IRLowerer lowerer{ semanticContext };
         if (!lowerer.lower(irModule))
             return false;
+
+        eliminateDeadCode(irModule);
 
         LLVMCodeGenerator codeGenerator{ irModule, llvmModule };
         if (!codeGenerator.generate())
@@ -273,6 +276,8 @@ namespace Caracal
         const auto wasSuccessful = lowerer.lower(module);
         if (!wasSuccessful)
             return std::make_pair(false, std::string{});
+
+        eliminateDeadCode(module);
 
         IRPrinter printer{ module };
         return std::make_pair(true, printer.prettyPrint());

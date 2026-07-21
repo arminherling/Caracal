@@ -32,10 +32,9 @@ if.continuation2:                                 ; preds = %if.continuation
   br label %while.condition
 
 while.continuation:                               ; preds = %if.true1, %while.condition
-  %phi5 = phi i32 [ %phi, %while.condition ], [ %add, %if.true1 ]
   ret i32 %phi3
 
 ; uselistorder directives
   uselistorder i32 %phi3, { 1, 2, 0 }
-  uselistorder i32 %add, { 0, 3, 4, 5, 2, 1 }
+  uselistorder i32 %add, { 2, 3, 4, 1, 0 }
 }

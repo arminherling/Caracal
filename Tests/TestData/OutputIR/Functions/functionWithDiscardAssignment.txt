@@ -1,5 +1,4 @@
 define func() i32
 block entry(0):
-    %0 = const 42 : i32
-    %1 = const 0 : i32
-    return %1
+    %0 = const 0 : i32
+    return %0

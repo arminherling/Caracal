@@ -21,9 +21,21 @@ namespace Caracal
         [[nodiscard]] const std::string& label() const noexcept { return m_label; }
         [[nodiscard]] const std::vector<InstructionUPtr>& instructions() const noexcept { return m_instructions; }
         [[nodiscard]] const Terminator* terminator() const noexcept { return m_terminator.get(); }
+        [[nodiscard]] Terminator* terminator() noexcept { return m_terminator.get(); }
         [[nodiscard]] bool hasTerminator() const noexcept { return m_terminator != nullptr; }
 
         void addInstruction(InstructionUPtr instruction);
+        template <typename TPredicate>
+        bool removeInstructions(TPredicate&& shouldRemove)
+        {
+            const auto sizeBefore = m_instructions.size();
+            std::erase_if(m_instructions, [&shouldRemove](const InstructionUPtr& instruction)
+            {
+                return shouldRemove(*instruction);
+            });
+
+            return m_instructions.size() != sizeBefore;
+        }
         void addPrologueInstruction(InstructionUPtr instruction);
         void setTerminator(TerminatorUPtr terminator);
 

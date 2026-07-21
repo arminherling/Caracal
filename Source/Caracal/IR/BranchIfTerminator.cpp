@@ -9,4 +9,9 @@ namespace Caracal
         , m_falseBlockId{ falseBlockId }
     {
     }
+
+    void BranchIfTerminator::remapValueIds(const ValueIdMap& remap) noexcept
+    {
+        m_condition = ValueRef{ remapTemporaryId(remap, m_condition.id()) };
+    }
 }

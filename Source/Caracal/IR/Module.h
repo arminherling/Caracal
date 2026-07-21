@@ -22,6 +22,7 @@ namespace Caracal
         [[nodiscard]] const std::vector<EnumDeclaration>& enums() const noexcept { return m_enums; }
         [[nodiscard]] const std::vector<ExternFunction>& externFunctions() const noexcept { return m_externFunctions; }
         [[nodiscard]] const std::vector<Function>& functions() const noexcept { return m_functions; }
+        [[nodiscard]] std::vector<Function>& functions() noexcept { return m_functions; }
         [[nodiscard]] const std::vector<GlobalConstantDeclaration>& globalConstants() const noexcept { return m_globalConstants; }
         [[nodiscard]] const std::vector<GlobalReferenceDeclaration>& globalReferences() const noexcept { return m_globalReferences; }
         [[nodiscard]] const std::vector<ConstructedGlobalDeclaration>& constructedGlobals() const noexcept { return m_constructedGlobals; }

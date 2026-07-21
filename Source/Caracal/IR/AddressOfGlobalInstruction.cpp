@@ -11,4 +11,9 @@ namespace Caracal
         , m_type{ type }
     {
     }
+
+    void AddressOfGlobalInstruction::remapValueIds(const ValueIdMap& remap) noexcept
+    {
+        m_resultId = remapTemporaryId(remap, m_resultId);
+    }
 }
