@@ -1,0 +1,19 @@
+// Caracal extern C declarations
+type C
+{
+    // writes the message to stdout and adds a newline at the end
+    #extern(symbol = "puts")
+    def C.puts(message: cstring) i32 {}
+
+    // formats the message using C-style format strings and writes to stdout
+    #extern(symbol = "printf")
+    def C.printf(format: cstring, ...) i32 {}
+
+    // returns the time since program start in clock ticks
+    #extern(symbol = "clock")
+    def C.clock() i32 {}
+
+    // compares two C strings, returns 0 when they are equal, non-zero otherwise
+    #extern(symbol = "strcmp")
+    def C.strcmp(left: cstring, right: cstring) i32 {}
+}
