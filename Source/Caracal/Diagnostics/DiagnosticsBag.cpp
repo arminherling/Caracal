@@ -1594,6 +1594,28 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addDuplicateMethodDeclarationError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& methodName,
+        const std::string& typeName,
+        std::optional<SourceLocation> otherLocation)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0075_DuplicateMethodDeclaration,
+            source,
+            location,
+            "Rename this method, or remove the duplicate declaration.");
+        diagnostic.addPrimaryLabel(location, "Method '" + methodName + "' is already declared in type '" + typeName + "'");
+        if (otherLocation.has_value())
+        {
+            diagnostic.addSecondaryLabel(otherLocation.value(), "Previous method declaration is here.");
+        }
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addNumberLiteralOutOfRangeError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,

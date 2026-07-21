@@ -197,6 +197,8 @@ namespace Caracal
                 return "T0073";
             case DiagnosticKind::T0074_StaticMethodTypeNameMismatch:
                 return "T0074";
+            case DiagnosticKind::T0075_DuplicateMethodDeclaration:
+                return "T0075";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -398,6 +400,8 @@ namespace Caracal
                 return "Method call is missing the leading dot";
             case DiagnosticKind::T0074_StaticMethodTypeNameMismatch:
                 return "Static method type name does not match the enclosing type";
+            case DiagnosticKind::T0075_DuplicateMethodDeclaration:
+                return "Duplicate method declaration";
             case DiagnosticKind::Unknown:
             default:
                 return "Unknown diagnostic";

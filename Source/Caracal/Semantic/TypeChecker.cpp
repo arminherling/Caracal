@@ -621,6 +621,20 @@ namespace Caracal
                 auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
                 if (methodType != Type::Undefined())
                 {
+                    const auto& tokens = tokensFor(typeDefinitionStatement);
+                    auto otherLocation = std::optional<SourceLocation>{};
+                    const auto* otherStatement = static_cast<const MethodDefinitionStatement*>(m_module.getFunctionDefinition(methodType).statement());
+                    if (otherStatement != nullptr)
+                    {
+                        otherLocation = tokens.getSourceLocation(otherStatement->methodNameNode()->methodNameToken());
+                    }
+
+                    m_diagnostics.addDuplicateMethodDeclarationError(
+                        tokens.source(),
+                        tokens.getSourceLocation(methodStatement->methodNameNode()->methodNameToken()),
+                        methodName,
+                        typeDefinition.name(),
+                        otherLocation);
                     continue;
                 }
 

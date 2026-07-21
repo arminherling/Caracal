@@ -40,6 +40,7 @@ namespace Caracal
         T0012_UnknownEnumField,
         T0013_InvalidEnumMemberAccess,
         T0014_InvalidMemberAccessReceiver,
+        T0073_MethodCallMissingDot,
 
         // Call diagnostics
         T0015_ArgumentCountMismatch,
@@ -66,6 +67,7 @@ namespace Caracal
         T0030_TypeDotNewDeclaration,
         T0031_ReferenceReturnType,
         T0032_AlreadyReference,
+        T0074_StaticMethodTypeNameMismatch,
 
         // Duplicate declaration diagnostics
         T0033_DuplicateDeclaration,
@@ -76,6 +78,7 @@ namespace Caracal
         T0038_DuplicateTypeFieldDeclaration,
         T0039_DuplicateFunctionDeclaration,
         T0040_DuplicateTypeDeclaration,
+        T0075_DuplicateMethodDeclaration,
 
         // Literal diagnostics
         T0041_NumberLiteralOutOfRange,
@@ -130,7 +133,5 @@ namespace Caracal
         T0070_BuiltinMethodBodyIgnored,
         T0071_UnknownBuiltinMethodIgnored,
         T0072_InvalidOperatorMethodSignature,
-        T0073_MethodCallMissingDot,
-        T0074_StaticMethodTypeNameMismatch,
     };
 }
