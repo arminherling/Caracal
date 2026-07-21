@@ -15,6 +15,7 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Verifier.h>
+#include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Program.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/MC/TargetRegistry.h>
@@ -53,6 +54,24 @@ namespace Caracal
         return caraFilePaths;
     }
 
+    static std::filesystem::path ResolveCoreDirectory()
+    {
+        const auto executablePath = llvm::sys::fs::getMainExecutable(nullptr, nullptr);
+        if (executablePath.empty())
+        {
+            std::cout << "Warning: could not determine the compiler location, compiling without the Core directory\n";
+            return {};
+        }
+
+        auto coreDirectory = std::filesystem::path(executablePath).parent_path() / "Core";
+        if (!std::filesystem::exists(coreDirectory))
+        {
+            std::cout << "Warning: no Core directory found next to the compiler, compiling without it\n";
+        }
+
+        return coreDirectory;
+    }
+
     static bool PopulateModule(SemanticContext& semanticContext, llvm::Module& llvmModule)
     {
         Module irModule{};
@@ -75,7 +94,7 @@ namespace Caracal
         const std::filesystem::path& filePath,
         const DiagnosticOptions& diagnosticOptions)
     {
-        const auto coreDirectoryPath = std::filesystem::path("Core");
+        const auto coreDirectoryPath = ResolveCoreDirectory();
         auto caraFiles = CollectCaraFiles(coreDirectoryPath);
 
         Caracal::DiagnosticsBag diagnostics;
