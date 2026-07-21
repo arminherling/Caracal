@@ -19,7 +19,7 @@ enum class TokenKind
     Colon,
     Semicolon,
     Underscore,
-    Uptick,
+    SingleQuote,
     Hash,
 
     Equal,

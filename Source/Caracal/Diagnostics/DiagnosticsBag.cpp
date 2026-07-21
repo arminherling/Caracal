@@ -58,7 +58,7 @@ namespace Caracal
             { TokenKind::Colon,             std::string_view("':'") },
             { TokenKind::Semicolon,         std::string_view("';'") },
             { TokenKind::Underscore,        std::string_view("'_'") },
-            { TokenKind::Uptick,            std::string_view("'`'") },
+            { TokenKind::SingleQuote,       std::string_view("\"'\"") },
             { TokenKind::Hash,              std::string_view("'#'") },
 
             { TokenKind::Equal,             std::string_view("'='") },

@@ -341,7 +341,7 @@ namespace Caracal
                 }
                 case '\'':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Uptick);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::SingleQuote);
                     break;
                 }
                 case '#':

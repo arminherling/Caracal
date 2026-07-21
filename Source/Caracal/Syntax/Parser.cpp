@@ -612,15 +612,15 @@ namespace Caracal
     NumberLiteralUPtr Parser::parseNumberLiteral()
     {
         auto literal = advanceOnMatch(TokenKind::Number);
-        auto uptick = tryMatchKind(TokenKind::Uptick);
+        auto singleQuote = tryMatchKind(TokenKind::SingleQuote);
         std::optional<TypeNameNodeUPtr> explicitType;
-        if (uptick.has_value())
+        if (singleQuote.has_value())
         {
             explicitType = parseTypeNameNode();
         }
 
         const auto lexeme = m_tokens.getLexeme(literal);
-        return std::make_unique<NumberLiteral>(literal, lexeme, uptick, std::move(explicitType));
+        return std::make_unique<NumberLiteral>(literal, lexeme, singleQuote, std::move(explicitType));
     }
 
     StringLiteralUPtr Parser::parseStringLiteral()

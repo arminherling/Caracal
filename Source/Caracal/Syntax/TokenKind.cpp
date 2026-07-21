@@ -16,7 +16,7 @@ std::string stringify(TokenKind kind)
         { TokenKind::Colon,             std::string_view("Colon") },
         { TokenKind::Semicolon,         std::string_view("Semicolon") },
         { TokenKind::Underscore,        std::string_view("Underscore") },
-        { TokenKind::Uptick,            std::string_view("Uptick") },
+        { TokenKind::SingleQuote,       std::string_view("SingleQuote") },
         { TokenKind::Hash,              std::string_view("Hash") },
 
         { TokenKind::Equal,             std::string_view("Equal") },
