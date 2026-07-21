@@ -1,0 +1,11 @@
+global flag : bool = true
+global highByte : bool = true
+global both : bool = false
+global either : bool = true
+global sameBool : bool = false
+
+define readFlag() bool
+block entry(0):
+    %0 = address_of_global @flag : ref bool
+    %1 = load_value %0 : bool
+    return %1

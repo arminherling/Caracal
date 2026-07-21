@@ -97,6 +97,118 @@ namespace Caracal
                 lhs,
                 rhs);
         }
+
+        enum class ComparisonOperation
+        {
+            Equal,
+            NotEqual,
+            LessThan,
+            LessOrEqual,
+            GreaterThan,
+            GreaterOrEqual,
+        };
+
+        // IEEE float uses ordered semantics for comparisons, which means NaN compares are false
+        // except for not equals but we dont define those in the prelude for floats
+        FoldResult FoldComparison(ComparisonOperation operation, const FoldValue& lhs, const FoldValue& rhs)
+        {
+            return std::visit(
+                [operation](const auto& left, const auto& right) -> FoldResult
+                {
+                    using Left = std::decay_t<decltype(left)>;
+                    using Right = std::decay_t<decltype(right)>;
+
+                    if constexpr (!std::is_same_v<Left, Right>)
+                    {
+                        return FoldResult{ FoldResultKind::NotFoldable, FoldValue{} };
+                    }
+                    else if constexpr (std::is_same_v<Left, bool>)
+                    {
+                        switch (operation)
+                        {
+                            case ComparisonOperation::Equal:
+                            {
+                                return FoldResult{ FoldResultKind::Value, FoldValue{ left == right } };
+                            }
+                            case ComparisonOperation::NotEqual:
+                            {
+                                return FoldResult{ FoldResultKind::Value, FoldValue{ left != right } };
+                            }
+                            default:
+                            {
+                                return FoldResult{ FoldResultKind::NotFoldable, FoldValue{} };
+                            }
+                        }
+                    }
+                    else
+                    {
+                        auto result = false;
+                        switch (operation)
+                        {
+                            case ComparisonOperation::Equal:
+                            {
+                                result = left == right;
+                                break;
+                            }
+                            case ComparisonOperation::NotEqual:
+                            {
+                                result = left != right;
+                                break;
+                            }
+                            case ComparisonOperation::LessThan:
+                            {
+                                result = left < right;
+                                break;
+                            }
+                            case ComparisonOperation::LessOrEqual:
+                            {
+                                result = left <= right;
+                                break;
+                            }
+                            case ComparisonOperation::GreaterThan:
+                            {
+                                result = left > right;
+                                break;
+                            }
+                            case ComparisonOperation::GreaterOrEqual:
+                            {
+                                result = left >= right;
+                                break;
+                            }
+                        }
+
+                        return FoldResult{ FoldResultKind::Value, FoldValue{ result } };
+                    }
+                },
+                lhs,
+                rhs);
+        }
+
+        FoldResult FoldLogical(bool isAnd, const FoldValue& lhs, const FoldValue& rhs)
+        {
+            return std::visit(
+                [isAnd](const auto& left, const auto& right) -> FoldResult
+                {
+                    using Left = std::decay_t<decltype(left)>;
+                    using Right = std::decay_t<decltype(right)>;
+
+                    if constexpr (std::is_same_v<Left, bool> && std::is_same_v<Right, bool>)
+                    {
+                        if (isAnd)
+                        {
+                            return FoldResult{ FoldResultKind::Value, FoldValue{ left && right } };
+                        }
+
+                        return FoldResult{ FoldResultKind::Value, FoldValue{ left || right } };
+                    }
+                    else
+                    {
+                        return FoldResult{ FoldResultKind::NotFoldable, FoldValue{} };
+                    }
+                },
+                lhs,
+                rhs);
+        }
     }
 
     FoldResult FoldAddition(const FoldValue& lhs, const FoldValue& rhs)
@@ -151,6 +263,46 @@ namespace Caracal
             },
             lhs,
             rhs);
+    }
+
+    FoldResult FoldEqual(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldComparison(ComparisonOperation::Equal, lhs, rhs);
+    }
+
+    FoldResult FoldNotEqual(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldComparison(ComparisonOperation::NotEqual, lhs, rhs);
+    }
+
+    FoldResult FoldLessThan(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldComparison(ComparisonOperation::LessThan, lhs, rhs);
+    }
+
+    FoldResult FoldLessOrEqual(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldComparison(ComparisonOperation::LessOrEqual, lhs, rhs);
+    }
+
+    FoldResult FoldGreaterThan(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldComparison(ComparisonOperation::GreaterThan, lhs, rhs);
+    }
+
+    FoldResult FoldGreaterOrEqual(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldComparison(ComparisonOperation::GreaterOrEqual, lhs, rhs);
+    }
+
+    FoldResult FoldLogicalAnd(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldLogical(true, lhs, rhs);
+    }
+
+    FoldResult FoldLogicalOr(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldLogical(false, lhs, rhs);
     }
 
     FoldResult FoldValueNegation(const FoldValue& value)

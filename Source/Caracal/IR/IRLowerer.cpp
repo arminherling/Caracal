@@ -1561,6 +1561,16 @@ namespace Caracal
 
     std::optional<ValueRef> IRLowerer::lowerValueExpression(const Expression* expression, BasicBlock& block) noexcept
     {
+        if (expression->foldedValue().has_value())
+        {
+            const auto temporaryId = m_nextTemporaryId++;
+            block.addInstruction(std::make_unique<ConstantInstruction>(
+                temporaryId,
+                FromFoldValue(expression->foldedValue().value()),
+                expression->type()));
+            return ValueRef{ temporaryId };
+        }
+
         switch (expression->kind())
         {
             case NodeKind::GroupingExpression:

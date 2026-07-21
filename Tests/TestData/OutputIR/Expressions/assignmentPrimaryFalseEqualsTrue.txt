@@ -1,6 +1,4 @@
 define func() void
 block entry(0):
     %0 = const false : bool
-    %1 = const true : bool
-    %2 = equal %0, %1 : bool
     return

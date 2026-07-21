@@ -2,7 +2,7 @@ define func() void
 block entry(0):
     %0 = const 1 : i32
     %1 = const 2 : i32
-    %2 = less_than %0, %1 : bool
+    %2 = const true : bool
     branch if %2, if.true(1), if.continuation(2)
 block if.true(1):
     return

@@ -1,0 +1,196 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: negate
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: i32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            UnaryExpression: {
+                Type: undefined
+                Operation: ValueNegation
+                Expression: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: negateFloat
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: f32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: f32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            UnaryExpression: {
+                Type: undefined
+                Operation: ValueNegation
+                Expression: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: invert
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: bool
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            UnaryExpression: {
+                Type: undefined
+                Operation: LogicalNegation
+                Expression: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: bothTrue
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: left
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: bool
+            }
+        }
+        ParameterNode: {
+            Name: right
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: bool
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: left
+                    }
+                }
+                Operation: LogicalAnd
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: right
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: eitherTrue
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: left
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: bool
+            }
+        }
+        ParameterNode: {
+            Name: right
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: bool
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: left
+                    }
+                }
+                Operation: LogicalOr
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: right
+                    }
+                }
+            }
+        }
+    }
+}

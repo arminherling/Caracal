@@ -1,0 +1,33 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @negate(i32 %0) {
+entry:
+  %1 = sub i32 0, %0
+  ret i32 %1
+}
+
+define float @negateFloat(float %0) {
+entry:
+  %1 = fneg float %0
+  ret float %1
+}
+
+define i1 @invert(i1 %0) {
+entry:
+  %1 = xor i1 %0, true
+  ret i1 %1
+}
+
+define i1 @bothTrue(i1 %0, i1 %1) {
+entry:
+  %logical_and = and i1 %0, %1
+  ret i1 %logical_and
+}
+
+define i1 @eitherTrue(i1 %0, i1 %1) {
+entry:
+  %logical_or = or i1 %0, %1
+  ret i1 %logical_or
+}

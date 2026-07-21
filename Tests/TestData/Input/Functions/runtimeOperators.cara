@@ -1,0 +1,24 @@
+﻿def negate(value: i32) i32
+{
+    return -value;
+}
+
+def negateFloat(value: f32) f32
+{
+    return -value;
+}
+
+def invert(value: bool) bool
+{
+    return !value;
+}
+
+def bothTrue(left: bool, right: bool) bool
+{
+    return left and right;
+}
+
+def eitherTrue(left: bool, right: bool) bool
+{
+    return left or right;
+}

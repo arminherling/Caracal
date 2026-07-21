@@ -1,0 +1,15 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+@flag = constant i1 true
+@highByte = constant i1 true
+@both = constant i1 false
+@either = constant i1 true
+@sameBool = constant i1 false
+
+define i1 @readFlag() {
+entry:
+  %load = load i1, ptr @flag, align 1
+  ret i1 %load
+}

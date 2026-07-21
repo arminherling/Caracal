@@ -1,0 +1,196 @@
+FunctionDefinitionStatement: {
+    Type: (i32) -> i32
+    Name: negate
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            UnaryExpression: {
+                Type: i32
+                Operation: ValueNegation
+                Expression: {
+                    NameExpression: {
+                        Type: i32
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (f32) -> f32
+    Name: negateFloat
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: f32
+                Lexeme: f32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: f32
+            Lexeme: f32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: f32
+            UnaryExpression: {
+                Type: f32
+                Operation: ValueNegation
+                Expression: {
+                    NameExpression: {
+                        Type: f32
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (bool) -> bool
+    Name: invert
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: bool
+                Lexeme: bool
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            UnaryExpression: {
+                Type: bool
+                Operation: LogicalNegation
+                Expression: {
+                    NameExpression: {
+                        Type: bool
+                        Name: value
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (bool, bool) -> bool
+    Name: bothTrue
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: left
+            TypeNameNode: {
+                Type: bool
+                Lexeme: bool
+            }
+        }
+        ParameterNode: {
+            Name: right
+            TypeNameNode: {
+                Type: bool
+                Lexeme: bool
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    NameExpression: {
+                        Type: bool
+                        Name: left
+                    }
+                }
+                Operation: LogicalAnd
+                Right: {
+                    NameExpression: {
+                        Type: bool
+                        Name: right
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (bool, bool) -> bool
+    Name: eitherTrue
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: left
+            TypeNameNode: {
+                Type: bool
+                Lexeme: bool
+            }
+        }
+        ParameterNode: {
+            Name: right
+            TypeNameNode: {
+                Type: bool
+                Lexeme: bool
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            BinaryExpression: {
+                Type: bool
+                Left: {
+                    NameExpression: {
+                        Type: bool
+                        Name: left
+                    }
+                }
+                Operation: LogicalOr
+                Right: {
+                    NameExpression: {
+                        Type: bool
+                        Name: right
+                    }
+                }
+            }
+        }
+    }
+}

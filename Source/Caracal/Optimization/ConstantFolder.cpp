@@ -13,6 +13,7 @@
 #include <Caracal/Syntax/IfStatement.h>
 #include <Caracal/Syntax/MemberAccessExpression.h>
 #include <Caracal/Syntax/MethodDefinitionStatement.h>
+#include <Caracal/Syntax/NameExpression.h>
 #include <Caracal/Syntax/NumberLiteral.h>
 #include <Caracal/Syntax/ParametersNode.h>
 #include <Caracal/Syntax/ReturnStatement.h>
@@ -21,6 +22,9 @@
 #include <Caracal/Syntax/UnaryExpression.h>
 #include <Caracal/Syntax/VariableDeclaration.h>
 #include <Caracal/Syntax/WhileStatement.h>
+
+#include <string>
+#include <unordered_map>
 
 namespace Caracal
 {
@@ -38,6 +42,7 @@ namespace Caracal
                 : m_module{ module }
                 , m_diagnostics{ diagnostics }
             {
+                m_constantScopes.emplace_back();
             }
 
             void foldTree(const ParseTree& parseTree)
@@ -57,6 +62,15 @@ namespace Caracal
                     {
                         auto* declaration = static_cast<ConstantDeclaration*>(statement);
                         foldExpression(declaration->rightExpression().get(), tokens);
+
+                        const auto* foldedInitializer = tryGetFoldedOperand(declaration->rightExpression().get());
+                        if (!declaration->isInit()
+                            && declaration->leftExpression()->kind() == NodeKind::NameExpression
+                            && foldedInitializer != nullptr)
+                        {
+                            const auto& name = static_cast<const NameExpression*>(declaration->leftExpression().get())->name();
+                            m_constantScopes.back().try_emplace(name, *foldedInitializer);
+                        }
                         break;
                     }
                     case NodeKind::VariableDeclaration:
@@ -108,10 +122,12 @@ namespace Caracal
                     case NodeKind::BlockNode:
                     {
                         auto* block = static_cast<BlockNode*>(statement);
+                        m_constantScopes.emplace_back();
                         for (const auto& blockStatement : block->statements())
                         {
                             foldStatement(blockStatement.get(), tokens);
                         }
+                        m_constantScopes.pop_back();
                         break;
                     }
                     case NodeKind::FunctionDefinitionStatement:
@@ -267,7 +283,8 @@ namespace Caracal
                     return;
                 }
 
-                if (!operand->foldedValue().has_value())
+                const auto* operandValue = tryGetFoldedOperand(operand);
+                if (operandValue == nullptr)
                 {
                     return;
                 }
@@ -275,7 +292,7 @@ namespace Caracal
                 // the literal already carries the sign, negating again would undo it
                 if (expression->unaryOperator() == UnaryOperatorKind::ValueNegation && expression->signFolded())
                 {
-                    expression->setFoldedValue(operand->foldedValue().value());
+                    expression->setFoldedValue(*operandValue);
                     return;
                 }
 
@@ -286,7 +303,7 @@ namespace Caracal
                     return;
                 }
 
-                const auto folded = signature->unaryFold(operand->foldedValue().value());
+                const auto folded = signature->unaryFold(*operandValue);
                 if (folded.kind == FoldResultKind::Value)
                 {
                     expression->setFoldedValue(folded.value);
@@ -308,7 +325,9 @@ namespace Caracal
                 foldExpression(left, tokens);
                 foldExpression(right, tokens);
 
-                if (!left->foldedValue().has_value() || !right->foldedValue().has_value())
+                const auto* leftValue = tryGetFoldedOperand(left);
+                const auto* rightValue = tryGetFoldedOperand(right);
+                if (leftValue == nullptr || rightValue == nullptr)
                 {
                     return;
                 }
@@ -320,7 +339,7 @@ namespace Caracal
                     return;
                 }
 
-                const auto folded = signature->binaryFold(left->foldedValue().value(), right->foldedValue().value());
+                const auto folded = signature->binaryFold(*leftValue, *rightValue);
                 if (folded.kind == FoldResultKind::Value)
                 {
                     expression->setFoldedValue(folded.value);
@@ -342,8 +361,48 @@ namespace Caracal
                 }
             }
 
+            [[nodiscard]] const FoldValue* tryGetFoldedOperand(const Expression* expression) const
+            {
+                while (expression != nullptr && expression->kind() == NodeKind::GroupingExpression)
+                {
+                    expression = static_cast<const GroupingExpression*>(expression)->expression().get();
+                }
+
+                if (expression == nullptr)
+                {
+                    return nullptr;
+                }
+
+                if (expression->foldedValue().has_value())
+                {
+                    return &expression->foldedValue().value();
+                }
+
+                if (expression->kind() == NodeKind::NameExpression)
+                {
+                    return tryFindConstant(static_cast<const NameExpression*>(expression)->name());
+                }
+
+                return nullptr;
+            }
+
+            [[nodiscard]] const FoldValue* tryFindConstant(const std::string& name) const
+            {
+                for (auto scope = m_constantScopes.rbegin(); scope != m_constantScopes.rend(); ++scope)
+                {
+                    const auto found = scope->find(name);
+                    if (found != scope->end())
+                    {
+                        return &found->second;
+                    }
+                }
+
+                return nullptr;
+            }
+
             const SemanticContext& m_module;
             DiagnosticsBag& m_diagnostics;
+            std::vector<std::unordered_map<std::string, FoldValue>> m_constantScopes;
         };
     }
 

@@ -1,0 +1,134 @@
+ConstantDeclaration: {
+    Type: bool
+    Left: {
+        NameExpression: {
+            Type: bool
+            Name: flag
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: bool
+            Left: {
+                NumberLiteral: 1
+            }
+            Operation: LessThan
+            Right: {
+                NumberLiteral: 2
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: bool
+    Left: {
+        NameExpression: {
+            Type: bool
+            Name: highByte
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: bool
+            Left: {
+                NumberLiteral: 200
+                TypeNameNode: {
+                    Type: u8
+                    Lexeme: u8
+                }
+            }
+            Operation: GreaterThan
+            Right: {
+                NumberLiteral: 100
+                TypeNameNode: {
+                    Type: u8
+                    Lexeme: u8
+                }
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: bool
+    Left: {
+        NameExpression: {
+            Type: bool
+            Name: both
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: bool
+            Left: {
+                BoolLiteral: true
+            }
+            Operation: LogicalAnd
+            Right: {
+                BoolLiteral: false
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: bool
+    Left: {
+        NameExpression: {
+            Type: bool
+            Name: either
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: bool
+            Left: {
+                BoolLiteral: true
+            }
+            Operation: LogicalOr
+            Right: {
+                BoolLiteral: false
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: bool
+    Left: {
+        NameExpression: {
+            Type: bool
+            Name: sameBool
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: bool
+            Left: {
+                BoolLiteral: true
+            }
+            Operation: Equal
+            Right: {
+                BoolLiteral: false
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> bool
+    Name: readFlag
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: bool
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: bool
+            NameExpression: {
+                Type: bool
+                Name: flag
+            }
+        }
+    }
+}

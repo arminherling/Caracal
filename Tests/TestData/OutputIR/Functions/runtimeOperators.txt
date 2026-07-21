@@ -1,0 +1,31 @@
+define negate(%0: i32 "value") i32
+block entry(0):
+    %0 = parameter 0 : i32 "value"
+    %1 = value_negate %0 : i32
+    return %1
+
+define negateFloat(%0: f32 "value") f32
+block entry(0):
+    %0 = parameter 0 : f32 "value"
+    %1 = value_negate %0 : f32
+    return %1
+
+define invert(%0: bool "value") bool
+block entry(0):
+    %0 = parameter 0 : bool "value"
+    %1 = logical_negate %0 : bool
+    return %1
+
+define bothTrue(%0: bool "left", %1: bool "right") bool
+block entry(0):
+    %0 = parameter 0 : bool "left"
+    %1 = parameter 1 : bool "right"
+    %2 = logical_and %0, %1 : bool
+    return %2
+
+define eitherTrue(%0: bool "left", %1: bool "right") bool
+block entry(0):
+    %0 = parameter 0 : bool "left"
+    %1 = parameter 1 : bool "right"
+    %2 = logical_or %0, %1 : bool
+    return %2

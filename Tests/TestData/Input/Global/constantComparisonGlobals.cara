@@ -1,0 +1,10 @@
+﻿flag :: 1 < 2;
+highByte :: 200'u8 > 100'u8;
+both :: true and false;
+either :: true or false;
+sameBool :: true == false;
+
+def readFlag() bool
+{
+    return flag;
+}

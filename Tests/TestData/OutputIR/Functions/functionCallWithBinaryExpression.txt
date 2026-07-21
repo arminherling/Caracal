@@ -5,8 +5,6 @@ block entry(0):
 
 define outer() void
 block entry(0):
-    %0 = const 5 : i32
-    %1 = const 5 : i32
-    %2 = add %0, %1 : i32
-    call inner(%2)
+    %0 = const 10 : i32
+    call inner(%0)
     return

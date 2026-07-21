@@ -1,6 +1,4 @@
 define func() f32
 block entry(0):
-    %0 = const 6.000000 : f32
-    %1 = const 2.000000 : f32
-    %2 = divide %0, %1 : f32
-    return %2
+    %0 = const 3.000000 : f32
+    return %0

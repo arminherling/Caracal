@@ -1,0 +1,134 @@
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: flag
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: undefined
+            Left: {
+                NumberLiteral: 1
+            }
+            Operation: LessThan
+            Right: {
+                NumberLiteral: 2
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: highByte
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: undefined
+            Left: {
+                NumberLiteral: 200
+                TypeNameNode: {
+                    Type: undefined
+                    Lexeme: u8
+                }
+            }
+            Operation: GreaterThan
+            Right: {
+                NumberLiteral: 100
+                TypeNameNode: {
+                    Type: undefined
+                    Lexeme: u8
+                }
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: both
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: undefined
+            Left: {
+                BoolLiteral: true
+            }
+            Operation: LogicalAnd
+            Right: {
+                BoolLiteral: false
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: either
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: undefined
+            Left: {
+                BoolLiteral: true
+            }
+            Operation: LogicalOr
+            Right: {
+                BoolLiteral: false
+            }
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: sameBool
+        }
+    }
+    Right: {
+        BinaryExpression: {
+            Type: undefined
+            Left: {
+                BoolLiteral: true
+            }
+            Operation: Equal
+            Right: {
+                BoolLiteral: false
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: readFlag
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: bool
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: flag
+            }
+        }
+    }
+}

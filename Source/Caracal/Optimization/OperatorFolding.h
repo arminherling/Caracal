@@ -31,6 +31,14 @@ namespace Caracal
     [[nodiscard]] CARACAL_API FoldResult FoldSubtraction(const FoldValue& lhs, const FoldValue& rhs);
     [[nodiscard]] CARACAL_API FoldResult FoldMultiplication(const FoldValue& lhs, const FoldValue& rhs);
     [[nodiscard]] CARACAL_API FoldResult FoldDivision(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldEqual(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldNotEqual(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldLessThan(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldLessOrEqual(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldGreaterThan(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldGreaterOrEqual(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldLogicalAnd(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldLogicalOr(const FoldValue& lhs, const FoldValue& rhs);
     [[nodiscard]] CARACAL_API FoldResult FoldValueNegation(const FoldValue& value);
     [[nodiscard]] CARACAL_API FoldResult FoldLogicalNegation(const FoldValue& value);
 }

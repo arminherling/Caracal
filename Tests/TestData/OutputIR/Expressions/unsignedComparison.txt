@@ -28,7 +28,5 @@ block entry(0):
 
 define foldedHighByteIsGreater() bool
 block entry(0):
-    %0 = const 200 : u8
-    %1 = const 100 : u8
-    %2 = greater_than %0, %1 : bool
-    return %2
+    %0 = const true : bool
+    return %0
