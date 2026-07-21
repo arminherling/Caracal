@@ -323,6 +323,13 @@ namespace Caracal
         auto keyword = advanceOnMatch(TokenKind::DefKeyword);
         auto nameToken = advanceOnMatch(TokenKind::Identifier);
         auto name = m_tokens.getLexeme(nameToken);
+        if (name.starts_with('_'))
+        {
+            m_diagnostics.addPrivateFreeFunctionError(
+                m_tokens.source(),
+                m_tokens.getSourceLocation(nameToken));
+        }
+
         auto parameters = parseParametersNode(StatementScope::Function);
         auto returnTypes = parseReturnTypesNode();
         auto body = parseFunctionBody();

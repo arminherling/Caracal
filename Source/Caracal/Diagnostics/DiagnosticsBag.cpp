@@ -372,6 +372,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addPrivateFreeFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::P0014_PrivateFreeFunction,
+            source,
+            location,
+            "Remove the leading '_' from the function name.");
+        diagnostic.addPrimaryLabel(location, "Free functions cannot be private");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(

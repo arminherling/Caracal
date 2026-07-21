@@ -24,6 +24,7 @@ namespace Caracal
         P0011_InvalidParameter,
         P0012_ExplicitTypeOnInitConstant,
         P0013_PrivateStaticMethod,
+        P0014_PrivateFreeFunction,
 
         // Annotation diagnostics
         T0001_UnknownAnnotation,
