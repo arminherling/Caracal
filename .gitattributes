@@ -1,0 +1,4 @@
+* text=auto eol=lf
+*.cara text eol=lf
+Tests/TestData/** text eol=lf
+*.sln text eol=crlf

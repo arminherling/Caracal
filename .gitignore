@@ -453,3 +453,6 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+
+# CaraTest snapshot artifacts from failed comparisons
+*.snapshot
