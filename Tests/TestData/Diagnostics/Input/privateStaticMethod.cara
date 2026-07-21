@@ -1,0 +1,7 @@
+type Tool
+{
+    def Tool._helper() i32
+    {
+        return 1;
+    }
+}

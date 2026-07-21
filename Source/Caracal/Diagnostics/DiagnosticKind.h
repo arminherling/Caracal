@@ -23,6 +23,7 @@ namespace Caracal
         P0010_AnnotationNotAllowedHere,
         P0011_InvalidParameter,
         P0012_ExplicitTypeOnInitConstant,
+        P0013_PrivateStaticMethod,
 
         // Annotation diagnostics
         T0001_UnknownAnnotation,

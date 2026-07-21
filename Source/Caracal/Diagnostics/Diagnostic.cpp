@@ -37,6 +37,8 @@ namespace Caracal
                 return "P0011";
             case DiagnosticKind::P0012_ExplicitTypeOnInitConstant:
                 return "P0012";
+            case DiagnosticKind::P0013_PrivateStaticMethod:
+                return "P0013";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:
@@ -244,6 +246,8 @@ namespace Caracal
                 return "Invalid parameter";
             case DiagnosticKind::P0012_ExplicitTypeOnInitConstant:
                 return "Explicit type is not allowed for init constants";
+            case DiagnosticKind::P0013_PrivateStaticMethod:
+                return "Static methods cannot be private";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:

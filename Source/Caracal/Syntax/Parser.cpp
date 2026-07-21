@@ -550,7 +550,9 @@ namespace Caracal
         }
         else if (modifier == MethodModifier::Static && isPrivate)
         {
-            TODO("Static methods can't begin with an underscore for now");
+            m_diagnostics.addPrivateStaticMethodError(
+                m_tokens.source(),
+                m_tokens.getSourceLocation(methodNameNode->methodNameToken()));
         }
 
         auto specialFunctionType = SpecialFunctionType::None;

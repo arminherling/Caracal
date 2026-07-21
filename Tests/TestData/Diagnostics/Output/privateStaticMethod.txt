@@ -1,0 +1,13 @@
+ Error P0013
+  Static methods cannot be private
+    ,-[Diagnostics/Input/privateStaticMethod.cara:3:14]
+  1 | type Tool
+  2 | {
+  3 |     def Tool._helper() i32
+    .              -------
+    .                 `-- Static methods cannot be private
+  4 |     {
+  5 |         return 1;
+  6 |     }
+    `----
+  Fix: Remove the leading '_' from the method name.

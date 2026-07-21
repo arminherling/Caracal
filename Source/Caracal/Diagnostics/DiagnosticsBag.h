@@ -33,6 +33,7 @@ namespace Caracal
         void addPositionalArgumentAfterNamedError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addAnnotationNotAllowedHereError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addExplicitTypeOnInitConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName, const std::string& initTypeName);
+        void addPrivateStaticMethodError(const SourceTextSharedPtr& source, const SourceLocation& location);
 
         // Annotation diagnostics
         void addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location);
