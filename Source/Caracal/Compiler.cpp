@@ -211,12 +211,13 @@ namespace Caracal
         passManager.run(*llvmModule);
         objectFile.flush();
 
-        const auto lldPath = llvm::sys::findProgramByName("lld-link").get();
-        if (lldPath.empty())
+        const auto lldPathOrError = llvm::sys::findProgramByName("lld-link");
+        if (!lldPathOrError)
         {
             llvm::errs() << "Error: lld-link not found in PATH.\n";
             return 1;
         }
+        const auto& lldPath = lldPathOrError.get();
 
         // TODO support linux
         std::string linkError;
