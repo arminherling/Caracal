@@ -35,6 +35,8 @@ namespace Caracal
                 return "P0010";
             case DiagnosticKind::P0011_InvalidParameter:
                 return "P0011";
+            case DiagnosticKind::P0012_ExplicitTypeOnInitConstant:
+                return "P0012";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:
@@ -240,6 +242,8 @@ namespace Caracal
                 return "Annotation not allowed here";
             case DiagnosticKind::P0011_InvalidParameter:
                 return "Invalid parameter";
+            case DiagnosticKind::P0012_ExplicitTypeOnInitConstant:
+                return "Explicit type is not allowed for init constants";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:

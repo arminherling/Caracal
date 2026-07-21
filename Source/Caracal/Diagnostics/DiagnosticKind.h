@@ -22,6 +22,7 @@ namespace Caracal
         P0009_PositionalArgumentAfterNamed,
         P0010_AnnotationNotAllowedHere,
         P0011_InvalidParameter,
+        P0012_ExplicitTypeOnInitConstant,
 
         // Annotation diagnostics
         T0001_UnknownAnnotation,

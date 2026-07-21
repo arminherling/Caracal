@@ -346,6 +346,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addExplicitTypeOnInitConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName, const std::string& initTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::P0012_ExplicitTypeOnInitConstant,
+            source,
+            location,
+            "Write '" + constantName + " :: init " + initTypeName + ";' instead.");
+        diagnostic.addPrimaryLabel(location, "Explicit type is not allowed for init constants");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(

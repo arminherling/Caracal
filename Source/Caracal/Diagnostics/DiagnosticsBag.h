@@ -32,6 +32,7 @@ namespace Caracal
         void addUnexpectedParameterTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind);
         void addPositionalArgumentAfterNamedError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addAnnotationNotAllowedHereError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addExplicitTypeOnInitConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName, const std::string& initTypeName);
 
         // Annotation diagnostics
         void addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location);

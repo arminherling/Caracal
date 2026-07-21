@@ -352,6 +352,21 @@ namespace Caracal
             auto initType = parseTypeNameNode();
             auto semicolon = advanceOnMatch(TokenKind::Semicolon);
 
+            if (explicitType.has_value())
+            {
+                auto constantName = std::string("name");
+                if (leftExpression->kind() == NodeKind::NameExpression)
+                {
+                    constantName = static_cast<NameExpression*>(leftExpression.get())->name();
+                }
+
+                m_diagnostics.addExplicitTypeOnInitConstantError(
+                    m_tokens.source(),
+                    explicitType.value()->sourceLocation(m_tokens),
+                    constantName,
+                    initType->name());
+            }
+
             auto annotations = std::vector<AnnotationNodeUPtr>{};
             if (scope == StatementScope::Global)
             {
