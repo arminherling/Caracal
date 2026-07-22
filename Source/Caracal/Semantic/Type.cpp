@@ -10,11 +10,11 @@ namespace Caracal
 
     bool operator==(Type lhs, Type rhs) noexcept
     {
-        return lhs.id() == rhs.id();
+        return lhs.id() == rhs.id() && lhs.kind() == rhs.kind();
     }
 
     bool operator!=(Type lhs, Type rhs) noexcept
     {
-        return lhs.id() != rhs.id();
+        return !(lhs == rhs);
     }
 }
