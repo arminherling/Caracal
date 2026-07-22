@@ -28,8 +28,10 @@ namespace Caracal
             { TokenKind::GreaterThanEqual,  2 },
             { TokenKind::OpenParenthesis,   1 },
             { TokenKind::CloseParenthesis,  1 },
-            { TokenKind::OpenBrace,       1 },
-            { TokenKind::CloseBrace,      1 },
+            { TokenKind::OpenBrace,         1 },
+            { TokenKind::CloseBrace,        1 },
+            { TokenKind::OpenBracket,       1 },
+            { TokenKind::CloseBracket,      1 },
             { TokenKind::EndOfFile,         0 },
         };
     }
@@ -433,6 +435,16 @@ namespace Caracal
                 case '}':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseBrace);
+                    break;
+                }
+                case '[':
+                {
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenBracket);
+                    break;
+                }
+                case ']':
+                {
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseBracket);
                     break;
                 }
                 case '\"':

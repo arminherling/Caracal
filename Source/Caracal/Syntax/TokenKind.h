@@ -36,6 +36,8 @@ enum class TokenKind
     CloseParenthesis,
     OpenBrace,
     CloseBrace,
+    OpenBracket,
+    CloseBracket,
 
     Identifier,
     Number,

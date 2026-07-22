@@ -56,6 +56,8 @@ static std::vector<std::tuple<std::string, std::string, TokenKind>> Symbols_Data
         std::make_tuple("CloseParenthesis", ")", TokenKind::CloseParenthesis),
         std::make_tuple("OpenBrace", "{", TokenKind::OpenBrace),
         std::make_tuple("CloseBrace", "}", TokenKind::CloseBrace),
+        std::make_tuple("OpenBracket", "[", TokenKind::OpenBracket),
+        std::make_tuple("CloseBracket", "]", TokenKind::CloseBracket),
 
         std::make_tuple("Unknown", "$", TokenKind::Unknown),
     };

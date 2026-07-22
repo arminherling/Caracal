@@ -75,6 +75,8 @@ namespace Caracal
             { TokenKind::CloseParenthesis,  std::string_view("')'") },
             { TokenKind::OpenBrace,       std::string_view("'{'") },
             { TokenKind::CloseBrace,      std::string_view("'}'") },
+            { TokenKind::OpenBracket,     std::string_view("'['") },
+            { TokenKind::CloseBracket,    std::string_view("']'") },
 
             { TokenKind::Identifier,        std::string_view("identifier") },
             { TokenKind::Number,            std::string_view("number") },
