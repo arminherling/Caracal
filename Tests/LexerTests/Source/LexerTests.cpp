@@ -35,6 +35,7 @@ static std::vector<std::tuple<std::string, std::string, TokenKind>> Symbols_Data
         std::make_tuple("Slash", "/", TokenKind::Slash),
 
         std::make_tuple("Dot", ".", TokenKind::Dot),
+        std::make_tuple("Ellipsis", "...", TokenKind::Ellipsis),
         std::make_tuple("Comma", ",", TokenKind::Comma),
         std::make_tuple("Colon", ":", TokenKind::Colon),
         std::make_tuple("Semicolon", ";", TokenKind::Semicolon),
@@ -53,8 +54,8 @@ static std::vector<std::tuple<std::string, std::string, TokenKind>> Symbols_Data
 
         std::make_tuple("OpenParenthesis", "(", TokenKind::OpenParenthesis),
         std::make_tuple("CloseParenthesis", ")", TokenKind::CloseParenthesis),
-        std::make_tuple("OpenBracket", "{", TokenKind::OpenBracket),
-        std::make_tuple("CloseBracket", "}", TokenKind::CloseBracket),
+        std::make_tuple("OpenBrace", "{", TokenKind::OpenBrace),
+        std::make_tuple("CloseBrace", "}", TokenKind::CloseBrace),
 
         std::make_tuple("Unknown", "$", TokenKind::Unknown),
     };

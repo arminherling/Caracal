@@ -13,6 +13,7 @@ namespace Caracal
             { TokenKind::Star,              1 },
             { TokenKind::Slash,             1 },
             { TokenKind::Dot,               1 },
+            { TokenKind::Ellipsis,          3 },
             { TokenKind::Comma,             1 },
             { TokenKind::Colon,             1 },
             { TokenKind::Semicolon,         1 },
@@ -27,8 +28,8 @@ namespace Caracal
             { TokenKind::GreaterThanEqual,  2 },
             { TokenKind::OpenParenthesis,   1 },
             { TokenKind::CloseParenthesis,  1 },
-            { TokenKind::OpenBracket,       1 },
-            { TokenKind::CloseBracket,      1 },
+            { TokenKind::OpenBrace,       1 },
+            { TokenKind::CloseBrace,      1 },
             { TokenKind::EndOfFile,         0 },
         };
     }
@@ -326,7 +327,15 @@ namespace Caracal
                 }
                 case '.':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Dot);
+                    if (PeekNextChar(source, currentIndex) == '.' && PeekCurrentChar(source, currentIndex + 2) == '.')
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Ellipsis);
+                        currentIndex += 2; // advance for the second and third '.'
+                    }
+                    else
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Dot);
+                    }
                     break;
                 }
                 case ':':
@@ -418,12 +427,12 @@ namespace Caracal
                 }
                 case '{':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenBracket);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenBrace);
                     break;
                 }
                 case '}':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseBracket);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseBrace);
                     break;
                 }
                 case '\"':

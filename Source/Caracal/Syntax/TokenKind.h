@@ -15,6 +15,7 @@ enum class TokenKind
     Star,
     Slash,
     Dot,
+    Ellipsis,
     Comma,
     Colon,
     Semicolon,
@@ -33,8 +34,8 @@ enum class TokenKind
 
     OpenParenthesis,
     CloseParenthesis,
-    OpenBracket,
-    CloseBracket,
+    OpenBrace,
+    CloseBrace,
 
     Identifier,
     Number,

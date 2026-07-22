@@ -130,7 +130,7 @@ namespace Caracal
                     m_currentAnnotations.pop_back();
                     break;
                 }
-                case TokenKind::CloseBracket:
+                case TokenKind::CloseBrace:
                 {
                     if (scope == StatementScope::Global)
                     {
@@ -231,7 +231,7 @@ namespace Caracal
                 }
                 break;
             }
-            case TokenKind::OpenBracket:
+            case TokenKind::OpenBrace:
             {
                 if (scope == StatementScope::Function || scope == StatementScope::Method)
                 {
@@ -302,7 +302,7 @@ namespace Caracal
 
         auto errorExpression = std::make_unique<ErrorExpression>(current);
 
-        if (current.kind != TokenKind::CloseBracket && current.kind != TokenKind::EndOfFile)
+        if (current.kind != TokenKind::CloseBrace && current.kind != TokenKind::EndOfFile)
         {
             advanceCurrentIndex();
             synchronizeToNextStatement();
@@ -441,9 +441,9 @@ namespace Caracal
             baseType = parseTypeNameNode();
         }
     
-        auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
+        auto openBracket = advanceOnMatch(TokenKind::OpenBrace);
         auto enumFields = parseEnumFields();
-        auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
+        auto closeBracket = advanceOnMatch(TokenKind::CloseBrace);
 
         auto annotations = takeCurrentAnnotations();
 
@@ -454,7 +454,7 @@ namespace Caracal
     {
         std::vector<EnumFieldDeclarationUPtr> fields;
         auto current = currentToken();
-        while (current.kind != TokenKind::CloseBracket && current.kind != TokenKind::EndOfFile)
+        while (current.kind != TokenKind::CloseBrace && current.kind != TokenKind::EndOfFile)
         {
             if (current.kind == TokenKind::Identifier)
             {
@@ -597,9 +597,9 @@ namespace Caracal
 
     BlockNodeUPtr Parser::parseBlockNode(StatementScope scope)
     {
-        auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
+        auto openBracket = advanceOnMatch(TokenKind::OpenBrace);
         auto statements = parseStatements(scope);
-        auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
+        auto closeBracket = advanceOnMatch(TokenKind::CloseBrace);
 
         return std::make_unique<BlockNode>(openBracket, std::move(statements), closeBracket);
     }
@@ -625,12 +625,10 @@ namespace Caracal
         }
         else
         {
-            auto firstDot = advanceOnMatch(TokenKind::Dot);
-            auto secondDot = advanceOnMatch(TokenKind::Dot);
-            auto thirdDot = advanceOnMatch(TokenKind::Dot);
-            auto fakeTypeName = std::make_unique<TypeNameNode>(std::nullopt, thirdDot, "...");
+            auto ellipsis = advanceOnMatch(TokenKind::Ellipsis);
+            auto fakeTypeName = std::make_unique<TypeNameNode>(std::nullopt, ellipsis, "...");
 
-            return std::make_unique<ParameterNode>(firstDot, "varargs", secondDot, std::move(fakeTypeName), true);
+            return std::make_unique<ParameterNode>(ellipsis, "varargs", ellipsis, std::move(fakeTypeName), true);
         }
     }
 
@@ -952,8 +950,7 @@ namespace Caracal
         while (current.kind != TokenKind::CloseParenthesis && current.kind != TokenKind::EndOfFile)
         {
             const auto positionBeforeParameter = m_currentIndex;
-            // variadic is three dots 
-            if (current.kind == TokenKind::Identifier || current.kind == TokenKind::Dot)
+            if (current.kind == TokenKind::Identifier || current.kind == TokenKind::Ellipsis)
             {
                 parameters.push_back(parseParameterNode(scope));
             }
@@ -988,7 +985,7 @@ namespace Caracal
     {
         std::vector<TypeNameNodeUPtr> returnTypes;
         auto current = currentToken();
-        if (current.kind != TokenKind::OpenBracket)
+        if (current.kind != TokenKind::OpenBrace)
         {
             auto typeName = parseTypeNameNode();
             returnTypes.push_back(std::move(typeName));
@@ -1144,8 +1141,8 @@ namespace Caracal
     {
         skipUntil({
             TokenKind::Semicolon,
-            TokenKind::OpenBracket,
-            TokenKind::CloseBracket,
+            TokenKind::OpenBrace,
+            TokenKind::CloseBrace,
             TokenKind::Hash,
             TokenKind::DefKeyword,
             TokenKind::EnumKeyword,

@@ -54,6 +54,7 @@ namespace Caracal
             { TokenKind::Star,              std::string_view("'*'") },
             { TokenKind::Slash,             std::string_view("'/'") },
             { TokenKind::Dot,               std::string_view("'.'") },
+            { TokenKind::Ellipsis,          std::string_view("'...'") },
             { TokenKind::Comma,             std::string_view("','") },
             { TokenKind::Colon,             std::string_view("':'") },
             { TokenKind::Semicolon,         std::string_view("';'") },
@@ -72,8 +73,8 @@ namespace Caracal
 
             { TokenKind::OpenParenthesis,   std::string_view("'('") },
             { TokenKind::CloseParenthesis,  std::string_view("')'") },
-            { TokenKind::OpenBracket,       std::string_view("'{'") },
-            { TokenKind::CloseBracket,      std::string_view("'}'") },
+            { TokenKind::OpenBrace,       std::string_view("'{'") },
+            { TokenKind::CloseBrace,      std::string_view("'}'") },
 
             { TokenKind::Identifier,        std::string_view("identifier") },
             { TokenKind::Number,            std::string_view("number") },
@@ -225,7 +226,7 @@ namespace Caracal
         {
             fix = "Start the enum field name with an identifier, for example 'FieldName' or 'FieldName :: 1'.";
         }
-        else if (actualKind == TokenKind::CloseBracket || actualKind == TokenKind::EndOfFile)
+        else if (actualKind == TokenKind::CloseBrace || actualKind == TokenKind::EndOfFile)
         {
             fix = "Add an enum field name before the end of the enum body.";
         }
@@ -261,7 +262,7 @@ namespace Caracal
     void DiagnosticsBag::addUnexpectedTopLevelTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind actualKind)
     {
         auto fix = std::string{};
-        if (actualKind == TokenKind::CloseBracket)
+        if (actualKind == TokenKind::CloseBrace)
         {
             fix = "Remove the stray '}' or move it inside a declaration body.";
         }

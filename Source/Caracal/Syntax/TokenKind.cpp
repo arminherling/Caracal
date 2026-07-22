@@ -12,6 +12,7 @@ std::string stringify(TokenKind kind)
         { TokenKind::Star,              std::string_view("Star") },
         { TokenKind::Slash,             std::string_view("Slash") },
         { TokenKind::Dot,               std::string_view("Dot") },
+        { TokenKind::Ellipsis,          std::string_view("Ellipsis") },
         { TokenKind::Comma,             std::string_view("Comma") },
         { TokenKind::Colon,             std::string_view("Colon") },
         { TokenKind::Semicolon,         std::string_view("Semicolon") },
@@ -32,8 +33,8 @@ std::string stringify(TokenKind kind)
 
         { TokenKind::OpenParenthesis,   std::string_view("OpenParenthesis") },
         { TokenKind::CloseParenthesis,  std::string_view("CloseParenthesis") },
-        { TokenKind::OpenBracket,       std::string_view("OpenBracket") },
-        { TokenKind::CloseBracket,      std::string_view("CloseBracket") },
+        { TokenKind::OpenBrace,       std::string_view("OpenBrace") },
+        { TokenKind::CloseBrace,      std::string_view("CloseBrace") },
 
         { TokenKind::Identifier,        std::string_view("Identifier") },
         { TokenKind::Number,            std::string_view("Number") },
