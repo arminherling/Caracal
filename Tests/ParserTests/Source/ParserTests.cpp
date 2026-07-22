@@ -44,6 +44,12 @@ static void FileTests(
     const auto output = printer.prettyPrint();
 
     CaraTest::isTrue(diagnostics.diagnostics().empty());
+    const auto outputDirectory = std::filesystem::path(outputFilePath).parent_path();
+    if (!std::filesystem::exists(outputDirectory))
+    {
+        std::filesystem::create_directories(outputDirectory);
+    }
+
     CaraTest::equalsFile(std::filesystem::path(outputFilePath), output);
 }
 
@@ -57,6 +63,11 @@ static std::vector<std::tuple<std::string, std::filesystem::path, std::filesyste
 
     std::vector<std::tuple<std::string, std::filesystem::path, std::filesystem::path>> data{};
 
+    if (!std::filesystem::exists(absolutePath))
+    {
+        return data;
+    }
+
     for (const auto& entry : std::filesystem::recursive_directory_iterator(absolutePath))
     {
         if (entry.is_regular_file() && entry.path().extension() == ".cara")
@@ -65,10 +76,6 @@ static std::vector<std::tuple<std::string, std::filesystem::path, std::filesyste
             const auto inputDirName = inputFilePath.parent_path().filename();
 
             const auto outputParseDirectoryPath = testDataDir / "OutputParse";
-            if (!std::filesystem::exists(outputParseDirectoryPath))
-            {
-                std::filesystem::create_directories(outputParseDirectoryPath);
-            }
 
             const auto fileName = inputFilePath.stem().string();
             const auto outputFileName = fileName + ".txt";
