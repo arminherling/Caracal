@@ -787,6 +787,14 @@ namespace Caracal
                 m_builder.appendLine("");
                 break;
             }
+            default:
+            {
+                m_builder
+                    .appendIndented("<unknown instruction #")
+                    .append(std::to_string(static_cast<i32>(instruction.kind())))
+                    .appendLine(">");
+                break;
+            }
         }
     }
 
@@ -830,6 +838,14 @@ namespace Caracal
             case TerminatorKind::Unreachable:
             {
                 m_builder.appendIndentedLine("unreachable");
+                break;
+            }
+            default:
+            {
+                m_builder
+                    .appendIndented("<unknown terminator #")
+                    .append(std::to_string(static_cast<i32>(terminator.kind())))
+                    .appendLine(">");
                 break;
             }
         }

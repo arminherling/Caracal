@@ -278,7 +278,14 @@ namespace Caracal
         m_builder.appendIndentedLine("Right: {");
         m_builder.pushIndentation();
 
-        prettyPrintNode(statement->rightExpression().get());
+        if (statement->rightExpression() != nullptr)
+        {
+            prettyPrintNode(statement->rightExpression().get());
+        }
+        else
+        {
+            m_builder.appendIndentedLine("<null>");
+        }
 
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
@@ -801,7 +808,13 @@ namespace Caracal
     void ParseTreePrinter::writeIndentedTypeName(Type type, std::string_view prefix)
     {
         m_builder.appendIndented(prefix);
-        
+
+        if (m_module == nullptr)
+        {
+            m_builder.appendLine("?");
+            return;
+        }
+
         if(type.isReference())
         {
             m_builder.append("ref ");

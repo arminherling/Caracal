@@ -1,4 +1,0 @@
-CppBlockStatement: {
-    Lines (0): {
-    }
-}
