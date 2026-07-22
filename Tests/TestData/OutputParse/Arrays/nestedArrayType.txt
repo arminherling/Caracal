@@ -1,0 +1,84 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: rows
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: matrix
+            ArrayTypeNameNode: {
+                Type: undefined
+                Lexeme: [[i32; 4]]
+                Kind: Slice
+                DataType: {
+                    ArrayTypeNameNode: {
+                        Type: undefined
+                        Lexeme: [i32; 4]
+                        Kind: Fixed
+                        DataType: {
+                            TypeNameNode: {
+                                Type: undefined
+                                Lexeme: i32
+                            }
+                        }
+                        Length: {
+                            NumberLiteral: 4
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 0
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: grid
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: cells
+            ArrayTypeNameNode: {
+                Type: undefined
+                Lexeme: [[i32]; 8]
+                Kind: Fixed
+                DataType: {
+                    ArrayTypeNameNode: {
+                        Type: undefined
+                        Lexeme: [i32]
+                        Kind: Slice
+                        DataType: {
+                            TypeNameNode: {
+                                Type: undefined
+                                Lexeme: i32
+                            }
+                        }
+                    }
+                }
+                Length: {
+                    NumberLiteral: 8
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 0
+        }
+    }
+}

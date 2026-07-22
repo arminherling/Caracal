@@ -1,0 +1,9 @@
+def first(values: [i32; 4]) i32
+{
+    return 0;
+}
+
+def make() [f32; 8]
+{
+    return 0;
+}

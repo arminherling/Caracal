@@ -12,9 +12,10 @@ namespace Caracal
     {
     public:
         TypeNameNode(
-            const std::optional<Token>& refToken, 
+            const std::optional<Token>& refToken,
             const Token& nameToken,
             std::string_view name);
+        virtual ~TypeNameNode() = default;
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(TypeNameNode)
 
@@ -22,7 +23,14 @@ namespace Caracal
         [[nodiscard]] bool isReference() const noexcept { return m_refToken.has_value(); }
         [[nodiscard]] const Token& nameToken() const noexcept { return m_nameToken; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
-        [[nodiscard]] SourceLocation sourceLocation(const TokenBuffer& tokens) const;
+        [[nodiscard]] virtual SourceLocation sourceLocation(const TokenBuffer& tokens) const;
+
+    protected:
+        TypeNameNode(
+            NodeKind kind,
+            const std::optional<Token>& refToken,
+            const Token& nameToken,
+            std::string_view name);
 
     private:
         std::optional<Token> m_refToken;

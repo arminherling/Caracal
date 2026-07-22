@@ -1,0 +1,33 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: fill
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: values
+            ArrayTypeNameNode: {
+                Type: undefined
+                Lexeme: [u8]
+                Ref: true
+                Kind: Slice
+                DataType: {
+                    TypeNameNode: {
+                        Type: undefined
+                        Lexeme: u8
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 0
+        }
+    }
+}

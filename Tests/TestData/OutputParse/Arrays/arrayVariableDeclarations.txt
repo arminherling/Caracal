@@ -1,0 +1,132 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: copy
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: values
+            ArrayTypeNameNode: {
+                Type: undefined
+                Lexeme: [i32; 4]
+                Kind: Fixed
+                DataType: {
+                    TypeNameNode: {
+                        Type: undefined
+                        Lexeme: i32
+                    }
+                }
+                Length: {
+                    NumberLiteral: 4
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(4): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: local
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: undefined
+                    Lexeme: [i32; 4]
+                    Kind: Fixed
+                    DataType: {
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: i32
+                        }
+                    }
+                    Length: {
+                        NumberLiteral: 4
+                    }
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: undefined
+                    Name: values
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: view
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: undefined
+                    Lexeme: [i32]
+                    Kind: Slice
+                    DataType: {
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: i32
+                        }
+                    }
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: undefined
+                    Name: values
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: aliased
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: undefined
+                    Lexeme: [i32; 4]
+                    Ref: true
+                    Kind: Fixed
+                    DataType: {
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: i32
+                        }
+                    }
+                    Length: {
+                        NumberLiteral: 4
+                    }
+                }
+            }
+            Right: {
+                UnaryExpression: {
+                    Type: undefined
+                    Operation: ReferenceOf
+                    Expression: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: values
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 0
+        }
+    }
+}

@@ -9,6 +9,7 @@ namespace Caracal
     {
     public:
         Statement(NodeKind kind, const Type& type);
+        virtual ~Statement() = default;
     };
 
     using StatementUPtr = std::unique_ptr<Statement>;

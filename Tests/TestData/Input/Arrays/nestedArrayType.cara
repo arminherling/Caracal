@@ -1,0 +1,9 @@
+def rows(matrix: [[i32; 4]]) i32
+{
+    return 0;
+}
+
+def grid(cells: [[i32]; 8]) i32
+{
+    return 0;
+}

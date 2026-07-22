@@ -5,6 +5,8 @@
 #include <Caracal/Syntax/ConstantDeclaration.h>
 #include <Caracal/Syntax/DiscardLiteral.h>
 #include <Caracal/Syntax/EnumDefinitionStatement.h>
+#include <Caracal/Syntax/ArrayLiteral.h>
+#include <Caracal/Syntax/ArrayTypeNameNode.h>
 #include <Caracal/Syntax/ErrorExpression.h>
 #include <Caracal/Syntax/ExpressionStatement.h>
 #include <Caracal/Syntax/FunctionCallExpression.h>
@@ -836,6 +838,10 @@ namespace Caracal
             {
                 return parseStringLiteral();
             }
+            case TokenKind::OpenBracket:
+            {
+                return parseArrayLiteralExpression(scope);
+            }
             case TokenKind::OpenParenthesis:
             {
                 return parseGroupingExpression(scope);
@@ -874,8 +880,38 @@ namespace Caracal
         auto openParenthesis = advanceOnMatch(TokenKind::OpenParenthesis);
         auto expression = parseExpression(scope);
         auto closeParenthesis = advanceOnMatch(TokenKind::CloseParenthesis);
-    
+
         return std::make_unique<GroupingExpression>(openParenthesis, std::move(expression), closeParenthesis);
+    }
+
+    ExpressionUPtr Parser::parseArrayLiteralExpression(StatementScope scope)
+    {
+        auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
+
+        std::vector<ExpressionUPtr> elements;
+        auto current = currentToken();
+        while (current.kind != TokenKind::CloseBracket && current.kind != TokenKind::EndOfFile)
+        {
+            const auto positionBeforeElement = m_currentIndex;
+            elements.push_back(parseExpression(scope));
+
+            if (currentToken().kind == TokenKind::Comma)
+            {
+                advanceCurrentIndex();
+            }
+            else if (m_currentIndex == positionBeforeElement)
+            {
+                // parseExpression made no progress, stop instead of looping forever
+                break;
+            }
+            current = currentToken();
+        }
+
+        // TODO dynamic array literals
+        std::optional<Token> ellipsisToken{};
+        auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
+
+        return std::make_unique<ArrayLiteral>(openBracket, std::move(elements), ellipsisToken, closeBracket);
     }
 
     ExpressionUPtr Parser::parseMemberAccessExpression()
@@ -921,9 +957,56 @@ namespace Caracal
     TypeNameNodeUPtr Parser::parseTypeNameNode()
     {
         auto refToken = tryMatchKind(TokenKind::RefKeyword);
+        if (currentToken().kind == TokenKind::OpenBracket)
+        {
+            return parseArrayTypeNameNode(refToken);
+        }
+
         auto nameToken = advanceOnMatch(TokenKind::Identifier);
         auto name = m_tokens.getLexeme(nameToken);
         return std::make_unique<TypeNameNode>(refToken, nameToken, name);
+    }
+
+    TypeNameNodeUPtr Parser::parseArrayTypeNameNode(const std::optional<Token>& refToken)
+    {
+        auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
+        auto elementType = parseTypeNameNode();
+
+        auto arrayKind = ArrayTypeKind::Slice;
+        std::optional<Token> semicolonToken{};
+        NumberLiteralUPtr lengthLiteral{};
+        // TODO parse dynamic arrays
+        std::optional<Token> underscoreToken{};
+
+        if (currentToken().kind == TokenKind::Semicolon)
+        {
+            semicolonToken = advanceOnMatch(TokenKind::Semicolon);
+            if (currentToken().kind == TokenKind::Number)
+            {
+                arrayKind = ArrayTypeKind::Fixed;
+                lengthLiteral = parseNumberLiteral();
+            }
+            else
+            {
+                m_diagnostics.addExpectedArrayLengthError(m_tokens.source(), m_tokens.getSourceLocation(currentToken()));
+                arrayKind = ArrayTypeKind::Fixed;
+                if (currentToken().kind != TokenKind::CloseBracket && currentToken().kind != TokenKind::EndOfFile)
+                {
+                    advanceCurrentIndex();
+                }
+            }
+        }
+
+        auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
+        return std::make_unique<ArrayTypeNameNode>(
+            refToken,
+            openBracket,
+            std::move(elementType),
+            arrayKind,
+            semicolonToken,
+            std::move(lengthLiteral),
+            underscoreToken,
+            closeBracket);
     }
 
     MethodNameNodeUPtr Parser::parseMethodNameNode()

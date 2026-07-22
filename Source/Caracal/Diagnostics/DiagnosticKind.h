@@ -25,6 +25,7 @@ namespace Caracal
         P0012_ExplicitTypeOnInitConstant,
         P0013_PrivateStaticMethod,
         P0014_PrivateFreeFunction,
+        P0015_ExpectedArrayLength,
 
         // Annotation diagnostics
         T0001_UnknownAnnotation,

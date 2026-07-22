@@ -1,0 +1,11 @@
+ Error P0015
+  Expected an array length
+    ,-[Diagnostics/Input/arrayLengthInvalid.cara:1:23]
+  1 | def sum(values: [i32; x]) i32
+    .                       -
+    .                       `-- Expected an array length
+  2 | {
+  3 |     return 0;
+  4 | }
+    `----
+  Fix: Write an integer length like '[i32; 4]'.

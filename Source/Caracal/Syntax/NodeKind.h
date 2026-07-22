@@ -38,9 +38,11 @@ namespace Caracal
         BoolLiteral,
         NumberLiteral,
         StringLiteral,
+        ArrayLiteral,
 
         AnnotationNode,
         TypeNameNode,
+        ArrayTypeNameNode,
         MethodNameNode,
         ParametersNode,
         ParameterNode,

@@ -41,6 +41,8 @@ namespace Caracal
                 return "P0013";
             case DiagnosticKind::P0014_PrivateFreeFunction:
                 return "P0014";
+            case DiagnosticKind::P0015_ExpectedArrayLength:
+                return "P0015";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:
@@ -254,6 +256,8 @@ namespace Caracal
                 return "Static methods cannot be private";
             case DiagnosticKind::P0014_PrivateFreeFunction:
                 return "Free functions cannot be private";
+            case DiagnosticKind::P0015_ExpectedArrayLength:
+                return "Expected an array length";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:

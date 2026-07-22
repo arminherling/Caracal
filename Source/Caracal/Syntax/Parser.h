@@ -66,6 +66,7 @@ namespace Caracal
         ExpressionUPtr parseFunctionCallOrNameExpression(StatementScope scope);
         ExpressionUPtr parseFunctionCallExpression(StatementScope scope);
         TypeNameNodeUPtr parseTypeNameNode();
+        TypeNameNodeUPtr parseArrayTypeNameNode(const std::optional<Token>& refToken);
         MethodNameNodeUPtr parseMethodNameNode();
         ParametersNodeUPtr parseParametersNode(StatementScope scope);
         ReturnTypesNodeUPtr parseReturnTypesNode();
@@ -77,6 +78,7 @@ namespace Caracal
         ParameterNodeUPtr parseParameterNode(StatementScope scope);
         NumberLiteralUPtr parseNumberLiteral();
         StringLiteralUPtr parseStringLiteral();
+        ExpressionUPtr parseArrayLiteralExpression(StatementScope scope);
         void buildAnnotationNode(StatementScope scope);
         std::vector<AnnotationNodeUPtr> takeCurrentAnnotations();
         void flushDanglingAnnotations();

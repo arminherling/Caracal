@@ -2,6 +2,8 @@
 
 #include <Caracal/API.h>
 #include <Caracal/Defines.h>
+#include <Caracal/Syntax/ArrayLiteral.h>
+#include <Caracal/Syntax/ArrayTypeNameNode.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BlockNode.h>
 #include <Caracal/Syntax/EnumDefinitionStatement.h>
@@ -70,6 +72,8 @@ namespace Caracal
         void prettyPrintParametersNode(ParametersNode* parameters);
         void prettyPrintReturnTypesNode(ReturnTypesNode* returnTypes);
         void prettyPrintTypeNameNode(TypeNameNode* returnType);
+        void prettyPrintArrayTypeNameNode(ArrayTypeNameNode* node);
+        void prettyPrintArrayLiteral(ArrayLiteral* node);
         void prettyPrintBlockNode(BlockNode* block);
         void prettyPrintGroupingExpression(GroupingExpression* grouping);
         void prettyPrintUnaryExpression(UnaryExpression* unaryExpression);

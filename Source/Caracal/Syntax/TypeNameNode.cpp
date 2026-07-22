@@ -6,7 +6,16 @@ namespace Caracal
         const std::optional<Token>& refToken,
         const Token& nameToken,
         std::string_view name)
-        : Node(NodeKind::TypeNameNode, Type::Undefined())
+        : TypeNameNode(NodeKind::TypeNameNode, refToken, nameToken, name)
+    {
+    }
+
+    TypeNameNode::TypeNameNode(
+        NodeKind kind,
+        const std::optional<Token>& refToken,
+        const Token& nameToken,
+        std::string_view name)
+        : Node(kind, Type::Undefined())
         , m_refToken{ refToken }
         , m_nameToken{ nameToken }
         , m_name{ name }

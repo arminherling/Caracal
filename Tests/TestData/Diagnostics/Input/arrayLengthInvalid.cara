@@ -1,0 +1,4 @@
+def sum(values: [i32; x]) i32
+{
+    return 0;
+}

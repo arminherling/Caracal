@@ -1,0 +1,96 @@
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: shared
+        }
+    }
+    ExplicitType: {
+        ArrayTypeNameNode: {
+            Type: undefined
+            Lexeme: [i32; 4]
+            Kind: Fixed
+            DataType: {
+                TypeNameNode: {
+                    Type: undefined
+                    Lexeme: i32
+                }
+            }
+            Length: {
+                NumberLiteral: 4
+            }
+        }
+    }
+    Right: {
+        ArrayLiteral(4): {
+            NumberLiteral: 1
+            NumberLiteral: 2
+            NumberLiteral: 3
+            NumberLiteral: 4
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: scale
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: values
+            ArrayTypeNameNode: {
+                Type: undefined
+                Lexeme: [u8]
+                Kind: Slice
+                DataType: {
+                    TypeNameNode: {
+                        Type: undefined
+                        Lexeme: u8
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        ConstantDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: bytes
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: undefined
+                    Lexeme: [u8; 2]
+                    Kind: Fixed
+                    DataType: {
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: u8
+                        }
+                    }
+                    Length: {
+                        NumberLiteral: 2
+                    }
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: undefined
+                    Name: values
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 0
+        }
+    }
+}

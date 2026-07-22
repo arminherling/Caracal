@@ -13,6 +13,7 @@ namespace Caracal
     {
     public:
         Expression(NodeKind kind, const Type& type);
+        virtual ~Expression() = default;
 
         [[nodiscard]] bool isLiteral() const noexcept;
         [[nodiscard]] virtual SourceLocation sourceLocation(const TokenBuffer& tokens) const = 0;

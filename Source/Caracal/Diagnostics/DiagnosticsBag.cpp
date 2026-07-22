@@ -388,6 +388,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addExpectedArrayLengthError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::P0015_ExpectedArrayLength,
+            source,
+            location,
+            "Write an integer length like '[i32; 4]'.");
+        diagnostic.addPrimaryLabel(location, "Expected an array length");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(

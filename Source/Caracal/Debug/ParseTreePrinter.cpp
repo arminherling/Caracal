@@ -147,8 +147,14 @@ namespace Caracal
                 break;
             }
             case NodeKind::TypeNameNode:
+            case NodeKind::ArrayTypeNameNode:
             {
                 prettyPrintTypeNameNode(static_cast<TypeNameNode*>(node));
+                break;
+            }
+            case NodeKind::ArrayLiteral:
+            {
+                prettyPrintArrayLiteral(static_cast<ArrayLiteral*>(node));
                 break;
             }
             case NodeKind::BlockNode:
@@ -763,6 +769,12 @@ namespace Caracal
 
     void ParseTreePrinter::prettyPrintTypeNameNode(TypeNameNode* node)
     {
+        if (node->kind() == NodeKind::ArrayTypeNameNode)
+        {
+            prettyPrintArrayTypeNameNode(static_cast<ArrayTypeNameNode*>(node));
+            return;
+        }
+
         m_builder.appendIndented(stringify(node->kind())).appendLine(": {");
         m_builder.pushIndentation();
 
@@ -773,6 +785,71 @@ namespace Caracal
         {
             m_builder.appendIndentedLine("Ref: true");
         }
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+    }
+
+    void ParseTreePrinter::prettyPrintArrayTypeNameNode(ArrayTypeNameNode* node)
+    {
+        m_builder.appendIndented(stringify(node->kind())).appendLine(": {");
+        m_builder.pushIndentation();
+
+        writeIndentedTypeName(node->type());
+
+        m_builder.appendIndented("Lexeme: ").appendLine(node->name());
+        if (node->isReference())
+        {
+            m_builder.appendIndentedLine("Ref: true");
+        }
+
+        if (node->arrayKind() == ArrayTypeKind::Slice)
+        {
+            m_builder.appendIndentedLine("Kind: Slice");
+        }
+        else if (node->arrayKind() == ArrayTypeKind::Fixed)
+        {
+            m_builder.appendIndentedLine("Kind: Fixed");
+        }
+        else
+        {
+            m_builder.appendIndentedLine("Kind: Dynamic");
+        }
+
+        m_builder.appendIndentedLine("DataType: {");
+        m_builder.pushIndentation();
+        prettyPrintTypeNameNode(node->elementType().get());
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+
+        if (node->lengthLiteral() != nullptr)
+        {
+            m_builder.appendIndentedLine("Length: {");
+            m_builder.pushIndentation();
+            prettyPrintNode(node->lengthLiteral().get());
+            m_builder.popIndentation();
+            m_builder.appendIndentedLine("}");
+        }
+
+        m_builder.popIndentation();
+        m_builder.appendIndentedLine("}");
+    }
+
+    void ParseTreePrinter::prettyPrintArrayLiteral(ArrayLiteral* node)
+    {
+        const auto& elements = node->elements();
+        m_builder.appendIndented(stringify(node->kind())).append("(").append(std::to_string(elements.size())).appendLine("): {");
+        m_builder.pushIndentation();
+
+        if (node->isDynamic())
+        {
+            m_builder.appendIndentedLine("Dynamic: true");
+        }
+
+        for (const auto& element : elements)
+        {
+            prettyPrintNode(element.get());
+        }
+
         m_builder.popIndentation();
         m_builder.appendIndentedLine("}");
     }
