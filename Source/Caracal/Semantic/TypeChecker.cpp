@@ -1,6 +1,7 @@
 ﻿#include "TypeChecker.h"
 
 #include <Caracal/Constants.h>
+#include <Caracal/ScopedValue.h>
 #include <Caracal/Semantic/ArgumentBinder.h>
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/BreakStatement.h>
@@ -1011,7 +1012,7 @@ namespace Caracal
             return;
         }
 
-        m_currentType = typeType;
+        const ScopedValue<Type> currentTypeScope{ m_currentType, typeType };
         pushScope(ScopeKind::Type);
 
         if (statement->constructorParameters().has_value())
@@ -1053,7 +1054,6 @@ namespace Caracal
         }
 
         popScope(false);
-        m_currentType = Type::Undefined();
     }
 
     void TypeChecker::typeCheckMethodSignature(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens)
@@ -1555,7 +1555,7 @@ namespace Caracal
 
     void TypeChecker::typeCheckFunctionDefinitionStatement(FunctionDefinitionStatement* statement, const TokenBuffer& tokens)
     {
-        m_currentReturnType = Type::Void();
+        const ScopedValue<Type> returnTypeScope{ m_currentReturnType, Type::Void() };
         auto parentScope = currentScope();
         pushScope(ScopeKind::Function);
 
@@ -1605,7 +1605,6 @@ namespace Caracal
         }
 
         popScope(!statement->isExtern());
-        m_currentReturnType = Type::Void();
     }
 
     void TypeChecker::typeCheckEnumDefinitionStatement(EnumDefinitionStatement* statement, const TokenBuffer& tokens)
@@ -1673,8 +1672,17 @@ namespace Caracal
             else if (fieldNode->valueExpression().has_value())
             {
                 auto expression = fieldNode->valueExpression().value().get();
-                m_contextualNumberType = baseType == Type::Undefined() ? defaultBaseType : baseType;
-                auto fieldValueType = typeCheckExpression(expression, tokens);
+                auto contextualType = defaultBaseType;
+                if (baseType != Type::Undefined())
+                {
+                    contextualType = baseType;
+                }
+
+                auto fieldValueType = Type::Undefined();
+                {
+                    const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualType };
+                    fieldValueType = typeCheckExpression(expression, tokens);
+                }
                 if (baseType == Type::Undefined())
                 {
                     baseType = fieldValueType;
@@ -2021,7 +2029,7 @@ namespace Caracal
 
     void TypeChecker::typeCheckMethodDefinitionStatement(MethodDefinitionStatement* statement, const TokenBuffer& tokens)
     {
-        m_currentReturnType = Type::Void();
+        const ScopedValue<Type> returnTypeScope{ m_currentReturnType, Type::Void() };
         auto methodType = statement->type();
         if (methodType == Type::Undefined())
         {
@@ -2069,7 +2077,6 @@ namespace Caracal
         }
 
         popScope(true);
-        m_currentReturnType = Type::Void();
     }
 
     void TypeChecker::typeCheckIfStatement(IfStatement* statement, const TokenBuffer& tokens)
@@ -2238,13 +2245,14 @@ namespace Caracal
             case UnaryOperatorKind::ValueNegation:
             {
                 auto* operand = unaryExpression->expression().get();
-                const auto previousContext = m_negatedLiteralContext;
-                m_negatedLiteralContext = dynamic_cast<NumberLiteral*>(operand) != nullptr;
                 m_negatedLiteralSignConsumed = false;
 
-                auto type = typeCheckExpression(operand, tokens);
+                auto type = Type::Undefined();
+                {
+                    const ScopedValue<bool> negatedLiteralScope{ m_negatedLiteralContext, dynamic_cast<NumberLiteral*>(operand) != nullptr };
+                    type = typeCheckExpression(operand, tokens);
+                }
 
-                m_negatedLiteralContext = previousContext;
                 if (m_negatedLiteralSignConsumed)
                 {
                     unaryExpression->setSignFolded(true);
@@ -2874,9 +2882,11 @@ namespace Caracal
             if (parameterNode->hasDefault())
             {
                 auto* defaultExpression = parameterNode->defaultValue().get();
-                m_contextualNumberType = parameterType;
-                const auto defaultType = typeCheckExpression(defaultExpression, tokens);
-                m_contextualNumberType = std::nullopt;
+                auto defaultType = Type::Undefined();
+                {
+                    const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, parameterType };
+                    defaultType = typeCheckExpression(defaultExpression, tokens);
+                }
                 if (defaultType != Type::Undefined() && defaultType != parameterType)
                 {
                     m_diagnostics.addDefaultParameterTypeMismatchError(

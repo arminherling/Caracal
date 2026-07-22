@@ -1,0 +1,11 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+@value = constant i32 300
+
+define i32 @func() {
+entry:
+  %load = load i32, ptr @value, align 4
+  ret i32 %load
+}

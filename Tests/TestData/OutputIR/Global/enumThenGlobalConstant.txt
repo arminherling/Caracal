@@ -1,0 +1,11 @@
+enum Flags : u8
+    A = 1
+    B = 2
+
+global value : i32 = 300
+
+define func() i32
+block entry(0):
+    %0 = address_of_global @value : ref i32
+    %1 = load_value %0 : i32
+    return %1

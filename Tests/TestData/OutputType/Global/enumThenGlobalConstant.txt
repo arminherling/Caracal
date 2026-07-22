@@ -1,0 +1,49 @@
+EnumDefinitionStatement: {
+    Type: Flags(u8)
+    Name: Flags
+    FieldNodes(2): {
+        EnumFieldDeclaration: {
+            Name: A
+            NumberLiteral: 1
+            Value: 1
+        }
+        EnumFieldDeclaration: {
+            Name: B
+            NumberLiteral: 2
+            Value: 2
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: i32
+    Left: {
+        NameExpression: {
+            Type: i32
+            Name: value
+        }
+    }
+    Right: {
+        NumberLiteral: 300
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: func
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: value
+            }
+        }
+    }
+}
