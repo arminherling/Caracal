@@ -1298,7 +1298,7 @@ namespace Caracal
         if (statement->explicitType().has_value())
         {
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
-            if (rightType != Type::Undefined() && explicitType != Type::Undefined() && rightType != explicitType)
+            if (rightType != Type::Undefined() && explicitType != Type::Undefined() && !isAssignableTo(rightType, explicitType))
             {
                 m_diagnostics.addExplicitConstantTypeMismatchError(
                     tokens.source(),
@@ -1352,7 +1352,7 @@ namespace Caracal
         if (statement->explicitType().has_value())
         {
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
-            if (rightType != Type::Undefined() && explicitType != Type::Undefined() && rightType != explicitType)
+            if (rightType != Type::Undefined() && explicitType != Type::Undefined() && !isAssignableTo(rightType, explicitType))
             {
                 m_diagnostics.addExplicitVariableTypeMismatchError(
                     tokens.source(),
@@ -1451,7 +1451,7 @@ namespace Caracal
         if (leftType == Type::Discard())
             return;
 
-        if (leftType != rightType)
+        if (!isAssignableTo(rightType, leftType))
         {
             m_diagnostics.addAssignmentTypeMismatchError(
                 tokens.source(),
@@ -2008,7 +2008,7 @@ namespace Caracal
         {
             fieldType = expressionType;
         }
-        else if (fieldType != expressionType)
+        else if (!isAssignableTo(expressionType, fieldType))
         {
             m_diagnostics.addTypeFieldInitializerMismatchError(
                 tokens.source(),
@@ -2133,7 +2133,7 @@ namespace Caracal
                 return;
             }
 
-            if (declaredReturnType != type)
+            if (!isAssignableTo(type, declaredReturnType))
             {
                 m_diagnostics.addReturnTypeMismatchError(
                     tokens.source(),
@@ -2730,7 +2730,7 @@ namespace Caracal
             const auto* argument = binding.ordered[i];
             const auto argumentType = argument->type();
             const auto expectedType = parameterTypes[i + parameterOffset].type();
-            if (argumentType != expectedType)
+            if (!isAssignableTo(argumentType, expectedType))
             {
                 argumentTypeMismatches.push_back(ArgumentTypeMismatchInfo{
                     argument->sourceLocation(tokens),
@@ -2887,7 +2887,7 @@ namespace Caracal
                     const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, parameterType };
                     defaultType = typeCheckExpression(defaultExpression, tokens);
                 }
-                if (defaultType != Type::Undefined() && defaultType != parameterType)
+                if (defaultType != Type::Undefined() && !isAssignableTo(defaultType, parameterType))
                 {
                     m_diagnostics.addDefaultParameterTypeMismatchError(
                         tokens.source(),
@@ -2990,6 +2990,11 @@ namespace Caracal
         }
 
         return conditionType;
+    }
+
+    bool TypeChecker::isAssignableTo(Type sourceType, Type targetType) const noexcept
+    {
+        return sourceType == targetType;
     }
 
     bool TypeChecker::areComparableTypes(Type leftType, Type rightType)

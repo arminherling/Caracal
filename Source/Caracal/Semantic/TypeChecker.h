@@ -104,6 +104,7 @@ namespace Caracal
         void typeCheckBlockNode(BlockNode* body, const TokenBuffer& tokens);
         [[nodiscard]] i32 convertToI32(NumberLiteral* literal, const TokenBuffer& tokens);
         [[nodiscard]] Type coerceConditionType(Type conditionType, Expression* conditionExpression);
+        [[nodiscard]] bool isAssignableTo(Type sourceType, Type targetType) const noexcept;
         [[nodiscard]] bool areComparableTypes(Type leftType, Type rightType);
         [[nodiscard]] const TokenBuffer& tokensFor(const Statement* statement) const;
         [[nodiscard]] const TokenBuffer* tryTokensFor(const Statement* statement) const;
