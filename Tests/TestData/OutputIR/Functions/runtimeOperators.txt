@@ -20,12 +20,20 @@ define bothTrue(%0: bool "left", %1: bool "right") bool
 block entry(0):
     %0 = parameter 0 : bool "left"
     %1 = parameter 1 : bool "right"
-    %2 = logical_and %0, %1 : bool
+    branch if %0, and.rhs(1), and.merge(2)
+block and.rhs(1):
+    jump and.merge(2)
+block and.merge(2):
+    %2 = phi [entry(0): %0], [and.rhs(1): %1] : bool
     return %2
 
 define eitherTrue(%0: bool "left", %1: bool "right") bool
 block entry(0):
     %0 = parameter 0 : bool "left"
     %1 = parameter 1 : bool "right"
-    %2 = logical_or %0, %1 : bool
+    branch if %0, or.merge(2), or.rhs(1)
+block or.rhs(1):
+    jump or.merge(2)
+block or.merge(2):
+    %2 = phi [entry(0): %0], [or.rhs(1): %1] : bool
     return %2

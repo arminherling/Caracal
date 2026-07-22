@@ -22,12 +22,24 @@ entry:
 
 define i1 @bothTrue(i1 %0, i1 %1) {
 entry:
-  %logical_and = and i1 %0, %1
-  ret i1 %logical_and
+  br i1 %0, label %and.rhs, label %and.merge
+
+and.rhs:                                          ; preds = %entry
+  br label %and.merge
+
+and.merge:                                        ; preds = %and.rhs, %entry
+  %phi = phi i1 [ %0, %entry ], [ %1, %and.rhs ]
+  ret i1 %phi
 }
 
 define i1 @eitherTrue(i1 %0, i1 %1) {
 entry:
-  %logical_or = or i1 %0, %1
-  ret i1 %logical_or
+  br i1 %0, label %or.merge, label %or.rhs
+
+or.rhs:                                           ; preds = %entry
+  br label %or.merge
+
+or.merge:                                         ; preds = %or.rhs, %entry
+  %phi = phi i1 [ %0, %entry ], [ %1, %or.rhs ]
+  ret i1 %phi
 }

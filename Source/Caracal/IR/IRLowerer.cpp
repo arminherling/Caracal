@@ -23,9 +23,7 @@
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
-#include <Caracal/IR/LogicalAndInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
-#include <Caracal/IR/LogicalOrInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
@@ -307,8 +305,10 @@ namespace Caracal
         const auto functionId = definition.type().id();
         auto* function = module.addFunction(Function{ functionId, definition.fullName(), parameters, Type::Void() });
         auto blockId = m_nextBlockId++;
-        auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
-        if (!lowerParameters(definition, entryBlock))
+        function->addBlock(BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() });
+        m_currentFunction = function;
+        m_currentBlock = function->tryGetBlock(blockId);
+        if (!lowerParameters(definition))
             return false;
 
         const auto thisResult = m_locals.find(ImplicitThisName);
@@ -318,7 +318,7 @@ namespace Caracal
         const auto& typeDefinition = m_semanticContext.getTypeDefinition(definition.parentType());
         for (const auto& fieldDefinition : typeDefinition.fields())
         {
-            const auto loweredValue = lowerValueExpression(fieldDefinition.expression(), entryBlock);
+            const auto loweredValue = lowerValueExpression(fieldDefinition.expression());
             if (!loweredValue.has_value())
                 continue;
 
@@ -327,15 +327,13 @@ namespace Caracal
                 definition.parentType(),
                 fieldDefinition.name(),
                 fieldDefinition.index(),
-                fieldDefinition.type(),
-                entryBlock);
-            entryBlock.addInstruction(std::make_unique<StoreValueInstruction>(
+                fieldDefinition.type());
+            m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
                 loweredValue.value(),
                 fieldAddress,
                 fieldDefinition.type()));
         }
 
-        function->addBlock(std::move(entryBlock));
         return true;
     }
 
@@ -431,7 +429,10 @@ namespace Caracal
         resetState();
 
         const auto blockId = m_nextBlockId++;
-        auto entryBlock = BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() };
+        Function function{ FunctionId{ -1 }, GlobalInitializerName, {}, Type::Void() };
+        function.addBlock(BasicBlock{ blockId, "entry", std::make_unique<ReturnTerminator>() });
+        m_currentFunction = &function;
+        m_currentBlock = function.tryGetBlock(blockId);
 
         for (const auto* definition : definitions)
         {
@@ -439,20 +440,20 @@ namespace Caracal
             if (globalType == m_globalTypes.end())
                 return false;
 
-            const auto globalAddress = emitGlobalAddress(definition->name(), globalType->second, entryBlock);
-            if (!tryLowerConstructorCallIntoAddress(definition->expression(), globalAddress, entryBlock))
+            const auto globalAddress = emitGlobalAddress(definition->name(), globalType->second);
+            if (!tryLowerConstructorCallIntoAddress(definition->expression(), globalAddress))
                 return false;
         }
 
         for (const auto* discardExpression : discardEffects)
         {
-            if (!lowerExpressionForEffect(discardExpression, entryBlock))
+            if (!lowerExpressionForEffect(discardExpression))
                 return false;
         }
 
-        Function function{ FunctionId{ -1 }, GlobalInitializerName, {}, Type::Void() };
-        function.addBlock(std::move(entryBlock));
         module.setGlobalInit(std::move(function));
+        m_currentFunction = nullptr;
+        m_currentBlock = nullptr;
         return true;
     }
 
@@ -490,11 +491,12 @@ namespace Caracal
                 function->setSymbolName(UserMainSymbolName);
         }
         auto blockId = m_nextBlockId++;
-        auto entryBlock = BasicBlock{ blockId, "entry", nullptr };
+        function->addBlock(BasicBlock{ blockId, "entry", nullptr });
+        m_currentFunction = function;
+        m_currentBlock = function->tryGetBlock(blockId);
         collectAddressTakenLocals(bodyNode);
-        if (!lowerParameters(definition, entryBlock))
+        if (!lowerParameters(definition))
             return false;
-        function->addBlock(std::move(entryBlock));
 
         std::optional<BlockId> entryBlockId = blockId;
         if (!lowerBlock(bodyNode, *function, entryBlockId))
@@ -636,27 +638,27 @@ namespace Caracal
             collectAddressTakenLocals(statement.get());
     }
 
-    std::optional<ValueRef> IRLowerer::allocateLocalSlot(std::string localName, Type valueType, BasicBlock& block, std::optional<ValueRef> initialValue) noexcept
+    std::optional<ValueRef> IRLowerer::allocateLocalSlot(std::string localName, Type valueType, std::optional<ValueRef> initialValue) noexcept
     {
         if (valueType == Type::Undefined())
             return std::nullopt;
 
         const auto localId = m_nextLocalSlotId++;
-        block.addPrologueInstruction(std::make_unique<AllocateLocalInstruction>(localId, std::move(localName), valueType));
+        m_currentBlock->addPrologueInstruction(std::make_unique<AllocateLocalInstruction>(localId, std::move(localName), valueType));
 
         const auto addressId = m_nextTemporaryId++;
-        block.addInstruction(std::make_unique<AddressOfInstruction>(addressId, LocalSlotRef{ localId }, valueType.toReference()));
+        m_currentBlock->addInstruction(std::make_unique<AddressOfInstruction>(addressId, LocalSlotRef{ localId }, valueType.toReference()));
 
         if (initialValue.has_value())
-            block.addInstruction(std::make_unique<StoreValueInstruction>(initialValue.value(), ValueRef{ addressId }, valueType));
+            m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(initialValue.value(), ValueRef{ addressId }, valueType));
 
         return ValueRef{ addressId };
     }
 
-    ValueRef IRLowerer::emitFieldAddress(ValueRef objectAddress, Type objectType, const std::string& fieldName, i32 fieldIndex, Type fieldType, BasicBlock& block) noexcept
+    ValueRef IRLowerer::emitFieldAddress(ValueRef objectAddress, Type objectType, const std::string& fieldName, i32 fieldIndex, Type fieldType) noexcept
     {
         const auto temporaryId = m_nextTemporaryId++;
-        block.addInstruction(std::make_unique<AddressOfFieldInstruction>(
+        m_currentBlock->addInstruction(std::make_unique<AddressOfFieldInstruction>(
             temporaryId,
             objectAddress,
             objectType,
@@ -666,27 +668,27 @@ namespace Caracal
         return ValueRef{ temporaryId };
     }
 
-    ValueRef IRLowerer::emitLoad(ValueRef address, Type valueType, BasicBlock& block) noexcept
+    ValueRef IRLowerer::emitLoad(ValueRef address, Type valueType) noexcept
     {
         const auto temporaryId = m_nextTemporaryId++;
-        block.addInstruction(std::make_unique<LoadValueInstruction>(temporaryId, address, valueType));
+        m_currentBlock->addInstruction(std::make_unique<LoadValueInstruction>(temporaryId, address, valueType));
         return ValueRef{ temporaryId };
     }
 
-    ValueRef IRLowerer::emitGlobalAddress(const std::string& name, Type valueType, BasicBlock& block) noexcept
+    ValueRef IRLowerer::emitGlobalAddress(const std::string& name, Type valueType) noexcept
     {
         const auto temporaryId = m_nextTemporaryId++;
-        block.addInstruction(std::make_unique<AddressOfGlobalInstruction>(temporaryId, name, valueType.toReference()));
+        m_currentBlock->addInstruction(std::make_unique<AddressOfGlobalInstruction>(temporaryId, name, valueType.toReference()));
         return ValueRef{ temporaryId };
     }
 
-    std::optional<ValueRef> IRLowerer::tryGetGlobalAddress(const std::string& name, BasicBlock& block) noexcept
+    std::optional<ValueRef> IRLowerer::tryGetGlobalAddress(const std::string& name) noexcept
     {
         const auto result = m_globalTypes.find(name);
         if (result == m_globalTypes.end())
             return std::nullopt;
 
-        return emitGlobalAddress(name, result->second, block);
+        return emitGlobalAddress(name, result->second);
     }
 
     void IRLowerer::setLocalValue(std::string localName, ValueRef value, Type type) noexcept
@@ -746,14 +748,14 @@ namespace Caracal
             });
     }
 
-    bool IRLowerer::lowerParameters(const FunctionDefinition& definition, BasicBlock& block) noexcept
+    bool IRLowerer::lowerParameters(const FunctionDefinition& definition) noexcept
     {
         const auto& parameters = definition.parameters();
         for (size_t index = 0; index < parameters.size(); ++index)
         {
             const auto parameterId = m_nextTemporaryId++;
             const auto parameterType = parameters[index].type();
-            block.addInstruction(std::make_unique<ParameterInstruction>(
+            m_currentBlock->addInstruction(std::make_unique<ParameterInstruction>(
                 parameterId,
                 static_cast<i32>(index),
                 IRParameter{ parameters[index].name(), parameterType}));
@@ -775,7 +777,7 @@ namespace Caracal
                 continue;
             }
 
-            const auto addressId = allocateLocalSlot(parameterName, parameterType, block, ValueRef{ parameterId });
+            const auto addressId = allocateLocalSlot(parameterName, parameterType, ValueRef{ parameterId });
             if (!addressId.has_value())
                 return false;
 
@@ -794,6 +796,9 @@ namespace Caracal
         if (currentBlock == nullptr)
             return false;
 
+        m_currentFunction = &function;
+        m_currentBlock = currentBlock;
+
         switch (statement->kind())
         {
             case NodeKind::BlockNode:
@@ -804,31 +809,52 @@ namespace Caracal
             case NodeKind::VariableDeclaration:
             {
                 const auto* variableDeclaration = static_cast<const VariableDeclaration*>(statement);
-                return lowerLocalDeclaration(
+                if (!lowerLocalDeclaration(
                     variableDeclaration->leftExpression().get(),
-                    variableDeclaration->rightExpression().get(),
-                    *currentBlock);
+                    variableDeclaration->rightExpression().get()))
+                {
+                    return false;
+                }
+
+                currentBlockId = m_currentBlock->id();
+                return true;
             }
             case NodeKind::ConstantDeclaration:
             {
                 const auto* constantDeclaration = static_cast<const ConstantDeclaration*>(statement);
-                return lowerLocalDeclaration(
+                if (!lowerLocalDeclaration(
                     constantDeclaration->leftExpression().get(),
-                    constantDeclaration->rightExpression().get(),
-                    *currentBlock);
+                    constantDeclaration->rightExpression().get()))
+                {
+                    return false;
+                }
+
+                currentBlockId = m_currentBlock->id();
+                return true;
             }
             case NodeKind::AssignmentStatement:
             {
                 const auto* assignmentStatement = static_cast<const AssignmentStatement*>(statement);
-                return lowerAssignmentStatement(
+                if (!lowerAssignmentStatement(
                     assignmentStatement->leftExpression().get(),
-                    assignmentStatement->rightExpression().get(),
-                    *currentBlock);
+                    assignmentStatement->rightExpression().get()))
+                {
+                    return false;
+                }
+
+                currentBlockId = m_currentBlock->id();
+                return true;
             }
             case NodeKind::ExpressionStatement:
             {
                 const auto* expressionStatement = static_cast<const ExpressionStatement*>(statement);
-                return lowerExpressionStatement(expressionStatement, *currentBlock);
+                if (!lowerExpressionStatement(expressionStatement))
+                {
+                    return false;
+                }
+
+                currentBlockId = m_currentBlock->id();
+                return true;
             }
             case NodeKind::IfStatement:
             {
@@ -851,7 +877,7 @@ namespace Caracal
             case NodeKind::ReturnStatement:
             {
                 const auto* returnStatement = static_cast<const ReturnStatement*>(statement);
-                return lowerReturnStatement(returnStatement, *currentBlock, currentBlockId);
+                return lowerReturnStatement(returnStatement, currentBlockId);
             }
             default:
             {
@@ -880,9 +906,12 @@ namespace Caracal
         // copy the locals before branching so each path can be lowered from the same state
         const auto preBranchValues = m_locals;
 
-        const auto conditionValue = lowerValueExpression(statement->condition().get(), *currentBlock);
+        const auto conditionValue = lowerValueExpression(statement->condition().get());
         if (!conditionValue.has_value())
             return false;
+
+        // short-circuit lowering may have moved emission into a merge block
+        currentBlock = m_currentBlock;
 
         const auto trueId = m_nextBlockId++;
         function.addBlock(BasicBlock{ trueId, "if.true", nullptr });
@@ -1019,11 +1048,14 @@ namespace Caracal
 
         restoreLocalValues(loopHeaderValues);
 
-        const auto conditionValue = lowerValueExpression(statement->condition().get(), *conditionBlock);
+        m_currentBlock = conditionBlock;
+        const auto conditionValue = lowerValueExpression(statement->condition().get());
         if (!conditionValue.has_value())
             return false;
 
-        conditionBlock->setTerminator(std::make_unique<BranchIfTerminator>(conditionValue.value(), loopId, continuationId));
+        // short-circuit lowering may have moved emission into a merge block
+        auto* conditionExitBlock = m_currentBlock;
+        conditionExitBlock->setTerminator(std::make_unique<BranchIfTerminator>(conditionValue.value(), loopId, continuationId));
 
         function.addBlock(BasicBlock{ loopId, "while.body", nullptr });
 
@@ -1067,7 +1099,7 @@ namespace Caracal
             return false;
 
         // condition-false edge reaches the continuation with the bindings visible at the loop header
-        continuationInputs.insert(continuationInputs.begin(), IncomingLocalValues{ conditionId, loopHeaderValues });
+        continuationInputs.insert(continuationInputs.begin(), IncomingLocalValues{ conditionExitBlock->id(), loopHeaderValues });
         mergeLocalValues(*continuationBlock, continuationInputs);
         currentBlockId = continuationId;
 
@@ -1100,16 +1132,16 @@ namespace Caracal
         return true;
     }
 
-    bool IRLowerer::lowerExpressionStatement(const ExpressionStatement* statement, BasicBlock& block) noexcept
+    bool IRLowerer::lowerExpressionStatement(const ExpressionStatement* statement) noexcept
     {
-        return lowerExpressionForEffect(statement->expression().get(), block);
+        return lowerExpressionForEffect(statement->expression().get());
     }
 
-    bool IRLowerer::lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept
+    bool IRLowerer::lowerLocalDeclaration(const Expression* leftExpression, const Expression* rightExpression) noexcept
     {
         if (leftExpression->kind() == NodeKind::DiscardLiteral)
         {
-            return lowerExpressionForEffect(rightExpression, block);
+            return lowerExpressionForEffect(rightExpression);
         }
 
         if (leftExpression->kind() != NodeKind::NameExpression)
@@ -1123,7 +1155,7 @@ namespace Caracal
 
         if (nameExpression->type().isReference() && isExplicitReferenceBinding)
         {
-            const auto loweredAddress = lowerAddressExpression(rightExpression, block);
+            const auto loweredAddress = lowerAddressExpression(rightExpression);
             if (!loweredAddress.has_value())
                 return false;
 
@@ -1141,8 +1173,7 @@ namespace Caracal
             const auto addressId = allocateSlotFromExpression(
                 nameExpression->name(),
                 rightExpression,
-                nameExpression->type().toValue(),
-                block);
+                nameExpression->type().toValue());
             if (!addressId.has_value())
                 return false;
 
@@ -1150,7 +1181,7 @@ namespace Caracal
             return true;
         }
 
-        const auto loweredValue = lowerValueExpression(rightExpression, block);
+        const auto loweredValue = lowerValueExpression(rightExpression);
         if (!loweredValue.has_value())
             return false;
 
@@ -1160,7 +1191,7 @@ namespace Caracal
 
         if (needsAddressStorage)
         {
-            const auto addressId = allocateLocalSlot(nameExpression->name(), localType, block, loweredValue.value());
+            const auto addressId = allocateLocalSlot(nameExpression->name(), localType, loweredValue.value());
             if (!addressId.has_value())
                 return false;
 
@@ -1173,7 +1204,7 @@ namespace Caracal
         return true;
     }
 
-    bool IRLowerer::tryLowerConstructorCallIntoAddress(const Expression* expression, ValueRef destinationAddress, BasicBlock& block) noexcept
+    bool IRLowerer::tryLowerConstructorCallIntoAddress(const Expression* expression, ValueRef destinationAddress) noexcept
     {
         if (expression->kind() != NodeKind::BinaryExpression)
             return false;
@@ -1186,35 +1217,35 @@ namespace Caracal
             return false;
 
         const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(binaryExpression->rightExpression().get());
-        const auto loweredResult = emitCall(functionCallExpression, block, destinationAddress);
+        const auto loweredResult = emitCall(functionCallExpression, destinationAddress);
         return loweredResult.has_value();
     }
 
-    std::optional<ValueRef> IRLowerer::allocateSlotFromExpression(std::string localName, const Expression* expression, Type valueType, BasicBlock& block) noexcept
+    std::optional<ValueRef> IRLowerer::allocateSlotFromExpression(std::string localName, const Expression* expression, Type valueType) noexcept
     {
-        const auto addressId = allocateLocalSlot(std::move(localName), valueType, block);
+        const auto addressId = allocateLocalSlot(std::move(localName), valueType);
         if (!addressId.has_value())
             return std::nullopt;
 
-        if (tryLowerConstructorCallIntoAddress(expression, addressId.value(), block))
+        if (tryLowerConstructorCallIntoAddress(expression, addressId.value()))
             return addressId;
 
-        const auto loweredValue = lowerValueExpression(expression, block);
+        const auto loweredValue = lowerValueExpression(expression);
         if (!loweredValue.has_value())
             return std::nullopt;
 
-        block.addInstruction(std::make_unique<StoreValueInstruction>(
+        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
             loweredValue.value(),
             addressId.value(),
             valueType));
         return addressId;
     }
 
-    bool IRLowerer::lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression, BasicBlock& block) noexcept
+    bool IRLowerer::lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression) noexcept
     {
         if (leftExpression->kind() == NodeKind::DiscardLiteral)
         {
-            return lowerExpressionForEffect(rightExpression, block);
+            return lowerExpressionForEffect(rightExpression);
         }
 
         // handle local variables first, since they may be address-backed and we want to avoid unnecessary loads/stores
@@ -1223,12 +1254,12 @@ namespace Caracal
             const auto local = m_locals.find(static_cast<const NameExpression*>(leftExpression)->name());
             if (local != m_locals.end())
             {
-                const auto loweredValue = lowerValueExpression(rightExpression, block);
+                const auto loweredValue = lowerValueExpression(rightExpression);
                 if (!loweredValue.has_value())
                     return false;
 
                 if (local->second.storageKind == LocalStorageKind::Address)
-                    block.addInstruction(std::make_unique<StoreValueInstruction>(loweredValue.value(), local->second.value, local->second.type.toValue()));
+                    m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(loweredValue.value(), local->second.value, local->second.type.toValue()));
                 else
                     local->second.value = loweredValue.value();
 
@@ -1238,51 +1269,51 @@ namespace Caracal
 
         if (IsConstructorCall(rightExpression))
         {
-            const auto destinationAddress = lowerAddressExpression(leftExpression, block);
+            const auto destinationAddress = lowerAddressExpression(leftExpression);
             if (!destinationAddress.has_value())
                 return false;
 
-            return tryLowerConstructorCallIntoAddress(rightExpression, destinationAddress.value(), block);
+            return tryLowerConstructorCallIntoAddress(rightExpression, destinationAddress.value());
         }
 
-        const auto loweredValue = lowerValueExpression(rightExpression, block);
+        const auto loweredValue = lowerValueExpression(rightExpression);
         if (!loweredValue.has_value())
             return false;
 
-        const auto destinationAddress = lowerAddressExpression(leftExpression, block);
+        const auto destinationAddress = lowerAddressExpression(leftExpression);
         if (!destinationAddress.has_value())
             return false;
 
-        block.addInstruction(std::make_unique<StoreValueInstruction>(
+        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
             loweredValue.value(),
             destinationAddress.value(),
             leftExpression->type().toValue()));
         return true;
     }
 
-    std::optional<ValueRef> IRLowerer::spillValueToTempSlot(const Expression* expression, ValueRef value, BasicBlock& block) noexcept
+    std::optional<ValueRef> IRLowerer::spillValueToTempSlot(const Expression* expression, ValueRef value) noexcept
     {
         const auto valueType = expression->type().toValue();
-        return allocateLocalSlot("temp", valueType, block, value);
+        return allocateLocalSlot("temp", valueType, value);
     }
 
-    std::optional<ValueRef> IRLowerer::lowerMethodReceiverAddress(const Expression* receiverExpression, BasicBlock& block) noexcept
+    std::optional<ValueRef> IRLowerer::lowerMethodReceiverAddress(const Expression* receiverExpression) noexcept
     {
         if (receiverExpression == nullptr)
             return tryGetAddressBackedLocal(ImplicitThisName);
 
-        auto receiverAddress = lowerAddressExpression(receiverExpression, block);
+        auto receiverAddress = lowerAddressExpression(receiverExpression);
         if (receiverAddress.has_value())
             return receiverAddress;
 
-        const auto receiverValue = lowerValueExpression(receiverExpression, block);
+        const auto receiverValue = lowerValueExpression(receiverExpression);
         if (!receiverValue.has_value())
             return std::nullopt;
 
-        return spillValueToTempSlot(receiverExpression, receiverValue.value(), block);
+        return spillValueToTempSlot(receiverExpression, receiverValue.value());
     }
 
-    std::optional<ValueRef> IRLowerer::lowerCallWithReceiver(const FunctionCallExpression* expression, BasicBlock& block, const Expression* receiverExpression) noexcept
+    std::optional<ValueRef> IRLowerer::lowerCallWithReceiver(const FunctionCallExpression* expression, const Expression* receiverExpression) noexcept
     {
         const auto functionType = expression->functionType();
         if (functionType == Type::Undefined())
@@ -1292,30 +1323,30 @@ namespace Caracal
         if (functionDefinition.functionType() != FunctionType::PublicMethod
             && functionDefinition.functionType() != FunctionType::PrivateMethod)
         {
-            return emitCall(expression, block);
+            return emitCall(expression);
         }
 
-        const auto receiverAddress = lowerMethodReceiverAddress(receiverExpression, block);
+        const auto receiverAddress = lowerMethodReceiverAddress(receiverExpression);
         if (!receiverAddress.has_value())
             return std::nullopt;
 
-        return emitCall(expression, block, receiverAddress.value());
+        return emitCall(expression, receiverAddress.value());
     }
 
-    std::optional<ValueRef> IRLowerer::lowerMemberFieldAddress(const Expression* receiverExpression, const NameExpression* fieldNameExpression, BasicBlock& block) noexcept
+    std::optional<ValueRef> IRLowerer::lowerMemberFieldAddress(const Expression* receiverExpression, const NameExpression* fieldNameExpression) noexcept
     {
         const auto objectType = receiverExpression->type().toValue();
         if (objectType.kind() != TypeKind::Type)
             return std::nullopt;
 
-        auto objectAddress = lowerAddressExpression(receiverExpression, block);
+        auto objectAddress = lowerAddressExpression(receiverExpression);
         if (!objectAddress.has_value())
         {
-            const auto objectValue = lowerValueExpression(receiverExpression, block);
+            const auto objectValue = lowerValueExpression(receiverExpression);
             if (!objectValue.has_value())
                 return std::nullopt;
 
-            objectAddress = spillValueToTempSlot(receiverExpression, objectValue.value(), block);
+            objectAddress = spillValueToTempSlot(receiverExpression, objectValue.value());
             if (!objectAddress.has_value())
                 return std::nullopt;
         }
@@ -1330,8 +1361,7 @@ namespace Caracal
             objectType,
             fieldNameExpression->name(),
             fieldDefinition.index(),
-            fieldDefinition.type(),
-            block);
+            fieldDefinition.type());
     }
 
     bool IRLowerer::referenceArgumentAliasesConstant(const Expression* argument) const noexcept
@@ -1352,14 +1382,14 @@ namespace Caracal
         return false;
     }
 
-    std::optional<ValueRef> IRLowerer::lowerAddressExpression(const Expression* expression, BasicBlock& block) noexcept
+    std::optional<ValueRef> IRLowerer::lowerAddressExpression(const Expression* expression) noexcept
     {
         switch (expression->kind())
         {
             case NodeKind::GroupingExpression:
             {
                 const auto* groupingExpression = static_cast<const GroupingExpression*>(expression);
-                return lowerAddressExpression(groupingExpression->expression().get(), block);
+                return lowerAddressExpression(groupingExpression->expression().get());
             }
             case NodeKind::NameExpression:
             {
@@ -1367,7 +1397,7 @@ namespace Caracal
                 if (const auto localAddress = tryGetAddressBackedLocal(nameExpression->name()); localAddress.has_value())
                     return localAddress;
 
-                return tryGetGlobalAddress(nameExpression->name(), block);
+                return tryGetGlobalAddress(nameExpression->name());
             }
             case NodeKind::UnaryExpression:
             {
@@ -1404,8 +1434,7 @@ namespace Caracal
                     objectType,
                     fieldNameExpression->name(),
                     fieldDefinition.index(),
-                    fieldDefinition.type(),
-                    block);
+                    fieldDefinition.type());
             }
             case NodeKind::BinaryExpression:
             {
@@ -1418,28 +1447,27 @@ namespace Caracal
 
                 return lowerMemberFieldAddress(
                     binaryExpression->leftExpression().get(),
-                    static_cast<const NameExpression*>(binaryExpression->rightExpression().get()),
-                    block);
+                    static_cast<const NameExpression*>(binaryExpression->rightExpression().get()));
             }
             default:
                 return std::nullopt;
         }
     }
 
-    bool IRLowerer::lowerReturnStatement(const ReturnStatement* statement, BasicBlock& block, std::optional<BlockId>& currentBlockId) noexcept
+    bool IRLowerer::lowerReturnStatement(const ReturnStatement* statement, std::optional<BlockId>& currentBlockId) noexcept
     {
         if (!statement->expression().has_value())
         {
-            block.setTerminator(std::make_unique<ReturnTerminator>());
+            m_currentBlock->setTerminator(std::make_unique<ReturnTerminator>());
             currentBlockId.reset();
             return true;
         }
 
-        const auto loweredValue = lowerValueExpression(statement->expression().value().get(), block);
+        const auto loweredValue = lowerValueExpression(statement->expression().value().get());
         if (!loweredValue.has_value())
             return false;
 
-        block.setTerminator(std::make_unique<ReturnValueTerminator>(loweredValue.value()));
+        m_currentBlock->setTerminator(std::make_unique<ReturnValueTerminator>(loweredValue.value()));
         currentBlockId.reset();
         return true;
     }
@@ -1524,10 +1552,10 @@ namespace Caracal
             *literalData);
     }
 
-    bool IRLowerer::lowerExpressionForEffect(const Expression* expression, BasicBlock& block) noexcept
+    bool IRLowerer::lowerExpressionForEffect(const Expression* expression) noexcept
     {
         if (expression->kind() == NodeKind::FunctionCallExpression)
-            return emitCall(static_cast<const FunctionCallExpression*>(expression), block).has_value();
+            return emitCall(static_cast<const FunctionCallExpression*>(expression)).has_value();
 
         if (expression->kind() == NodeKind::MemberAccessExpression)
         {
@@ -1535,7 +1563,7 @@ namespace Caracal
             if (memberAccessExpression->expression()->kind() == NodeKind::FunctionCallExpression)
             {
                 const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(memberAccessExpression->expression().get());
-                return lowerCallWithReceiver(functionCallExpression, block).has_value();
+                return lowerCallWithReceiver(functionCallExpression).has_value();
             }
         }
 
@@ -1549,22 +1577,22 @@ namespace Caracal
                 const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(binaryExpression->rightExpression().get());
                 if (binaryExpression->binaryOperator() == BinaryOperatorKind::ConstructorCall)
                 {
-                    return lowerValueExpression(expression, block).has_value();
+                    return lowerValueExpression(expression).has_value();
                 }
 
-                return lowerCallWithReceiver(functionCallExpression, block, binaryExpression->leftExpression().get()).has_value();
+                return lowerCallWithReceiver(functionCallExpression, binaryExpression->leftExpression().get()).has_value();
             }
         }
 
-        return lowerValueExpression(expression, block).has_value();
+        return lowerValueExpression(expression).has_value();
     }
 
-    std::optional<ValueRef> IRLowerer::lowerValueExpression(const Expression* expression, BasicBlock& block) noexcept
+    std::optional<ValueRef> IRLowerer::lowerValueExpression(const Expression* expression) noexcept
     {
         if (expression->foldedValue().has_value())
         {
             const auto temporaryId = m_nextTemporaryId++;
-            block.addInstruction(std::make_unique<ConstantInstruction>(
+            m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
                 temporaryId,
                 FromFoldValue(expression->foldedValue().value()),
                 expression->type()));
@@ -1576,7 +1604,7 @@ namespace Caracal
             case NodeKind::GroupingExpression:
             {
                 const auto* groupingExpression = static_cast<const GroupingExpression*>(expression);
-                return lowerValueExpression(groupingExpression->expression().get(), block);
+                return lowerValueExpression(groupingExpression->expression().get());
             }
             case NodeKind::NumberLiteral:
             {
@@ -1586,7 +1614,7 @@ namespace Caracal
                     return std::nullopt;
 
                 const auto temporaryId = m_nextTemporaryId++;
-                block.addInstruction(std::make_unique<ConstantInstruction>(
+                m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
                     temporaryId,
                     constantValue.value(),
                     literal->type()));
@@ -1596,7 +1624,7 @@ namespace Caracal
             {
                 const auto* literal = static_cast<const BoolLiteral*>(expression);
                 const auto temporaryId = m_nextTemporaryId++;
-                block.addInstruction(std::make_unique<ConstantInstruction>(
+                m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
                     temporaryId,
                     ConstantValue::FromBool(literal->value()),
                     literal->type()));
@@ -1606,7 +1634,7 @@ namespace Caracal
             {
                 const auto* literal = static_cast<const StringLiteral*>(expression);
                 const auto temporaryId = m_nextTemporaryId++;
-                block.addInstruction(std::make_unique<ConstantInstruction>(
+                m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
                     temporaryId,
                     ConstantValue::FromString(literal->escapedContent()),
                     literal->type()));
@@ -1618,15 +1646,15 @@ namespace Caracal
                 const auto result = m_locals.find(nameExpression->name());
                 if (result == m_locals.end())
                 {
-                    const auto globalAddress = tryGetGlobalAddress(nameExpression->name(), block);
+                    const auto globalAddress = tryGetGlobalAddress(nameExpression->name());
                     if (!globalAddress.has_value())
                         return std::nullopt;
 
-                    return emitLoad(globalAddress.value(), expression->type().toValue(), block);
+                    return emitLoad(globalAddress.value(), expression->type().toValue());
                 }
 
                 if (result->second.storageKind == LocalStorageKind::Address)
-                    return emitLoad(result->second.value, result->second.type.toValue(), block);
+                    return emitLoad(result->second.value, result->second.type.toValue());
 
                 return result->second.value;
             }
@@ -1635,7 +1663,7 @@ namespace Caracal
                 if (expression->type() == Type::Void())
                 return std::nullopt;
                 
-                return emitCall(static_cast<const FunctionCallExpression*>(expression), block);
+                return emitCall(static_cast<const FunctionCallExpression*>(expression));
             }
             case NodeKind::MemberAccessExpression:
             {
@@ -1646,17 +1674,17 @@ namespace Caracal
                         return std::nullopt;
 
                     const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(memberAccessExpression->expression().get());
-                    return lowerCallWithReceiver(functionCallExpression, block);
+                    return lowerCallWithReceiver(functionCallExpression);
                 }
 
-                const auto loweredAddress = lowerAddressExpression(expression, block);
+                const auto loweredAddress = lowerAddressExpression(expression);
                 if (!loweredAddress.has_value())
                     return std::nullopt;
 
                 if (expression->type().isReference())
                     return loweredAddress;
 
-                return emitLoad(loweredAddress.value(), expression->type().toValue(), block);
+                return emitLoad(loweredAddress.value(), expression->type().toValue());
             }
             case NodeKind::UnaryExpression:
             {
@@ -1664,14 +1692,14 @@ namespace Caracal
                 if (unaryExpression->unaryOperator() == UnaryOperatorKind::ReferenceOf)
                 {
                     // a ref expression in value context yields the referent's value, so load through the address
-                    const auto loweredAddress = lowerAddressExpression(expression, block);
+                    const auto loweredAddress = lowerAddressExpression(expression);
                     if (!loweredAddress.has_value())
                         return std::nullopt;
 
-                    return emitLoad(loweredAddress.value(), expression->type().toValue(), block);
+                    return emitLoad(loweredAddress.value(), expression->type().toValue());
                 }
 
-                const auto operandValue = lowerValueExpression(unaryExpression->expression().get(), block);
+                const auto operandValue = lowerValueExpression(unaryExpression->expression().get());
                 if (!operandValue.has_value())
                     return std::nullopt;
 
@@ -1683,13 +1711,13 @@ namespace Caracal
                             return operandValue;
 
                         const auto temporaryId = m_nextTemporaryId++;
-                        block.addInstruction(std::make_unique<ValueNegationInstruction>(temporaryId, operandValue.value(), expression->type()));
+                        m_currentBlock->addInstruction(std::make_unique<ValueNegationInstruction>(temporaryId, operandValue.value(), expression->type()));
                         return ValueRef{ temporaryId };
                     }
                     case UnaryOperatorKind::LogicalNegation:
                     {
                         const auto temporaryId = m_nextTemporaryId++;
-                        block.addInstruction(std::make_unique<LogicalNegationInstruction>(temporaryId, operandValue.value(), expression->type()));
+                        m_currentBlock->addInstruction(std::make_unique<LogicalNegationInstruction>(temporaryId, operandValue.value(), expression->type()));
                         return ValueRef{ temporaryId };
                     }
                     default:
@@ -1712,16 +1740,15 @@ namespace Caracal
                             const auto addressId = allocateSlotFromExpression(
                                 "constructed",
                                 expression,
-                                expression->type().toValue(),
-                                block);
+                                expression->type().toValue());
                             if (!addressId.has_value())
                                 return std::nullopt;
 
-                            return emitLoad(addressId.value(), expression->type().toValue(), block);
+                            return emitLoad(addressId.value(), expression->type().toValue());
                         }
 
                         const auto* functionCallExpression = static_cast<const FunctionCallExpression*>(binaryExpression->rightExpression().get());
-                        return lowerCallWithReceiver(functionCallExpression, block, binaryExpression->leftExpression().get());
+                        return lowerCallWithReceiver(functionCallExpression, binaryExpression->leftExpression().get());
                     }
 
                     if (binaryExpression->binaryOperator() == BinaryOperatorKind::MemberAccess
@@ -1738,26 +1765,32 @@ namespace Caracal
                                 loweredType = enumValue->enumType;
 
                             const auto temporaryId = m_nextTemporaryId++;
-                            block.addInstruction(std::make_unique<ConstantInstruction>(
+                            m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
                                 temporaryId,
                                 enumConstant.value(),
                                 loweredType));
                             return ValueRef{ temporaryId };
                         }
 
-                        const auto loweredAddress = lowerAddressExpression(expression, block);
+                        const auto loweredAddress = lowerAddressExpression(expression);
                         if (!loweredAddress.has_value())
                             return std::nullopt;
 
-                        return emitLoad(loweredAddress.value(), expression->type().toValue(), block);
+                        return emitLoad(loweredAddress.value(), expression->type().toValue());
                     }
                 }
 
-                const auto leftValue = lowerValueExpression(binaryExpression->leftExpression().get(), block);
+                if (binaryExpression->binaryOperator() == BinaryOperatorKind::LogicalAnd
+                    || binaryExpression->binaryOperator() == BinaryOperatorKind::LogicalOr)
+                {
+                    return lowerShortCircuitExpression(binaryExpression);
+                }
+
+                const auto leftValue = lowerValueExpression(binaryExpression->leftExpression().get());
                 if (!leftValue.has_value())
                     return std::nullopt;
 
-                const auto rightValue = lowerValueExpression(binaryExpression->rightExpression().get(), block);
+                const auto rightValue = lowerValueExpression(binaryExpression->rightExpression().get());
                 if (!rightValue.has_value())
                     return std::nullopt;
 
@@ -1767,13 +1800,13 @@ namespace Caracal
                 switch (binaryExpression->binaryOperator())
                 {
                     case BinaryOperatorKind::Addition:
-                        block.addInstruction(std::make_unique<AddInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        m_currentBlock->addInstruction(std::make_unique<AddInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
                     case BinaryOperatorKind::Subtraction:
-                        block.addInstruction(std::make_unique<SubtractInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        m_currentBlock->addInstruction(std::make_unique<SubtractInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
                     case BinaryOperatorKind::Multiplication:
-                        block.addInstruction(std::make_unique<MultiplyInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        m_currentBlock->addInstruction(std::make_unique<MultiplyInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
                     case BinaryOperatorKind::Division:
                     {
@@ -1781,42 +1814,36 @@ namespace Caracal
                         if (operandType == Type::I32() || operandType == Type::U8())
                         {
                             const auto lhsConvertedId = temporaryId;
-                            block.addInstruction(std::make_unique<IntToFloatInstruction>(lhsConvertedId, leftValue.value(), operandType, expression->type()));
+                            m_currentBlock->addInstruction(std::make_unique<IntToFloatInstruction>(lhsConvertedId, leftValue.value(), operandType, expression->type()));
 
                             const auto rhsConvertedId = m_nextTemporaryId++;
-                            block.addInstruction(std::make_unique<IntToFloatInstruction>(rhsConvertedId, rightValue.value(), operandType, expression->type()));
+                            m_currentBlock->addInstruction(std::make_unique<IntToFloatInstruction>(rhsConvertedId, rightValue.value(), operandType, expression->type()));
 
                             const auto divideId = m_nextTemporaryId++;
-                            block.addInstruction(std::make_unique<DivideInstruction>(divideId, ValueRef{ lhsConvertedId }, ValueRef{ rhsConvertedId }, expression->type()));
+                            m_currentBlock->addInstruction(std::make_unique<DivideInstruction>(divideId, ValueRef{ lhsConvertedId }, ValueRef{ rhsConvertedId }, expression->type()));
                             return ValueRef{ divideId };
                         }
 
-                        block.addInstruction(std::make_unique<DivideInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        m_currentBlock->addInstruction(std::make_unique<DivideInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
                     }
                     case BinaryOperatorKind::Equal:
-                        block.addInstruction(std::make_unique<EqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
+                        m_currentBlock->addInstruction(std::make_unique<EqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::NotEqual:
-                        block.addInstruction(std::make_unique<NotEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
+                        m_currentBlock->addInstruction(std::make_unique<NotEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::LessThan:
-                        block.addInstruction(std::make_unique<LessThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
+                        m_currentBlock->addInstruction(std::make_unique<LessThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::LessOrEqual:
-                        block.addInstruction(std::make_unique<LessOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
+                        m_currentBlock->addInstruction(std::make_unique<LessOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::GreaterThan:
-                        block.addInstruction(std::make_unique<GreaterThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
+                        m_currentBlock->addInstruction(std::make_unique<GreaterThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     case BinaryOperatorKind::GreaterOrEqual:
-                        block.addInstruction(std::make_unique<GreaterOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
-                        break;
-                    case BinaryOperatorKind::LogicalAnd:
-                        block.addInstruction(std::make_unique<LogicalAndInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
-                        break;
-                    case BinaryOperatorKind::LogicalOr:
-                        block.addInstruction(std::make_unique<LogicalOrInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
+                        m_currentBlock->addInstruction(std::make_unique<GreaterOrEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;
                     default:
                         return std::nullopt;
@@ -1829,7 +1856,57 @@ namespace Caracal
         }
     }
 
-    std::optional<ValueRef> IRLowerer::emitCall(const FunctionCallExpression* expression, BasicBlock& block, std::optional<ValueRef> implicitArgument) noexcept
+    std::optional<ValueRef> IRLowerer::lowerShortCircuitExpression(const BinaryExpression* expression) noexcept
+    {
+        const auto isLogicalAnd = expression->binaryOperator() == BinaryOperatorKind::LogicalAnd;
+        const auto leftValue = lowerValueExpression(expression->leftExpression().get());
+        if (!leftValue.has_value())
+            return std::nullopt;
+
+        const auto rightId = m_nextBlockId++;
+        if (isLogicalAnd)
+        {
+            m_currentFunction->addBlock(BasicBlock{ rightId, "and.rhs", nullptr });
+        }
+        else
+        {
+            m_currentFunction->addBlock(BasicBlock{ rightId, "or.rhs", nullptr });
+        }
+
+        auto* conditionBlock = m_currentBlock;
+        m_currentBlock = m_currentFunction->tryGetBlock(rightId);
+        const auto rightValue = lowerValueExpression(expression->rightExpression().get());
+        if (!rightValue.has_value())
+            return std::nullopt;
+
+        const auto mergeId = m_nextBlockId++;
+        if (isLogicalAnd)
+        {
+            // false skips the right hand side, so it only runs when the left hand side is true
+            m_currentFunction->addBlock(BasicBlock{ mergeId, "and.merge", nullptr });
+            conditionBlock->setTerminator(std::make_unique<BranchIfTerminator>(leftValue.value(), rightId, mergeId));
+        }
+        else
+        {
+            // true skips the right hand side, so it only runs when the left hand side is false
+            m_currentFunction->addBlock(BasicBlock{ mergeId, "or.merge", nullptr });
+            conditionBlock->setTerminator(std::make_unique<BranchIfTerminator>(leftValue.value(), mergeId, rightId));
+        }
+
+        auto* rightExitBlock = m_currentBlock;
+        rightExitBlock->setTerminator(std::make_unique<JumpTerminator>(mergeId));
+        m_currentBlock = m_currentFunction->tryGetBlock(mergeId);
+
+        std::vector<PhiInput> phiInputs;
+        phiInputs.emplace_back(conditionBlock->id(), leftValue.value());
+        phiInputs.emplace_back(rightExitBlock->id(), rightValue.value());
+
+        const auto phiId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<PhiInstruction>(phiId, std::move(phiInputs), Type::Bool()));
+        return ValueRef{ phiId };
+    }
+
+    std::optional<ValueRef> IRLowerer::emitCall(const FunctionCallExpression* expression, std::optional<ValueRef> implicitArgument) noexcept
     {
         const auto functionType = expression->functionType();
         if (functionType == Type::Undefined())
@@ -1860,22 +1937,22 @@ namespace Caracal
                 if (referenceArgumentAliasesConstant(argument))
                 {
                     // for now we create a defensive copy when we pass a ref to constants to function calls
-                    const auto referentAddress = lowerAddressExpression(argument, block);
+                    const auto referentAddress = lowerAddressExpression(argument);
                     if (!referentAddress.has_value())
                         return std::nullopt;
 
                     const auto valueType = argument->type().toValue();
-                    const auto referentValue = emitLoad(referentAddress.value(), valueType, block);
-                    loweredArgument = allocateLocalSlot("refConstTemp", valueType, block, referentValue);
+                    const auto referentValue = emitLoad(referentAddress.value(), valueType);
+                    loweredArgument = allocateLocalSlot("refConstTemp", valueType, referentValue);
                 }
                 else
                 {
-                    loweredArgument = lowerAddressExpression(argument, block);
+                    loweredArgument = lowerAddressExpression(argument);
                 }
             }
             else
             {
-                loweredArgument = lowerValueExpression(argument, block);
+                loweredArgument = lowerValueExpression(argument);
             }
 
             if (!loweredArgument.has_value())
@@ -1886,7 +1963,7 @@ namespace Caracal
 
         for (const auto* argument : variadicArguments)
         {
-            auto loweredArgument = lowerValueExpression(argument, block);
+            auto loweredArgument = lowerValueExpression(argument);
             if (!loweredArgument.has_value())
                 return std::nullopt;
 
@@ -1899,12 +1976,12 @@ namespace Caracal
 
         if (isSynthesizedConstructor || expression->type() == Type::Void())
         {
-            block.addInstruction(std::make_unique<CallVoidInstruction>(functionId, std::move(loweredArguments)));
+            m_currentBlock->addInstruction(std::make_unique<CallVoidInstruction>(functionId, std::move(loweredArguments)));
             return ValueRef{};
         }
 
         const auto temporaryId = m_nextTemporaryId++;
-        block.addInstruction(std::make_unique<CallInstruction>(temporaryId, functionId, std::move(loweredArguments), expression->type()));
+        m_currentBlock->addInstruction(std::make_unique<CallInstruction>(temporaryId, functionId, std::move(loweredArguments), expression->type()));
         return ValueRef{ temporaryId };
     }
 
@@ -1915,6 +1992,8 @@ namespace Caracal
         m_nextTemporaryId = 0;
         m_nextLocalSlotId = 0;
         m_nextBlockId = 0;
+        m_currentFunction = nullptr;
+        m_currentBlock = nullptr;
     }
 
     void IRLowerer::restoreLocalValues(const LocalStateMap& values) noexcept
