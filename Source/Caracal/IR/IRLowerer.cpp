@@ -68,6 +68,7 @@ namespace Caracal
 {
     static bool IsConstructorCall(const Expression* expression) noexcept
     {
+        expression = StripGroupings(expression);
         if (expression == nullptr || expression->kind() != NodeKind::BinaryExpression)
             return false;
 
@@ -119,14 +120,6 @@ namespace Caracal
             return nullptr;
 
         return function.tryGetBlock(blockId.value());
-    }
-
-    static const Expression* StripGroupings(const Expression* expression) noexcept
-    {
-        while (expression != nullptr && expression->kind() == NodeKind::GroupingExpression)
-            expression = static_cast<const GroupingExpression*>(expression)->expression().get();
-
-        return expression;
     }
 
     static std::optional<ConstantValue> CreateConstantValue(const NumberLiteral& literal) noexcept
@@ -609,10 +602,12 @@ namespace Caracal
             case NodeKind::UnaryExpression:
             {
                 const auto* unaryExpression = static_cast<const UnaryExpression*>(expression);
+                const auto* operand = StripGroupings(unaryExpression->expression().get());
                 if (unaryExpression->unaryOperator() == UnaryOperatorKind::ReferenceOf
-                    && unaryExpression->expression()->kind() == NodeKind::NameExpression)
+                    && operand != nullptr
+                    && operand->kind() == NodeKind::NameExpression)
                 {
-                    m_addressTakenLocals.insert(static_cast<const NameExpression*>(unaryExpression->expression().get())->name());
+                    m_addressTakenLocals.insert(static_cast<const NameExpression*>(operand)->name());
                 }
 
                 collectAddressTakenLocals(unaryExpression->expression().get());
@@ -1217,7 +1212,8 @@ namespace Caracal
 
     bool IRLowerer::tryLowerConstructorCallIntoAddress(const Expression* expression, ValueRef destinationAddress) noexcept
     {
-        if (expression->kind() != NodeKind::BinaryExpression)
+        expression = StripGroupings(expression);
+        if (expression == nullptr || expression->kind() != NodeKind::BinaryExpression)
             return false;
 
         const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
@@ -1500,10 +1496,11 @@ namespace Caracal
                 if (unaryExpression->unaryOperator() != UnaryOperatorKind::ReferenceOf)
                     return std::nullopt;
 
-                if (unaryExpression->expression()->kind() != NodeKind::NameExpression)
+                const auto* operand = StripGroupings(unaryExpression->expression().get());
+                if (operand == nullptr || operand->kind() != NodeKind::NameExpression)
                     return std::nullopt;
 
-                const auto* nameExpression = static_cast<const NameExpression*>(unaryExpression->expression().get());
+                const auto* nameExpression = static_cast<const NameExpression*>(operand);
                 return tryGetAddressBackedLocal(nameExpression->name());
             }
             case NodeKind::MemberAccessExpression:
@@ -1665,6 +1662,10 @@ namespace Caracal
 
     bool IRLowerer::lowerExpressionForEffect(const Expression* expression) noexcept
     {
+        expression = StripGroupings(expression);
+        if (expression == nullptr)
+            return false;
+
         if (expression->kind() == NodeKind::FunctionCallExpression)
             return emitCall(static_cast<const FunctionCallExpression*>(expression)).has_value();
 

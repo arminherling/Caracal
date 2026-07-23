@@ -1343,14 +1343,15 @@ namespace Caracal
         }
 
         auto referencesConstant = false;
-        if (rightExpression->kind() == NodeKind::UnaryExpression)
+        const auto* strippedRight = StripGroupings(rightExpression);
+        if (strippedRight->kind() == NodeKind::UnaryExpression)
         {
-            const auto* unary = static_cast<const UnaryExpression*>(rightExpression);
+            const auto* unary = static_cast<const UnaryExpression*>(strippedRight);
             referencesConstant = unary->unaryOperator() == UnaryOperatorKind::ReferenceOf && unary->referencesConstant();
         }
-        else if (rightExpression->kind() == NodeKind::NameExpression)
+        else if (strippedRight->kind() == NodeKind::NameExpression)
         {
-            referencesConstant = currentScope()->variableReferencesConstant(static_cast<const NameExpression*>(rightExpression)->name());
+            referencesConstant = currentScope()->variableReferencesConstant(static_cast<const NameExpression*>(strippedRight)->name());
         }
 
         auto leftExpression = statement->leftExpression().get();
@@ -1493,10 +1494,8 @@ namespace Caracal
 
     static bool ConditionIsLiteralTrue(const Expression* condition)
     {
-        while (condition->kind() == NodeKind::GroupingExpression)
-            condition = static_cast<const GroupingExpression*>(condition)->expression().get();
-
-        return condition->kind() == NodeKind::BoolLiteral && static_cast<const BoolLiteral*>(condition)->value();
+        condition = StripGroupings(condition);
+        return condition != nullptr && condition->kind() == NodeKind::BoolLiteral && static_cast<const BoolLiteral*>(condition)->value();
     }
 
     static bool ContainsLoopBreak(const Statement* statement)
@@ -2331,9 +2330,9 @@ namespace Caracal
                     return Type::Undefined();
                 }
 
-                if (operand->kind() == NodeKind::NameExpression)
+                if (const auto* strippedOperand = StripGroupings(operand); strippedOperand->kind() == NodeKind::NameExpression)
                 {
-                    const auto& name = static_cast<const NameExpression*>(operand)->name();
+                    const auto& name = static_cast<const NameExpression*>(strippedOperand)->name();
                     if (currentScope()->tryGetVariableBindingKind(name) == VariableBindingKind::LocalConstant)
                     {
                         unaryExpression->setReferencesConstant(true);

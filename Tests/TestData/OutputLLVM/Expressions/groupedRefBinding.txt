@@ -1,0 +1,12 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @alias() {
+entry:
+  %value = alloca i32, align 4
+  store i32 5, ptr %value, align 4
+  store i32 7, ptr %value, align 4
+  %load = load i32, ptr %value, align 4
+  ret i32 %load
+}

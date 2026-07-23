@@ -19,4 +19,14 @@ namespace Caracal
         const auto closeLocation = tokens.getSourceLocation(m_closeParenthesisToken);
         return SourceLocation{ openLocation.startIndex, closeLocation.endIndex };
     }
+
+    const Expression* StripGroupings(const Expression* expression) noexcept
+    {
+        while (expression != nullptr && expression->kind() == NodeKind::GroupingExpression)
+        {
+            expression = static_cast<const GroupingExpression*>(expression)->expression().get();
+        }
+
+        return expression;
+    }
 }

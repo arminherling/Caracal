@@ -373,11 +373,7 @@ namespace Caracal
 
             [[nodiscard]] const FoldValue* tryGetFoldedOperand(const Expression* expression) const
             {
-                while (expression != nullptr && expression->kind() == NodeKind::GroupingExpression)
-                {
-                    expression = static_cast<const GroupingExpression*>(expression)->expression().get();
-                }
-
+                expression = StripGroupings(expression);
                 if (expression == nullptr)
                 {
                     return nullptr;

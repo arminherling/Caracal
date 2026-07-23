@@ -1,0 +1,7 @@
+def alias() i32
+{
+    value := 5;
+    aliased : ref i32 = ref (value);
+    aliased = 7;
+    return value;
+}
