@@ -114,4 +114,18 @@ namespace Caracal
     {
         m_registeredTypeNames.insert_or_assign(type.toBaseType().id(), std::move(name));
     }
+
+    void Module::registerArrayType(Type type, Type elementType, i32 length)
+    {
+        m_arrayTypes.insert_or_assign(type.toBaseType().id(), ArrayTypeDescription{ elementType, length });
+    }
+
+    const ArrayTypeDescription* Module::tryGetArrayType(Type type) const noexcept
+    {
+        const auto result = m_arrayTypes.find(type.toBaseType().id());
+        if (result == m_arrayTypes.end())
+            return nullptr;
+
+        return &result->second;
+    }
 }

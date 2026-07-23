@@ -1,0 +1,33 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @first([4 x i32] %0) {
+entry:
+  %values = alloca [4 x i32], align 4
+  store [4 x i32] %0, ptr %values, align 4
+  ret i32 0
+}
+
+define [8 x float] @make() {
+entry:
+  %temp = alloca [8 x float], align 4
+  %element = getelementptr [8 x float], ptr %temp, i32 0, i32 0
+  store float 1.500000e+00, ptr %element, align 4
+  %element1 = getelementptr [8 x float], ptr %temp, i32 0, i32 1
+  store float 2.500000e+00, ptr %element1, align 4
+  %element2 = getelementptr [8 x float], ptr %temp, i32 0, i32 2
+  store float 3.500000e+00, ptr %element2, align 4
+  %element3 = getelementptr [8 x float], ptr %temp, i32 0, i32 3
+  store float 4.500000e+00, ptr %element3, align 4
+  %element4 = getelementptr [8 x float], ptr %temp, i32 0, i32 4
+  store float 5.500000e+00, ptr %element4, align 4
+  %element5 = getelementptr [8 x float], ptr %temp, i32 0, i32 5
+  store float 6.500000e+00, ptr %element5, align 4
+  %element6 = getelementptr [8 x float], ptr %temp, i32 0, i32 6
+  store float 7.500000e+00, ptr %element6, align 4
+  %element7 = getelementptr [8 x float], ptr %temp, i32 0, i32 7
+  store float 8.500000e+00, ptr %element7, align 4
+  %load = load [8 x float], ptr %temp, align 4
+  ret [8 x float] %load
+}

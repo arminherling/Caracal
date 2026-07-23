@@ -17,6 +17,7 @@ namespace llvm
 {
     class Module;
     class Value;
+    class Constant;
     class Function;
     class FunctionType;
     class Type;
@@ -59,6 +60,7 @@ namespace Caracal
         [[nodiscard]] llvm::FunctionType* tryLowerFunctionType(Type returnType, const std::vector<IRParameter>& parameters) const noexcept;
         [[nodiscard]] llvm::Type* lowerType(Type type) const noexcept;
         [[nodiscard]] llvm::Value* lowerConstant(const ConstantValue& value) noexcept;
+        [[nodiscard]] llvm::Constant* lowerAggregateConstant(const ConstantValue& value, llvm::Type* type) noexcept;
         [[nodiscard]] llvm::Value* promoteVariadicArgument(llvm::Value* value) noexcept;
         [[nodiscard]] llvm::Value* tryResolve(ValueRef value) const noexcept;
         [[nodiscard]] llvm::Function* tryResolveCallee(FunctionId functionId) const noexcept;

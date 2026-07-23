@@ -1,0 +1,10 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @fill([2 x i8] %0) {
+entry:
+  %values = alloca [2 x i8], align 1
+  store [2 x i8] %0, ptr %values, align 1
+  ret i32 0
+}

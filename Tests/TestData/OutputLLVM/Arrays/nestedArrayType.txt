@@ -1,0 +1,15 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @rows({ ptr, i32 } %0) {
+entry:
+  ret i32 0
+}
+
+define i32 @grid([8 x { ptr, i32 }] %0) {
+entry:
+  %cells = alloca [8 x { ptr, i32 }], align 8
+  store [8 x { ptr, i32 }] %0, ptr %cells, align 8
+  ret i32 0
+}

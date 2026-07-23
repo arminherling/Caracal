@@ -1,0 +1,15 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @copy([4 x i32] %0) {
+entry:
+  %values = alloca [4 x i32], align 4
+  %local = alloca [4 x i32], align 4
+  store [4 x i32] %0, ptr %values, align 4
+  %load = load [4 x i32], ptr %values, align 4
+  store [4 x i32] %load, ptr %local, align 4
+  %1 = insertvalue { ptr, i32 } poison, ptr %values, 0
+  %slice = insertvalue { ptr, i32 } %1, i32 4, 1
+  ret i32 0
+}

@@ -1,0 +1,19 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @make() {
+entry:
+  %grid = alloca [2 x [2 x i32]], align 4
+  %element = getelementptr [2 x [2 x i32]], ptr %grid, i32 0, i32 0
+  %element1 = getelementptr [2 x i32], ptr %element, i32 0, i32 0
+  store i32 1, ptr %element1, align 4
+  %element2 = getelementptr [2 x i32], ptr %element, i32 0, i32 1
+  store i32 2, ptr %element2, align 4
+  %element3 = getelementptr [2 x [2 x i32]], ptr %grid, i32 0, i32 1
+  %element4 = getelementptr [2 x i32], ptr %element3, i32 0, i32 0
+  store i32 3, ptr %element4, align 4
+  %element5 = getelementptr [2 x i32], ptr %element3, i32 0, i32 1
+  store i32 4, ptr %element5, align 4
+  ret i32 0
+}

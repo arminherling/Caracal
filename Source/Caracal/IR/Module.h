@@ -16,6 +16,12 @@
 
 namespace Caracal
 {
+    struct ArrayTypeDescription
+    {
+        Type elementType;
+        i32 length;
+    };
+
     class Module
     {
     public:
@@ -43,6 +49,8 @@ namespace Caracal
         void setGlobalInit(Function function);
         void addType(TypeDeclaration typeDeclaration);
         void registerTypeName(Type type, std::string name);
+        void registerArrayType(Type type, Type elementType, i32 length);
+        [[nodiscard]] const ArrayTypeDescription* tryGetArrayType(Type type) const noexcept;
 
     private:
         std::vector<EnumDeclaration> m_enums;
@@ -58,5 +66,6 @@ namespace Caracal
         std::unordered_map<FunctionId, size_t> m_functionIndices;
         std::unordered_map<i32, size_t> m_typeIndices;
         std::unordered_map<i32, std::string> m_registeredTypeNames;
+        std::unordered_map<i32, ArrayTypeDescription> m_arrayTypes;
     };
 }

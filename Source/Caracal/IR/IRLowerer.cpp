@@ -184,6 +184,10 @@ namespace Caracal
         for (const auto arrayType : m_semanticContext.arrayTypes())
         {
             module.registerTypeName(arrayType, std::string(m_semanticContext.getNameByType(arrayType)));
+            module.registerArrayType(
+                arrayType,
+                m_semanticContext.getArrayElementType(arrayType),
+                m_semanticContext.getArrayLength(arrayType));
         }
 
         bool hasUserMain = false;

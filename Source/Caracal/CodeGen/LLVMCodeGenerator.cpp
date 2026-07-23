@@ -13,6 +13,7 @@
 #include <Caracal/IR/GlobalConstantDeclaration.h>
 #include <Caracal/IR/GlobalReferenceDeclaration.h>
 #include <Caracal/IR/DivideInstruction.h>
+#include <Caracal/IR/ElementAddressInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
@@ -25,6 +26,7 @@
 #include <Caracal/IR/LogicalAndInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
 #include <Caracal/IR/LogicalOrInstruction.h>
+#include <Caracal/IR/MakeSliceInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
@@ -194,7 +196,20 @@ namespace Caracal
 
     bool LLVMCodeGenerator::lowerGlobalConstant(const GlobalConstantDeclaration& globalConstant) noexcept
     {
-        auto* initializer = llvm::dyn_cast_or_null<llvm::Constant>(lowerConstant(globalConstant.value()));
+        llvm::Constant* initializer = nullptr;
+        if (globalConstant.value().tryGetAggregate() != nullptr)
+        {
+            auto* globalType = lowerType(globalConstant.type());
+            if (globalType == nullptr)
+                return false;
+
+            initializer = lowerAggregateConstant(globalConstant.value(), globalType);
+        }
+        else
+        {
+            initializer = llvm::dyn_cast_or_null<llvm::Constant>(lowerConstant(globalConstant.value()));
+        }
+
         if (initializer == nullptr)
             return false;
 
@@ -376,6 +391,34 @@ namespace Caracal
 
                 auto* fieldPointer = m_irBuilder->CreateStructGEP(structType, objectAddress, static_cast<unsigned>(fieldAddress.fieldIndex()), fieldAddress.fieldName());
                 defineValue(fieldAddress.resultId(), fieldPointer);
+                return true;
+            }
+            case InstructionKind::ElementAddress:
+            {
+                const auto& elementAddress = static_cast<const ElementAddressInstruction&>(instruction);
+                auto* baseAddress = tryResolve(elementAddress.baseAddress());
+                auto* index = tryResolve(elementAddress.index());
+                auto* arrayType = lowerType(elementAddress.arrayType());
+                if (baseAddress == nullptr || index == nullptr || arrayType == nullptr)
+                    return false;
+
+                auto* zero = llvm::ConstantInt::get(llvm::Type::getInt32Ty(m_llvmModule.getContext()), 0);
+                defineValue(elementAddress.resultId(), m_irBuilder->CreateGEP(arrayType, baseAddress, { zero, index }, "element"));
+                return true;
+            }
+            case InstructionKind::MakeSlice:
+            {
+                const auto& makeSlice = static_cast<const MakeSliceInstruction&>(instruction);
+                auto* baseAddress = tryResolve(makeSlice.baseAddress());
+                auto* length = tryResolve(makeSlice.length());
+                auto* sliceType = lowerType(makeSlice.type());
+                if (baseAddress == nullptr || length == nullptr || sliceType == nullptr)
+                    return false;
+
+                llvm::Value* slice = llvm::PoisonValue::get(sliceType);
+                slice = m_irBuilder->CreateInsertValue(slice, baseAddress, { 0 });
+                slice = m_irBuilder->CreateInsertValue(slice, length, { 1 }, "slice");
+                defineValue(makeSlice.resultId(), slice);
                 return true;
             }
             case InstructionKind::LoadValue:
@@ -836,6 +879,24 @@ namespace Caracal
         else if (type == Type::String())
             return llvm::PointerType::getUnqual(context);
 
+        // a fixed array lowers to an inline llvm array of its element type
+        if (type.kind() == TypeKind::FixedArray)
+        {
+            const auto* arrayType = m_irModule.tryGetArrayType(type);
+            if (arrayType == nullptr)
+                return nullptr;
+
+            auto* elementType = lowerType(arrayType->elementType);
+            if (elementType == nullptr)
+                return nullptr;
+
+            return llvm::ArrayType::get(elementType, static_cast<std::uint64_t>(arrayType->length));
+        }
+
+        // a slice lowers to a { pointer, i32 length } pair
+        if (type.kind() == TypeKind::Slice)
+            return llvm::StructType::get(llvm::PointerType::getUnqual(context), llvm::Type::getInt32Ty(context));
+
         // an enum lowers to its underlying integer type
         if (const auto* enumDeclaration = m_irModule.tryGetEnum(type))
             return lowerType(enumDeclaration->baseType());
@@ -845,6 +906,30 @@ namespace Caracal
             return llvm::StructType::getTypeByName(context, *typeName);
 
         return nullptr;
+    }
+
+    llvm::Constant* LLVMCodeGenerator::lowerAggregateConstant(const ConstantValue& value, llvm::Type* type) noexcept
+    {
+        const auto* aggregate = value.tryGetAggregate();
+        if (aggregate == nullptr)
+            return llvm::dyn_cast_or_null<llvm::Constant>(lowerConstant(value));
+
+        auto* arrayType = llvm::dyn_cast<llvm::ArrayType>(type);
+        if (arrayType == nullptr)
+            return nullptr;
+
+        std::vector<llvm::Constant*> elements{};
+        elements.reserve(aggregate->size());
+        for (const auto& element : *aggregate)
+        {
+            auto* elementConstant = lowerAggregateConstant(element, arrayType->getElementType());
+            if (elementConstant == nullptr)
+                return nullptr;
+
+            elements.push_back(elementConstant);
+        }
+
+        return llvm::ConstantArray::get(arrayType, elements);
     }
 
     llvm::Value* LLVMCodeGenerator::lowerConstant(const ConstantValue& value) noexcept
