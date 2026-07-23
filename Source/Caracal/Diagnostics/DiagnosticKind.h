@@ -66,6 +66,8 @@ namespace Caracal
         T0025_ArithmeticOperandTypeMismatch,
         T0026_ComparisonOperandTypeMismatch,
         T0027_EnumFieldValueTypeMismatch,
+        T0078_ArrayElementTypeMismatch,
+        T0080_ArrayLengthMismatch,
 
         // Declaration-shape and reference diagnostics
         T0028_NonExternVariadicFunction,
@@ -88,6 +90,7 @@ namespace Caracal
 
         // Literal diagnostics
         T0041_NumberLiteralOutOfRange,
+        T0079_EmptyArrayLiteral,
 
         // Warning diagnostics
         T0042_UnusedLocalVariable,

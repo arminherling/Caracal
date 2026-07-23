@@ -139,7 +139,7 @@ namespace Caracal
 
     const OperatorSignature* SemanticContext::tryGetOperatorSignature(Type type, BinaryOperatorKind operation) const noexcept
     {
-        if (type != type.toBaseType())
+        if (!type.isBaseType())
         {
             return nullptr;
         }
@@ -155,7 +155,7 @@ namespace Caracal
 
     const OperatorSignature* SemanticContext::tryGetOperatorSignature(Type type, UnaryOperatorKind operation) const noexcept
     {
-        if (type != type.toBaseType())
+        if (!type.isBaseType())
         {
             return nullptr;
         }
@@ -196,6 +196,71 @@ namespace Caracal
             return m_typeNames.at(id);
         else
             return std::string_view("undefined");
+    }
+
+    [[nodiscard]] static std::string BuildArrayTypeName(
+        const SemanticContext& module,
+        TypeKind arrayKind,
+        Type elementType,
+        i32 length)
+    {
+        auto elementName = std::string(module.getNameByType(elementType));
+        if (elementType.isReference())
+        {
+            elementName = "ref " + elementName;
+        }
+
+        auto name = "[" + elementName;
+        if (arrayKind == TypeKind::FixedArray)
+        {
+            name += "; " + std::to_string(length);
+        }
+        else if (arrayKind == TypeKind::DynamicArray)
+        {
+            name += "; _";
+        }
+
+        name += "]";
+        return name;
+    }
+
+    Type SemanticContext::getOrCreateArrayType(TypeKind arrayKind, Type elementType, i32 length) noexcept
+    {
+        auto arrayName = BuildArrayTypeName(*this, arrayKind, elementType, length);
+        if (const auto existing = m_nameToTypes.find(arrayName); existing != m_nameToTypes.end())
+        {
+            return existing->second;
+        }
+
+        auto arrayId = m_nextId += VariantCount;
+        auto arrayType = Type{ arrayId, arrayKind };
+        m_typeNames.try_emplace(arrayId, arrayName);
+        m_nameToTypes.try_emplace(arrayName, arrayType);
+        m_arrayTypeInfoById.try_emplace(arrayId, ArrayTypeInfo{ elementType, length });
+
+        return arrayType;
+    }
+
+    Type SemanticContext::getArrayElementType(Type type) const noexcept
+    {
+        const auto id = type.toBaseType().id();
+        if (const auto info = m_arrayTypeInfoById.find(id); info != m_arrayTypeInfoById.end())
+        {
+            return info->second.elementType;
+        }
+
+        return Type::Undefined();
+    }
+
+    i32 SemanticContext::getArrayLength(Type type) const noexcept
+    {
+        const auto id = type.toBaseType().id();
+        if (const auto info = m_arrayTypeInfoById.find(id); info != m_arrayTypeInfoById.end())
+        {
+            return info->second.length;
+        }
+
+        return 0;
     }
 
     EnumDefinition& SemanticContext::createEnum(

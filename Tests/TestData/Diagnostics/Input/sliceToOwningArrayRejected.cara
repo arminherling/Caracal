@@ -1,0 +1,5 @@
+def copy(values: [u8]) i32
+{
+    _ : [u8; 2] = values;
+    return 0;
+}

@@ -211,6 +211,12 @@ namespace Caracal
                 return "T0076";
             case DiagnosticKind::T0077_PrivateMethodCallOutsideType:
                 return "T0077";
+            case DiagnosticKind::T0078_ArrayElementTypeMismatch:
+                return "T0078";
+            case DiagnosticKind::T0079_EmptyArrayLiteral:
+                return "T0079";
+            case DiagnosticKind::T0080_ArrayLengthMismatch:
+                return "T0080";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -322,6 +328,10 @@ namespace Caracal
                 return "Comparison operand type mismatch";
             case DiagnosticKind::T0027_EnumFieldValueTypeMismatch:
                 return "Enum field value type mismatch";
+            case DiagnosticKind::T0078_ArrayElementTypeMismatch:
+                return "Array element type mismatch";
+            case DiagnosticKind::T0080_ArrayLengthMismatch:
+                return "Array length mismatch";
 
             // Declaration-shape and reference diagnostics
             case DiagnosticKind::T0028_NonExternVariadicFunction:
@@ -354,6 +364,8 @@ namespace Caracal
                 return "Duplicate type declaration";
             case DiagnosticKind::T0041_NumberLiteralOutOfRange:
                 return "Number literal out of range";
+            case DiagnosticKind::T0079_EmptyArrayLiteral:
+                return "Empty arrays are not allowed";
             case DiagnosticKind::T0042_UnusedLocalVariable:
                 return "Unused local variable";
             case DiagnosticKind::T0043_UnusedLocalConstant:

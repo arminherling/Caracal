@@ -1300,11 +1300,15 @@ namespace Caracal
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
             if (rightType != Type::Undefined() && explicitType != Type::Undefined() && !isAssignableTo(rightType, explicitType))
             {
-                m_diagnostics.addExplicitConstantTypeMismatchError(
-                    tokens.source(),
-                    statement->rightExpression()->sourceLocation(tokens),
-                    FormatTypeName(m_module, explicitType),
-                    FormatTypeName(m_module, rightType));
+                const auto location = statement->rightExpression()->sourceLocation(tokens);
+                if (!tryAddArrayLengthMismatchError(tokens, location, explicitType, rightType))
+                {
+                    m_diagnostics.addExplicitConstantTypeMismatchError(
+                        tokens.source(),
+                        location,
+                        FormatTypeName(m_module, explicitType),
+                        FormatTypeName(m_module, rightType));
+                }
             }
         }
 
@@ -1354,11 +1358,15 @@ namespace Caracal
             auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
             if (rightType != Type::Undefined() && explicitType != Type::Undefined() && !isAssignableTo(rightType, explicitType))
             {
-                m_diagnostics.addExplicitVariableTypeMismatchError(
-                    tokens.source(),
-                    statement->rightExpression()->sourceLocation(tokens),
-                    FormatTypeName(m_module, explicitType),
-                    FormatTypeName(m_module, rightType));
+                const auto location = statement->rightExpression()->sourceLocation(tokens);
+                if (!tryAddArrayLengthMismatchError(tokens, location, explicitType, rightType))
+                {
+                    m_diagnostics.addExplicitVariableTypeMismatchError(
+                        tokens.source(),
+                        location,
+                        FormatTypeName(m_module, explicitType),
+                        FormatTypeName(m_module, rightType));
+                }
             }
         }
 
@@ -1453,11 +1461,15 @@ namespace Caracal
 
         if (!isAssignableTo(rightType, leftType))
         {
-            m_diagnostics.addAssignmentTypeMismatchError(
-                tokens.source(),
-                statement->rightExpression()->sourceLocation(tokens),
-                FormatTypeName(m_module, leftType),
-                FormatTypeName(m_module, rightType));
+            const auto location = statement->rightExpression()->sourceLocation(tokens);
+            if (!tryAddArrayLengthMismatchError(tokens, location, leftType, rightType))
+            {
+                m_diagnostics.addAssignmentTypeMismatchError(
+                    tokens.source(),
+                    location,
+                    FormatTypeName(m_module, leftType),
+                    FormatTypeName(m_module, rightType));
+            }
         }
     }
 
@@ -2010,11 +2022,15 @@ namespace Caracal
         }
         else if (!isAssignableTo(expressionType, fieldType))
         {
-            m_diagnostics.addTypeFieldInitializerMismatchError(
-                tokens.source(),
-                fieldExpression->sourceLocation(tokens),
-                FormatTypeName(m_module, fieldType),
-                FormatTypeName(m_module, expressionType));
+            const auto location = fieldExpression->sourceLocation(tokens);
+            if (!tryAddArrayLengthMismatchError(tokens, location, fieldType, expressionType))
+            {
+                m_diagnostics.addTypeFieldInitializerMismatchError(
+                    tokens.source(),
+                    location,
+                    FormatTypeName(m_module, fieldType),
+                    FormatTypeName(m_module, expressionType));
+            }
         }
 
         if (fieldType == Type::Undefined())
@@ -2135,11 +2151,15 @@ namespace Caracal
 
             if (!isAssignableTo(type, declaredReturnType))
             {
-                m_diagnostics.addReturnTypeMismatchError(
-                    tokens.source(),
-                    statement->expression().value()->sourceLocation(tokens),
-                    FormatTypeName(m_module, declaredReturnType),
-                    FormatTypeName(m_module, type));
+                const auto location = statement->expression().value()->sourceLocation(tokens);
+                if (!tryAddArrayLengthMismatchError(tokens, location, declaredReturnType, type))
+                {
+                    m_diagnostics.addReturnTypeMismatchError(
+                        tokens.source(),
+                        location,
+                        FormatTypeName(m_module, declaredReturnType),
+                        FormatTypeName(m_module, type));
+                }
             }
         }
         else
@@ -2171,6 +2191,10 @@ namespace Caracal
             case NodeKind::NumberLiteral:
             {
                 return typeCheckNumberLiteral(static_cast<NumberLiteral*>(expression), tokens);
+            }
+            case NodeKind::ArrayLiteral:
+            {
+                return typeCheckArrayLiteral(static_cast<ArrayLiteral*>(expression), tokens);
             }
             case NodeKind::GroupingExpression:
             {
@@ -2832,8 +2856,83 @@ namespace Caracal
         return numberType;
     }
 
+    Type TypeChecker::typeCheckArrayLiteral(ArrayLiteral* literal, const TokenBuffer& tokens)
+    {
+        if (literal->elements().empty())
+        {
+            m_diagnostics.addEmptyArrayLiteralError(
+                tokens.source(),
+                literal->sourceLocation(tokens));
+            literal->setType(Type::Undefined());
+            return Type::Undefined();
+        }
+
+        // an enclosing array type provides the element type, everything else provides none
+        auto contextualElementType = std::optional<Type>{};
+        if (m_contextualNumberType.has_value())
+        {
+            const auto contextualType = m_contextualNumberType.value();
+            if (contextualType.kind() == TypeKind::FixedArray
+                || contextualType.kind() == TypeKind::DynamicArray
+                || contextualType.kind() == TypeKind::Slice)
+            {
+                contextualElementType = m_module.getArrayElementType(contextualType);
+            }
+        }
+
+        auto elementType = Type::Undefined();
+        auto hasElementError = false;
+        auto reportedElementMismatch = false;
+        {
+            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualElementType };
+            for (const auto& element : literal->elements())
+            {
+                const auto type = typeCheckExpression(element.get(), tokens);
+                if (type == Type::Undefined())
+                {
+                    hasElementError = true;
+                    continue;
+                }
+
+                if (elementType == Type::Undefined())
+                {
+                    elementType = type;
+                }
+                else if (type != elementType)
+                {
+                    if (!reportedElementMismatch)
+                    {
+                        m_diagnostics.addArrayElementTypeMismatchError(
+                            tokens.source(),
+                            element->sourceLocation(tokens),
+                            FormatTypeName(m_module, elementType),
+                            FormatTypeName(m_module, type));
+                        reportedElementMismatch = true;
+                    }
+                    hasElementError = true;
+                }
+            }
+        }
+
+        if (hasElementError || elementType == Type::Undefined())
+        {
+            literal->setType(Type::Undefined());
+            return Type::Undefined();
+        }
+
+        const auto length = static_cast<i32>(literal->elements().size());
+        const auto arrayType = m_module.getOrCreateArrayType(TypeKind::FixedArray, elementType, length);
+        literal->setType(arrayType);
+        return arrayType;
+    }
+
     Type TypeChecker::typeCheckTypeNameNode(TypeNameNode* typeNameNode, const TokenBuffer& tokens)
     {
+        if (typeNameNode->kind() == NodeKind::ArrayTypeNameNode)
+        {
+            return typeCheckArrayTypeNameNode(static_cast<ArrayTypeNameNode*>(typeNameNode), tokens);
+        }
+
         const auto& name = typeNameNode->name();
         auto type = m_module.tryGetTypeByName(name);
         if (type != Type::Undefined())
@@ -2856,6 +2955,54 @@ namespace Caracal
             m_diagnostics.addUnknownTypeError(tokens.source(), tokens.getSourceLocation(typeNameNode->nameToken()), name);
             return Type::Undefined();
         }
+    }
+
+    Type TypeChecker::typeCheckArrayTypeNameNode(ArrayTypeNameNode* arrayTypeNameNode, const TokenBuffer& tokens)
+    {
+        auto elementType = typeCheckTypeNameNode(arrayTypeNameNode->elementType().get(), tokens);
+        if (elementType == Type::Undefined())
+        {
+            return Type::Undefined();
+        }
+
+        auto arrayType = Type::Undefined();
+        switch (arrayTypeNameNode->arrayKind())
+        {
+            case ArrayTypeKind::Slice:
+            {
+                arrayType = m_module.getOrCreateArrayType(TypeKind::Slice, elementType, 0);
+                break;
+            }
+            case ArrayTypeKind::Fixed:
+            {
+                auto* lengthLiteral = arrayTypeNameNode->lengthLiteral().get();
+                if (lengthLiteral == nullptr)
+                {
+                    return Type::Undefined();
+                }
+
+                i32 length = 0;
+                {
+                    const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, std::nullopt };
+                    length = convertToI32(lengthLiteral, tokens);
+                }
+                arrayType = m_module.getOrCreateArrayType(TypeKind::FixedArray, elementType, length);
+                break;
+            }
+            case ArrayTypeKind::Dynamic:
+            {
+                arrayType = m_module.getOrCreateArrayType(TypeKind::DynamicArray, elementType, 0);
+                break;
+            }
+        }
+
+        if (arrayTypeNameNode->isReference())
+        {
+            arrayType = arrayType.toReference();
+        }
+
+        arrayTypeNameNode->setType(arrayType);
+        return arrayType;
     }
 
     std::vector<Parameter> TypeChecker::typeCheckParametersNode(ParametersNode* parametersNode, const TokenBuffer& tokens)
@@ -2889,11 +3036,15 @@ namespace Caracal
                 }
                 if (defaultType != Type::Undefined() && !isAssignableTo(defaultType, parameterType))
                 {
-                    m_diagnostics.addDefaultParameterTypeMismatchError(
-                        tokens.source(),
-                        defaultExpression->sourceLocation(tokens),
-                        FormatTypeName(m_module, parameterType),
-                        FormatTypeName(m_module, defaultType));
+                    const auto location = defaultExpression->sourceLocation(tokens);
+                    if (!tryAddArrayLengthMismatchError(tokens, location, parameterType, defaultType))
+                    {
+                        m_diagnostics.addDefaultParameterTypeMismatchError(
+                            tokens.source(),
+                            location,
+                            FormatTypeName(m_module, parameterType),
+                            FormatTypeName(m_module, defaultType));
+                    }
                 }
                 defaultValue = defaultExpression;
                 seenDefault = true;
@@ -2994,7 +3145,47 @@ namespace Caracal
 
     bool TypeChecker::isAssignableTo(Type sourceType, Type targetType) const noexcept
     {
-        return sourceType == targetType;
+        if (sourceType == targetType)
+        {
+            return true;
+        }
+
+        // owning arrays decay to a slice over the same element type, never the reverse
+        if (targetType.kind() == TypeKind::Slice
+            && (sourceType.kind() == TypeKind::FixedArray || sourceType.kind() == TypeKind::DynamicArray)
+            && sourceType.isBaseType()
+            && targetType.isBaseType())
+        {
+            return m_module.getArrayElementType(sourceType) == m_module.getArrayElementType(targetType);
+        }
+
+        return false;
+    }
+
+    bool TypeChecker::tryAddArrayLengthMismatchError(const TokenBuffer& tokens, const SourceLocation& location, Type expectedType, Type actualType)
+    {
+        if (expectedType.kind() != TypeKind::FixedArray || actualType.kind() != TypeKind::FixedArray)
+        {
+            return false;
+        }
+
+        if (!expectedType.isBaseType() || !actualType.isBaseType())
+        {
+            return false;
+        }
+
+        if (m_module.getArrayElementType(expectedType) != m_module.getArrayElementType(actualType))
+        {
+            return false;
+        }
+
+        m_diagnostics.addArrayLengthMismatchError(
+            tokens.source(),
+            location,
+            FormatTypeName(m_module, expectedType),
+            m_module.getArrayLength(expectedType),
+            m_module.getArrayLength(actualType));
+        return true;
     }
 
     bool TypeChecker::areComparableTypes(Type leftType, Type rightType)

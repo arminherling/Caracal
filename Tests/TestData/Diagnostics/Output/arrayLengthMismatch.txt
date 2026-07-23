@@ -1,0 +1,13 @@
+ Error T0080
+  Array length mismatch
+    ,-[Diagnostics/Input/arrayLengthMismatch.cara:3:20]
+  1 | def make() i32
+  2 | {
+  3 |     _ : [i32; 4] = [1, 2, 3];
+    .                    ---------
+    .                        `-- This array has length 3, but the expected type '[i32; 4]' has length 4
+  4 |     return 0;
+  5 | }
+  6 | 
+    `----
+  Fix: Use an array of length 4 or change the expected length to 3.

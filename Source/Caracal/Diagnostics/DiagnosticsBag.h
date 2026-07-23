@@ -110,6 +110,8 @@ namespace Caracal
         void addArithmeticOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& leftTypeName, const std::string& rightTypeName);
         void addComparisonOperandTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& operatorName, const std::string& leftTypeName, const std::string& rightTypeName);
         void addEnumFieldValueTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
+        void addArrayElementTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, const std::string& actualTypeName);
+        void addArrayLengthMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& expectedTypeName, i32 expectedLength, i32 actualLength);
 
         // Declaration-shape and reference diagnostics
         void addNonExternVariadicFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
@@ -131,6 +133,7 @@ namespace Caracal
 
         // Literal diagnostics
         void addNumberLiteralOutOfRangeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& literalText, const std::string& targetTypeName);
+        void addEmptyArrayLiteralError(const SourceTextSharedPtr& source, const SourceLocation& location);
 
         // Warning diagnostics
         void addUnusedLocalVariableWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);

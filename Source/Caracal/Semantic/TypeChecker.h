@@ -10,6 +10,8 @@
 #include <Caracal/Semantic/Scope.h>
 #include <Caracal/Syntax/ParseTree.h>
 #include <Caracal/Syntax/TokenBuffer.h>
+#include <Caracal/Syntax/ArrayLiteral.h>
+#include <Caracal/Syntax/ArrayTypeNameNode.h>
 #include <Caracal/Syntax/ConstantDeclaration.h>
 #include <Caracal/Syntax/FunctionDefinitionStatement.h>
 #include <Caracal/Syntax/NumberLiteral.h>
@@ -97,7 +99,9 @@ namespace Caracal
         [[nodiscard]] Type typeCheckMemberAccessExpression(MemberAccessExpression* memberAccessExpression, const TokenBuffer& tokens);
         [[nodiscard]] bool typeCheckCallArguments(FunctionCallExpression* functionCallExpression, const FunctionDefinition& functionDefinition, const TokenBuffer& tokens);
         [[nodiscard]] Type typeCheckNumberLiteral(NumberLiteral* literal, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckArrayLiteral(ArrayLiteral* literal, const TokenBuffer& tokens);
         [[nodiscard]] Type typeCheckTypeNameNode(TypeNameNode* typeNameNode, const TokenBuffer& tokens);
+        [[nodiscard]] Type typeCheckArrayTypeNameNode(ArrayTypeNameNode* arrayTypeNameNode, const TokenBuffer& tokens);
         [[nodiscard]] std::vector<Parameter> typeCheckParametersNode(ParametersNode* parametersNode, const TokenBuffer& tokens);
         [[nodiscard]] std::vector<Type> typeCheckReturnTypesNode(ReturnTypesNode* returnTypesNode, const TokenBuffer& tokens);
 
@@ -105,6 +109,7 @@ namespace Caracal
         [[nodiscard]] i32 convertToI32(NumberLiteral* literal, const TokenBuffer& tokens);
         [[nodiscard]] Type coerceConditionType(Type conditionType, Expression* conditionExpression);
         [[nodiscard]] bool isAssignableTo(Type sourceType, Type targetType) const noexcept;
+        [[nodiscard]] bool tryAddArrayLengthMismatchError(const TokenBuffer& tokens, const SourceLocation& location, Type expectedType, Type actualType);
         [[nodiscard]] bool areComparableTypes(Type leftType, Type rightType);
         [[nodiscard]] const TokenBuffer& tokensFor(const Statement* statement) const;
         [[nodiscard]] const TokenBuffer* tryTokensFor(const Statement* statement) const;

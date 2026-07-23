@@ -1,0 +1,84 @@
+FunctionDefinitionStatement: {
+    Type: ([[i32; 4]]) -> i32
+    Name: rows
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: matrix
+            ArrayTypeNameNode: {
+                Type: [[i32; 4]]
+                Lexeme: [[i32; 4]]
+                Kind: Slice
+                DataType: {
+                    ArrayTypeNameNode: {
+                        Type: [i32; 4]
+                        Lexeme: [i32; 4]
+                        Kind: Fixed
+                        DataType: {
+                            TypeNameNode: {
+                                Type: i32
+                                Lexeme: i32
+                            }
+                        }
+                        Length: {
+                            NumberLiteral: 4
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 0
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: ([[i32]; 8]) -> i32
+    Name: grid
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: cells
+            ArrayTypeNameNode: {
+                Type: [[i32]; 8]
+                Lexeme: [[i32]; 8]
+                Kind: Fixed
+                DataType: {
+                    ArrayTypeNameNode: {
+                        Type: [i32]
+                        Lexeme: [i32]
+                        Kind: Slice
+                        DataType: {
+                            TypeNameNode: {
+                                Type: i32
+                                Lexeme: i32
+                            }
+                        }
+                    }
+                }
+                Length: {
+                    NumberLiteral: 8
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 0
+        }
+    }
+}

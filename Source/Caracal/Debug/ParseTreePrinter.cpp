@@ -840,6 +840,8 @@ namespace Caracal
         m_builder.appendIndented(stringify(node->kind())).append("(").append(std::to_string(elements.size())).appendLine("): {");
         m_builder.pushIndentation();
 
+        writeIndentedTypeName(node->type());
+
         if (node->isDynamic())
         {
             m_builder.appendIndentedLine("Dynamic: true");

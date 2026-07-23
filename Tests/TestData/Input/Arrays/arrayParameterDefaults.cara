@@ -1,0 +1,4 @@
+def fill(values: [u8; 2] = [7, 9]) i32
+{
+    return 0;
+}

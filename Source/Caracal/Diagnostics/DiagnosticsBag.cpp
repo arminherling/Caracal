@@ -1389,6 +1389,43 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addArrayElementTypeMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& expectedTypeName,
+        const std::string& actualTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0078_ArrayElementTypeMismatch,
+            source,
+            location,
+            "Use elements of a single type in the array literal.");
+        diagnostic.addPrimaryLabel(location, "This element has type '" + actualTypeName + "', but the previous elements have type '" + expectedTypeName + "'");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addArrayLengthMismatchError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& expectedTypeName,
+        i32 expectedLength,
+        i32 actualLength)
+    {
+        const auto expected = std::to_string(expectedLength);
+        const auto actual = std::to_string(actualLength);
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0080_ArrayLengthMismatch,
+            source,
+            location,
+            "Use an array of length " + expected + " or change the expected length to " + actual + ".");
+        diagnostic.addPrimaryLabel(location, "This array has length " + actual + ", but the expected type '" + expectedTypeName + "' has length " + expected);
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addNonExternVariadicFunctionError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,
@@ -1710,6 +1747,21 @@ namespace Caracal
             location,
             "Use a smaller literal that fits in type '" + targetTypeName + "', or change the target type.");
         diagnostic.addPrimaryLabel(location, "Literal '" + literalText + "' does not fit in type '" + targetTypeName + "'");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addEmptyArrayLiteralError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0079_EmptyArrayLiteral,
+            source,
+            location,
+            "Add at least one element to the array literal.");
+        diagnostic.addPrimaryLabel(location, "Empty arrays are not allowed");
 
         m_diagnostics.push_back(std::move(diagnostic));
     }

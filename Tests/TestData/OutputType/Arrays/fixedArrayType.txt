@@ -1,16 +1,16 @@
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: ([i32; 4]) -> i32
     Name: first
     ParametersNode(1): {
         ParameterNode: {
             Name: values
             ArrayTypeNameNode: {
-                Type: undefined
+                Type: [i32; 4]
                 Lexeme: [i32; 4]
                 Kind: Fixed
                 DataType: {
                     TypeNameNode: {
-                        Type: undefined
+                        Type: i32
                         Lexeme: i32
                     }
                 }
@@ -22,30 +22,30 @@ FunctionDefinitionStatement: {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
+            Type: i32
             Lexeme: i32
         }
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: undefined
+            Type: i32
             NumberLiteral: 0
         }
     }
 }
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> [f32; 8]
     Name: make
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         ArrayTypeNameNode: {
-            Type: undefined
+            Type: [f32; 8]
             Lexeme: [f32; 8]
             Kind: Fixed
             DataType: {
                 TypeNameNode: {
-                    Type: undefined
+                    Type: f32
                     Lexeme: f32
                 }
             }
@@ -56,9 +56,9 @@ FunctionDefinitionStatement: {
     }
     BlockNode(1): {
         ReturnStatement: {
-            Type: undefined
+            Type: [f32; 8]
             ArrayLiteral(8): {
-                Type: undefined
+                Type: [f32; 8]
                 NumberLiteral: 1.5
                 NumberLiteral: 2.5
                 NumberLiteral: 3.5

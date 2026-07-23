@@ -1,19 +1,19 @@
 ConstantDeclaration: {
-    Type: undefined
+    Type: [i32; 4]
     Left: {
         NameExpression: {
-            Type: undefined
+            Type: [i32; 4]
             Name: shared
         }
     }
     ExplicitType: {
         ArrayTypeNameNode: {
-            Type: undefined
+            Type: [i32; 4]
             Lexeme: [i32; 4]
             Kind: Fixed
             DataType: {
                 TypeNameNode: {
-                    Type: undefined
+                    Type: i32
                     Lexeme: i32
                 }
             }
@@ -24,7 +24,7 @@ ConstantDeclaration: {
     }
     Right: {
         ArrayLiteral(4): {
-            Type: undefined
+            Type: [i32; 4]
             NumberLiteral: 1
             NumberLiteral: 2
             NumberLiteral: 3
@@ -33,18 +33,18 @@ ConstantDeclaration: {
     }
 }
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: ([u8; 2]) -> i32
     Name: scale
     ParametersNode(1): {
         ParameterNode: {
             Name: values
             ArrayTypeNameNode: {
-                Type: undefined
+                Type: [u8; 2]
                 Lexeme: [u8; 2]
                 Kind: Fixed
                 DataType: {
                     TypeNameNode: {
-                        Type: undefined
+                        Type: u8
                         Lexeme: u8
                     }
                 }
@@ -56,27 +56,27 @@ FunctionDefinitionStatement: {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
+            Type: i32
             Lexeme: i32
         }
     }
     BlockNode(2): {
         ConstantDeclaration: {
-            Type: undefined
+            Type: [u8; 2]
             Left: {
                 NameExpression: {
-                    Type: undefined
+                    Type: [u8; 2]
                     Name: bytes
                 }
             }
             ExplicitType: {
                 ArrayTypeNameNode: {
-                    Type: undefined
+                    Type: [u8; 2]
                     Lexeme: [u8; 2]
                     Kind: Fixed
                     DataType: {
                         TypeNameNode: {
-                            Type: undefined
+                            Type: u8
                             Lexeme: u8
                         }
                     }
@@ -87,13 +87,13 @@ FunctionDefinitionStatement: {
             }
             Right: {
                 NameExpression: {
-                    Type: undefined
+                    Type: [u8; 2]
                     Name: values
                 }
             }
         }
         ReturnStatement: {
-            Type: undefined
+            Type: i32
             NumberLiteral: 0
         }
     }

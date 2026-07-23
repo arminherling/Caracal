@@ -1,26 +1,26 @@
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> i32
     Name: make
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
+            Type: i32
             Lexeme: i32
         }
     }
     BlockNode(4): {
         VariableDeclaration: {
-            Type: undefined
+            Type: [i32; 4]
             Left: {
                 NameExpression: {
-                    Type: undefined
+                    Type: [i32; 4]
                     Name: numbers
                 }
             }
             Right: {
                 ArrayLiteral(4): {
-                    Type: undefined
+                    Type: [i32; 4]
                     NumberLiteral: 1
                     NumberLiteral: 2
                     NumberLiteral: 3
@@ -29,33 +29,33 @@ FunctionDefinitionStatement: {
             }
         }
         VariableDeclaration: {
-            Type: undefined
+            Type: [i32; 1]
             Left: {
                 NameExpression: {
-                    Type: undefined
+                    Type: [i32; 1]
                     Name: single
                 }
             }
             Right: {
                 ArrayLiteral(1): {
-                    Type: undefined
+                    Type: [i32; 1]
                     NumberLiteral: 42
                 }
             }
         }
         VariableDeclaration: {
-            Type: undefined
+            Type: [i32; 2]
             Left: {
                 NameExpression: {
-                    Type: undefined
+                    Type: [i32; 2]
                     Name: computed
                 }
             }
             Right: {
                 ArrayLiteral(2): {
-                    Type: undefined
+                    Type: [i32; 2]
                     BinaryExpression: {
-                        Type: undefined
+                        Type: i32
                         Left: {
                             NumberLiteral: 1
                         }
@@ -65,7 +65,7 @@ FunctionDefinitionStatement: {
                         }
                     }
                     BinaryExpression: {
-                        Type: undefined
+                        Type: i32
                         Left: {
                             NumberLiteral: 3
                         }
@@ -78,7 +78,7 @@ FunctionDefinitionStatement: {
             }
         }
         ReturnStatement: {
-            Type: undefined
+            Type: i32
             NumberLiteral: 0
         }
     }

@@ -1,33 +1,33 @@
 FunctionDefinitionStatement: {
-    Type: undefined
+    Type: () -> i32
     Name: make
     ParametersNode(0): {
     }
     ReturnTypesNode(1): {
         TypeNameNode: {
-            Type: undefined
+            Type: i32
             Lexeme: i32
         }
     }
     BlockNode(2): {
         VariableDeclaration: {
-            Type: undefined
+            Type: [[i32; 2]; 2]
             Left: {
                 NameExpression: {
-                    Type: undefined
+                    Type: [[i32; 2]; 2]
                     Name: grid
                 }
             }
             Right: {
                 ArrayLiteral(2): {
-                    Type: undefined
+                    Type: [[i32; 2]; 2]
                     ArrayLiteral(2): {
-                        Type: undefined
+                        Type: [i32; 2]
                         NumberLiteral: 1
                         NumberLiteral: 2
                     }
                     ArrayLiteral(2): {
-                        Type: undefined
+                        Type: [i32; 2]
                         NumberLiteral: 3
                         NumberLiteral: 4
                     }
@@ -35,7 +35,7 @@ FunctionDefinitionStatement: {
             }
         }
         ReturnStatement: {
-            Type: undefined
+            Type: i32
             NumberLiteral: 0
         }
     }

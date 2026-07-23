@@ -1,0 +1,33 @@
+FunctionDefinitionStatement: {
+    Type: (ref [u8]) -> i32
+    Name: fill
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: values
+            ArrayTypeNameNode: {
+                Type: ref [u8]
+                Lexeme: [u8]
+                Ref: true
+                Kind: Slice
+                DataType: {
+                    TypeNameNode: {
+                        Type: u8
+                        Lexeme: u8
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 0
+        }
+    }
+}

@@ -1,6 +1,6 @@
 shared : [i32; 4] : [1, 2, 3, 4];
 
-def scale(values: [u8]) i32
+def scale(values: [u8; 2]) i32
 {
     bytes : [u8; 2] : values;
     return 0;

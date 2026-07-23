@@ -1,0 +1,5 @@
+def make() i32
+{
+    _ := [];
+    return 0;
+}

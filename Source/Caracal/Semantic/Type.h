@@ -14,7 +14,10 @@ namespace Caracal
         Type,
         Function,
         Method,
-        Constructor
+        Constructor,
+        FixedArray,
+        DynamicArray,
+        Slice
     };
 
     class CARACAL_API Type
@@ -26,6 +29,7 @@ namespace Caracal
         [[nodiscard]] TypeKind kind() const noexcept { return m_kind; }
         [[nodiscard]] bool isReference() const noexcept { return m_id >= 0 && m_id % 2 == 1; }
         [[nodiscard]] bool isOptional() const noexcept { return m_id >= 0 && m_id % 4 >= 2; }
+        [[nodiscard]] bool isBaseType() const noexcept { return !isReference() && !isOptional(); }
 
         [[nodiscard]] Type toBaseType() const noexcept { return m_id >= 0 ? Type(m_id - (m_id % 4), m_kind) : *this; }
         [[nodiscard]] Type toReference() const noexcept { return (isReference() || m_id < 0) ? *this : Type(m_id + 1, m_kind); }

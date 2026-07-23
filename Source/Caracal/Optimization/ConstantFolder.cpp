@@ -1,5 +1,6 @@
 #include <Caracal/Optimization/ConstantFolder.h>
 
+#include <Caracal/Syntax/ArrayLiteral.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BlockNode.h>
@@ -230,6 +231,15 @@ namespace Caracal
                     {
                         auto* literal = static_cast<BoolLiteral*>(expression);
                         literal->setFoldedValue(FoldValue{ literal->value() });
+                        break;
+                    }
+                    case NodeKind::ArrayLiteral:
+                    {
+                        auto* arrayLiteral = static_cast<ArrayLiteral*>(expression);
+                        for (const auto& element : arrayLiteral->elements())
+                        {
+                            foldExpression(element.get(), tokens);
+                        }
                         break;
                     }
                     case NodeKind::GroupingExpression:
