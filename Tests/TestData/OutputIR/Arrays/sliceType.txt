@@ -1,0 +1,5 @@
+define sum(%0: [i32] "values") i32
+block entry(0):
+    %0 = parameter 0 : [i32] "values"
+    %1 = const 0 : i32
+    return %1

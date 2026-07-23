@@ -10,6 +10,7 @@
 #include <Caracal/IR/CallVoidInstruction.h>
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
+#include <Caracal/IR/ElementAddressInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
 #include <Caracal/IR/Function.h>
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
@@ -21,6 +22,7 @@
 #include <Caracal/IR/LogicalAndInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
 #include <Caracal/IR/LogicalOrInstruction.h>
+#include <Caracal/IR/MakeSliceInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
@@ -43,6 +45,20 @@ namespace Caracal
                 case InstructionKind::FieldAddress:
                 {
                     usedIds.insert(static_cast<const AddressOfFieldInstruction&>(instruction).objectAddress().id());
+                    break;
+                }
+                case InstructionKind::ElementAddress:
+                {
+                    const auto& elementAddress = static_cast<const ElementAddressInstruction&>(instruction);
+                    usedIds.insert(elementAddress.baseAddress().id());
+                    usedIds.insert(elementAddress.index().id());
+                    break;
+                }
+                case InstructionKind::MakeSlice:
+                {
+                    const auto& makeSlice = static_cast<const MakeSliceInstruction&>(instruction);
+                    usedIds.insert(makeSlice.baseAddress().id());
+                    usedIds.insert(makeSlice.length().id());
                     break;
                 }
                 case InstructionKind::LoadValue:
@@ -271,6 +287,16 @@ namespace Caracal
                 case InstructionKind::FieldAddress:
                 {
                     resultId = static_cast<const AddressOfFieldInstruction&>(instruction).resultId();
+                    return true;
+                }
+                case InstructionKind::ElementAddress:
+                {
+                    resultId = static_cast<const ElementAddressInstruction&>(instruction).resultId();
+                    return true;
+                }
+                case InstructionKind::MakeSlice:
+                {
+                    resultId = static_cast<const MakeSliceInstruction&>(instruction).resultId();
                     return true;
                 }
                 case InstructionKind::LoadValue:

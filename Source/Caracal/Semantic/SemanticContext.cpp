@@ -237,6 +237,7 @@ namespace Caracal
         m_typeNames.try_emplace(arrayId, arrayName);
         m_nameToTypes.try_emplace(arrayName, arrayType);
         m_arrayTypeInfoById.try_emplace(arrayId, ArrayTypeInfo{ elementType, length });
+        m_arrayTypes.push_back(arrayType);
 
         return arrayType;
     }

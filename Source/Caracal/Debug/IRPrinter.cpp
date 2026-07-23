@@ -9,6 +9,7 @@
 #include <Caracal/IR/CallVoidInstruction.h>
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/DivideInstruction.h>
+#include <Caracal/IR/ElementAddressInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
 #include <Caracal/IR/ExternFunction.h>
 #include <Caracal/IR/Function.h>
@@ -21,6 +22,7 @@
 #include <Caracal/IR/LogicalAndInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
 #include <Caracal/IR/LogicalOrInstruction.h>
+#include <Caracal/IR/MakeSliceInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
@@ -143,6 +145,23 @@ namespace Caracal
 
         if (const auto* enumConstant = value.tryGetEnumConstant())
             return enumConstant->enumName + "." + enumConstant->fieldName;
+
+        if (const auto* aggregate = value.tryGetAggregate())
+        {
+            std::string formatted = "[";
+            for (size_t index = 0; index < aggregate->size(); ++index)
+            {
+                if (index > 0)
+                {
+                    formatted += ", ";
+                }
+
+                formatted += FormatLiteralConstantValue((*aggregate)[index], Type::Undefined());
+            }
+
+            formatted += "]";
+            return formatted;
+        }
 
         return "<unknown-constant>";
     }
@@ -494,6 +513,34 @@ namespace Caracal
                     .append(" \"")
                     .append(fieldAddress.fieldName())
                     .appendLine("\"");
+                break;
+            }
+            case InstructionKind::ElementAddress:
+            {
+                const auto& elementAddress = static_cast<const ElementAddressInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ elementAddress.resultId() });
+                m_builder.append(" = element_address ");
+                appendValue(elementAddress.baseAddress());
+                m_builder.append("[");
+                appendValue(elementAddress.index());
+                m_builder.append("] : ");
+                appendType(elementAddress.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::MakeSlice:
+            {
+                const auto& makeSlice = static_cast<const MakeSliceInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ makeSlice.resultId() });
+                m_builder.append(" = make_slice ");
+                appendValue(makeSlice.baseAddress());
+                m_builder.append(", ");
+                appendValue(makeSlice.length());
+                m_builder.append(" : ");
+                appendType(makeSlice.type());
+                m_builder.appendLine("");
                 break;
             }
             case InstructionKind::LoadValue:

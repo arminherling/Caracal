@@ -6,6 +6,7 @@
 
 #include <string>
 #include <variant>
+#include <vector>
 
 namespace Caracal
 {
@@ -24,7 +25,8 @@ namespace Caracal
             bool operator==(const EnumConstant& other) const noexcept = default;
         };
 
-        using Data = std::variant<LiteralData, EnumConstant>;
+        using AggregateData = std::vector<ConstantValue>;
+        using Data = std::variant<LiteralData, EnumConstant, AggregateData>;
 
         static ConstantValue FromBool(bool value) noexcept;
         static ConstantValue FromU8(u8 value) noexcept;
@@ -33,10 +35,12 @@ namespace Caracal
         static ConstantValue FromString(std::string value) noexcept;
         static ConstantValue FromLiteralData(LiteralData value) noexcept;
         static ConstantValue FromEnum(Type enumType, std::string enumName, std::string fieldName, LiteralData underlyingValue) noexcept;
+        static ConstantValue FromAggregate(AggregateData elements) noexcept;
 
         [[nodiscard]] const Data& data() const noexcept { return m_data; }
         [[nodiscard]] const LiteralData* tryGetLiteralData() const noexcept { return std::get_if<LiteralData>(&m_data); }
         [[nodiscard]] const EnumConstant* tryGetEnumConstant() const noexcept { return std::get_if<EnumConstant>(&m_data); }
+        [[nodiscard]] const AggregateData* tryGetAggregate() const noexcept { return std::get_if<AggregateData>(&m_data); }
 
     private:
         explicit ConstantValue(Data data) noexcept;

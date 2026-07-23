@@ -1,0 +1,8 @@
+define fill(%0: [u8; 2] "values") i32
+block entry(0):
+    %0 = parameter 0 : [u8; 2] "values"
+    %slot0 = allocate_local : [u8; 2] "values"
+    %1 = address_of %slot0 : ref [u8; 2]
+    store_value %0, %1 : [u8; 2]
+    %2 = const 0 : i32
+    return %2

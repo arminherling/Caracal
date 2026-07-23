@@ -12,6 +12,7 @@
 #include <Caracal/IR/ConstantInstruction.h>
 #include <Caracal/IR/ConstructedGlobalDeclaration.h>
 #include <Caracal/IR/DivideInstruction.h>
+#include <Caracal/IR/ElementAddressInstruction.h>
 #include <Caracal/IR/EqualInstruction.h>
 #include <Caracal/IR/GlobalConstantDeclaration.h>
 #include <Caracal/IR/GlobalReferenceDeclaration.h>
@@ -24,6 +25,7 @@
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
+#include <Caracal/IR/MakeSliceInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
 #include <Caracal/IR/ParameterInstruction.h>
@@ -35,6 +37,7 @@
 #include <Caracal/IR/SubtractInstruction.h>
 #include <Caracal/IR/ValueNegationInstruction.h>
 #include <Caracal/Semantic/FunctionDefinition.h>
+#include <Caracal/Syntax/ArrayLiteral.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BlockNode.h>
@@ -183,6 +186,12 @@ namespace Caracal
     {
         resetState();
         m_globalTypes.clear();
+
+        // array types have no TypeDeclaration, so the printer needs their canonical names registered
+        for (const auto arrayType : m_semanticContext.arrayTypes())
+        {
+            module.registerTypeName(arrayType, std::string(m_semanticContext.getNameByType(arrayType)));
+        }
 
         bool hasUserMain = false;
         bool hasEntryPoint = false;
@@ -494,6 +503,7 @@ namespace Caracal
         function->addBlock(BasicBlock{ blockId, "entry", nullptr });
         m_currentFunction = function;
         m_currentBlock = function->tryGetBlock(blockId);
+        m_currentReturnType = returnType;
         collectAddressTakenLocals(bodyNode);
         if (!lowerParameters(definition))
             return false;
@@ -761,8 +771,9 @@ namespace Caracal
                 IRParameter{ parameters[index].name(), parameterType}));
 
             const auto& parameterName = parameters[index].name();
-            const auto needsAddressStorage = (parameterType.isReference() 
-                || parameterType.kind() == TypeKind::Type 
+            const auto needsAddressStorage = (parameterType.isReference()
+                || parameterType.kind() == TypeKind::Type
+                || parameterType.kind() == TypeKind::FixedArray
                 || m_addressTakenLocals.contains(parameterName));
 
             if (!needsAddressStorage)
@@ -1168,7 +1179,7 @@ namespace Caracal
         }
 
         const auto needsAddressStorage = m_addressTakenLocals.contains(nameExpression->name());
-        if (nameExpression->type().kind() == TypeKind::Type)
+        if (nameExpression->type().kind() == TypeKind::Type || nameExpression->type().kind() == TypeKind::FixedArray)
         {
             const auto addressId = allocateSlotFromExpression(
                 nameExpression->name(),
@@ -1181,13 +1192,13 @@ namespace Caracal
             return true;
         }
 
-        const auto loweredValue = lowerValueExpression(rightExpression);
-        if (!loweredValue.has_value())
-            return false;
-
         auto localType = nameExpression->type();
         if (localType.isReference())
             localType = localType.toValue();
+
+        const auto loweredValue = lowerValueExpressionExpecting(rightExpression, localType);
+        if (!loweredValue.has_value())
+            return false;
 
         if (needsAddressStorage)
         {
@@ -1230,7 +1241,10 @@ namespace Caracal
         if (tryLowerConstructorCallIntoAddress(expression, addressId.value()))
             return addressId;
 
-        const auto loweredValue = lowerValueExpression(expression);
+        if (tryLowerArrayLiteralIntoAddress(expression, addressId.value(), valueType))
+            return addressId;
+
+        const auto loweredValue = lowerValueExpressionExpecting(expression, valueType);
         if (!loweredValue.has_value())
             return std::nullopt;
 
@@ -1239,6 +1253,51 @@ namespace Caracal
             addressId.value(),
             valueType));
         return addressId;
+    }
+
+    bool IRLowerer::tryLowerArrayLiteralIntoAddress(const Expression* expression, ValueRef destinationAddress, Type arrayType) noexcept
+    {
+        const auto* stripped = StripGroupings(expression);
+        if (stripped == nullptr || stripped->kind() != NodeKind::ArrayLiteral)
+            return false;
+
+        if (arrayType.kind() != TypeKind::FixedArray)
+            return false;
+
+        const auto* literal = static_cast<const ArrayLiteral*>(stripped);
+        const auto elementType = m_semanticContext.getArrayElementType(arrayType);
+        const auto& elements = literal->elements();
+        for (size_t index = 0; index < elements.size(); ++index)
+        {
+            const auto indexId = m_nextTemporaryId++;
+            m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+                indexId,
+                ConstantValue::FromI32(static_cast<i32>(index)),
+                Type::I32()));
+
+            const auto elementAddressId = m_nextTemporaryId++;
+            m_currentBlock->addInstruction(std::make_unique<ElementAddressInstruction>(
+                elementAddressId,
+                destinationAddress,
+                arrayType,
+                ValueRef{ indexId },
+                elementType));
+
+            // nested literals fill their element storage directly instead of through a temp slot
+            if (tryLowerArrayLiteralIntoAddress(elements[index].get(), ValueRef{ elementAddressId }, elementType))
+                continue;
+
+            const auto elementValue = lowerValueExpressionExpecting(elements[index].get(), elementType);
+            if (!elementValue.has_value())
+                return false;
+
+            m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
+                elementValue.value(),
+                ValueRef{ elementAddressId },
+                elementType));
+        }
+
+        return true;
     }
 
     bool IRLowerer::lowerAssignmentStatement(const Expression* leftExpression, const Expression* rightExpression) noexcept
@@ -1254,7 +1313,7 @@ namespace Caracal
             const auto local = m_locals.find(static_cast<const NameExpression*>(leftExpression)->name());
             if (local != m_locals.end())
             {
-                const auto loweredValue = lowerValueExpression(rightExpression);
+                const auto loweredValue = lowerValueExpressionExpecting(rightExpression, local->second.type.toValue());
                 if (!loweredValue.has_value())
                     return false;
 
@@ -1276,7 +1335,7 @@ namespace Caracal
             return tryLowerConstructorCallIntoAddress(rightExpression, destinationAddress.value());
         }
 
-        const auto loweredValue = lowerValueExpression(rightExpression);
+        const auto loweredValue = lowerValueExpressionExpecting(rightExpression, leftExpression->type().toValue());
         if (!loweredValue.has_value())
             return false;
 
@@ -1295,6 +1354,42 @@ namespace Caracal
     {
         const auto valueType = expression->type().toValue();
         return allocateLocalSlot("temp", valueType, value);
+    }
+
+    std::optional<ValueRef> IRLowerer::lowerValueExpressionExpecting(const Expression* expression, Type targetType) noexcept
+    {
+        const auto sourceType = expression->type().toValue();
+        if (targetType.kind() != TypeKind::Slice || sourceType.kind() != TypeKind::FixedArray)
+        {
+            return lowerValueExpression(expression);
+        }
+
+        // fixed array decays into a slice
+        auto baseAddress = lowerAddressExpression(expression);
+        if (!baseAddress.has_value())
+        {
+            const auto loweredValue = lowerValueExpression(expression);
+            if (!loweredValue.has_value())
+                return std::nullopt;
+
+            baseAddress = spillValueToTempSlot(expression, loweredValue.value());
+            if (!baseAddress.has_value())
+                return std::nullopt;
+        }
+
+        const auto lengthId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+            lengthId,
+            ConstantValue::FromI32(m_semanticContext.getArrayLength(sourceType)),
+            Type::I32()));
+
+        const auto sliceId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<MakeSliceInstruction>(
+            sliceId,
+            baseAddress.value(),
+            ValueRef{ lengthId },
+            targetType));
+        return ValueRef{ sliceId };
     }
 
     std::optional<ValueRef> IRLowerer::lowerMethodReceiverAddress(const Expression* receiverExpression) noexcept
@@ -1463,7 +1558,7 @@ namespace Caracal
             return true;
         }
 
-        const auto loweredValue = lowerValueExpression(statement->expression().value().get());
+        const auto loweredValue = lowerValueExpressionExpecting(statement->expression().value().get(), m_currentReturnType);
         if (!loweredValue.has_value())
             return false;
 
@@ -1492,6 +1587,22 @@ namespace Caracal
             {
                 const auto* groupingExpression = static_cast<const GroupingExpression*>(expression);
                 return tryLowerConstantExpression(groupingExpression->expression().get());
+            }
+            case NodeKind::ArrayLiteral:
+            {
+                const auto* literal = static_cast<const ArrayLiteral*>(expression);
+                ConstantValue::AggregateData elements{};
+                elements.reserve(literal->elements().size());
+                for (const auto& element : literal->elements())
+                {
+                    const auto elementValue = tryLowerConstantExpression(element.get());
+                    if (!elementValue.has_value())
+                        return std::nullopt;
+
+                    elements.push_back(elementValue.value());
+                }
+
+                return ConstantValue::FromAggregate(std::move(elements));
             }
             case NodeKind::BinaryExpression:
             {
@@ -1658,11 +1769,24 @@ namespace Caracal
 
                 return result->second.value;
             }
+            case NodeKind::ArrayLiteral:
+            {
+                // a literal in value position materializes in a temp slot and loads the aggregate
+                const auto arrayType = expression->type().toValue();
+                const auto slotAddress = allocateLocalSlot("temp", arrayType);
+                if (!slotAddress.has_value())
+                    return std::nullopt;
+
+                if (!tryLowerArrayLiteralIntoAddress(expression, slotAddress.value(), arrayType))
+                    return std::nullopt;
+
+                return emitLoad(slotAddress.value(), arrayType);
+            }
             case NodeKind::FunctionCallExpression:
             {
                 if (expression->type() == Type::Void())
                 return std::nullopt;
-                
+
                 return emitCall(static_cast<const FunctionCallExpression*>(expression));
             }
             case NodeKind::MemberAccessExpression:
@@ -1994,6 +2118,7 @@ namespace Caracal
         m_nextBlockId = 0;
         m_currentFunction = nullptr;
         m_currentBlock = nullptr;
+        m_currentReturnType = Type::Void();
     }
 
     void IRLowerer::restoreLocalValues(const LocalStateMap& values) noexcept

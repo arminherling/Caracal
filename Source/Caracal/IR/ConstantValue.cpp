@@ -37,6 +37,11 @@ namespace Caracal
         return ConstantValue{ Data{ EnumConstant{ enumType, std::move(enumName), std::move(fieldName), std::move(underlyingValue) } } };
     }
 
+    ConstantValue ConstantValue::FromAggregate(AggregateData elements) noexcept
+    {
+        return ConstantValue{ Data{ std::move(elements) } };
+    }
+
     ConstantValue::ConstantValue(Data data) noexcept
         : m_data{ std::move(data) }
     {

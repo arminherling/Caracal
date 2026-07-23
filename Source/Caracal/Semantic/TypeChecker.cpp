@@ -1259,8 +1259,21 @@ namespace Caracal
             return;
         }
 
+        auto declaredType = Type::Undefined();
+        if (statement->explicitType().has_value())
+        {
+            declaredType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
+        }
+
         auto rightExpression = statement->rightExpression().get();
         auto rightType = typeCheckExpression(rightExpression, tokens);
+
+        // the declared type wins for the binding, the initializer only has to be assignable to it
+        auto bindingType = rightType;
+        if (declaredType != Type::Undefined())
+        {
+            bindingType = declaredType;
+        }
 
         auto leftExpression = statement->leftExpression().get();
         if (leftExpression->kind() == NodeKind::NameExpression)
@@ -1270,7 +1283,7 @@ namespace Caracal
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(name, rightType, nameExpression->sourceLocation(tokens), tokens.source(), VariableBindingKind::LocalConstant);
+                scope->addVariableBinding(name, bindingType, nameExpression->sourceLocation(tokens), tokens.source(), VariableBindingKind::LocalConstant);
 
                 if (statement->isGlobalConstant())
                 {
@@ -1287,7 +1300,7 @@ namespace Caracal
                     scope->tryGetVariableBindingSource(name),
                     scope->tryGetVariableBindingLocation(name));
             }
-            nameExpression->setType(rightType);
+            nameExpression->setType(bindingType);
         }
         else if (statement->isGlobalConstant() && leftExpression->kind() == NodeKind::DiscardLiteral)
         {
@@ -1295,30 +1308,39 @@ namespace Caracal
             m_module.addGlobalDiscardExpression(rightExpression);
         }
 
-        if (statement->explicitType().has_value())
+        if (declaredType != Type::Undefined() && rightType != Type::Undefined() && !isAssignableTo(rightType, declaredType))
         {
-            auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
-            if (rightType != Type::Undefined() && explicitType != Type::Undefined() && !isAssignableTo(rightType, explicitType))
+            const auto location = statement->rightExpression()->sourceLocation(tokens);
+            if (!tryAddArrayLengthMismatchError(tokens, location, declaredType, rightType))
             {
-                const auto location = statement->rightExpression()->sourceLocation(tokens);
-                if (!tryAddArrayLengthMismatchError(tokens, location, explicitType, rightType))
-                {
-                    m_diagnostics.addExplicitConstantTypeMismatchError(
-                        tokens.source(),
-                        location,
-                        FormatTypeName(m_module, explicitType),
-                        FormatTypeName(m_module, rightType));
-                }
+                m_diagnostics.addExplicitConstantTypeMismatchError(
+                    tokens.source(),
+                    location,
+                    FormatTypeName(m_module, declaredType),
+                    FormatTypeName(m_module, rightType));
             }
         }
 
-        statement->setType(rightType);
+        statement->setType(bindingType);
     }
 
     void TypeChecker::typeCheckVariableDeclaration(VariableDeclaration* statement, const TokenBuffer& tokens)
     {
+        auto declaredType = Type::Undefined();
+        if (statement->explicitType().has_value())
+        {
+            declaredType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
+        }
+
         auto* rightExpression = statement->rightExpression().get();
         auto rightType = typeCheckExpression(rightExpression, tokens);
+
+        // the declared type wins for the binding, the initializer only has to be assignable to it
+        auto bindingType = rightType;
+        if (declaredType != Type::Undefined())
+        {
+            bindingType = declaredType;
+        }
 
         auto referencesConstant = false;
         if (rightExpression->kind() == NodeKind::UnaryExpression)
@@ -1339,7 +1361,7 @@ namespace Caracal
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
-                scope->addVariableBinding(name, rightType, nameExpression->sourceLocation(tokens), tokens.source(), VariableBindingKind::LocalVariable, referencesConstant);
+                scope->addVariableBinding(name, bindingType, nameExpression->sourceLocation(tokens), tokens.source(), VariableBindingKind::LocalVariable, referencesConstant);
             }
             else
             {
@@ -1350,27 +1372,23 @@ namespace Caracal
                     scope->tryGetVariableBindingSource(name),
                     scope->tryGetVariableBindingLocation(name));
             }
-            nameExpression->setType(rightType);
+            nameExpression->setType(bindingType);
         }
 
-        if (statement->explicitType().has_value())
+        if (declaredType != Type::Undefined() && rightType != Type::Undefined() && !isAssignableTo(rightType, declaredType))
         {
-            auto explicitType = typeCheckTypeNameNode(statement->explicitType().value().get(), tokens);
-            if (rightType != Type::Undefined() && explicitType != Type::Undefined() && !isAssignableTo(rightType, explicitType))
+            const auto location = statement->rightExpression()->sourceLocation(tokens);
+            if (!tryAddArrayLengthMismatchError(tokens, location, declaredType, rightType))
             {
-                const auto location = statement->rightExpression()->sourceLocation(tokens);
-                if (!tryAddArrayLengthMismatchError(tokens, location, explicitType, rightType))
-                {
-                    m_diagnostics.addExplicitVariableTypeMismatchError(
-                        tokens.source(),
-                        location,
-                        FormatTypeName(m_module, explicitType),
-                        FormatTypeName(m_module, rightType));
-                }
+                m_diagnostics.addExplicitVariableTypeMismatchError(
+                    tokens.source(),
+                    location,
+                    FormatTypeName(m_module, declaredType),
+                    FormatTypeName(m_module, rightType));
             }
         }
 
-        statement->setType(rightType);
+        statement->setType(bindingType);
     }
 
     void TypeChecker::typeCheckExpressionStatement(ExpressionStatement* statement, const TokenBuffer& tokens)

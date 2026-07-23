@@ -27,6 +27,8 @@ namespace Caracal
         AddressOf,
         AddressOfGlobal,
         FieldAddress,
+        ElementAddress,
+        MakeSlice,
         LoadValue,
         StoreValue,
         ValueNegation,

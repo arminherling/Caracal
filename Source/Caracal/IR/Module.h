@@ -42,6 +42,7 @@ namespace Caracal
         void addConstructedGlobal(ConstructedGlobalDeclaration globalDeclaration);
         void setGlobalInit(Function function);
         void addType(TypeDeclaration typeDeclaration);
+        void registerTypeName(Type type, std::string name);
 
     private:
         std::vector<EnumDeclaration> m_enums;
@@ -56,5 +57,6 @@ namespace Caracal
         std::unordered_map<FunctionId, size_t> m_externFunctionIndices;
         std::unordered_map<FunctionId, size_t> m_functionIndices;
         std::unordered_map<i32, size_t> m_typeIndices;
+        std::unordered_map<i32, std::string> m_registeredTypeNames;
     };
 }

@@ -113,6 +113,7 @@ namespace Caracal
         [[nodiscard]] bool isLocalDefinedOnAllEdges(const std::vector<IncomingLocalValues>& incomingValues, const std::string& name) const noexcept;
         [[nodiscard]] bool localNeedsPhi(const std::vector<IncomingLocalValues>& incomingValues, const std::string& name, const LocalState& firstState) const noexcept;
         [[nodiscard]] bool tryLowerConstructorCallIntoAddress(const Expression* expression, ValueRef destinationAddress) noexcept;
+        [[nodiscard]] bool tryLowerArrayLiteralIntoAddress(const Expression* expression, ValueRef destinationAddress, Type arrayType) noexcept;
         [[nodiscard]] std::optional<ValueRef> allocateSlotFromExpression(std::string localName, const Expression* expression, Type valueType) noexcept;
         [[nodiscard]] std::optional<ValueRef> spillValueToTempSlot(const Expression* expression, ValueRef value) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerMethodReceiverAddress(const Expression* receiverExpression) noexcept;
@@ -121,6 +122,7 @@ namespace Caracal
         [[nodiscard]] std::optional<ValueRef> lowerAddressExpression(const Expression* expression) noexcept;
         [[nodiscard]] bool referenceArgumentAliasesConstant(const Expression* argument) const noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerValueExpression(const Expression* expression) noexcept;
+        [[nodiscard]] std::optional<ValueRef> lowerValueExpressionExpecting(const Expression* expression, Type targetType) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerShortCircuitExpression(const BinaryExpression* expression) noexcept;
         [[nodiscard]] bool lowerExpressionForEffect(const Expression* expression) noexcept;
         [[nodiscard]] std::optional<ValueRef> emitCall(const FunctionCallExpression* expression, std::optional<ValueRef> implicitArgument = std::nullopt) noexcept;
@@ -140,5 +142,6 @@ namespace Caracal
         bool m_emitEntryPoint{ false };
         Function* m_currentFunction{ nullptr };
         BasicBlock* m_currentBlock{ nullptr };
+        Type m_currentReturnType{ Type::Void() };
     };
 }

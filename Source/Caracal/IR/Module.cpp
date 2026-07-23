@@ -49,10 +49,14 @@ namespace Caracal
             return &enumDeclaration->name();
 
         const auto result = m_typeIndices.find(baseType.id());
-        if (result == m_typeIndices.end())
-            return nullptr;
+        if (result != m_typeIndices.end())
+            return &m_types[result->second].name();
 
-        return &m_types[result->second].name();
+        const auto registered = m_registeredTypeNames.find(baseType.id());
+        if (registered != m_registeredTypeNames.end())
+            return &registered->second;
+
+        return nullptr;
     }
 
     void Module::addEnum(EnumDeclaration enumDeclaration)
@@ -104,5 +108,10 @@ namespace Caracal
     {
         m_typeIndices.emplace(typeDeclaration.type().id(), m_types.size());
         m_types.push_back(std::move(typeDeclaration));
+    }
+
+    void Module::registerTypeName(Type type, std::string name)
+    {
+        m_registeredTypeNames.insert_or_assign(type.toBaseType().id(), std::move(name));
     }
 }
