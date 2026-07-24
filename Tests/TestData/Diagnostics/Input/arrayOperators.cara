@@ -1,0 +1,7 @@
+def make() i32
+{
+    xs := [1, 2];
+    ys := [3, 4];
+    _ := xs + ys;
+    return 0;
+}

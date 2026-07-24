@@ -12,4 +12,7 @@ namespace Caracal
     inline constexpr const char* UserMainFunctionName = "main";
     inline constexpr const char* CRuntimeEntrySymbolName = "main";
     inline constexpr const char* UserMainSymbolName = "caracal.userMain";
+
+    // the language-wide member name for array lengths
+    inline constexpr const char* ArrayLengthMemberName = "length";
 }

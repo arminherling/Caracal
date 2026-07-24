@@ -1,0 +1,13 @@
+ Error T0014
+  Invalid member access receiver
+    ,-[Diagnostics/Input/scalarIntrinsicReceiver.cara:3:10]
+  1 | def make() i32
+  2 | {
+  3 |     _ := 5.at(0);
+    .          -------
+    .             `-- Type 'i32' does not support member access
+  4 |     return 0;
+  5 | }
+  6 | 
+    `----
+  Fix: Access members only on types and enum values that support member lookup.

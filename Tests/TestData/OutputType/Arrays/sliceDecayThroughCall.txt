@@ -1,0 +1,95 @@
+FunctionDefinitionStatement: {
+    Type: ([i32]) -> i32
+    Name: total
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: values
+            ArrayTypeNameNode: {
+                Type: [i32]
+                Lexeme: [i32]
+                Kind: Slice
+                DataType: {
+                    TypeNameNode: {
+                        Type: i32
+                        Lexeme: i32
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: [i32]
+                        Name: values
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: length
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: use
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: [i32; 3]
+            Left: {
+                NameExpression: {
+                    Type: [i32; 3]
+                    Name: numbers
+                }
+            }
+            Right: {
+                ArrayLiteral(3): {
+                    Type: [i32; 3]
+                    NumberLiteral: 1
+                    NumberLiteral: 2
+                    NumberLiteral: 3
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            FunctionCallExpression: {
+                Type: i32
+                Function type: ([i32]) -> i32
+                NameExpression: {
+                    Type: ([i32]) -> i32
+                    Name: total
+                }
+                ArgumentsNode(1): {
+                    NameExpression: {
+                        Type: [i32; 3]
+                        Name: numbers
+                    }
+                }
+            }
+        }
+    }
+}

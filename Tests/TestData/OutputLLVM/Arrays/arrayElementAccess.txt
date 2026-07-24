@@ -1,0 +1,26 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @sum([4 x i32] %0) {
+entry:
+  %values = alloca [4 x i32], align 4
+  store [4 x i32] %0, ptr %values, align 4
+  br label %while.condition
+
+while.condition:                                  ; preds = %while.body, %entry
+  %phi = phi i32 [ 0, %entry ], [ %add2, %while.body ]
+  %phi1 = phi i32 [ 0, %entry ], [ %add, %while.body ]
+  %less_than = icmp slt i32 %phi, 4
+  br i1 %less_than, label %while.body, label %while.continuation
+
+while.body:                                       ; preds = %while.condition
+  %element = getelementptr [4 x i32], ptr %values, i32 0, i32 %phi
+  %load = load i32, ptr %element, align 4
+  %add = add i32 %phi1, %load
+  %add2 = add i32 %phi, 1
+  br label %while.condition
+
+while.continuation:                               ; preds = %while.condition
+  ret i32 %phi1
+}

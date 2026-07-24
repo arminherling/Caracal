@@ -47,6 +47,7 @@ namespace Caracal
         [[nodiscard]] Type getArrayElementType(Type type) const noexcept;
         [[nodiscard]] i32 getArrayLength(Type type) const noexcept;
         [[nodiscard]] const std::vector<Type>& arrayTypes() const noexcept { return m_arrayTypes; }
+        [[nodiscard]] Type tryGetOrCreateArrayIntrinsic(Type arrayType, std::string_view methodName) noexcept;
 
         [[nodiscard]] EnumDefinition& createEnum(
             std::string_view name,
@@ -104,6 +105,7 @@ namespace Caracal
         std::unordered_map<std::string, Type> m_nameToTypes;
         std::unordered_map<i32, ArrayTypeInfo> m_arrayTypeInfoById;
         std::vector<Type> m_arrayTypes;
+        std::unordered_map<std::string, Type> m_arrayIntrinsicsByFullName;
         i32 m_nextId = 0;
         // TODO keep the parsetrees alive here for now
         std::vector<ParseTreeUPtr> m_preludeParseTrees;

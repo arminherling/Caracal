@@ -1,0 +1,8 @@
+def make() i32
+{
+    numbers := [1, 2, 3, 4];
+    numbers.set(0, 9);
+    matrix := [[1, 2], [3, 4]];
+    matrix.at(1).set(0, 7);
+    return numbers.at(0);
+}

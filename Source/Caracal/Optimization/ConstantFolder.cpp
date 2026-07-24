@@ -1,5 +1,6 @@
 #include <Caracal/Optimization/ConstantFolder.h>
 
+#include <Caracal/Constants.h>
 #include <Caracal/Syntax/ArrayLiteral.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/BinaryExpression.h>
@@ -332,6 +333,17 @@ namespace Caracal
             {
                 auto* left = expression->leftExpression().get();
                 auto* right = expression->rightExpression().get();
+
+                // a fixed array's length is a compile-time constant
+                if (expression->binaryOperator() == BinaryOperatorKind::MemberAccess
+                    && left->type().toValue().kind() == TypeKind::FixedArray
+                    && right->kind() == NodeKind::NameExpression
+                    && static_cast<const NameExpression*>(right)->name() == ArrayLengthMemberName)
+                {
+                    expression->setFoldedValue(FoldValue{ m_module.getArrayLength(left->type().toValue()) });
+                    return;
+                }
+
                 foldExpression(left, tokens);
                 foldExpression(right, tokens);
 

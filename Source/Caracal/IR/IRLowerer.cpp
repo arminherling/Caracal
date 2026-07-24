@@ -267,6 +267,10 @@ namespace Caracal
                 continue;
             }
 
+            // intrinsics have no body, they lower inline at their call sites
+            if (functionDefinition.functionType() == FunctionType::Intrinsic)
+                continue;
+
             const auto* statement = functionDefinition.statement();
             switch (statement->kind())
             {
@@ -1415,6 +1419,11 @@ namespace Caracal
             return std::nullopt;
 
         const auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
+        if (functionDefinition.functionType() == FunctionType::Intrinsic)
+        {
+            return lowerArrayIntrinsicCall(expression, receiverExpression, functionDefinition);
+        }
+
         if (functionDefinition.functionType() != FunctionType::PublicMethod
             && functionDefinition.functionType() != FunctionType::PrivateMethod)
         {
@@ -1426,6 +1435,114 @@ namespace Caracal
             return std::nullopt;
 
         return emitCall(expression, receiverAddress.value());
+    }
+
+    std::optional<ValueRef> IRLowerer::lowerArrayIntrinsicCall(const FunctionCallExpression* expression, const Expression* receiverExpression, const FunctionDefinition& functionDefinition) noexcept
+    {
+        if (receiverExpression == nullptr)
+            return std::nullopt;
+
+        if (functionDefinition.name() == "at")
+        {
+            const auto elementAddress = lowerElementAddressForCall(receiverExpression, expression);
+            if (!elementAddress.has_value())
+                return std::nullopt;
+
+            return emitLoad(elementAddress.value(), expression->type().toValue());
+        }
+
+        if (functionDefinition.name() == "set")
+        {
+            const auto elementAddress = lowerElementAddressForCall(receiverExpression, expression);
+            if (!elementAddress.has_value())
+                return std::nullopt;
+
+            const auto& orderedArguments = expression->orderedArguments();
+            if (orderedArguments.size() < 2)
+                return std::nullopt;
+
+            const auto value = lowerValueExpression(orderedArguments[1]);
+            if (!value.has_value())
+                return std::nullopt;
+
+            const auto elementType = functionDefinition.parameters()[2].type();
+            m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
+                value.value(),
+                elementAddress.value(),
+                elementType));
+            return ValueRef{};
+        }
+
+        return std::nullopt;
+    }
+
+    [[nodiscard]] static const BinaryExpression* TryGetAtIntrinsicCall(const Expression* expression, SemanticContext& semanticContext) noexcept
+    {
+        const auto* stripped = StripGroupings(expression);
+        if (stripped == nullptr || stripped->kind() != NodeKind::BinaryExpression)
+            return nullptr;
+
+        const auto* binaryExpression = static_cast<const BinaryExpression*>(stripped);
+        if (binaryExpression->binaryOperator() != BinaryOperatorKind::MemberAccess)
+            return nullptr;
+
+        if (binaryExpression->rightExpression()->kind() != NodeKind::FunctionCallExpression)
+            return nullptr;
+
+        const auto* call = static_cast<const FunctionCallExpression*>(binaryExpression->rightExpression().get());
+        if (call->functionType() == Type::Undefined())
+            return nullptr;
+
+        const auto& definition = semanticContext.getFunctionDefinition(call->functionType());
+        if (definition.functionType() != FunctionType::Intrinsic || definition.name() != "at")
+            return nullptr;
+
+        return binaryExpression;
+    }
+
+    std::optional<ValueRef> IRLowerer::lowerIntrinsicReceiverAddress(const Expression* receiverExpression) noexcept
+    {
+        const auto* atCall = TryGetAtIntrinsicCall(receiverExpression, m_semanticContext);
+        if (atCall == nullptr)
+            return lowerMethodReceiverAddress(receiverExpression);
+
+        // an at() receiver keeps its element address, so nested mutation works fine
+        const auto* innerCall = static_cast<const FunctionCallExpression*>(atCall->rightExpression().get());
+        return lowerElementAddressForCall(atCall->leftExpression().get(), innerCall);
+    }
+
+    std::optional<ValueRef> IRLowerer::lowerElementAddressForCall(const Expression* receiverExpression, const FunctionCallExpression* call) noexcept
+    {
+        const auto receiverType = receiverExpression->type().toBaseType();
+        auto receiverAddress = lowerIntrinsicReceiverAddress(receiverExpression);
+        if (!receiverAddress.has_value())
+            return std::nullopt;
+
+        const auto& orderedArguments = call->orderedArguments();
+        if (orderedArguments.empty())
+            return std::nullopt;
+
+        const auto index = lowerValueExpression(orderedArguments[0]);
+        if (!index.has_value())
+            return std::nullopt;
+
+        const auto elementType = m_semanticContext.getArrayElementType(receiverType);
+        auto baseAddress = receiverAddress.value();
+        if (receiverType.kind() == TypeKind::Slice)
+        {
+            // the slice's data pointer is its first field
+            const auto dataPointerAddress = emitFieldAddress(baseAddress, receiverType, "data", 0, elementType.toReference());
+            baseAddress = emitLoad(dataPointerAddress, elementType.toReference());
+        }
+
+        const auto elementAddressId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<ElementAddressInstruction>(
+            elementAddressId,
+            baseAddress,
+            receiverType,
+            index.value(),
+            elementType));
+        return ValueRef{ elementAddressId };
     }
 
     std::optional<ValueRef> IRLowerer::lowerMemberFieldAddress(const Expression* receiverExpression, const NameExpression* fieldNameExpression) noexcept
@@ -1883,6 +2000,28 @@ namespace Caracal
                     if (binaryExpression->binaryOperator() == BinaryOperatorKind::MemberAccess
                         && binaryExpression->rightExpression()->kind() == NodeKind::NameExpression)
                     {
+                        const auto receiverType = binaryExpression->leftExpression()->type().toBaseType();
+                        if (receiverType.kind() == TypeKind::FixedArray)
+                        {
+                            // a fixed array's length normally folds, this covers unfolded paths
+                            const auto temporaryId = m_nextTemporaryId++;
+                            m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+                                temporaryId,
+                                ConstantValue::FromI32(m_semanticContext.getArrayLength(receiverType)),
+                                Type::I32()));
+                            return ValueRef{ temporaryId };
+                        }
+
+                        if (receiverType.kind() == TypeKind::Slice)
+                        {
+                            const auto receiverAddress = lowerIntrinsicReceiverAddress(binaryExpression->leftExpression().get());
+                            if (!receiverAddress.has_value())
+                                return std::nullopt;
+
+                            const auto lengthAddress = emitFieldAddress(receiverAddress.value(), receiverType, ArrayLengthMemberName, 1, Type::I32());
+                            return emitLoad(lengthAddress, Type::I32());
+                        }
+
                         if (binaryExpression->leftExpression()->type().kind() == TypeKind::Enum)
                         {
                             const auto enumConstant = tryLowerEnumMemberConstant(binaryExpression);
@@ -2081,7 +2220,7 @@ namespace Caracal
             }
             else
             {
-                loweredArgument = lowerValueExpression(argument);
+                loweredArgument = lowerValueExpressionExpecting(argument, parameterTypes[i + parameterOffset].type().toValue());
             }
 
             if (!loweredArgument.has_value())

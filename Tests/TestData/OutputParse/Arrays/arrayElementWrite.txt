@@ -1,0 +1,153 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: make
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(5): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: numbers
+                }
+            }
+            Right: {
+                ArrayLiteral(4): {
+                    Type: undefined
+                    NumberLiteral: 1
+                    NumberLiteral: 2
+                    NumberLiteral: 3
+                    NumberLiteral: 4
+                }
+            }
+        }
+        ExpressionStatement: {
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: numbers
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: undefined
+                        Function type: undefined
+                        NameExpression: {
+                            Type: undefined
+                            Name: set
+                        }
+                        ArgumentsNode(2): {
+                            NumberLiteral: 0
+                            NumberLiteral: 9
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: matrix
+                }
+            }
+            Right: {
+                ArrayLiteral(2): {
+                    Type: undefined
+                    ArrayLiteral(2): {
+                        Type: undefined
+                        NumberLiteral: 1
+                        NumberLiteral: 2
+                    }
+                    ArrayLiteral(2): {
+                        Type: undefined
+                        NumberLiteral: 3
+                        NumberLiteral: 4
+                    }
+                }
+            }
+        }
+        ExpressionStatement: {
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    BinaryExpression: {
+                        Type: undefined
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: matrix
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            FunctionCallExpression: {
+                                Type: undefined
+                                Function type: undefined
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: at
+                                }
+                                ArgumentsNode(1): {
+                                    NumberLiteral: 1
+                                }
+                            }
+                        }
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: undefined
+                        Function type: undefined
+                        NameExpression: {
+                            Type: undefined
+                            Name: set
+                        }
+                        ArgumentsNode(2): {
+                            NumberLiteral: 0
+                            NumberLiteral: 7
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: numbers
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: undefined
+                        Function type: undefined
+                        NameExpression: {
+                            Type: undefined
+                            Name: at
+                        }
+                        ArgumentsNode(1): {
+                            NumberLiteral: 0
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

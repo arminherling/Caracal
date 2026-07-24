@@ -1,0 +1,14 @@
+ Error T0065
+  Binary operator cannot be applied to this type
+    ,-[Diagnostics/Input/arrayOperators.cara:5:13]
+  2 | {
+  3 |     xs := [1, 2];
+  4 |     ys := [3, 4];
+  5 |     _ := xs + ys;
+    .             -
+    .             `-- Operator '+' cannot be applied to '[i32; 2]'
+  6 |     return 0;
+  7 | }
+  8 | 
+    `----
+  Fix: Operator '+' expects numeric operands.

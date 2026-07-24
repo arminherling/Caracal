@@ -367,6 +367,24 @@ namespace Caracal
                 if (slotType == nullptr)
                     return false;
 
+                // allocas always live in the entry block, so loops reuse one slot and phis stay first in their block
+                auto* entryBlock = &m_currentFunction->getEntryBlock();
+                if (m_irBuilder->GetInsertBlock() != entryBlock)
+                {
+                    llvm::IRBuilderBase::InsertPointGuard guard{ *m_irBuilder };
+                    if (auto* terminator = entryBlock->getTerminator(); terminator != nullptr)
+                    {
+                        m_irBuilder->SetInsertPoint(terminator);
+                    }
+                    else
+                    {
+                        m_irBuilder->SetInsertPoint(entryBlock);
+                    }
+
+                    m_slots[allocate.resultId()] = m_irBuilder->CreateAlloca(slotType, nullptr, allocate.localName());
+                    return true;
+                }
+
                 m_slots[allocate.resultId()] = m_irBuilder->CreateAlloca(slotType, nullptr, allocate.localName());
                 return true;
             }
@@ -398,8 +416,22 @@ namespace Caracal
                 const auto& elementAddress = static_cast<const ElementAddressInstruction&>(instruction);
                 auto* baseAddress = tryResolve(elementAddress.baseAddress());
                 auto* index = tryResolve(elementAddress.index());
+                if (baseAddress == nullptr || index == nullptr)
+                    return false;
+
+                // a slice's base is its loaded data pointer, so the address is element-typed
+                if (elementAddress.arrayType().kind() == TypeKind::Slice)
+                {
+                    auto* elementType = lowerType(elementAddress.type());
+                    if (elementType == nullptr)
+                        return false;
+
+                    defineValue(elementAddress.resultId(), m_irBuilder->CreateGEP(elementType, baseAddress, { index }, "element"));
+                    return true;
+                }
+
                 auto* arrayType = lowerType(elementAddress.arrayType());
-                if (baseAddress == nullptr || index == nullptr || arrayType == nullptr)
+                if (arrayType == nullptr)
                     return false;
 
                 auto* zero = llvm::ConstantInt::get(llvm::Type::getInt32Ty(m_llvmModule.getContext()), 0);

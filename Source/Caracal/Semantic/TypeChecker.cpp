@@ -2470,6 +2470,64 @@ namespace Caracal
                         return fieldType;
                     }
                 }
+                else if (leftType.kind() == TypeKind::FixedArray
+                    || leftType.kind() == TypeKind::DynamicArray
+                    || leftType.kind() == TypeKind::Slice)
+                {
+                    const auto receiverType = leftType.toValue();
+                    if (binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression)
+                    {
+                        auto* functionCallExpression = static_cast<FunctionCallExpression*>(binaryExpression->rightExpression().get());
+                        const auto& name = functionCallExpression->nameExpression()->name();
+
+                        auto methodType = m_module.tryGetOrCreateArrayIntrinsic(receiverType, name);
+                        if (methodType == Type::Undefined())
+                        {
+                            m_diagnostics.addUnknownMethodError(
+                                tokens.source(),
+                                functionCallExpression->sourceLocation(tokens),
+                                FormatTypeName(m_module, receiverType),
+                                name);
+                            return Type::Undefined();
+                        }
+
+                        auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+                        if (!typeCheckCallArguments(functionCallExpression, methodDefinition, tokens))
+                        {
+                            return Type::Undefined();
+                        }
+
+                        const auto& returnTypes = methodDefinition.returnTypes();
+                        auto returnType = Type::Void();
+                        if (returnTypes.size() == 1)
+                        {
+                            returnType = returnTypes[0];
+                        }
+
+                        binaryExpression->setType(returnType);
+                        functionCallExpression->setType(returnType);
+                        functionCallExpression->setFunctionType(methodType);
+                        functionCallExpression->nameExpression()->setType(methodType);
+                        return returnType;
+                    }
+                    else if (binaryExpression->rightExpression()->kind() == NodeKind::NameExpression)
+                    {
+                        auto* memberNameExpression = static_cast<NameExpression*>(binaryExpression->rightExpression().get());
+                        if (memberNameExpression->name() == ArrayLengthMemberName)
+                        {
+                            memberNameExpression->setType(Type::I32());
+                            binaryExpression->setType(Type::I32());
+                            return Type::I32();
+                        }
+
+                        m_diagnostics.addUnknownFieldError(
+                            tokens.source(),
+                            memberNameExpression->sourceLocation(tokens),
+                            FormatTypeName(m_module, receiverType),
+                            memberNameExpression->name());
+                        return Type::Undefined();
+                    }
+                }
 
                 if (leftType != Type::Undefined())
                 {
@@ -2745,7 +2803,8 @@ namespace Caracal
         const bool hasImplicitThis =
             functionDefinition.functionType() == FunctionType::SynthesizedConstructor ||
             functionDefinition.functionType() == FunctionType::PublicMethod ||
-            functionDefinition.functionType() == FunctionType::PrivateMethod;
+            functionDefinition.functionType() == FunctionType::PrivateMethod ||
+            functionDefinition.functionType() == FunctionType::Intrinsic;
         const size_t parameterOffset = hasImplicitThis ? 1 : 0;
         if (parameterCount < parameterOffset)
         {

@@ -118,6 +118,9 @@ namespace Caracal
         [[nodiscard]] std::optional<ValueRef> spillValueToTempSlot(const Expression* expression, ValueRef value) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerMethodReceiverAddress(const Expression* receiverExpression) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerCallWithReceiver(const FunctionCallExpression* expression, const Expression* receiverExpression = nullptr) noexcept;
+        [[nodiscard]] std::optional<ValueRef> lowerArrayIntrinsicCall(const FunctionCallExpression* expression, const Expression* receiverExpression, const FunctionDefinition& functionDefinition) noexcept;
+        [[nodiscard]] std::optional<ValueRef> lowerIntrinsicReceiverAddress(const Expression* receiverExpression) noexcept;
+        [[nodiscard]] std::optional<ValueRef> lowerElementAddressForCall(const Expression* receiverExpression, const FunctionCallExpression* call) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerMemberFieldAddress(const Expression* receiverExpression, const NameExpression* fieldNameExpression) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerAddressExpression(const Expression* expression) noexcept;
         [[nodiscard]] bool referenceArgumentAliasesConstant(const Expression* argument) const noexcept;

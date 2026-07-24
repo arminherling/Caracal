@@ -1,0 +1,35 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @make() {
+entry:
+  %numbers = alloca [4 x i32], align 4
+  %matrix = alloca [2 x [2 x i32]], align 4
+  %element = getelementptr [4 x i32], ptr %numbers, i32 0, i32 0
+  store i32 1, ptr %element, align 4
+  %element1 = getelementptr [4 x i32], ptr %numbers, i32 0, i32 1
+  store i32 2, ptr %element1, align 4
+  %element2 = getelementptr [4 x i32], ptr %numbers, i32 0, i32 2
+  store i32 3, ptr %element2, align 4
+  %element3 = getelementptr [4 x i32], ptr %numbers, i32 0, i32 3
+  store i32 4, ptr %element3, align 4
+  %element4 = getelementptr [4 x i32], ptr %numbers, i32 0, i32 0
+  store i32 9, ptr %element4, align 4
+  %element5 = getelementptr [2 x [2 x i32]], ptr %matrix, i32 0, i32 0
+  %element6 = getelementptr [2 x i32], ptr %element5, i32 0, i32 0
+  store i32 1, ptr %element6, align 4
+  %element7 = getelementptr [2 x i32], ptr %element5, i32 0, i32 1
+  store i32 2, ptr %element7, align 4
+  %element8 = getelementptr [2 x [2 x i32]], ptr %matrix, i32 0, i32 1
+  %element9 = getelementptr [2 x i32], ptr %element8, i32 0, i32 0
+  store i32 3, ptr %element9, align 4
+  %element10 = getelementptr [2 x i32], ptr %element8, i32 0, i32 1
+  store i32 4, ptr %element10, align 4
+  %element11 = getelementptr [2 x [2 x i32]], ptr %matrix, i32 0, i32 1
+  %element12 = getelementptr [2 x i32], ptr %element11, i32 0, i32 0
+  store i32 7, ptr %element12, align 4
+  %element13 = getelementptr [4 x i32], ptr %numbers, i32 0, i32 0
+  %load = load i32, ptr %element13, align 4
+  ret i32 %load
+}

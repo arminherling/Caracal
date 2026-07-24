@@ -1,0 +1,13 @@
+ Error T0050
+  Missing required argument
+    ,-[Diagnostics/Input/arrayAtMissingArgument.cara:3:19]
+  1 | def make(values: [i32; 4]) i32
+  2 | {
+  3 |     _ := values.at();
+    .                   --
+    .                    `-- Call to 'at' is missing a required argument for 'index'.
+  4 |     return 0;
+  5 | }
+  6 | 
+    `----
+  Fix: Pass an argument for 'index', or give it a default value.

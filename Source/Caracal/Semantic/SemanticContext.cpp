@@ -264,6 +264,53 @@ namespace Caracal
         return 0;
     }
 
+    Type SemanticContext::tryGetOrCreateArrayIntrinsic(Type arrayType, std::string_view methodName) noexcept
+    {
+        const auto baseArrayType = arrayType.toBaseType();
+        const auto elementType = getArrayElementType(baseArrayType);
+        if (elementType == Type::Undefined())
+        {
+            return Type::Undefined();
+        }
+
+        auto fullMethodName = std::string(getNameByType(baseArrayType)) + "." + std::string(methodName);
+        if (const auto existing = m_arrayIntrinsicsByFullName.find(fullMethodName); existing != m_arrayIntrinsicsByFullName.end())
+        {
+            return existing->second;
+        }
+
+
+        // TODO replace the following code once we got generics + array prelude
+        // lazily add the intrinsics for this array type
+        auto parameters = std::vector<Parameter>{};
+        auto returnTypes = std::vector<Type>{};
+        if (methodName == "at")
+        {
+            parameters.emplace_back(ImplicitThisName, baseArrayType.toReference());
+            parameters.emplace_back("index", Type::I32());
+            returnTypes.push_back(elementType);
+        }
+        else if (methodName == "set")
+        {
+            parameters.emplace_back(ImplicitThisName, baseArrayType.toReference());
+            parameters.emplace_back("index", Type::I32());
+            parameters.emplace_back("value", elementType);
+            returnTypes.push_back(Type::Void());
+        }
+        else
+        {
+            return Type::Undefined();
+        }
+
+        auto methodId = m_nextId += VariantCount;
+        auto methodType = Type{ methodId, TypeKind::Method };
+        m_functionDefinitions.emplace_back(nullptr, methodType, baseArrayType, FunctionType::Intrinsic, std::string(methodName), fullMethodName, false, parameters, returnTypes);
+        m_functionDefinitionIndexById.try_emplace(methodId, m_functionDefinitions.size() - 1);
+        m_arrayIntrinsicsByFullName.try_emplace(std::move(fullMethodName), methodType);
+
+        return methodType;
+    }
+
     EnumDefinition& SemanticContext::createEnum(
         std::string_view name,
         const EnumDefinitionStatement* statement) noexcept

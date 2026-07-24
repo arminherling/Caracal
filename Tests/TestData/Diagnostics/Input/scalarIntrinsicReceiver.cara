@@ -1,0 +1,5 @@
+def make() i32
+{
+    _ := 5.at(0);
+    return 0;
+}
