@@ -25,35 +25,56 @@ TypeDefinitionStatement: {
         }
     }
 }
-ConstantDeclaration: {
-    Type: i32
-    Left: {
-        NameExpression: {
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: use
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
             Type: i32
-            Name: v
+            Lexeme: i32
         }
     }
-    Right: {
-        BinaryExpression: {
+    BlockNode(2): {
+        ConstantDeclaration: {
             Type: i32
             Left: {
                 NameExpression: {
-                    Type: Zero
-                    Name: Zero
+                    Type: i32
+                    Name: v
                 }
             }
-            Operation: MemberAccess
             Right: {
-                FunctionCallExpression: {
+                BinaryExpression: {
                     Type: i32
-                    Function type: () -> i32
-                    NameExpression: {
-                        Type: () -> i32
-                        Name: value
+                    Left: {
+                        NameExpression: {
+                            Type: Zero
+                            Name: Zero
+                        }
                     }
-                    ArgumentsNode(0): {
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: i32
+                            Function type: () -> i32
+                            NameExpression: {
+                                Type: () -> i32
+                                Name: value
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
                     }
                 }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NameExpression: {
+                Type: i32
+                Name: v
             }
         }
     }

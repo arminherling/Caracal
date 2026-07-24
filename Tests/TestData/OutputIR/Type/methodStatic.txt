@@ -1,5 +1,10 @@
 type Zero
 
+define use() i32
+block entry(0):
+    %0 = call Zero.value() : i32
+    return %0
+
 define Zero.value() i32
 block entry(0):
     %0 = const 0 : i32

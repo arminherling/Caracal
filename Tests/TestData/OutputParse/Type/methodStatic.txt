@@ -25,35 +25,56 @@ TypeDefinitionStatement: {
         }
     }
 }
-ConstantDeclaration: {
+FunctionDefinitionStatement: {
     Type: undefined
-    Left: {
-        NameExpression: {
+    Name: use
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
             Type: undefined
-            Name: v
+            Lexeme: i32
         }
     }
-    Right: {
-        BinaryExpression: {
+    BlockNode(2): {
+        ConstantDeclaration: {
             Type: undefined
             Left: {
                 NameExpression: {
                     Type: undefined
-                    Name: Zero
+                    Name: v
                 }
             }
-            Operation: MemberAccess
             Right: {
-                FunctionCallExpression: {
+                BinaryExpression: {
                     Type: undefined
-                    Function type: undefined
-                    NameExpression: {
-                        Type: undefined
-                        Name: value
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: Zero
+                        }
                     }
-                    ArgumentsNode(0): {
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: value
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
                     }
                 }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: v
             }
         }
     }

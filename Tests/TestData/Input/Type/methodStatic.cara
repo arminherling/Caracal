@@ -6,4 +6,8 @@
     }
 }
 
-v :: Zero.value();
+def use() i32
+{
+    v :: Zero.value();
+    return v;
+}

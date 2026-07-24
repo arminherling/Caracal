@@ -1,0 +1,28 @@
+ Error T0081
+  Cannot store the result of a call that returns nothing
+    ,-[Diagnostics/Input/callReturnsNoValue.cara:4:5]
+  1 | def make() i32
+  2 | {
+  3 |     numbers := [1, 2, 3];
+  4 |     result := numbers.set(0, 9);
+    .     ------
+    .        `-- 'result' would store nothing because this call does not return a value
+  5 |     kept :: numbers.set(1, 2);
+  6 |     return numbers.at(0);
+  7 | }
+    `----
+  Fix: Call it as its own statement or discard the result with '_'.
+ Error T0081
+  Cannot store the result of a call that returns nothing
+    ,-[Diagnostics/Input/callReturnsNoValue.cara:5:5]
+  2 | {
+  3 |     numbers := [1, 2, 3];
+  4 |     result := numbers.set(0, 9);
+  5 |     kept :: numbers.set(1, 2);
+    .     ----
+    .       `-- 'kept' would store nothing because this call does not return a value
+  6 |     return numbers.at(0);
+  7 | }
+  8 | 
+    `----
+  Fix: Call it as its own statement or discard the result with '_'.

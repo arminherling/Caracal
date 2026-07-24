@@ -1,0 +1,12 @@
+ Error T0082
+  Global constant initializers cannot call functions
+    ,-[Diagnostics/Input/globalConstantWithCall.cara:6:6]
+  3 |     return 4;
+  4 | }
+  5 | 
+  6 | g :: make();
+    .      ------
+    .         `-- This initializer calls a function, which cannot run before the program starts
+  7 | 
+    `----
+  Fix: Initialize 'g' with a constant expression or a constructor call.

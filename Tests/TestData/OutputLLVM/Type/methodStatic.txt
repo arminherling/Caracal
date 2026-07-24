@@ -2,6 +2,12 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
+define i32 @use() {
+entry:
+  %call = call i32 @Zero.value()
+  ret i32 %call
+}
+
 define i32 @Zero.value() {
 entry:
   ret i32 0

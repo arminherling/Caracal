@@ -217,6 +217,10 @@ namespace Caracal
                 return "T0079";
             case DiagnosticKind::T0080_ArrayLengthMismatch:
                 return "T0080";
+            case DiagnosticKind::T0081_CallReturnsNoValue:
+                return "T0081";
+            case DiagnosticKind::T0082_GlobalConstantWithCall:
+                return "T0082";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -432,6 +436,10 @@ namespace Caracal
                 return "Method call is missing the leading dot";
             case DiagnosticKind::T0074_StaticMethodTypeNameMismatch:
                 return "Static method type name does not match the enclosing type";
+            case DiagnosticKind::T0081_CallReturnsNoValue:
+                return "Cannot store the result of a call that returns nothing";
+            case DiagnosticKind::T0082_GlobalConstantWithCall:
+                return "Global constant initializers cannot call functions";
             case DiagnosticKind::T0075_DuplicateMethodDeclaration:
                 return "Duplicate method declaration";
             case DiagnosticKind::T0076_MemberAccessInDefaultParameter:

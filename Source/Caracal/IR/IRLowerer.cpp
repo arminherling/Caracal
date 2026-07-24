@@ -1706,6 +1706,18 @@ namespace Caracal
                 const auto* groupingExpression = static_cast<const GroupingExpression*>(expression);
                 return tryLowerConstantExpression(groupingExpression->expression().get());
             }
+            case NodeKind::NameExpression:
+            {
+                // a name in a global initializer can only refer to an earlier global constant,
+                // so its own initializer lowers in its place (cycles are impossible, forward
+                // references already fail name resolution in the checker)
+                const auto* nameExpression = static_cast<const NameExpression*>(expression);
+                const auto* definition = m_semanticContext.tryGetConstantDefinition(nameExpression->name());
+                if (definition == nullptr || definition->expression() == nullptr)
+                    return std::nullopt;
+
+                return tryLowerConstantExpression(definition->expression());
+            }
             case NodeKind::ArrayLiteral:
             {
                 const auto* literal = static_cast<const ArrayLiteral*>(expression);

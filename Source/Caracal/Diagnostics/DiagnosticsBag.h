@@ -119,6 +119,8 @@ namespace Caracal
         void addTypeDotNewDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& typeName);
         void addReferenceReturnTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
         void addAlreadyReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addCallReturnsNoValueError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
+        void addGlobalConstantWithCallError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
 
         // Duplicate declaration diagnostics
         void addDuplicateDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name, const SourceTextSharedPtr& otherSource = nullptr, std::optional<SourceLocation> otherLocation = std::nullopt);

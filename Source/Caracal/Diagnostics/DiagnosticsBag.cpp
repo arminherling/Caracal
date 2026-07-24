@@ -1507,6 +1507,38 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addCallReturnsNoValueError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0081_CallReturnsNoValue,
+            source,
+            location,
+            "Call it as its own statement or discard the result with '_'.");
+        diagnostic.addPrimaryLabel(location, "'" + name + "' would store nothing because this call does not return a value");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addGlobalConstantWithCallError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0082_GlobalConstantWithCall,
+            source,
+            location,
+            "Initialize '" + name + "' with a constant expression or a constructor call.");
+        diagnostic.addPrimaryLabel(location, "This initializer calls a function, which cannot run before the program starts");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addDuplicateDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,

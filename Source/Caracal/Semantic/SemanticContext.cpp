@@ -404,6 +404,14 @@ namespace Caracal
         return m_functionDefinitions.back();
     }
 
+    const ConstantDefinition* SemanticContext::tryGetConstantDefinition(std::string_view name) const noexcept
+    {
+        if (const auto result = m_constantDefinitionIndexByName.find(std::string(name)); result != m_constantDefinitionIndexByName.end())
+            return &m_constantDefinitions.at(result->second);
+
+        return nullptr;
+    }
+
     ConstantDefinition& SemanticContext::createConstant(
         std::string_view name,
         Expression* expression) noexcept

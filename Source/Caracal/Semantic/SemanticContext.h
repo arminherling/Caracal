@@ -70,6 +70,7 @@ namespace Caracal
         [[nodiscard]] FunctionDefinition& createConstructor(
             TypeDefinition& typeDefinition,
             const std::vector<Parameter>& parameters) noexcept;
+        [[nodiscard]] const ConstantDefinition* tryGetConstantDefinition(std::string_view name) const noexcept;
         [[nodiscard]] ConstantDefinition& createConstant(
             std::string_view name,
             Expression* expression) noexcept;

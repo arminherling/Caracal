@@ -1,0 +1,6 @@
+def make() i32
+{
+    return 4;
+}
+
+g :: make();

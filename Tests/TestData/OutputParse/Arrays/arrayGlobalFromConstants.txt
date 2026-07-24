@@ -1,0 +1,114 @@
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: base
+        }
+    }
+    Right: {
+        NumberLiteral: 4
+    }
+}
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: alias
+        }
+    }
+    Right: {
+        NameExpression: {
+            Type: undefined
+            Name: base
+        }
+    }
+}
+ConstantDeclaration: {
+    Type: undefined
+    Left: {
+        NameExpression: {
+            Type: undefined
+            Name: shared
+        }
+    }
+    Right: {
+        ArrayLiteral(3): {
+            Type: undefined
+            NameExpression: {
+                Type: undefined
+                Name: base
+            }
+            NameExpression: {
+                Type: undefined
+                Name: base
+            }
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: base
+                    }
+                }
+                Operation: Addition
+                Right: {
+                    NumberLiteral: 1
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: read
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    BinaryExpression: {
+                        Type: undefined
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: shared
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            FunctionCallExpression: {
+                                Type: undefined
+                                Function type: undefined
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: at
+                                }
+                                ArgumentsNode(1): {
+                                    NumberLiteral: 2
+                                }
+                            }
+                        }
+                    }
+                }
+                Operation: Addition
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: alias
+                    }
+                }
+            }
+        }
+    }
+}

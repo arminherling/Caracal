@@ -1,0 +1,7 @@
+def make() i32
+{
+    numbers := [1, 2, 3];
+    result := numbers.set(0, 9);
+    kept :: numbers.set(1, 2);
+    return numbers.at(0);
+}

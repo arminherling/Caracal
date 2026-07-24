@@ -1197,6 +1197,64 @@ namespace Caracal
         }
     }
 
+    [[nodiscard]] static bool ContainsFunctionCall(const Expression* expression) noexcept
+    {
+        if (expression == nullptr)
+        {
+            return false;
+        }
+
+        switch (expression->kind())
+        {
+            case NodeKind::FunctionCallExpression:
+            {
+                return true;
+            }
+            case NodeKind::GroupingExpression:
+            {
+                return ContainsFunctionCall(static_cast<const GroupingExpression*>(expression)->expression().get());
+            }
+            case NodeKind::UnaryExpression:
+            {
+                return ContainsFunctionCall(static_cast<const UnaryExpression*>(expression)->expression().get());
+            }
+            case NodeKind::BinaryExpression:
+            {
+                const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+                return ContainsFunctionCall(binaryExpression->leftExpression().get())
+                    || ContainsFunctionCall(binaryExpression->rightExpression().get());
+            }
+            case NodeKind::MemberAccessExpression:
+            {
+                return ContainsFunctionCall(static_cast<const MemberAccessExpression*>(expression)->expression().get());
+            }
+            case NodeKind::ArrayLiteral:
+            {
+                for (const auto& element : static_cast<const ArrayLiteral*>(expression)->elements())
+                {
+                    if (ContainsFunctionCall(element.get()))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            default:
+            {
+                return false;
+            }
+        }
+    }
+
+    [[nodiscard]] static bool IsConstructorCallExpression(const Expression* expression) noexcept
+    {
+        const auto* stripped = StripGroupings(expression);
+        return stripped != nullptr
+            && stripped->kind() == NodeKind::BinaryExpression
+            && static_cast<const BinaryExpression*>(stripped)->binaryOperator() == BinaryOperatorKind::ConstructorCall;
+    }
+
     void TypeChecker::typeCheckConstantDeclaration(ConstantDeclaration* statement, const TokenBuffer& tokens)
     {
         if (statement->isGlobalConstant())
@@ -1280,6 +1338,24 @@ namespace Caracal
         {
             auto nameExpression = static_cast<NameExpression*>(leftExpression);
             const auto& name = nameExpression->name();
+            if (bindingType == Type::Void())
+            {
+                m_diagnostics.addCallReturnsNoValueError(tokens.source(), nameExpression->sourceLocation(tokens), name);
+                nameExpression->setType(Type::Undefined());
+                statement->setType(Type::Undefined());
+                return;
+            }
+
+            if (statement->isGlobalConstant()
+                && ContainsFunctionCall(rightExpression)
+                && !IsConstructorCallExpression(rightExpression))
+            {
+                m_diagnostics.addGlobalConstantWithCallError(
+                    tokens.source(),
+                    rightExpression->sourceLocation(tokens),
+                    name);
+            }
+
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {
@@ -1359,6 +1435,14 @@ namespace Caracal
         {
             auto nameExpression = static_cast<NameExpression*>(leftExpression);
             const auto& name = nameExpression->name();
+            if (bindingType == Type::Void())
+            {
+                m_diagnostics.addCallReturnsNoValueError(tokens.source(), nameExpression->sourceLocation(tokens), name);
+                nameExpression->setType(Type::Undefined());
+                statement->setType(Type::Undefined());
+                return;
+            }
+
             auto scope = currentScope();
             if (!scope->hasVariableBinding(name))
             {

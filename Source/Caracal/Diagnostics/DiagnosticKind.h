@@ -76,6 +76,8 @@ namespace Caracal
         T0031_ReferenceReturnType,
         T0032_AlreadyReference,
         T0074_StaticMethodTypeNameMismatch,
+        T0081_CallReturnsNoValue,
+        T0082_GlobalConstantWithCall,
 
         // Duplicate declaration diagnostics
         T0033_DuplicateDeclaration,
