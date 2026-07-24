@@ -1,0 +1,5 @@
+#builtin
+type f32
+{
+    def f32.bitAnd(lhs: f32, rhs: f32) f32 {}
+}

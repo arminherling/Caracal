@@ -1,3 +1,4 @@
+#include <Caracal/Constants.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BoolLiteral.h>
@@ -37,22 +38,22 @@ namespace Caracal
 
     static AnnotationKind ParseAnnotationKind(std::string_view name)
     {
-        if (name == "extern")
+        if (name == ExternAnnotationName)
         {
             return AnnotationKind::Extern;
         }
 
-        if (name == "flag")
+        if (name == FlagAnnotationName)
         {
             return AnnotationKind::Flag;
         }
 
-        if (name == "step")
+        if (name == StepAnnotationName)
         {
             return AnnotationKind::Step;
         }
 
-        if (name == "builtin")
+        if (name == BuiltinAnnotationName)
         {
             return AnnotationKind::Builtin;
         }

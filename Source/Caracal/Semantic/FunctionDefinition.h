@@ -38,6 +38,7 @@ namespace Caracal
         [[nodiscard]] Type type() const noexcept { return m_type; }
         [[nodiscard]] Type parentType() const noexcept { return m_parentType; }
         [[nodiscard]] FunctionType functionType() const noexcept { return m_functionType; }
+        void setFunctionType(FunctionType functionType) noexcept { m_functionType = functionType; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
         [[nodiscard]] const std::string& fullName() const noexcept { return m_fullName; }
         [[nodiscard]] bool isVariadic() const noexcept { return m_isVariadic; }

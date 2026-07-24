@@ -8,6 +8,13 @@ type u8
 
     def u8.negate(value: u8) u8 {}
 
+    def u8.bitAnd(lhs: u8, rhs: u8) u8 {}
+    def u8.bitOr(lhs: u8, rhs: u8) u8 {}
+    def u8.bitXor(lhs: u8, rhs: u8) u8 {}
+    def u8.bitNot(value: u8) u8 {}
+    def u8.shiftLeft(value: u8, amount: i32) u8 {}
+    def u8.shiftRight(value: u8, amount: i32) u8 {}
+
     def u8.equals(lhs: u8, rhs: u8) bool {}
     def u8.notEquals(lhs: u8, rhs: u8) bool {}
     def u8.lessThan(lhs: u8, rhs: u8) bool {}

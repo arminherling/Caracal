@@ -29,10 +29,10 @@ namespace Caracal
     static const AnnotationDefinition* GetAnnotationDefinition(AnnotationKind kind)
     {
         static const AnnotationDefinition Definitions[] = {
-            { AnnotationKind::Extern, "extern", TokenKind::DefKeyword, 0, Type::Undefined(), "symbol" },
-            { AnnotationKind::Flag, "flag", TokenKind::EnumKeyword, 0, Type::Undefined(), "" },
-            { AnnotationKind::Step, "step", TokenKind::EnumKeyword, 1, Type::I32(), "" },
-            { AnnotationKind::Builtin, "builtin", TokenKind::TypeKeyword, 0, Type::Undefined(), "" },
+            { AnnotationKind::Extern, ExternAnnotationName, TokenKind::DefKeyword, 0, Type::Undefined(), SymbolAnnotationArgumentName },
+            { AnnotationKind::Flag, FlagAnnotationName, TokenKind::EnumKeyword, 0, Type::Undefined(), "" },
+            { AnnotationKind::Step, StepAnnotationName, TokenKind::EnumKeyword, 1, Type::I32(), "" },
+            { AnnotationKind::Builtin, BuiltinAnnotationName, TokenKind::TypeKeyword, 0, Type::Undefined(), "" },
         };
 
         for (const auto& definition : Definitions)
@@ -59,20 +59,55 @@ namespace Caracal
     static const BuiltinOperatorDefinition* TryGetBuiltinOperatorDefinition(std::string_view methodName)
     {
         static constexpr BuiltinOperatorDefinition Definitions[] = {
-            { "add", false, BinaryOperatorKind::Addition, UnaryOperatorKind::Invalid, &FoldAddition, nullptr },
-            { "subtract", false, BinaryOperatorKind::Subtraction, UnaryOperatorKind::Invalid, &FoldSubtraction, nullptr },
-            { "multiply", false, BinaryOperatorKind::Multiplication, UnaryOperatorKind::Invalid, &FoldMultiplication, nullptr },
-            { "divide", false, BinaryOperatorKind::Division, UnaryOperatorKind::Invalid, &FoldDivision, nullptr },
-            { "equals", false, BinaryOperatorKind::Equal, UnaryOperatorKind::Invalid, &FoldEqual, nullptr },
-            { "notEquals", false, BinaryOperatorKind::NotEqual, UnaryOperatorKind::Invalid, &FoldNotEqual, nullptr },
-            { "lessThan", false, BinaryOperatorKind::LessThan, UnaryOperatorKind::Invalid, &FoldLessThan, nullptr },
-            { "lessOrEqual", false, BinaryOperatorKind::LessOrEqual, UnaryOperatorKind::Invalid, &FoldLessOrEqual, nullptr },
-            { "greaterThan", false, BinaryOperatorKind::GreaterThan, UnaryOperatorKind::Invalid, &FoldGreaterThan, nullptr },
-            { "greaterOrEqual", false, BinaryOperatorKind::GreaterOrEqual, UnaryOperatorKind::Invalid, &FoldGreaterOrEqual, nullptr },
-            { "logicalAnd", false, BinaryOperatorKind::LogicalAnd, UnaryOperatorKind::Invalid, &FoldLogicalAnd, nullptr },
-            { "logicalOr", false, BinaryOperatorKind::LogicalOr, UnaryOperatorKind::Invalid, &FoldLogicalOr, nullptr },
-            { "negate", true, BinaryOperatorKind::Invalid, UnaryOperatorKind::ValueNegation, nullptr, &FoldValueNegation },
-            { "logicalNegate", true, BinaryOperatorKind::Invalid, UnaryOperatorKind::LogicalNegation, nullptr, &FoldLogicalNegation },
+            { BuiltinAddMethodName, false, BinaryOperatorKind::Addition, UnaryOperatorKind::Invalid, &FoldAddition, nullptr },
+            { BuiltinSubtractMethodName, false, BinaryOperatorKind::Subtraction, UnaryOperatorKind::Invalid, &FoldSubtraction, nullptr },
+            { BuiltinMultiplyMethodName, false, BinaryOperatorKind::Multiplication, UnaryOperatorKind::Invalid, &FoldMultiplication, nullptr },
+            { BuiltinDivideMethodName, false, BinaryOperatorKind::Division, UnaryOperatorKind::Invalid, &FoldDivision, nullptr },
+            { BuiltinEqualsMethodName, false, BinaryOperatorKind::Equal, UnaryOperatorKind::Invalid, &FoldEqual, nullptr },
+            { BuiltinNotEqualsMethodName, false, BinaryOperatorKind::NotEqual, UnaryOperatorKind::Invalid, &FoldNotEqual, nullptr },
+            { BuiltinLessThanMethodName, false, BinaryOperatorKind::LessThan, UnaryOperatorKind::Invalid, &FoldLessThan, nullptr },
+            { BuiltinLessOrEqualMethodName, false, BinaryOperatorKind::LessOrEqual, UnaryOperatorKind::Invalid, &FoldLessOrEqual, nullptr },
+            { BuiltinGreaterThanMethodName, false, BinaryOperatorKind::GreaterThan, UnaryOperatorKind::Invalid, &FoldGreaterThan, nullptr },
+            { BuiltinGreaterOrEqualMethodName, false, BinaryOperatorKind::GreaterOrEqual, UnaryOperatorKind::Invalid, &FoldGreaterOrEqual, nullptr },
+            { BuiltinLogicalAndMethodName, false, BinaryOperatorKind::LogicalAnd, UnaryOperatorKind::Invalid, &FoldLogicalAnd, nullptr },
+            { BuiltinLogicalOrMethodName, false, BinaryOperatorKind::LogicalOr, UnaryOperatorKind::Invalid, &FoldLogicalOr, nullptr },
+            { BuiltinNegateMethodName, true, BinaryOperatorKind::Invalid, UnaryOperatorKind::ValueNegation, nullptr, &FoldValueNegation },
+            { BuiltinLogicalNegateMethodName, true, BinaryOperatorKind::Invalid, UnaryOperatorKind::LogicalNegation, nullptr, &FoldLogicalNegation },
+        };
+
+        for (const auto& definition : Definitions)
+        {
+            if (definition.methodName == methodName)
+            {
+                return &definition;
+            }
+        }
+
+        return nullptr;
+    }
+
+    enum class BuiltinIntrinsicShape
+    {
+        Binary,
+        Unary,
+        Shift,
+    };
+
+    struct BuiltinIntrinsicDefinition
+    {
+        std::string_view methodName;
+        BuiltinIntrinsicShape shape;
+    };
+
+    static const BuiltinIntrinsicDefinition* TryGetBuiltinIntrinsicDefinition(std::string_view methodName)
+    {
+        static constexpr BuiltinIntrinsicDefinition Definitions[] = {
+            { BuiltinBitAndMethodName, BuiltinIntrinsicShape::Binary },
+            { BuiltinBitOrMethodName, BuiltinIntrinsicShape::Binary },
+            { BuiltinBitXorMethodName, BuiltinIntrinsicShape::Binary },
+            { BuiltinBitNotMethodName, BuiltinIntrinsicShape::Unary },
+            { BuiltinShiftLeftMethodName, BuiltinIntrinsicShape::Shift },
+            { BuiltinShiftRightMethodName, BuiltinIntrinsicShape::Shift },
         };
 
         for (const auto& definition : Definitions)
@@ -809,7 +844,7 @@ namespace Caracal
 
             if (statement->isBuiltin())
             {
-                validateBuiltinOperatorMethod(methodStatement, typeDefinition, typeType, tokens);
+                validateBuiltinMethod(methodStatement, typeDefinition, typeType, tokens);
             }
             else
             {
@@ -839,13 +874,24 @@ namespace Caracal
             methodNameNode->methodName());
     }
 
-    void TypeChecker::validateBuiltinOperatorMethod(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens)
+    void TypeChecker::validateBuiltinMethod(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens)
     {
         const auto& methodName = methodStatement->methodNameNode()->methodName();
         const auto methodLocation = tokens.getSourceLocation(methodStatement->methodNameNode()->methodNameToken());
 
         const auto* operatorDefinition = TryGetBuiltinOperatorDefinition(methodName);
-        if (operatorDefinition == nullptr)
+        const auto* intrinsicDefinition = TryGetBuiltinIntrinsicDefinition(methodName);
+        if (intrinsicDefinition != nullptr && typeType != Type::I32() && typeType != Type::U8())
+        {
+            m_diagnostics.addBitwiseMethodOnNonIntegerTypeError(
+                tokens.source(),
+                methodLocation,
+                methodName,
+                typeDefinition.name());
+            return;
+        }
+
+        if (operatorDefinition == nullptr && intrinsicDefinition == nullptr)
         {
             m_diagnostics.addUnknownBuiltinMethodIgnoredWarning(
                 tokens.source(),
@@ -861,6 +907,91 @@ namespace Caracal
             return;
         }
 
+        if (intrinsicDefinition != nullptr)
+        {
+            auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+            const auto& parameters = methodDefinition.parameters();
+            const auto& returnTypes = methodDefinition.returnTypes();
+
+            for (const auto& parameter : parameters)
+            {
+                if (parameter.type() == Type::Undefined())
+                {
+                    return;
+                }
+            }
+
+            auto isValidSignature = returnTypes.size() == 1 && returnTypes.front() == typeType;
+            if (isValidSignature)
+            {
+                isValidSignature = methodStatement->modifier() == MethodModifier::Static
+                    && methodStatement->methodNameNode()->hasTypeName()
+                    && methodStatement->methodNameNode()->typeName().value() == typeDefinition.name();
+            }
+
+            if (isValidSignature)
+            {
+                switch (intrinsicDefinition->shape)
+                {
+                    case BuiltinIntrinsicShape::Binary:
+                    {
+                        isValidSignature = parameters.size() == 2
+                            && parameters[0].type() == typeType
+                            && parameters[1].type() == typeType;
+                        break;
+                    }
+                    case BuiltinIntrinsicShape::Unary:
+                    {
+                        isValidSignature = parameters.size() == 1
+                            && parameters[0].type() == typeType;
+                        break;
+                    }
+                    case BuiltinIntrinsicShape::Shift:
+                    {
+                        isValidSignature = parameters.size() == 2
+                            && parameters[0].type() == typeType
+                            && parameters[1].type() == Type::I32();
+                        break;
+                    }
+                }
+            }
+
+            if (!isValidSignature)
+            {
+                const auto typeName = FormatTypeName(m_module, typeType);
+                auto expectedSignature = std::string{};
+                switch (intrinsicDefinition->shape)
+                {
+                    case BuiltinIntrinsicShape::Binary:
+                    {
+                        expectedSignature = typeName + "." + methodDefinition.name() + "(lhs: " + typeName + ", rhs: " + typeName + ") " + typeName;
+                        break;
+                    }
+                    case BuiltinIntrinsicShape::Unary:
+                    {
+                        expectedSignature = typeName + "." + methodDefinition.name() + "(value: " + typeName + ") " + typeName;
+                        break;
+                    }
+                    case BuiltinIntrinsicShape::Shift:
+                    {
+                        expectedSignature = typeName + "." + methodDefinition.name() + "(value: " + typeName + ", amount: i32) " + typeName;
+                        break;
+                    }
+                }
+
+                m_diagnostics.addInvalidOperatorMethodSignatureError(
+                    tokens.source(),
+                    methodLocation,
+                    methodName,
+                    expectedSignature);
+                return;
+            }
+
+            // the lowerer is gonna emit instructions instead of calls for intrinsics
+            methodDefinition.setFunctionType(FunctionType::Intrinsic);
+            return;
+        }
+
         const auto& methodDefinition = m_module.getFunctionDefinition(methodType);
         const auto& parameters = methodDefinition.parameters();
         const auto& returnTypes = methodDefinition.returnTypes();
@@ -871,17 +1002,6 @@ namespace Caracal
             {
                 return;
             }
-        }
-
-        const auto typeName = FormatTypeName(m_module, typeType);
-        auto expectedSignature = std::string{};
-        if (operatorDefinition->isUnary)
-        {
-            expectedSignature = typeName + "." + methodDefinition.name() + "(value: " + typeName + ")";
-        }
-        else
-        {
-            expectedSignature = typeName + "." + methodDefinition.name() + "(lhs: " + typeName + ", rhs: " + typeName + ")";
         }
 
         auto isValidSignature = returnTypes.size() == 1 && returnTypes.front() != Type::Void();
@@ -909,6 +1029,17 @@ namespace Caracal
 
         if (!isValidSignature)
         {
+            const auto typeName = FormatTypeName(m_module, typeType);
+            auto expectedSignature = std::string{};
+            if (operatorDefinition->isUnary)
+            {
+                expectedSignature = typeName + "." + methodDefinition.name() + "(value: " + typeName + ")";
+            }
+            else
+            {
+                expectedSignature = typeName + "." + methodDefinition.name() + "(lhs: " + typeName + ", rhs: " + typeName + ")";
+            }
+
             m_diagnostics.addInvalidOperatorMethodSignatureError(
                 tokens.source(),
                 methodLocation,
@@ -2884,11 +3015,14 @@ namespace Caracal
         const auto& parameterTypes = functionDefinition.parameters();
         auto isVariadic = functionDefinition.isVariadic();
         auto parameterCount = (isVariadic ? parameterTypes.size() - 1 : parameterTypes.size());
+        // static intrinsics like i32.bitAnd have no receiver, array intrinsics carry an explicit .this parameter
         const bool hasImplicitThis =
             functionDefinition.functionType() == FunctionType::SynthesizedConstructor ||
             functionDefinition.functionType() == FunctionType::PublicMethod ||
             functionDefinition.functionType() == FunctionType::PrivateMethod ||
-            functionDefinition.functionType() == FunctionType::Intrinsic;
+            (functionDefinition.functionType() == FunctionType::Intrinsic
+                && !functionDefinition.parameters().empty()
+                && functionDefinition.parameters().front().name() == ImplicitThisName);
         const size_t parameterOffset = hasImplicitThis ? 1 : 0;
         if (parameterCount < parameterOffset)
         {

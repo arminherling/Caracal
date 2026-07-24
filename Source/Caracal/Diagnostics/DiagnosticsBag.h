@@ -92,6 +92,7 @@ namespace Caracal
         void addBuiltinMethodBodyIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName);
         void addUnknownBuiltinMethodIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName);
         void addInvalidOperatorMethodSignatureError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& expectedSignature);
+        void addBitwiseMethodOnNonIntegerTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName);
         void addMethodCallMissingDotError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName);
         void addMemberAccessInDefaultParameterError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addPrivateMethodCallOutsideTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName);

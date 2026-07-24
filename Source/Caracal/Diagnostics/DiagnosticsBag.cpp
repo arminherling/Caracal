@@ -836,6 +836,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addBitwiseMethodOnNonIntegerTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0083_BitwiseMethodOnNonIntegerType,
+            source,
+            location,
+            "Declare '" + methodName + "' on 'i32' or 'u8' instead.");
+        diagnostic.addPrimaryLabel(location, "'" + methodName + "' cannot be declared on builtin type '" + typeName + "'");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addMethodCallMissingDotError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName)
     {
         auto diagnostic = Diagnostic(

@@ -8,6 +8,13 @@ type i32
 
     def i32.negate(value: i32) i32 {}
     
+    def i32.bitAnd(lhs: i32, rhs: i32) i32 {}
+    def i32.bitOr(lhs: i32, rhs: i32) i32 {}
+    def i32.bitXor(lhs: i32, rhs: i32) i32 {}
+    def i32.bitNot(value: i32) i32 {}
+    def i32.shiftLeft(value: i32, amount: i32) i32 {}
+    def i32.shiftRight(value: i32, amount: i32) i32 {}
+
     def i32.equals(lhs: i32, rhs: i32) bool {}
     def i32.notEquals(lhs: i32, rhs: i32) bool {}
     def i32.lessThan(lhs: i32, rhs: i32) bool {}

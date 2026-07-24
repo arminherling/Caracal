@@ -15,4 +15,35 @@ namespace Caracal
 
     // the language-wide member name for array lengths
     inline constexpr const char* ArrayLengthMemberName = "length";
+
+    // the bitwise intrinsic method names on the integer builtin types
+    inline constexpr const char* BuiltinBitAndMethodName = "bitAnd";
+    inline constexpr const char* BuiltinBitOrMethodName = "bitOr";
+    inline constexpr const char* BuiltinBitXorMethodName = "bitXor";
+    inline constexpr const char* BuiltinBitNotMethodName = "bitNot";
+    inline constexpr const char* BuiltinShiftLeftMethodName = "shiftLeft";
+    inline constexpr const char* BuiltinShiftRightMethodName = "shiftRight";
+
+    // the operator method names on builtin types
+    inline constexpr const char* BuiltinAddMethodName = "add";
+    inline constexpr const char* BuiltinSubtractMethodName = "subtract";
+    inline constexpr const char* BuiltinMultiplyMethodName = "multiply";
+    inline constexpr const char* BuiltinDivideMethodName = "divide";
+    inline constexpr const char* BuiltinEqualsMethodName = "equals";
+    inline constexpr const char* BuiltinNotEqualsMethodName = "notEquals";
+    inline constexpr const char* BuiltinLessThanMethodName = "lessThan";
+    inline constexpr const char* BuiltinLessOrEqualMethodName = "lessOrEqual";
+    inline constexpr const char* BuiltinGreaterThanMethodName = "greaterThan";
+    inline constexpr const char* BuiltinGreaterOrEqualMethodName = "greaterOrEqual";
+    inline constexpr const char* BuiltinLogicalAndMethodName = "logicalAnd";
+    inline constexpr const char* BuiltinLogicalOrMethodName = "logicalOr";
+    inline constexpr const char* BuiltinNegateMethodName = "negate";
+    inline constexpr const char* BuiltinLogicalNegateMethodName = "logicalNegate";
+
+    // annotation names and their named arguments
+    inline constexpr const char* ExternAnnotationName = "extern";
+    inline constexpr const char* FlagAnnotationName = "flag";
+    inline constexpr const char* StepAnnotationName = "step";
+    inline constexpr const char* BuiltinAnnotationName = "builtin";
+    inline constexpr const char* SymbolAnnotationArgumentName = "symbol";
 }

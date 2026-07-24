@@ -221,6 +221,8 @@ namespace Caracal
                 return "T0081";
             case DiagnosticKind::T0082_GlobalConstantWithCall:
                 return "T0082";
+            case DiagnosticKind::T0083_BitwiseMethodOnNonIntegerType:
+                return "T0083";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -432,6 +434,8 @@ namespace Caracal
                 return "Unknown method in builtin type is ignored";
             case DiagnosticKind::T0072_InvalidOperatorMethodSignature:
                 return "Invalid operator method signature";
+            case DiagnosticKind::T0083_BitwiseMethodOnNonIntegerType:
+                return "Bitwise methods are only available on integer types";
             case DiagnosticKind::T0073_MethodCallMissingDot:
                 return "Method call is missing the leading dot";
             case DiagnosticKind::T0074_StaticMethodTypeNameMismatch:
