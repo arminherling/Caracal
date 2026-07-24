@@ -1,0 +1,5 @@
+def make() i32
+{
+    _ := i32.bitAnd(12);
+    return 0;
+}

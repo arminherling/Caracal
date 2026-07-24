@@ -1,11 +1,11 @@
  Error T0010
   Unknown method
-    ,-[Diagnostics/Input/scalarIntrinsicReceiver.cara:3:12]
+    ,-[Diagnostics/Input/bitwiseOperatorNotCallable.cara:3:14]
   1 | def make() i32
   2 | {
-  3 |     _ := 5.at(0);
-    .            -----
-    .              `-- Type 'i32' has no method 'at'
+  3 |     _ := i32.add(1, 2);
+    .              ---------
+    .                  `-- Type 'i32' has no method 'add'
   4 |     return 0;
   5 | }
   6 | 

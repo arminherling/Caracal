@@ -1,0 +1,5 @@
+def make() i32
+{
+    _ := i32.add(1, 2);
+    return 0;
+}

@@ -1,0 +1,9 @@
+def mask() i32
+{
+    return i32.shiftRight(i32.bitAnd(12, 10), 1);
+}
+
+def flags() u8
+{
+    return u8.bitOr(3'u8, u8.shiftLeft(1'u8, 2));
+}

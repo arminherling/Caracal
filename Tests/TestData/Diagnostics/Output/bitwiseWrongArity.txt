@@ -1,0 +1,13 @@
+ Error T0050
+  Missing required argument
+    ,-[Diagnostics/Input/bitwiseWrongArity.cara:3:21]
+  1 | def make() i32
+  2 | {
+  3 |     _ := i32.bitAnd(12);
+    .                     --
+    .                      `-- Call to 'bitAnd' is missing a required argument for 'rhs'.
+  4 |     return 0;
+  5 | }
+  6 | 
+    `----
+  Fix: Pass an argument for 'rhs', or give it a default value.

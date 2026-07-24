@@ -1,0 +1,13 @@
+ Error T0016
+  Argument type mismatch
+    ,-[Diagnostics/Input/bitwiseWrongArgumentType.cara:3:21]
+  1 | def make() i32
+  2 | {
+  3 |     _ := i32.bitAnd(true, 2);
+    .                     ----
+    .                       `-- Argument 1 of 'bitAnd' expects 'i32', but got 'bool'
+  4 |     return 0;
+  5 | }
+  6 | 
+    `----
+  Fix: Change the mismatched argument to match the parameter type.

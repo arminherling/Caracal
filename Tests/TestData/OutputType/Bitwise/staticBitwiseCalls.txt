@@ -1,0 +1,136 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: mask
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: i32
+                        Name: i32
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: i32
+                        Function type: (i32, i32) -> i32
+                        NameExpression: {
+                            Type: (i32, i32) -> i32
+                            Name: shiftRight
+                        }
+                        ArgumentsNode(2): {
+                            BinaryExpression: {
+                                Type: i32
+                                Left: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: i32
+                                    }
+                                }
+                                Operation: MemberAccess
+                                Right: {
+                                    FunctionCallExpression: {
+                                        Type: i32
+                                        Function type: (i32, i32) -> i32
+                                        NameExpression: {
+                                            Type: (i32, i32) -> i32
+                                            Name: bitAnd
+                                        }
+                                        ArgumentsNode(2): {
+                                            NumberLiteral: 12
+                                            NumberLiteral: 10
+                                        }
+                                    }
+                                }
+                            }
+                            NumberLiteral: 1
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> u8
+    Name: flags
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: u8
+            Lexeme: u8
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: u8
+            BinaryExpression: {
+                Type: u8
+                Left: {
+                    NameExpression: {
+                        Type: u8
+                        Name: u8
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: u8
+                        Function type: (u8, u8) -> u8
+                        NameExpression: {
+                            Type: (u8, u8) -> u8
+                            Name: bitOr
+                        }
+                        ArgumentsNode(2): {
+                            NumberLiteral: 3
+                            TypeNameNode: {
+                                Type: u8
+                                Lexeme: u8
+                            }
+                            BinaryExpression: {
+                                Type: u8
+                                Left: {
+                                    NameExpression: {
+                                        Type: u8
+                                        Name: u8
+                                    }
+                                }
+                                Operation: MemberAccess
+                                Right: {
+                                    FunctionCallExpression: {
+                                        Type: u8
+                                        Function type: (u8, i32) -> u8
+                                        NameExpression: {
+                                            Type: (u8, i32) -> u8
+                                            Name: shiftLeft
+                                        }
+                                        ArgumentsNode(2): {
+                                            NumberLiteral: 1
+                                            TypeNameNode: {
+                                                Type: u8
+                                                Lexeme: u8
+                                            }
+                                            NumberLiteral: 2
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

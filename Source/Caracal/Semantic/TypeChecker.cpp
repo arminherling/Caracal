@@ -2743,6 +2743,50 @@ namespace Caracal
                         return Type::Undefined();
                     }
                 }
+                else if (leftType.kind() == TypeKind::Builtin
+                    && binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression)
+                {
+                    auto* functionCallExpression = static_cast<FunctionCallExpression*>(binaryExpression->rightExpression().get());
+                    const auto& name = functionCallExpression->nameExpression()->name();
+
+                    // only intrinsic methods are callable on builtin types, operator declarations are just signatures
+                    auto& typeDefinition = m_module.getTypeDefinition(leftType);
+                    const auto methodType = typeDefinition.tryGetMethodTypeByName(name);
+                    auto isIntrinsic = false;
+                    if (methodType != Type::Undefined())
+                    {
+                        isIntrinsic = m_module.getFunctionDefinition(methodType).functionType() == FunctionType::Intrinsic;
+                    }
+
+                    if (!isIntrinsic)
+                    {
+                        m_diagnostics.addUnknownMethodError(
+                            tokens.source(),
+                            functionCallExpression->sourceLocation(tokens),
+                            FormatTypeName(m_module, leftType.toValue()),
+                            name);
+                        return Type::Undefined();
+                    }
+
+                    auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+                    if (!typeCheckCallArguments(functionCallExpression, methodDefinition, tokens))
+                    {
+                        return Type::Undefined();
+                    }
+
+                    const auto& returnTypes = methodDefinition.returnTypes();
+                    auto returnType = Type::Void();
+                    if (returnTypes.size() == 1)
+                    {
+                        returnType = returnTypes[0];
+                    }
+
+                    binaryExpression->setType(returnType);
+                    functionCallExpression->setType(returnType);
+                    functionCallExpression->setFunctionType(methodType);
+                    functionCallExpression->nameExpression()->setType(methodType);
+                    return returnType;
+                }
 
                 if (leftType != Type::Undefined())
                 {
