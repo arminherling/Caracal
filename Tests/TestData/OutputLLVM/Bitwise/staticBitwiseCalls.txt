@@ -1,0 +1,13 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @mask() {
+entry:
+  ret i32 4
+}
+
+define i8 @flags() {
+entry:
+  ret i8 7
+}

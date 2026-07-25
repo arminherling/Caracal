@@ -24,8 +24,12 @@
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
 #include <Caracal/IR/BitAndInstruction.h>
-#include <Caracal/IR/LogicalNegationInstruction.h>
+#include <Caracal/IR/BitNotInstruction.h>
 #include <Caracal/IR/BitOrInstruction.h>
+#include <Caracal/IR/BitXorInstruction.h>
+#include <Caracal/IR/LogicalNegationInstruction.h>
+#include <Caracal/IR/ShiftLeftInstruction.h>
+#include <Caracal/IR/ShiftRightInstruction.h>
 #include <Caracal/IR/MakeSliceInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
@@ -572,6 +576,54 @@ namespace Caracal
                 const auto& binary = static_cast<const BitAndInstruction&>(instruction);
                 return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
             }
+            case InstructionKind::BitXor:
+            {
+                const auto& binary = static_cast<const BitXorInstruction&>(instruction);
+                return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
+            }
+            case InstructionKind::BitNot:
+            {
+                const auto& bitNot = static_cast<const BitNotInstruction&>(instruction);
+                auto* operand = tryResolve(bitNot.operandValue());
+                if (operand == nullptr)
+                    return false;
+
+                defineValue(bitNot.resultId(), m_irBuilder->CreateNot(operand, "bit_not"));
+                return true;
+            }
+            case InstructionKind::ShiftLeft:
+            {
+                const auto& shiftLeft = static_cast<const ShiftLeftInstruction&>(instruction);
+                auto* value = tryResolve(shiftLeft.value());
+                auto* amount = tryResolve(shiftLeft.amount());
+                if (value == nullptr || amount == nullptr)
+                    return false;
+
+                amount = m_irBuilder->CreateZExtOrTrunc(amount, value->getType());
+                defineValue(shiftLeft.resultId(), m_irBuilder->CreateShl(value, amount, "shift_left"));
+                return true;
+            }
+            case InstructionKind::ShiftRight:
+            {
+                const auto& shiftRight = static_cast<const ShiftRightInstruction&>(instruction);
+                auto* value = tryResolve(shiftRight.value());
+                auto* amount = tryResolve(shiftRight.amount());
+                if (value == nullptr || amount == nullptr)
+                    return false;
+
+                amount = m_irBuilder->CreateZExtOrTrunc(amount, value->getType());
+                // signed types shift arithmetic and unsigned types shift logical
+                if (shiftRight.type().toBaseType() == Type::U8())
+                {
+                    defineValue(shiftRight.resultId(), m_irBuilder->CreateLShr(value, amount, "shift_right"));
+                }
+                else
+                {
+                    defineValue(shiftRight.resultId(), m_irBuilder->CreateAShr(value, amount, "shift_right"));
+                }
+
+                return true;
+            }
             case InstructionKind::BitOr:
             {
                 const auto& binary = static_cast<const BitOrInstruction&>(instruction);
@@ -807,6 +859,11 @@ namespace Caracal
                 case InstructionKind::BitOr:
                 {
                     defineValue(resultId, m_irBuilder->CreateOr(lhs, rhs, "bit_or"));
+                    return true;
+                }
+                case InstructionKind::BitXor:
+                {
+                    defineValue(resultId, m_irBuilder->CreateXor(lhs, rhs, "bit_xor"));
                     return true;
                 }
                 default:

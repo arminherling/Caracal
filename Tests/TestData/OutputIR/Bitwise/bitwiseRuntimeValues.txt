@@ -1,0 +1,33 @@
+define applyI32(%0: i32 "a", %1: i32 "b", %2: i32 "amount") i32
+block entry(0):
+    %0 = parameter 0 : i32 "a"
+    %1 = parameter 1 : i32 "b"
+    %2 = parameter 2 : i32 "amount"
+    %3 = bit_and %0, %1 : i32
+    %4 = bit_or %3, %1 : i32
+    %5 = bit_xor %4, %0 : i32
+    %6 = bit_not %5 : i32
+    %7 = const 31 : i32
+    %8 = bit_and %2, %7 : i32
+    %9 = shift_left %6, %8 : i32
+    %10 = const 31 : i32
+    %11 = bit_and %2, %10 : i32
+    %12 = shift_right %9, %11 : i32
+    return %12
+
+define applyU8(%0: u8 "a", %1: u8 "b", %2: i32 "amount") u8
+block entry(0):
+    %0 = parameter 0 : u8 "a"
+    %1 = parameter 1 : u8 "b"
+    %2 = parameter 2 : i32 "amount"
+    %3 = bit_and %0, %1 : u8
+    %4 = bit_or %3, %1 : u8
+    %5 = bit_xor %4, %0 : u8
+    %6 = bit_not %5 : u8
+    %7 = const 7 : i32
+    %8 = bit_and %2, %7 : i32
+    %9 = shift_left %6, %8 : u8
+    %10 = const 7 : i32
+    %11 = bit_and %2, %10 : i32
+    %12 = shift_right %9, %11 : u8
+    return %12

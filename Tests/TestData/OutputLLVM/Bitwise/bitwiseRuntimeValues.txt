@@ -1,0 +1,31 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i32 @applyI32(i32 %0, i32 %1, i32 %2) {
+entry:
+  %bit_and = and i32 %0, %1
+  %bit_or = or i32 %bit_and, %1
+  %bit_xor = xor i32 %bit_or, %0
+  %bit_not = xor i32 %bit_xor, -1
+  %bit_and1 = and i32 %2, 31
+  %shift_left = shl i32 %bit_not, %bit_and1
+  %bit_and2 = and i32 %2, 31
+  %shift_right = ashr i32 %shift_left, %bit_and2
+  ret i32 %shift_right
+}
+
+define i8 @applyU8(i8 %0, i8 %1, i32 %2) {
+entry:
+  %bit_and = and i8 %0, %1
+  %bit_or = or i8 %bit_and, %1
+  %bit_xor = xor i8 %bit_or, %0
+  %bit_not = xor i8 %bit_xor, -1
+  %bit_and1 = and i32 %2, 7
+  %3 = trunc i32 %bit_and1 to i8
+  %shift_left = shl i8 %bit_not, %3
+  %bit_and2 = and i32 %2, 7
+  %4 = trunc i32 %bit_and2 to i8
+  %shift_right = lshr i8 %shift_left, %4
+  ret i8 %shift_right
+}

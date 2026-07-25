@@ -1,0 +1,538 @@
+FunctionDefinitionStatement: {
+    Type: (i32, i32, i32) -> i32
+    Name: applyI32
+    ParametersNode(3): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+        ParameterNode: {
+            Name: amount
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(6): {
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: masked
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: i32
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: i32
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: i32
+                            Function type: (i32, i32) -> i32
+                            NameExpression: {
+                                Type: (i32, i32) -> i32
+                                Name: bitAnd
+                            }
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: a
+                                }
+                                NameExpression: {
+                                    Type: i32
+                                    Name: b
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: merged
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: i32
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: i32
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: i32
+                            Function type: (i32, i32) -> i32
+                            NameExpression: {
+                                Type: (i32, i32) -> i32
+                                Name: bitOr
+                            }
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: masked
+                                }
+                                NameExpression: {
+                                    Type: i32
+                                    Name: b
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: toggled
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: i32
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: i32
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: i32
+                            Function type: (i32, i32) -> i32
+                            NameExpression: {
+                                Type: (i32, i32) -> i32
+                                Name: bitXor
+                            }
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: merged
+                                }
+                                NameExpression: {
+                                    Type: i32
+                                    Name: a
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: inverted
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: i32
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: i32
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: i32
+                            Function type: (i32) -> i32
+                            NameExpression: {
+                                Type: (i32) -> i32
+                                Name: bitNot
+                            }
+                            ArgumentsNode(1): {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: toggled
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: shifted
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: i32
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: i32
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: i32
+                            Function type: (i32, i32) -> i32
+                            NameExpression: {
+                                Type: (i32, i32) -> i32
+                                Name: shiftLeft
+                            }
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: inverted
+                                }
+                                NameExpression: {
+                                    Type: i32
+                                    Name: amount
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: i32
+                        Name: i32
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: i32
+                        Function type: (i32, i32) -> i32
+                        NameExpression: {
+                            Type: (i32, i32) -> i32
+                            Name: shiftRight
+                        }
+                        ArgumentsNode(2): {
+                            NameExpression: {
+                                Type: i32
+                                Name: shifted
+                            }
+                            NameExpression: {
+                                Type: i32
+                                Name: amount
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (u8, u8, i32) -> u8
+    Name: applyU8
+    ParametersNode(3): {
+        ParameterNode: {
+            Name: a
+            TypeNameNode: {
+                Type: u8
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: b
+            TypeNameNode: {
+                Type: u8
+                Lexeme: u8
+            }
+        }
+        ParameterNode: {
+            Name: amount
+            TypeNameNode: {
+                Type: i32
+                Lexeme: i32
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: u8
+            Lexeme: u8
+        }
+    }
+    BlockNode(6): {
+        VariableDeclaration: {
+            Type: u8
+            Left: {
+                NameExpression: {
+                    Type: u8
+                    Name: masked
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: u8
+                    Left: {
+                        NameExpression: {
+                            Type: u8
+                            Name: u8
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: u8
+                            Function type: (u8, u8) -> u8
+                            NameExpression: {
+                                Type: (u8, u8) -> u8
+                                Name: bitAnd
+                            }
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: u8
+                                    Name: a
+                                }
+                                NameExpression: {
+                                    Type: u8
+                                    Name: b
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: u8
+            Left: {
+                NameExpression: {
+                    Type: u8
+                    Name: merged
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: u8
+                    Left: {
+                        NameExpression: {
+                            Type: u8
+                            Name: u8
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: u8
+                            Function type: (u8, u8) -> u8
+                            NameExpression: {
+                                Type: (u8, u8) -> u8
+                                Name: bitOr
+                            }
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: u8
+                                    Name: masked
+                                }
+                                NameExpression: {
+                                    Type: u8
+                                    Name: b
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: u8
+            Left: {
+                NameExpression: {
+                    Type: u8
+                    Name: toggled
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: u8
+                    Left: {
+                        NameExpression: {
+                            Type: u8
+                            Name: u8
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: u8
+                            Function type: (u8, u8) -> u8
+                            NameExpression: {
+                                Type: (u8, u8) -> u8
+                                Name: bitXor
+                            }
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: u8
+                                    Name: merged
+                                }
+                                NameExpression: {
+                                    Type: u8
+                                    Name: a
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: u8
+            Left: {
+                NameExpression: {
+                    Type: u8
+                    Name: inverted
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: u8
+                    Left: {
+                        NameExpression: {
+                            Type: u8
+                            Name: u8
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: u8
+                            Function type: (u8) -> u8
+                            NameExpression: {
+                                Type: (u8) -> u8
+                                Name: bitNot
+                            }
+                            ArgumentsNode(1): {
+                                NameExpression: {
+                                    Type: u8
+                                    Name: toggled
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: u8
+            Left: {
+                NameExpression: {
+                    Type: u8
+                    Name: shifted
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: u8
+                    Left: {
+                        NameExpression: {
+                            Type: u8
+                            Name: u8
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: u8
+                            Function type: (u8, i32) -> u8
+                            NameExpression: {
+                                Type: (u8, i32) -> u8
+                                Name: shiftLeft
+                            }
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: u8
+                                    Name: inverted
+                                }
+                                NameExpression: {
+                                    Type: i32
+                                    Name: amount
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: u8
+            BinaryExpression: {
+                Type: u8
+                Left: {
+                    NameExpression: {
+                        Type: u8
+                        Name: u8
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: u8
+                        Function type: (u8, i32) -> u8
+                        NameExpression: {
+                            Type: (u8, i32) -> u8
+                            Name: shiftRight
+                        }
+                        ArgumentsNode(2): {
+                            NameExpression: {
+                                Type: u8
+                                Name: shifted
+                            }
+                            NameExpression: {
+                                Type: i32
+                                Name: amount
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

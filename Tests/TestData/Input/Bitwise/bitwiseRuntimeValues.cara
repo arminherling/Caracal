@@ -1,0 +1,19 @@
+def applyI32(a: i32, b: i32, amount: i32) i32
+{
+    masked := i32.bitAnd(a, b);
+    merged := i32.bitOr(masked, b);
+    toggled := i32.bitXor(merged, a);
+    inverted := i32.bitNot(toggled);
+    shifted := i32.shiftLeft(inverted, amount);
+    return i32.shiftRight(shifted, amount);
+}
+
+def applyU8(a: u8, b: u8, amount: i32) u8
+{
+    masked := u8.bitAnd(a, b);
+    merged := u8.bitOr(masked, b);
+    toggled := u8.bitXor(merged, a);
+    inverted := u8.bitNot(toggled);
+    shifted := u8.shiftLeft(inverted, amount);
+    return u8.shiftRight(shifted, amount);
+}
