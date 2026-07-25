@@ -1,9 +1,9 @@
-#include <Caracal/IR/LogicalAndInstruction.h>
+#include <Caracal/IR/BitAndInstruction.h>
 
 namespace Caracal
 {
-    LogicalAndInstruction::LogicalAndInstruction(TemporaryId resultId, ValueRef leftValue, ValueRef rightValue, Type type) noexcept
-        : Instruction{ InstructionKind::LogicalAnd }
+    BitAndInstruction::BitAndInstruction(TemporaryId resultId, ValueRef leftValue, ValueRef rightValue, Type type) noexcept
+        : Instruction{ InstructionKind::BitAnd }
         , m_resultId{ resultId }
         , m_leftValue{ leftValue }
         , m_rightValue{ rightValue }
@@ -11,7 +11,7 @@ namespace Caracal
     {
     }
 
-    void LogicalAndInstruction::remapValueIds(const ValueIdMap& remap) noexcept
+    void BitAndInstruction::remapValueIds(const ValueIdMap& remap) noexcept
     {
         m_resultId = remapTemporaryId(remap, m_resultId);
         m_leftValue = ValueRef{ remapTemporaryId(remap, m_leftValue.id()) };

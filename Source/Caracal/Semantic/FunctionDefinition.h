@@ -21,6 +21,19 @@ namespace Caracal
         Destructor
     };
 
+    enum class IntrinsicKind
+    {
+        None,
+        ArrayAt,
+        ArraySet,
+        BitAnd,
+        BitOr,
+        BitXor,
+        BitNot,
+        ShiftLeft,
+        ShiftRight,
+    };
+
     class FunctionDefinition
     {
     public:
@@ -39,6 +52,8 @@ namespace Caracal
         [[nodiscard]] Type parentType() const noexcept { return m_parentType; }
         [[nodiscard]] FunctionType functionType() const noexcept { return m_functionType; }
         void setFunctionType(FunctionType functionType) noexcept { m_functionType = functionType; }
+        [[nodiscard]] IntrinsicKind intrinsicKind() const noexcept { return m_intrinsicKind; }
+        void setIntrinsicKind(IntrinsicKind intrinsicKind) noexcept { m_intrinsicKind = intrinsicKind; }
         [[nodiscard]] const std::string& name() const noexcept { return m_name; }
         [[nodiscard]] const std::string& fullName() const noexcept { return m_fullName; }
         [[nodiscard]] bool isVariadic() const noexcept { return m_isVariadic; }
@@ -56,6 +71,7 @@ namespace Caracal
         Type m_type;
         Type m_parentType;
         FunctionType m_functionType;
+        IntrinsicKind m_intrinsicKind{ IntrinsicKind::None };
         std::string m_name;
         std::string m_fullName;
         std::optional<std::string> m_symbolName;

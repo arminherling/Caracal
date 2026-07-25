@@ -1,0 +1,73 @@
+define results() bool
+block entry(0):
+    %0 = const 12 : u8
+    %1 = const 10 : u8
+    %2 = bit_and %0, %1 : u8
+    %3 = const 8 : u8
+    %4 = equal %2, %3 : bool
+    %5 = const 12 : u8
+    %6 = const 10 : u8
+    %7 = bit_or %5, %6 : u8
+    %8 = const 14 : u8
+    %9 = equal %7, %8 : bool
+    %10 = const 12 : u8
+    %11 = const 10 : u8
+    %12 = bit_xor %10, %11 : u8
+    %13 = const 6 : u8
+    %14 = equal %12, %13 : bool
+    %15 = const 0 : u8
+    %16 = bit_not %15 : u8
+    %17 = const 255 : u8
+    %18 = equal %16, %17 : bool
+    %19 = const 3 : u8
+    %20 = const 2 : i32
+    %21 = const 7 : i32
+    %22 = bit_and %20, %21 : i32
+    %23 = shift_left %19, %22 : u8
+    %24 = const 12 : u8
+    %25 = equal %23, %24 : bool
+    %26 = const 128 : u8
+    %27 = const 1 : i32
+    %28 = const 7 : i32
+    %29 = bit_and %27, %28 : i32
+    %30 = shift_right %26, %29 : u8
+    %31 = const 64 : u8
+    %32 = equal %30, %31 : bool
+    %33 = const 1 : u8
+    %34 = const 9 : i32
+    %35 = const 7 : i32
+    %36 = bit_and %34, %35 : i32
+    %37 = shift_left %33, %36 : u8
+    %38 = const 2 : u8
+    %39 = equal %37, %38 : bool
+    branch if %4, and.rhs(1), and.merge(2)
+block and.rhs(1):
+    jump and.merge(2)
+block and.merge(2):
+    %40 = phi [entry(0): %4], [and.rhs(1): %9] : bool
+    branch if %40, and.rhs(3), and.merge(4)
+block and.rhs(3):
+    jump and.merge(4)
+block and.merge(4):
+    %41 = phi [and.merge(2): %40], [and.rhs(3): %14] : bool
+    branch if %41, and.rhs(5), and.merge(6)
+block and.rhs(5):
+    jump and.merge(6)
+block and.merge(6):
+    %42 = phi [and.merge(4): %41], [and.rhs(5): %18] : bool
+    branch if %42, and.rhs(7), and.merge(8)
+block and.rhs(7):
+    jump and.merge(8)
+block and.merge(8):
+    %43 = phi [and.merge(6): %42], [and.rhs(7): %25] : bool
+    branch if %43, and.rhs(9), and.merge(10)
+block and.rhs(9):
+    jump and.merge(10)
+block and.merge(10):
+    %44 = phi [and.merge(8): %43], [and.rhs(9): %32] : bool
+    branch if %44, and.rhs(11), and.merge(12)
+block and.rhs(11):
+    jump and.merge(12)
+block and.merge(12):
+    %45 = phi [and.merge(10): %44], [and.rhs(11): %39] : bool
+    return %45

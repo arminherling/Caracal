@@ -5,21 +5,21 @@
 
 namespace Caracal
 {
-    class LogicalOrInstruction final : public Instruction
+    class ShiftLeftInstruction final : public Instruction
     {
     public:
-        LogicalOrInstruction(TemporaryId resultId, ValueRef leftValue, ValueRef rightValue, Type type) noexcept;
+        ShiftLeftInstruction(TemporaryId resultId, ValueRef value, ValueRef amount, Type type) noexcept;
 
         [[nodiscard]] TemporaryId resultId() const noexcept { return m_resultId; }
-        [[nodiscard]] ValueRef leftValue() const noexcept { return m_leftValue; }
-        [[nodiscard]] ValueRef rightValue() const noexcept { return m_rightValue; }
+        [[nodiscard]] ValueRef value() const noexcept { return m_value; }
+        [[nodiscard]] ValueRef amount() const noexcept { return m_amount; }
         [[nodiscard]] Type type() const noexcept { return m_type; }
         void remapValueIds(const ValueIdMap& remap) noexcept override;
 
     private:
         TemporaryId m_resultId;
-        ValueRef m_leftValue;
-        ValueRef m_rightValue;
+        ValueRef m_value;
+        ValueRef m_amount;
         Type m_type;
     };
 }

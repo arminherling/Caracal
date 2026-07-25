@@ -5,21 +5,19 @@
 
 namespace Caracal
 {
-    class LogicalAndInstruction final : public Instruction
+    class BitNotInstruction final : public Instruction
     {
     public:
-        LogicalAndInstruction(TemporaryId resultId, ValueRef leftValue, ValueRef rightValue, Type type) noexcept;
+        BitNotInstruction(TemporaryId resultId, ValueRef operandValue, Type type) noexcept;
 
         [[nodiscard]] TemporaryId resultId() const noexcept { return m_resultId; }
-        [[nodiscard]] ValueRef leftValue() const noexcept { return m_leftValue; }
-        [[nodiscard]] ValueRef rightValue() const noexcept { return m_rightValue; }
+        [[nodiscard]] ValueRef operandValue() const noexcept { return m_operandValue; }
         [[nodiscard]] Type type() const noexcept { return m_type; }
         void remapValueIds(const ValueIdMap& remap) noexcept override;
 
     private:
         TemporaryId m_resultId;
-        ValueRef m_leftValue;
-        ValueRef m_rightValue;
+        ValueRef m_operandValue;
         Type m_type;
     };
 }

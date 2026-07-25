@@ -19,9 +19,13 @@
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
-#include <Caracal/IR/LogicalAndInstruction.h>
+#include <Caracal/IR/BitAndInstruction.h>
+#include <Caracal/IR/BitNotInstruction.h>
+#include <Caracal/IR/BitOrInstruction.h>
+#include <Caracal/IR/BitXorInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
-#include <Caracal/IR/LogicalOrInstruction.h>
+#include <Caracal/IR/ShiftLeftInstruction.h>
+#include <Caracal/IR/ShiftRightInstruction.h>
 #include <Caracal/IR/MakeSliceInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
@@ -778,31 +782,85 @@ namespace Caracal
                 m_builder.appendLine("");
                 break;
             }
-            case InstructionKind::LogicalAnd:
+            case InstructionKind::BitAnd:
             {
-                const auto& logicalAnd = static_cast<const LogicalAndInstruction&>(instruction);
+                const auto& bitAnd = static_cast<const BitAndInstruction&>(instruction);
                 m_builder.appendIndented("");
-                appendValue(ValueRef{ logicalAnd.resultId() });
-                m_builder.append(" = logical_and ");
-                appendValue(logicalAnd.leftValue());
+                appendValue(ValueRef{ bitAnd.resultId() });
+                m_builder.append(" = bit_and ");
+                appendValue(bitAnd.leftValue());
                 m_builder.append(", ");
-                appendValue(logicalAnd.rightValue());
+                appendValue(bitAnd.rightValue());
                 m_builder.append(" : ");
-                appendType(logicalAnd.type());
+                appendType(bitAnd.type());
                 m_builder.appendLine("");
                 break;
             }
-            case InstructionKind::LogicalOr:
+            case InstructionKind::BitOr:
             {
-                const auto& logicalOr = static_cast<const LogicalOrInstruction&>(instruction);
+                const auto& bitOr = static_cast<const BitOrInstruction&>(instruction);
                 m_builder.appendIndented("");
-                appendValue(ValueRef{ logicalOr.resultId() });
-                m_builder.append(" = logical_or ");
-                appendValue(logicalOr.leftValue());
+                appendValue(ValueRef{ bitOr.resultId() });
+                m_builder.append(" = bit_or ");
+                appendValue(bitOr.leftValue());
                 m_builder.append(", ");
-                appendValue(logicalOr.rightValue());
+                appendValue(bitOr.rightValue());
                 m_builder.append(" : ");
-                appendType(logicalOr.type());
+                appendType(bitOr.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::BitXor:
+            {
+                const auto& bitXor = static_cast<const BitXorInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ bitXor.resultId() });
+                m_builder.append(" = bit_xor ");
+                appendValue(bitXor.leftValue());
+                m_builder.append(", ");
+                appendValue(bitXor.rightValue());
+                m_builder.append(" : ");
+                appendType(bitXor.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::BitNot:
+            {
+                const auto& bitNot = static_cast<const BitNotInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ bitNot.resultId() });
+                m_builder.append(" = bit_not ");
+                appendValue(bitNot.operandValue());
+                m_builder.append(" : ");
+                appendType(bitNot.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::ShiftLeft:
+            {
+                const auto& shiftLeft = static_cast<const ShiftLeftInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ shiftLeft.resultId() });
+                m_builder.append(" = shift_left ");
+                appendValue(shiftLeft.value());
+                m_builder.append(", ");
+                appendValue(shiftLeft.amount());
+                m_builder.append(" : ");
+                appendType(shiftLeft.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::ShiftRight:
+            {
+                const auto& shiftRight = static_cast<const ShiftRightInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ shiftRight.resultId() });
+                m_builder.append(" = shift_right ");
+                appendValue(shiftRight.value());
+                m_builder.append(", ");
+                appendValue(shiftRight.amount());
+                m_builder.append(" : ");
+                appendType(shiftRight.type());
                 m_builder.appendLine("");
                 break;
             }

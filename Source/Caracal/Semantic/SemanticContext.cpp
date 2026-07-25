@@ -305,6 +305,14 @@ namespace Caracal
         auto methodId = m_nextId += VariantCount;
         auto methodType = Type{ methodId, TypeKind::Method };
         m_functionDefinitions.emplace_back(nullptr, methodType, baseArrayType, FunctionType::Intrinsic, std::string(methodName), fullMethodName, false, parameters, returnTypes);
+        if (methodName == "at")
+        {
+            m_functionDefinitions.back().setIntrinsicKind(IntrinsicKind::ArrayAt);
+        }
+        else
+        {
+            m_functionDefinitions.back().setIntrinsicKind(IntrinsicKind::ArraySet);
+        }
         m_functionDefinitionIndexById.try_emplace(methodId, m_functionDefinitions.size() - 1);
         m_arrayIntrinsicsByFullName.try_emplace(std::move(fullMethodName), methodType);
 

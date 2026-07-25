@@ -1,0 +1,11 @@
+def results() bool
+{
+    andOk := i32.bitAnd(12, 10) == 8;
+    orOk := i32.bitOr(12, 10) == 14;
+    xorOk := i32.bitXor(12, 10) == 6;
+    notOk := i32.bitNot(0) == -1;
+    shiftLeftOk := i32.shiftLeft(3, 2) == 12;
+    shiftRightOk := i32.shiftRight(-8, 1) == -4;
+    maskOk := i32.shiftLeft(1, 33) == 2;
+    return andOk and orOk and xorOk and notOk and shiftLeftOk and shiftRightOk and maskOk;
+}

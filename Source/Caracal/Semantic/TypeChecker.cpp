@@ -97,17 +97,18 @@ namespace Caracal
     {
         std::string_view methodName;
         BuiltinIntrinsicShape shape;
+        IntrinsicKind kind;
     };
 
     static const BuiltinIntrinsicDefinition* TryGetBuiltinIntrinsicDefinition(std::string_view methodName)
     {
         static constexpr BuiltinIntrinsicDefinition Definitions[] = {
-            { BuiltinBitAndMethodName, BuiltinIntrinsicShape::Binary },
-            { BuiltinBitOrMethodName, BuiltinIntrinsicShape::Binary },
-            { BuiltinBitXorMethodName, BuiltinIntrinsicShape::Binary },
-            { BuiltinBitNotMethodName, BuiltinIntrinsicShape::Unary },
-            { BuiltinShiftLeftMethodName, BuiltinIntrinsicShape::Shift },
-            { BuiltinShiftRightMethodName, BuiltinIntrinsicShape::Shift },
+            { BuiltinBitAndMethodName, BuiltinIntrinsicShape::Binary, IntrinsicKind::BitAnd },
+            { BuiltinBitOrMethodName, BuiltinIntrinsicShape::Binary, IntrinsicKind::BitOr },
+            { BuiltinBitXorMethodName, BuiltinIntrinsicShape::Binary, IntrinsicKind::BitXor },
+            { BuiltinBitNotMethodName, BuiltinIntrinsicShape::Unary, IntrinsicKind::BitNot },
+            { BuiltinShiftLeftMethodName, BuiltinIntrinsicShape::Shift, IntrinsicKind::ShiftLeft },
+            { BuiltinShiftRightMethodName, BuiltinIntrinsicShape::Shift, IntrinsicKind::ShiftRight },
         };
 
         for (const auto& definition : Definitions)
@@ -989,6 +990,7 @@ namespace Caracal
 
             // the lowerer is gonna emit instructions instead of calls for intrinsics
             methodDefinition.setFunctionType(FunctionType::Intrinsic);
+            methodDefinition.setIntrinsicKind(intrinsicDefinition->kind);
             return;
         }
 

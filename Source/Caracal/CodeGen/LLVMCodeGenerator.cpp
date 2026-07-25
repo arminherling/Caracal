@@ -23,9 +23,9 @@
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
-#include <Caracal/IR/LogicalAndInstruction.h>
+#include <Caracal/IR/BitAndInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
-#include <Caracal/IR/LogicalOrInstruction.h>
+#include <Caracal/IR/BitOrInstruction.h>
 #include <Caracal/IR/MakeSliceInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
@@ -567,14 +567,14 @@ namespace Caracal
                 const auto& binary = static_cast<const GreaterOrEqualInstruction&>(instruction);
                 return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind(), binary.operandType());
             }
-            case InstructionKind::LogicalAnd:
+            case InstructionKind::BitAnd:
             {
-                const auto& binary = static_cast<const LogicalAndInstruction&>(instruction);
+                const auto& binary = static_cast<const BitAndInstruction&>(instruction);
                 return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
             }
-            case InstructionKind::LogicalOr:
+            case InstructionKind::BitOr:
             {
-                const auto& binary = static_cast<const LogicalOrInstruction&>(instruction);
+                const auto& binary = static_cast<const BitOrInstruction&>(instruction);
                 return emitBinary(binary.resultId(), binary.leftValue(), binary.rightValue(), instruction.kind());
             }
             case InstructionKind::IntToFloat:
@@ -799,14 +799,14 @@ namespace Caracal
 
                     return true;
                 }
-                case InstructionKind::LogicalAnd:
+                case InstructionKind::BitAnd:
                 {
-                    defineValue(resultId, m_irBuilder->CreateAnd(lhs, rhs, "logical_and"));
+                    defineValue(resultId, m_irBuilder->CreateAnd(lhs, rhs, "bit_and"));
                     return true;
                 }
-                case InstructionKind::LogicalOr:
+                case InstructionKind::BitOr:
                 {
-                    defineValue(resultId, m_irBuilder->CreateOr(lhs, rhs, "logical_or"));
+                    defineValue(resultId, m_irBuilder->CreateOr(lhs, rhs, "bit_or"));
                     return true;
                 }
                 default:

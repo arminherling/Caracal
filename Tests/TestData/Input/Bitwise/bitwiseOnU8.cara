@@ -1,0 +1,11 @@
+def results() bool
+{
+    andOk := u8.bitAnd(12'u8, 10'u8) == 8'u8;
+    orOk := u8.bitOr(12'u8, 10'u8) == 14'u8;
+    xorOk := u8.bitXor(12'u8, 10'u8) == 6'u8;
+    notOk := u8.bitNot(0'u8) == 255'u8;
+    shiftLeftOk := u8.shiftLeft(3'u8, 2) == 12'u8;
+    shiftRightOk := u8.shiftRight(128'u8, 1) == 64'u8;
+    maskOk := u8.shiftLeft(1'u8, 9) == 2'u8;
+    return andOk and orOk and xorOk and notOk and shiftLeftOk and shiftRightOk and maskOk;
+}

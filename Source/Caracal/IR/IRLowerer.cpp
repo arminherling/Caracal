@@ -3,6 +3,12 @@
 #include <Caracal/Constants.h>
 #include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/AddressOfInstruction.h>
+#include <Caracal/IR/BitAndInstruction.h>
+#include <Caracal/IR/BitNotInstruction.h>
+#include <Caracal/IR/BitOrInstruction.h>
+#include <Caracal/IR/BitXorInstruction.h>
+#include <Caracal/IR/ShiftLeftInstruction.h>
+#include <Caracal/IR/ShiftRightInstruction.h>
 #include <Caracal/IR/AddressOfFieldInstruction.h>
 #include <Caracal/IR/AddressOfGlobalInstruction.h>
 #include <Caracal/IR/AllocateLocalInstruction.h>
@@ -1421,7 +1427,13 @@ namespace Caracal
         const auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
         if (functionDefinition.functionType() == FunctionType::Intrinsic)
         {
-            return lowerArrayIntrinsicCall(expression, receiverExpression, functionDefinition);
+            if (functionDefinition.intrinsicKind() == IntrinsicKind::ArrayAt
+                || functionDefinition.intrinsicKind() == IntrinsicKind::ArraySet)
+            {
+                return lowerArrayIntrinsicCall(expression, receiverExpression, functionDefinition);
+            }
+
+            return lowerBitwiseIntrinsicCall(expression, functionDefinition);
         }
 
         if (functionDefinition.functionType() != FunctionType::PublicMethod
@@ -1442,7 +1454,7 @@ namespace Caracal
         if (receiverExpression == nullptr)
             return std::nullopt;
 
-        if (functionDefinition.name() == "at")
+        if (functionDefinition.intrinsicKind() == IntrinsicKind::ArrayAt)
         {
             const auto elementAddress = lowerElementAddressForCall(receiverExpression, expression);
             if (!elementAddress.has_value())
@@ -1451,7 +1463,7 @@ namespace Caracal
             return emitLoad(elementAddress.value(), expression->type().toValue());
         }
 
-        if (functionDefinition.name() == "set")
+        if (functionDefinition.intrinsicKind() == IntrinsicKind::ArraySet)
         {
             const auto elementAddress = lowerElementAddressForCall(receiverExpression, expression);
             if (!elementAddress.has_value())
@@ -1494,10 +1506,95 @@ namespace Caracal
             return nullptr;
 
         const auto& definition = semanticContext.getFunctionDefinition(call->functionType());
-        if (definition.functionType() != FunctionType::Intrinsic || definition.name() != "at")
+        if (definition.intrinsicKind() != IntrinsicKind::ArrayAt)
             return nullptr;
 
         return binaryExpression;
+    }
+
+    std::optional<ValueRef> IRLowerer::lowerBitwiseIntrinsicCall(const FunctionCallExpression* expression, const FunctionDefinition& functionDefinition) noexcept
+    {
+        const auto& orderedArguments = expression->orderedArguments();
+        if (orderedArguments.empty())
+            return std::nullopt;
+
+        const auto resultType = expression->type().toValue();
+        const auto firstValue = lowerValueExpression(orderedArguments[0]);
+        if (!firstValue.has_value())
+            return std::nullopt;
+
+        const auto intrinsicKind = functionDefinition.intrinsicKind();
+        if (intrinsicKind == IntrinsicKind::BitNot)
+        {
+            const auto resultId = m_nextTemporaryId++;
+            m_currentBlock->addInstruction(std::make_unique<BitNotInstruction>(resultId, firstValue.value(), resultType));
+            return ValueRef{ resultId };
+        }
+
+        if (orderedArguments.size() < 2)
+            return std::nullopt;
+
+        const auto secondValue = lowerValueExpression(orderedArguments[1]);
+        if (!secondValue.has_value())
+            return std::nullopt;
+
+        switch (intrinsicKind)
+        {
+            case IntrinsicKind::BitAnd:
+            {
+                const auto resultId = m_nextTemporaryId++;
+                m_currentBlock->addInstruction(std::make_unique<BitAndInstruction>(resultId, firstValue.value(), secondValue.value(), resultType));
+                return ValueRef{ resultId };
+            }
+            case IntrinsicKind::BitOr:
+            {
+                const auto resultId = m_nextTemporaryId++;
+                m_currentBlock->addInstruction(std::make_unique<BitOrInstruction>(resultId, firstValue.value(), secondValue.value(), resultType));
+                return ValueRef{ resultId };
+            }
+            case IntrinsicKind::BitXor:
+            {
+                const auto resultId = m_nextTemporaryId++;
+                m_currentBlock->addInstruction(std::make_unique<BitXorInstruction>(resultId, firstValue.value(), secondValue.value(), resultType));
+                return ValueRef{ resultId };
+            }
+            case IntrinsicKind::ShiftLeft:
+            case IntrinsicKind::ShiftRight:
+            {
+                // mask the amount so out of range shifts stay defined instead of poisoning the result
+                // TODO rework this part once we got more builtin integer types
+                auto maskValue = 31;
+                if (resultType == Type::U8())
+                {
+                    maskValue = 7;
+                }
+
+                const auto maskId = m_nextTemporaryId++;
+                m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+                    maskId,
+                    ConstantValue::FromI32(maskValue),
+                    Type::I32()));
+
+                const auto maskedAmountId = m_nextTemporaryId++;
+                m_currentBlock->addInstruction(std::make_unique<BitAndInstruction>(maskedAmountId, secondValue.value(), ValueRef{ maskId }, Type::I32()));
+
+                const auto resultId = m_nextTemporaryId++;
+                if (intrinsicKind == IntrinsicKind::ShiftLeft)
+                {
+                    m_currentBlock->addInstruction(std::make_unique<ShiftLeftInstruction>(resultId, firstValue.value(), ValueRef{ maskedAmountId }, resultType));
+                }
+                else
+                {
+                    m_currentBlock->addInstruction(std::make_unique<ShiftRightInstruction>(resultId, firstValue.value(), ValueRef{ maskedAmountId }, resultType));
+                }
+
+                return ValueRef{ resultId };
+            }
+            default:
+            {
+                return std::nullopt;
+            }
+        }
     }
 
     std::optional<ValueRef> IRLowerer::lowerIntrinsicReceiverAddress(const Expression* receiverExpression) noexcept

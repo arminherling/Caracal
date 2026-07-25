@@ -19,9 +19,13 @@
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
-#include <Caracal/IR/LogicalAndInstruction.h>
+#include <Caracal/IR/BitAndInstruction.h>
+#include <Caracal/IR/BitNotInstruction.h>
+#include <Caracal/IR/BitOrInstruction.h>
+#include <Caracal/IR/BitXorInstruction.h>
 #include <Caracal/IR/LogicalNegationInstruction.h>
-#include <Caracal/IR/LogicalOrInstruction.h>
+#include <Caracal/IR/ShiftLeftInstruction.h>
+#include <Caracal/IR/ShiftRightInstruction.h>
 #include <Caracal/IR/MakeSliceInstruction.h>
 #include <Caracal/IR/MultiplyInstruction.h>
 #include <Caracal/IR/NotEqualInstruction.h>
@@ -174,18 +178,44 @@ namespace Caracal
                     usedIds.insert(greaterOrEqual.rightValue().id());
                     break;
                 }
-                case InstructionKind::LogicalAnd:
+                case InstructionKind::BitAnd:
                 {
-                    const auto& logicalAnd = static_cast<const LogicalAndInstruction&>(instruction);
-                    usedIds.insert(logicalAnd.leftValue().id());
-                    usedIds.insert(logicalAnd.rightValue().id());
+                    const auto& bitAnd = static_cast<const BitAndInstruction&>(instruction);
+                    usedIds.insert(bitAnd.leftValue().id());
+                    usedIds.insert(bitAnd.rightValue().id());
                     break;
                 }
-                case InstructionKind::LogicalOr:
+                case InstructionKind::BitOr:
                 {
-                    const auto& logicalOr = static_cast<const LogicalOrInstruction&>(instruction);
-                    usedIds.insert(logicalOr.leftValue().id());
-                    usedIds.insert(logicalOr.rightValue().id());
+                    const auto& bitOr = static_cast<const BitOrInstruction&>(instruction);
+                    usedIds.insert(bitOr.leftValue().id());
+                    usedIds.insert(bitOr.rightValue().id());
+                    break;
+                }
+                case InstructionKind::BitXor:
+                {
+                    const auto& bitXor = static_cast<const BitXorInstruction&>(instruction);
+                    usedIds.insert(bitXor.leftValue().id());
+                    usedIds.insert(bitXor.rightValue().id());
+                    break;
+                }
+                case InstructionKind::BitNot:
+                {
+                    usedIds.insert(static_cast<const BitNotInstruction&>(instruction).operandValue().id());
+                    break;
+                }
+                case InstructionKind::ShiftLeft:
+                {
+                    const auto& shiftLeft = static_cast<const ShiftLeftInstruction&>(instruction);
+                    usedIds.insert(shiftLeft.value().id());
+                    usedIds.insert(shiftLeft.amount().id());
+                    break;
+                }
+                case InstructionKind::ShiftRight:
+                {
+                    const auto& shiftRight = static_cast<const ShiftRightInstruction&>(instruction);
+                    usedIds.insert(shiftRight.value().id());
+                    usedIds.insert(shiftRight.amount().id());
                     break;
                 }
                 case InstructionKind::Phi:
@@ -247,8 +277,12 @@ namespace Caracal
                 case InstructionKind::LessOrEqual:
                 case InstructionKind::GreaterThan:
                 case InstructionKind::GreaterOrEqual:
-                case InstructionKind::LogicalAnd:
-                case InstructionKind::LogicalOr:
+                case InstructionKind::BitAnd:
+                case InstructionKind::BitOr:
+                case InstructionKind::BitXor:
+                case InstructionKind::BitNot:
+                case InstructionKind::ShiftLeft:
+                case InstructionKind::ShiftRight:
                 case InstructionKind::Phi:
                 {
                     return true;
@@ -374,14 +408,34 @@ namespace Caracal
                     resultId = static_cast<const GreaterOrEqualInstruction&>(instruction).resultId();
                     return true;
                 }
-                case InstructionKind::LogicalAnd:
+                case InstructionKind::BitAnd:
                 {
-                    resultId = static_cast<const LogicalAndInstruction&>(instruction).resultId();
+                    resultId = static_cast<const BitAndInstruction&>(instruction).resultId();
                     return true;
                 }
-                case InstructionKind::LogicalOr:
+                case InstructionKind::BitOr:
                 {
-                    resultId = static_cast<const LogicalOrInstruction&>(instruction).resultId();
+                    resultId = static_cast<const BitOrInstruction&>(instruction).resultId();
+                    return true;
+                }
+                case InstructionKind::BitXor:
+                {
+                    resultId = static_cast<const BitXorInstruction&>(instruction).resultId();
+                    return true;
+                }
+                case InstructionKind::BitNot:
+                {
+                    resultId = static_cast<const BitNotInstruction&>(instruction).resultId();
+                    return true;
+                }
+                case InstructionKind::ShiftLeft:
+                {
+                    resultId = static_cast<const ShiftLeftInstruction&>(instruction).resultId();
+                    return true;
+                }
+                case InstructionKind::ShiftRight:
+                {
+                    resultId = static_cast<const ShiftRightInstruction&>(instruction).resultId();
                     return true;
                 }
                 case InstructionKind::Phi:

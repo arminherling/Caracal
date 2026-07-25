@@ -46,8 +46,12 @@ namespace Caracal
         LessOrEqual,
         GreaterThan,
         GreaterOrEqual,
-        LogicalAnd,
-        LogicalOr,
+        BitAnd,
+        BitOr,
+        BitXor,
+        BitNot,
+        ShiftLeft,
+        ShiftRight,
         Phi,
     };
 
