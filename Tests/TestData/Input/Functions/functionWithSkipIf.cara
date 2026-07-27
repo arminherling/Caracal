@@ -4,9 +4,9 @@
     sum := 0;
     while i < 4
     {
-        i = i + 1;
+        i = i %+ 1;
         skip if i == 2;
-        sum = sum + i;
+        sum = sum %+ i;
     }
     return sum;
 }

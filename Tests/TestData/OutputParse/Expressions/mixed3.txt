@@ -14,14 +14,14 @@ ConstantDeclaration: {
                         Left: {
                             NumberLiteral: 2
                         }
-                        Operation: Addition
+                        Operation: AdditionWrapping
                         Right: {
                             NumberLiteral: 2
                         }
                     }
                 }
             }
-            Operation: Multiplication
+            Operation: MultiplicationWrapping
             Right: {
                 NumberLiteral: 5
             }

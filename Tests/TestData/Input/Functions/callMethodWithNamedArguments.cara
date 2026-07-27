@@ -4,7 +4,7 @@ type Calc(base: i32)
 
     def applyDiff(a: i32, b: i32) i32
     {
-        return .base + a - b;
+        return .base %+ a %- b;
     }
 }
 

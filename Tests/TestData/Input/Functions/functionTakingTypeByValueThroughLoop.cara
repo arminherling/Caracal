@@ -7,7 +7,7 @@ def readLoop(n: Number, count: i32) i32
 {
     while count > 0
     {
-        count = count - 1;
+        count = count %- 1;
     }
 
     return n.value;

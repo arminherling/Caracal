@@ -4,11 +4,11 @@
   2 | {
   3 |     xs := [1, 2];
   4 |     ys := [3, 4];
-  5 |     _ := xs + ys;
-    .             -
-    .             `-- Operator '+' cannot be applied to '[i32; 2]'
+  5 |     _ := xs %+ ys;
+    .             --
+    .              `-- Operator '%+' cannot be applied to '[i32; 2]'
   6 |     return 0;
   7 | }
   8 | 
     `----
-  Fix: Operator '+' expects numeric operands.
+  Fix: Operator '%+' expects numeric operands.

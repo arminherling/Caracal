@@ -52,7 +52,7 @@ ConstantDeclaration: {
                         Name: base
                     }
                 }
-                Operation: Addition
+                Operation: AdditionWrapping
                 Right: {
                     NumberLiteral: 1
                 }
@@ -101,7 +101,7 @@ FunctionDefinitionStatement: {
                         }
                     }
                 }
-                Operation: Addition
+                Operation: AdditionWrapping
                 Right: {
                     NameExpression: {
                         Type: undefined

@@ -3,10 +3,10 @@
     ,-[Diagnostics/Input/arithmeticOnString.cara:3:16]
   1 | ﻿def probe() cstring
   2 | {
-  3 |     return "a" - "b";
-    .                -
-    .                `-- Operator '-' cannot be applied to 'cstring'
+  3 |     return "a" %- "b";
+    .                --
+    .                 `-- Operator '%-' cannot be applied to 'cstring'
   4 | }
   5 | 
     `----
-  Fix: Operator '-' expects numeric operands.
+  Fix: Operator '%-' expects numeric operands.

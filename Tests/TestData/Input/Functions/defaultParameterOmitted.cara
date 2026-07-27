@@ -1,6 +1,6 @@
 def addWithDefault(x: i32, y: i32 = 5) i32
 {
-    return x + y;
+    return x %+ y;
 }
 
 def func() i32

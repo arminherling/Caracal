@@ -5,7 +5,7 @@
     .                                      ------
     .                                         `-- Parameter 'y' has no default value but follows one that does.
   2 | {
-  3 |     return x + y;
+  3 |     return x %+ y;
   4 | }
     `----
   Fix: Move parameters with default values to the end of the parameter list.

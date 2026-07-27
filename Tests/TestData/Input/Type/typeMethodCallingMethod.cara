@@ -4,7 +4,7 @@
 
     def inc()
     {
-        .value = .value + 1;
+        .value = .value %+ 1;
     }
 
     def incTwice()

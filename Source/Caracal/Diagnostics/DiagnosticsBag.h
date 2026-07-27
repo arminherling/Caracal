@@ -36,6 +36,7 @@ namespace Caracal
         void addPrivateStaticMethodError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addPrivateFreeFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addExpectedArrayLengthError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addReservedOperatorError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind reservedOperator);
 
         // Annotation diagnostics
         void addDanglingAnnotationError(const SourceTextSharedPtr& source, const SourceLocation& location);

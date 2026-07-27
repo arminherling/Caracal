@@ -4,7 +4,7 @@ type Calc(base: i32)
 
     def addToBase(amount: i32 = 5) i32
     {
-        return .base + amount;
+        return .base %+ amount;
     }
 }
 

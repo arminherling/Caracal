@@ -8,8 +8,11 @@ std::string stringify(TokenKind kind)
         { TokenKind::Error,             std::string_view("Error") },
 
         { TokenKind::Plus,              std::string_view("Plus") },
+        { TokenKind::PercentPlus,       std::string_view("PercentPlus") },
         { TokenKind::Minus,             std::string_view("Minus") },
+        { TokenKind::PercentMinus,      std::string_view("PercentMinus") },
         { TokenKind::Star,              std::string_view("Star") },
+        { TokenKind::PercentStar,       std::string_view("PercentStar") },
         { TokenKind::Slash,             std::string_view("Slash") },
         { TokenKind::Dot,               std::string_view("Dot") },
         { TokenKind::Ellipsis,          std::string_view("Ellipsis") },
@@ -87,10 +90,13 @@ i32 binaryOperatorPrecedence(TokenKind kind)
     switch (kind)
     {
         case TokenKind::Star:
+        case TokenKind::PercentStar:
         case TokenKind::Slash:
             return 4;
         case TokenKind::Plus:
+        case TokenKind::PercentPlus:
         case TokenKind::Minus:
+        case TokenKind::PercentMinus:
             return 3;
         case TokenKind::EqualEqual:
         case TokenKind::BangEqual:

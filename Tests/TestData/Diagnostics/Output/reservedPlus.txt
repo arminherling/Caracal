@@ -1,0 +1,12 @@
+ Error P0016
+  Plain arithmetic operators are reserved until checked arithmetic exists
+    ,-[Diagnostics/Input/reservedPlus.cara:3:14]
+  1 | def main() i32
+  2 | {
+  3 |     return 1 + 2;
+    .              -
+    .              `-- '+' is reserved for checked arithmetic
+  4 | }
+  5 | 
+    `----
+  Fix: Use the wrapping operator '%+' instead.

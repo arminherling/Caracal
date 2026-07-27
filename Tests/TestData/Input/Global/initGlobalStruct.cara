@@ -9,5 +9,5 @@ p :: init Point;
 def main() i32
 {
     p = Point.new(3, 4);
-    return p.x + p.y;
+    return p.x %+ p.y;
 }

@@ -8,12 +8,12 @@ namespace Caracal
         {
             case TokenKind::Dot:
                 return BinaryOperatorKind::MemberAccess;
-            case TokenKind::Plus:
-                return BinaryOperatorKind::Addition;
-            case TokenKind::Minus:
-                return BinaryOperatorKind::Subtraction;
-            case TokenKind::Star:
-                return BinaryOperatorKind::Multiplication;
+            case TokenKind::PercentPlus:
+                return BinaryOperatorKind::AdditionWrapping;
+            case TokenKind::PercentMinus:
+                return BinaryOperatorKind::SubtractionWrapping;
+            case TokenKind::PercentStar:
+                return BinaryOperatorKind::MultiplicationWrapping;
             case TokenKind::Slash:
                 return BinaryOperatorKind::Division;
             case TokenKind::EqualEqual:
@@ -59,22 +59,22 @@ namespace Caracal
     std::string stringify(BinaryOperatorKind operation)
     {
         static const std::unordered_map<BinaryOperatorKind, std::string> opToString{
-            { BinaryOperatorKind::Invalid,         std::string("Invalid") },
-            { BinaryOperatorKind::ConstructorCall, std::string("ConstructorCall") },
-            { BinaryOperatorKind::MethodCall,      std::string("MethodCall") },
-            { BinaryOperatorKind::MemberAccess,    std::string("MemberAccess") },
-            { BinaryOperatorKind::Addition,        std::string("Addition") },
-            { BinaryOperatorKind::Subtraction,     std::string("Subtraction") },
-            { BinaryOperatorKind::Multiplication,  std::string("Multiplication") },
-            { BinaryOperatorKind::Division,        std::string("Division") },
-            { BinaryOperatorKind::Equal,           std::string("Equal") },
-            { BinaryOperatorKind::NotEqual,        std::string("NotEqual") },
-            { BinaryOperatorKind::LessThan,        std::string("LessThan") },
-            { BinaryOperatorKind::LessOrEqual,     std::string("LessOrEqual") },
-            { BinaryOperatorKind::GreaterThan,     std::string("GreaterThan") },
-            { BinaryOperatorKind::GreaterOrEqual,  std::string("GreaterOrEqual") },
-            { BinaryOperatorKind::LogicalAnd,      std::string("LogicalAnd") },
-            { BinaryOperatorKind::LogicalOr,       std::string("LogicalOr") },
+            { BinaryOperatorKind::Invalid,                      std::string("Invalid") },
+            { BinaryOperatorKind::ConstructorCall,              std::string("ConstructorCall") },
+            { BinaryOperatorKind::MethodCall,                   std::string("MethodCall") },
+            { BinaryOperatorKind::MemberAccess,                 std::string("MemberAccess") },
+            { BinaryOperatorKind::AdditionWrapping,             std::string("AdditionWrapping") },
+            { BinaryOperatorKind::SubtractionWrapping,          std::string("SubtractionWrapping") },
+            { BinaryOperatorKind::MultiplicationWrapping,       std::string("MultiplicationWrapping") },
+            { BinaryOperatorKind::Division,                     std::string("Division") },
+            { BinaryOperatorKind::Equal,                        std::string("Equal") },
+            { BinaryOperatorKind::NotEqual,                     std::string("NotEqual") },
+            { BinaryOperatorKind::LessThan,                     std::string("LessThan") },
+            { BinaryOperatorKind::LessOrEqual,                  std::string("LessOrEqual") },
+            { BinaryOperatorKind::GreaterThan,                  std::string("GreaterThan") },
+            { BinaryOperatorKind::GreaterOrEqual,               std::string("GreaterOrEqual") },
+            { BinaryOperatorKind::LogicalAnd,                   std::string("LogicalAnd") },
+            { BinaryOperatorKind::LogicalOr,                    std::string("LogicalOr") },
         };
 
         const auto it = opToString.find(operation);

@@ -43,6 +43,8 @@ namespace Caracal
                 return "P0014";
             case DiagnosticKind::P0015_ExpectedArrayLength:
                 return "P0015";
+            case DiagnosticKind::P0016_ReservedOperator:
+                return "P0016";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:
@@ -272,6 +274,8 @@ namespace Caracal
                 return "Free functions cannot be private";
             case DiagnosticKind::P0015_ExpectedArrayLength:
                 return "Expected an array length";
+            case DiagnosticKind::P0016_ReservedOperator:
+                return "Plain arithmetic operators are reserved until checked arithmetic exists";
 
             // Annotation diagnostics
             case DiagnosticKind::T0001_UnknownAnnotation:

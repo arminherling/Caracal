@@ -44,7 +44,7 @@ FunctionDefinitionStatement: {
                                         Name: i
                                     }
                                 }
-                                Operation: Addition
+                                Operation: AdditionWrapping
                                 Right: {
                                     NumberLiteral: 1
                                 }

@@ -1,9 +1,9 @@
  Error T0061
   Division by zero
     ,-[Diagnostics/Input/divisionByFoldedZero.cara:1:10]
-  1 | _ :: 4 / (2 - 2);
-    .          -------
-    .             `-- Integer division by zero.
+  1 | _ :: 4 / (2 %- 2);
+    .          --------
+    .              `-- Integer division by zero.
   2 | 
     `----
   Fix: Divide by a non-zero value.

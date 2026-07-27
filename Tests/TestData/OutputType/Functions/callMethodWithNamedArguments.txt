@@ -70,7 +70,7 @@ TypeDefinitionStatement: {
                                         }
                                     }
                                 }
-                                Operation: Addition
+                                Operation: AdditionWrapping
                                 Right: {
                                     NameExpression: {
                                         Type: i32
@@ -79,7 +79,7 @@ TypeDefinitionStatement: {
                                 }
                             }
                         }
-                        Operation: Subtraction
+                        Operation: SubtractionWrapping
                         Right: {
                             NameExpression: {
                                 Type: i32

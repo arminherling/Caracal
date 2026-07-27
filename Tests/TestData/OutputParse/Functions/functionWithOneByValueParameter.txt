@@ -27,7 +27,7 @@ FunctionDefinitionStatement: {
                         Name: x
                     }
                 }
-                Operation: Multiplication
+                Operation: MultiplicationWrapping
                 Right: {
                     NameExpression: {
                         Type: undefined

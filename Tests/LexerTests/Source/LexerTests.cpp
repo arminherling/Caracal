@@ -30,8 +30,11 @@ static std::vector<std::tuple<std::string, std::string, TokenKind>> Symbols_Data
 {
     return {
         std::make_tuple("Plus", "+", TokenKind::Plus),
+        std::make_tuple("PercentPlus", "%+", TokenKind::PercentPlus),
         std::make_tuple("Minus", "-", TokenKind::Minus),
+        std::make_tuple("PercentMinus", "%-", TokenKind::PercentMinus),
         std::make_tuple("Star", "*", TokenKind::Star),
+        std::make_tuple("PercentStar", "%*", TokenKind::PercentStar),
         std::make_tuple("Slash", "/", TokenKind::Slash),
 
         std::make_tuple("Dot", ".", TokenKind::Dot),
@@ -315,7 +318,10 @@ static std::vector<std::tuple<std::string, i32>> WholeInput_Data()
         std::make_tuple("return (x, y)", 7),
         //std::make_tuple("a = () => 3", 8),
         std::make_tuple("enum Value { A B = 5 C D }", 11),
-        std::make_tuple("define sum(a int, b int) { return a + b }", 16)
+        std::make_tuple("define sum(a int, b int) { return a + b }", 16),
+        std::make_tuple("1%+2", 4),
+        std::make_tuple("a %- b", 4),
+        std::make_tuple("x%*y", 4)
     };
 }
 

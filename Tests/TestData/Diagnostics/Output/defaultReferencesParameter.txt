@@ -5,7 +5,7 @@
     .                          -
     .                          `-- Unknown name 'x'
   2 | {
-  3 |     return x + y;
+  3 |     return x %+ y;
   4 | }
     `----
   Fix: Declare this name before using it, or rename it to an existing symbol.

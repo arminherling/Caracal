@@ -50,8 +50,11 @@ namespace Caracal
             { TokenKind::Error,             std::string_view("error token") },
 
             { TokenKind::Plus,              std::string_view("'+'") },
+            { TokenKind::PercentPlus,       std::string_view("'%+'") },
             { TokenKind::Minus,             std::string_view("'-'") },
+            { TokenKind::PercentMinus,      std::string_view("'%-'") },
             { TokenKind::Star,              std::string_view("'*'") },
+            { TokenKind::PercentStar,       std::string_view("'%*'") },
             { TokenKind::Slash,             std::string_view("'/'") },
             { TokenKind::Dot,               std::string_view("'.'") },
             { TokenKind::Ellipsis,          std::string_view("'...'") },
@@ -397,6 +400,44 @@ namespace Caracal
             location,
             "Write an integer length like '[i32; 4]'.");
         diagnostic.addPrimaryLabel(location, "Expected an array length");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addReservedOperatorError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind reservedOperator)
+    {
+        auto wrappingOperator = std::string();
+        switch (reservedOperator)
+        {
+            case TokenKind::Plus:
+            {
+                wrappingOperator = "'%+'";
+                break;
+            }
+            case TokenKind::Minus:
+            {
+                wrappingOperator = "'%-'";
+                break;
+            }
+            case TokenKind::Star:
+            {
+                wrappingOperator = "'%*'";
+                break;
+            }
+            default:
+            {
+                wrappingOperator = "a wrapping operator";
+                break;
+            }
+        }
+
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::P0016_ReservedOperator,
+            source,
+            location,
+            "Use the wrapping operator " + wrappingOperator + " instead.");
+        diagnostic.addPrimaryLabel(location, ToTokenSource(reservedOperator) + " is reserved for checked arithmetic");
 
         m_diagnostics.push_back(std::move(diagnostic));
     }

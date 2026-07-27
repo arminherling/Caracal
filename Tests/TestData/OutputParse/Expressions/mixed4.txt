@@ -18,7 +18,7 @@ ConstantDeclaration: {
                         Left: {
                             NumberLiteral: 4
                         }
-                        Operation: Subtraction
+                        Operation: SubtractionWrapping
                         Right: {
                             NumberLiteral: 2
                         }

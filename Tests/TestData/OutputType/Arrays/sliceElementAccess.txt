@@ -97,7 +97,7 @@ FunctionDefinitionStatement: {
                                         Name: total
                                     }
                                 }
-                                Operation: Addition
+                                Operation: AdditionWrapping
                                 Right: {
                                     BinaryExpression: {
                                         Type: i32
@@ -145,7 +145,7 @@ FunctionDefinitionStatement: {
                                         Name: i
                                     }
                                 }
-                                Operation: Addition
+                                Operation: AdditionWrapping
                                 Right: {
                                     NumberLiteral: 1
                                 }

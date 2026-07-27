@@ -88,7 +88,7 @@ FunctionDefinitionStatement: {
                                         Name: count
                                     }
                                 }
-                                Operation: Subtraction
+                                Operation: SubtractionWrapping
                                 Right: {
                                     NumberLiteral: 1
                                 }

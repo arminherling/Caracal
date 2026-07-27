@@ -11,8 +11,11 @@ enum class TokenKind
     Error,
 
     Plus,
+    PercentPlus,
     Minus,
+    PercentMinus,
     Star,
+    PercentStar,
     Slash,
     Dot,
     Ellipsis,

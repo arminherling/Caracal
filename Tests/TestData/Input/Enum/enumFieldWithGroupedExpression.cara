@@ -1,6 +1,6 @@
 ﻿enum Numbers
 {
-    Three :: (1 + 2)
+    Three :: (1 %+ 2)
 }
 
 def func() Numbers

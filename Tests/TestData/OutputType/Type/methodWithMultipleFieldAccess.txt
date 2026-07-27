@@ -79,7 +79,7 @@ TypeDefinitionStatement: {
                                 }
                             }
                         }
-                        Operation: Addition
+                        Operation: AdditionWrapping
                         Right: {
                             MemberAccessExpression: {
                                 FunctionCallExpression: {

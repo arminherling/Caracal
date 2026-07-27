@@ -12,13 +12,13 @@ ConstantDeclaration: {
                     Left: {
                         NumberLiteral: 1
                     }
-                    Operation: Multiplication
+                    Operation: MultiplicationWrapping
                     Right: {
                         NumberLiteral: 2
                     }
                 }
             }
-            Operation: Multiplication
+            Operation: MultiplicationWrapping
             Right: {
                 NumberLiteral: 3
             }

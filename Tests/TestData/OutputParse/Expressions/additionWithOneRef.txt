@@ -30,7 +30,7 @@ ConstantDeclaration: {
                     }
                 }
             }
-            Operation: Addition
+            Operation: AdditionWrapping
             Right: {
                 NumberLiteral: 2
             }

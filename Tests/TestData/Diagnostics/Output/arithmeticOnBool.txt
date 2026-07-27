@@ -3,10 +3,10 @@
     ,-[Diagnostics/Input/arithmeticOnBool.cara:3:17]
   1 | ﻿def probe() bool
   2 | {
-  3 |     return true + true;
-    .                 -
-    .                 `-- Operator '+' cannot be applied to 'bool'
+  3 |     return true %+ true;
+    .                 --
+    .                  `-- Operator '%+' cannot be applied to 'bool'
   4 | }
   5 | 
     `----
-  Fix: Operator '+' expects numeric operands.
+  Fix: Operator '%+' expects numeric operands.

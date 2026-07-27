@@ -42,7 +42,7 @@ ConstantDeclaration: {
                     }
                 }
             }
-            Operation: Subtraction
+            Operation: SubtractionWrapping
             Right: {
                 UnaryExpression: {
                     Type: undefined

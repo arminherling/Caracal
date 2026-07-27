@@ -2176,13 +2176,13 @@ namespace Caracal
 
                 switch (binaryExpression->binaryOperator())
                 {
-                    case BinaryOperatorKind::Addition:
+                    case BinaryOperatorKind::AdditionWrapping:
                         m_currentBlock->addInstruction(std::make_unique<AddInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
-                    case BinaryOperatorKind::Subtraction:
+                    case BinaryOperatorKind::SubtractionWrapping:
                         m_currentBlock->addInstruction(std::make_unique<SubtractInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
-                    case BinaryOperatorKind::Multiplication:
+                    case BinaryOperatorKind::MultiplicationWrapping:
                         m_currentBlock->addInstruction(std::make_unique<MultiplyInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type()));
                         break;
                     case BinaryOperatorKind::Division:

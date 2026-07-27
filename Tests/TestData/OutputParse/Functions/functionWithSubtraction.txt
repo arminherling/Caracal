@@ -17,7 +17,7 @@ FunctionDefinitionStatement: {
                 Left: {
                     NumberLiteral: 9
                 }
-                Operation: Subtraction
+                Operation: SubtractionWrapping
                 Right: {
                     NumberLiteral: 4
                 }

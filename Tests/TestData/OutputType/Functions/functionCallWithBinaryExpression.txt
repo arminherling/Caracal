@@ -37,7 +37,7 @@ FunctionDefinitionStatement: {
                         Left: {
                             NumberLiteral: 5
                         }
-                        Operation: Addition
+                        Operation: AdditionWrapping
                         Right: {
                             NumberLiteral: 5
                         }

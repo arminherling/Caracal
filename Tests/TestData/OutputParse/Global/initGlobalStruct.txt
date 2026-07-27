@@ -133,7 +133,7 @@ FunctionDefinitionStatement: {
                         }
                     }
                 }
-                Operation: Addition
+                Operation: AdditionWrapping
                 Right: {
                     BinaryExpression: {
                         Type: undefined

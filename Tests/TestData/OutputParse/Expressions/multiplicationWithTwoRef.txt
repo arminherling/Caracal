@@ -42,7 +42,7 @@ ConstantDeclaration: {
                     }
                 }
             }
-            Operation: Multiplication
+            Operation: MultiplicationWrapping
             Right: {
                 UnaryExpression: {
                     Type: undefined

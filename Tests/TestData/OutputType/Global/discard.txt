@@ -9,7 +9,7 @@ ConstantDeclaration: {
             Left: {
                 NumberLiteral: 100
             }
-            Operation: Addition
+            Operation: AdditionWrapping
             Right: {
                 NumberLiteral: 100
             }

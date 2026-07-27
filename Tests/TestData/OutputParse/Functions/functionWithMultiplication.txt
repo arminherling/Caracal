@@ -32,7 +32,7 @@ FunctionDefinitionStatement: {
                         Name: value
                     }
                 }
-                Operation: Multiplication
+                Operation: MultiplicationWrapping
                 Right: {
                     NumberLiteral: 4
                 }

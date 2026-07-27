@@ -1,0 +1,10 @@
+def negate(x: i32) i32
+{
+    return -x;
+}
+
+def main() i32
+{
+    eight :: negate(-8);
+    return eight - 8;
+}

@@ -9,14 +9,14 @@ ConstantDeclaration: {
             Left: {
                 NumberLiteral: 1
             }
-            Operation: Subtraction
+            Operation: SubtractionWrapping
             Right: {
                 BinaryExpression: {
                     Type: undefined
                     Left: {
                         NumberLiteral: 2
                     }
-                    Operation: Multiplication
+                    Operation: MultiplicationWrapping
                     Right: {
                         NumberLiteral: 2
                     }

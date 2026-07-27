@@ -43,7 +43,7 @@ TypeDefinitionStatement: {
                                 Name: a
                             }
                         }
-                        Operation: Subtraction
+                        Operation: SubtractionWrapping
                         Right: {
                             NameExpression: {
                                 Type: i32

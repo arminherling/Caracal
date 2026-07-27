@@ -781,6 +781,17 @@ namespace Caracal
             if (binaryPrecedence == 0 || binaryPrecedence <= parentPrecedence)
                 break;
 
+            // TODO remove this once we got both wrapping and non-wrapping operators working
+            if (binaryOperatorToken.kind == TokenKind::Plus
+                || binaryOperatorToken.kind == TokenKind::Minus
+                || binaryOperatorToken.kind == TokenKind::Star)
+            {
+                m_diagnostics.addReservedOperatorError(
+                    m_tokens.source(),
+                    m_tokens.getSourceLocation(binaryOperatorToken),
+                    binaryOperatorToken.kind);
+            }
+
             advanceCurrentIndex();
             auto right = parseBinaryExpression(binaryPrecedence, scope, stopAtLineBreak, allowLineBreakBeforeDot);
             left = std::make_unique<BinaryExpression>(std::move(left), binaryOperatorToken, std::move(right));

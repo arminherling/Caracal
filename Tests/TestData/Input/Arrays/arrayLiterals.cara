@@ -2,6 +2,6 @@ def make() i32
 {
     numbers := [1, 2, 3, 4];
     single := [42];
-    computed := [1 + 2, 3 * 4];
+    computed := [1 %+ 2, 3 %* 4];
     return 0;
 }

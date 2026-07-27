@@ -4,7 +4,7 @@ type Two
 
     def value() i32
     {
-        return .one() + .one();
+        return .one() %+ .one();
     }
 
     def one() i32

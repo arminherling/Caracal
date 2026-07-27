@@ -6,7 +6,7 @@ def isNan(value: f32) bool
 
 def approxEquals(left: f32, right: f32, tolerance: f32) bool
 {
-    difference := left - right;
+    difference := left %- right;
     if difference < 0.0
     {
         difference = -difference;

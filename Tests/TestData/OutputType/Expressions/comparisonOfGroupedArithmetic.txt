@@ -22,7 +22,7 @@ FunctionDefinitionStatement: {
                             Left: {
                                 NumberLiteral: 1
                             }
-                            Operation: Addition
+                            Operation: AdditionWrapping
                             Right: {
                                 NumberLiteral: 2
                             }
@@ -38,7 +38,7 @@ FunctionDefinitionStatement: {
                             Left: {
                                 NumberLiteral: 6
                             }
-                            Operation: Subtraction
+                            Operation: SubtractionWrapping
                             Right: {
                                 NumberLiteral: 3
                             }

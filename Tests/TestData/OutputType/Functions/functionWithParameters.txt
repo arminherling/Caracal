@@ -34,7 +34,7 @@ FunctionDefinitionStatement: {
                         Name: a
                     }
                 }
-                Operation: Addition
+                Operation: AdditionWrapping
                 Right: {
                     NameExpression: {
                         Type: i32

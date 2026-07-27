@@ -59,9 +59,9 @@ namespace Caracal
     static const BuiltinOperatorDefinition* TryGetBuiltinOperatorDefinition(std::string_view methodName)
     {
         static constexpr BuiltinOperatorDefinition Definitions[] = {
-            { BuiltinAddMethodName, false, BinaryOperatorKind::Addition, UnaryOperatorKind::Invalid, &FoldAddition, nullptr },
-            { BuiltinSubtractMethodName, false, BinaryOperatorKind::Subtraction, UnaryOperatorKind::Invalid, &FoldSubtraction, nullptr },
-            { BuiltinMultiplyMethodName, false, BinaryOperatorKind::Multiplication, UnaryOperatorKind::Invalid, &FoldMultiplication, nullptr },
+            { BuiltinAddMethodName, false, BinaryOperatorKind::AdditionWrapping, UnaryOperatorKind::Invalid, &FoldAddition, nullptr },
+            { BuiltinSubtractMethodName, false, BinaryOperatorKind::SubtractionWrapping, UnaryOperatorKind::Invalid, &FoldSubtraction, nullptr },
+            { BuiltinMultiplyMethodName, false, BinaryOperatorKind::MultiplicationWrapping, UnaryOperatorKind::Invalid, &FoldMultiplication, nullptr },
             { BuiltinDivideMethodName, false, BinaryOperatorKind::Division, UnaryOperatorKind::Invalid, &FoldDivision, nullptr },
             { BuiltinEqualsMethodName, false, BinaryOperatorKind::Equal, UnaryOperatorKind::Invalid, &FoldEqual, nullptr },
             { BuiltinNotEqualsMethodName, false, BinaryOperatorKind::NotEqual, UnaryOperatorKind::Invalid, &FoldNotEqual, nullptr },
@@ -170,12 +170,12 @@ namespace Caracal
     {
         switch (binaryOperator)
         {
-            case BinaryOperatorKind::Addition:
-                return "+";
-            case BinaryOperatorKind::Subtraction:
-                return "-";
-            case BinaryOperatorKind::Multiplication:
-                return "*";
+            case BinaryOperatorKind::AdditionWrapping:
+                return "%+";
+            case BinaryOperatorKind::SubtractionWrapping:
+                return "%-";
+            case BinaryOperatorKind::MultiplicationWrapping:
+                return "%*";
             case BinaryOperatorKind::Division:
                 return "/";
             case BinaryOperatorKind::Equal:
@@ -2818,9 +2818,9 @@ namespace Caracal
                 }
                 return Type::Undefined();
             }
-            case BinaryOperatorKind::Addition:
-            case BinaryOperatorKind::Subtraction:
-            case BinaryOperatorKind::Multiplication:
+            case BinaryOperatorKind::AdditionWrapping:
+            case BinaryOperatorKind::SubtractionWrapping:
+            case BinaryOperatorKind::MultiplicationWrapping:
             case BinaryOperatorKind::Division:
             {
                 auto leftType = typeCheckExpression(binaryExpression->leftExpression().get(), tokens);

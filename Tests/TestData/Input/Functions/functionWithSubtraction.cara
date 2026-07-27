@@ -1,4 +1,4 @@
 def func() i32
 {
-    return 9 - 4;
+    return 9 %- 4;
 }

@@ -22,14 +22,14 @@ FunctionDefinitionStatement: {
                             Left: {
                                 NumberLiteral: 1
                             }
-                            Operation: Addition
+                            Operation: AdditionWrapping
                             Right: {
                                 NumberLiteral: 2
                             }
                         }
                     }
                 }
-                Operation: Multiplication
+                Operation: MultiplicationWrapping
                 Right: {
                     NumberLiteral: 3
                 }

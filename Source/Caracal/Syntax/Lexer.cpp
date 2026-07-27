@@ -9,8 +9,11 @@ namespace Caracal
     {
         return std::unordered_map<TokenKind, i32>{
             { TokenKind::Plus,              1 },
+            { TokenKind::PercentPlus,       2 },
             { TokenKind::Minus,             1 },
+            { TokenKind::PercentMinus,      2 },
             { TokenKind::Star,              1 },
+            { TokenKind::PercentStar,       2 },
             { TokenKind::Slash,             1 },
             { TokenKind::Dot,               1 },
             { TokenKind::Ellipsis,          3 },
@@ -283,6 +286,35 @@ namespace Caracal
                 case '*':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Star);
+                    break;
+                }
+                case '%':
+                {
+                    const auto nextChar = PeekNextChar(source, currentIndex);
+                    if (nextChar == '+')
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentPlus);
+                        currentIndex += 1;
+                        break;
+                    }
+                    if (nextChar == '-')
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentMinus);
+                        currentIndex += 1;
+                        break;
+                    }
+                    if (nextChar == '*')
+                    {
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentStar);
+                        currentIndex += 1;
+                        break;
+                    }
+
+                    // % is not a valid operator
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Unknown);
+                    const auto& lastToken = tokenBuffer.getLastToken();
+                    const auto& location = tokenBuffer.getSourceLocation(lastToken);
+                    diagnostics.addIllegalCharacterError(sourceText, location);
                     break;
                 }
                 case '/':
