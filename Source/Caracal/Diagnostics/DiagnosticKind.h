@@ -80,6 +80,7 @@ namespace Caracal
         T0081_CallReturnsNoValue,
         T0082_GlobalConstantWithCall,
         T0084_GlobalConstantNotComputable,
+        T0085_ReferenceField,
 
         // Duplicate declaration diagnostics
         T0033_DuplicateDeclaration,

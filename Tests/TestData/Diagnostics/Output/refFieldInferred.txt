@@ -1,0 +1,12 @@
+ Error T0085
+  Fields cannot store references
+    ,-[Diagnostics/Input/refFieldInferred.cara:3:5]
+  1 | type Holder(value: ref i32)
+  2 | {
+  3 |     r := value
+    .     -
+    .     `-- Storing references or slices is not allowed
+  4 | }
+  5 | 
+    `----
+  Fix: Store an owning copy of the value instead.

@@ -1,0 +1,4 @@
+type Holder(value: ref i32)
+{
+    r : ref i32 = value
+}

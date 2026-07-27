@@ -1,0 +1,4 @@
+type Holder(values: [i32])
+{
+    xs := values
+}

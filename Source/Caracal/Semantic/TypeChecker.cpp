@@ -2291,6 +2291,14 @@ namespace Caracal
             return;
         }
 
+        // ownership rule: we dont allow storing references or slices in types
+        if (fieldType.isReference() || fieldType.kind() == TypeKind::Slice)
+        {
+            m_diagnostics.addReferenceFieldError(
+                tokens.source(),
+                statement->nameExpression()->sourceLocation(tokens));
+        }
+
         statement->nameExpression()->setType(fieldType);
         statement->setType(fieldType);
         typeDefinition.addField(fieldType, fieldName, fieldIndex, fieldExpression, statement->isConstant());

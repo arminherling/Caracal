@@ -1,0 +1,12 @@
+ Error T0085
+  Fields cannot store references
+    ,-[Diagnostics/Input/sliceField.cara:3:5]
+  1 | type Holder(values: [i32])
+  2 | {
+  3 |     xs := values
+    .     --
+    .      `-- Storing references or slices is not allowed
+  4 | }
+  5 | 
+    `----
+  Fix: Store an owning copy of the value instead.

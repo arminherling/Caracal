@@ -1546,6 +1546,21 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addReferenceFieldError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0085_ReferenceField,
+            source,
+            location,
+            "Store an owning copy of the value instead.");
+        diagnostic.addPrimaryLabel(location, "Storing references or slices is not allowed");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addAlreadyReferenceError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location)
