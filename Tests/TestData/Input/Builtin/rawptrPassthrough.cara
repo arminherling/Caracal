@@ -1,0 +1,4 @@
+def passthrough(pointer: rawptr) rawptr
+{
+    return pointer;
+}

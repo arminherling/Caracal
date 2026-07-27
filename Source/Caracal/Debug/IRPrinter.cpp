@@ -974,6 +974,8 @@ namespace Caracal
             m_builder.append("f32");
         else if (baseType == Type::String())
             m_builder.append("cstring");
+        else if (baseType == Type::RawPointer())
+            m_builder.append("rawptr");
         else if (baseType == Type::Discard())
             m_builder.append("discard");
         else if (baseType == Type::Undefined())

@@ -68,6 +68,7 @@ namespace Caracal
         module.createBuiltinType(Type::I32(), "i32");
         module.createBuiltinType(Type::F32(), "f32");
         module.createBuiltinType(Type::String(), "cstring");
+        module.createBuiltinType(Type::RawPointer(), "rawptr");
         module.m_nextId = 2000;
 
         // TODO we should move this part in the future

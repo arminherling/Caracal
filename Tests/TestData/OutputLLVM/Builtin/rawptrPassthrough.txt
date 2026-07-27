@@ -1,0 +1,8 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define ptr @passthrough(ptr %0) {
+entry:
+  ret ptr %0
+}

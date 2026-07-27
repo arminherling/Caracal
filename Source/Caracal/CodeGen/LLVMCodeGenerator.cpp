@@ -967,6 +967,8 @@ namespace Caracal
             return llvm::Type::getFloatTy(context);
         else if (type == Type::String())
             return llvm::PointerType::getUnqual(context);
+        else if (type == Type::RawPointer())
+            return llvm::PointerType::getUnqual(context);
 
         // a fixed array lowers to an inline llvm array of its element type
         if (type.kind() == TypeKind::FixedArray)

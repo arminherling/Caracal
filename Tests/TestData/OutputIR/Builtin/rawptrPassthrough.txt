@@ -1,0 +1,4 @@
+define passthrough(%0: rawptr "pointer") rawptr
+block entry(0):
+    %0 = parameter 0 : rawptr "pointer"
+    return %0

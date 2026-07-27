@@ -68,6 +68,11 @@ namespace Caracal
         [[nodiscard]] static Type NullableString() noexcept { return Type(18, TypeKind::Builtin); }
         [[nodiscard]] static Type NullableRefString() noexcept { return Type(19, TypeKind::Builtin); }
 
+        [[nodiscard]] static Type RawPointer() noexcept { return Type(20, TypeKind::Builtin); }
+        [[nodiscard]] static Type RefRawPointer() noexcept { return Type(21, TypeKind::Builtin); }
+        [[nodiscard]] static Type NullableRawPointer() noexcept { return Type(22, TypeKind::Builtin); }
+        [[nodiscard]] static Type NullableRefRawPointer() noexcept { return Type(23, TypeKind::Builtin); }
+
     private:
         i32 m_id;
         TypeKind m_kind;
