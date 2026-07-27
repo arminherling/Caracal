@@ -1530,29 +1530,28 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
-    void DiagnosticsBag::addReferenceReturnTypeError(
-        const SourceTextSharedPtr& source,
-        const SourceLocation& location,
-        const std::string& typeName)
-    {
-        auto diagnostic = Diagnostic(
-            DiagnosticLevel::Error,
-            DiagnosticKind::T0031_ReferenceReturnType,
-            source,
-            location,
-            "Return the value type instead of a reference type.");
-        diagnostic.addPrimaryLabel(location, "Return type cannot be 'ref " + typeName + "'");
-
-        m_diagnostics.push_back(std::move(diagnostic));
-    }
-
-    void DiagnosticsBag::addReferenceFieldError(
+    void DiagnosticsBag::addReferenceOrSliceReturnError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location)
     {
         auto diagnostic = Diagnostic(
             DiagnosticLevel::Error,
-            DiagnosticKind::T0085_ReferenceField,
+            DiagnosticKind::T0031_ReferenceOrSliceReturn,
+            source,
+            location,
+            "Return an owning copy of the value instead.");
+        diagnostic.addPrimaryLabel(location, "Returning references or slices is not allowed");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addReferenceOrSliceFieldError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0085_ReferenceOrSliceField,
             source,
             location,
             "Store an owning copy of the value instead.");

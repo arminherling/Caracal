@@ -74,13 +74,13 @@ namespace Caracal
         T0028_NonExternVariadicFunction,
         T0029_FlagEnumExplicitValue,
         T0030_TypeDotNewDeclaration,
-        T0031_ReferenceReturnType,
+        T0031_ReferenceOrSliceReturn,
         T0032_AlreadyReference,
         T0074_StaticMethodTypeNameMismatch,
         T0081_CallReturnsNoValue,
         T0082_GlobalConstantWithCall,
         T0084_GlobalConstantNotComputable,
-        T0085_ReferenceField,
+        T0085_ReferenceOrSliceField,
 
         // Duplicate declaration diagnostics
         T0033_DuplicateDeclaration,

@@ -2294,7 +2294,7 @@ namespace Caracal
         // ownership rule: we dont allow storing references or slices in types
         if (fieldType.isReference() || fieldType.kind() == TypeKind::Slice)
         {
-            m_diagnostics.addReferenceFieldError(
+            m_diagnostics.addReferenceOrSliceFieldError(
                 tokens.source(),
                 statement->nameExpression()->sourceLocation(tokens));
         }
@@ -3457,12 +3457,12 @@ namespace Caracal
         for (const auto& returnTypeNode : returnTypesNode->returnTypes())
         {
             auto returnType = typeCheckTypeNameNode(returnTypeNode.get(), tokens);
-            if (returnType.isReference())
+            // ownership rule: returning references or slices is not allowed because they could outlive the values
+            if (returnType.isReference() || returnType.kind() == TypeKind::Slice)
             {
-                m_diagnostics.addReferenceReturnTypeError(
+                m_diagnostics.addReferenceOrSliceReturnError(
                     tokens.source(),
-                    returnTypeNode->sourceLocation(tokens),
-                    returnTypeNode->name());
+                    returnTypeNode->sourceLocation(tokens));
             }
             types.push_back(returnType);
         }

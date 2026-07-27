@@ -1,14 +1,14 @@
  Error T0031
-  Reference return type
+  Functions cannot return references or slices
     ,-[Diagnostics/Input/referenceReturnType.cara:1:16]
   1 | def getValue() ref i32 {
     .                -------
-    .                   `-- Return type cannot be 'ref i32'
+    .                   `-- Returning references or slices is not allowed
   2 |     return 1;
   3 | }
   4 | 
     `----
-  Fix: Return the value type instead of a reference type.
+  Fix: Return an owning copy of the value instead.
  Error T0020
   Return type mismatch
     ,-[Diagnostics/Input/referenceReturnType.cara:2:12]

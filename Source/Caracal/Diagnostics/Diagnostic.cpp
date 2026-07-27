@@ -117,7 +117,7 @@ namespace Caracal
                 return "T0029";
             case DiagnosticKind::T0030_TypeDotNewDeclaration:
                 return "T0030";
-            case DiagnosticKind::T0031_ReferenceReturnType:
+            case DiagnosticKind::T0031_ReferenceOrSliceReturn:
                 return "T0031";
             case DiagnosticKind::T0032_AlreadyReference:
                 return "T0032";
@@ -227,7 +227,7 @@ namespace Caracal
                 return "T0083";
             case DiagnosticKind::T0084_GlobalConstantNotComputable:
                 return "T0084";
-            case DiagnosticKind::T0085_ReferenceField:
+            case DiagnosticKind::T0085_ReferenceOrSliceField:
                 return "T0085";
             case DiagnosticKind::Unknown:
             default:
@@ -354,8 +354,8 @@ namespace Caracal
                 return "Flag enum explicit value";
             case DiagnosticKind::T0030_TypeDotNewDeclaration:
                 return "Type.new declaration not allowed";
-            case DiagnosticKind::T0031_ReferenceReturnType:
-                return "Reference return type";
+            case DiagnosticKind::T0031_ReferenceOrSliceReturn:
+                return "Functions cannot return references or slices";
             case DiagnosticKind::T0032_AlreadyReference:
                 return "Already a reference";
 
@@ -454,8 +454,8 @@ namespace Caracal
                 return "Global constant initializers cannot call functions";
             case DiagnosticKind::T0084_GlobalConstantNotComputable:
                 return "Global constant initializers must be computable at compile time";
-            case DiagnosticKind::T0085_ReferenceField:
-                return "Fields cannot store references";
+            case DiagnosticKind::T0085_ReferenceOrSliceField:
+                return "Fields cannot store references or slices";
             case DiagnosticKind::T0075_DuplicateMethodDeclaration:
                 return "Duplicate method declaration";
             case DiagnosticKind::T0076_MemberAccessInDefaultParameter:

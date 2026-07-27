@@ -119,8 +119,8 @@ namespace Caracal
         void addNonExternVariadicFunctionError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName);
         void addFlagEnumExplicitValueError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName);
         void addTypeDotNewDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& typeName);
-        void addReferenceReturnTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& typeName);
-        void addReferenceFieldError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addReferenceOrSliceReturnError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addReferenceOrSliceFieldError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addAlreadyReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addCallReturnsNoValueError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
         void addGlobalConstantWithCallError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);

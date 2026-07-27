@@ -1,0 +1,11 @@
+ Error T0031
+  Functions cannot return references or slices
+    ,-[Diagnostics/Input/sliceReturn.cara:1:25]
+  1 | def view(values: [i32]) [i32]
+    .                         -----
+    .                           `-- Returning references or slices is not allowed
+  2 | {
+  3 |     return values;
+  4 | }
+    `----
+  Fix: Return an owning copy of the value instead.
