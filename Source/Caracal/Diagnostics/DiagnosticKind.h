@@ -81,6 +81,7 @@ namespace Caracal
         T0082_GlobalConstantWithCall,
         T0084_GlobalConstantNotComputable,
         T0085_ReferenceOrSliceField,
+        T0086_ReferenceOrSliceArrayElement,
 
         // Duplicate declaration diagnostics
         T0033_DuplicateDeclaration,

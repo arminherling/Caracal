@@ -121,6 +121,7 @@ namespace Caracal
         void addTypeDotNewDeclarationError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& typeName);
         void addReferenceOrSliceReturnError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addReferenceOrSliceFieldError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addReferenceOrSliceArrayElementError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addAlreadyReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addCallReturnsNoValueError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);
         void addGlobalConstantWithCallError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& name);

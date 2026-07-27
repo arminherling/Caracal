@@ -1,0 +1,4 @@
+def grid(cells: [[i32]; 8]) i32
+{
+    return cells.length;
+}

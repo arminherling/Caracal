@@ -3287,6 +3287,14 @@ namespace Caracal
             return Type::Undefined();
         }
 
+        // ownership rule: arrays cant store references or slices
+        if (elementType.isReference() || elementType.kind() == TypeKind::Slice)
+        {
+            m_diagnostics.addReferenceOrSliceArrayElementError(
+                tokens.source(),
+                literal->sourceLocation(tokens));
+        }
+
         const auto length = static_cast<i32>(literal->elements().size());
         const auto arrayType = m_module.getOrCreateArrayType(TypeKind::FixedArray, elementType, length);
         literal->setType(arrayType);
@@ -3330,6 +3338,14 @@ namespace Caracal
         if (elementType == Type::Undefined())
         {
             return Type::Undefined();
+        }
+
+        // ownership rule: arrays cant store references or slices
+        if (elementType.isReference() || elementType.kind() == TypeKind::Slice)
+        {
+            m_diagnostics.addReferenceOrSliceArrayElementError(
+                tokens.source(),
+                arrayTypeNameNode->elementType()->sourceLocation(tokens));
         }
 
         auto arrayType = Type::Undefined();

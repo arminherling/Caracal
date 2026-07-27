@@ -1560,6 +1560,21 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addReferenceOrSliceArrayElementError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0086_ReferenceOrSliceArrayElement,
+            source,
+            location,
+            "Store owning copies of the values instead.");
+        diagnostic.addPrimaryLabel(location, "Storing references or slices is not allowed");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addAlreadyReferenceError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location)

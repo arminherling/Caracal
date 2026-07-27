@@ -1,0 +1,10 @@
+ Error T0086 Arrays cannot store references or slices
+    ,-[Diagnostics/Input/arrayOfSlices.cara:1:18]
+  1 | def grid(cells: [[i32]; 8]) i32
+    .                  -----
+    .                    `-- Storing references or slices is not allowed
+  2 | {
+  3 |     return cells.length;
+  4 | }
+    `----
+  Fix: Store owning copies of the values instead.

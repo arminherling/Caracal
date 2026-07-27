@@ -1,0 +1,7 @@
+def main() i32
+{
+    a := 1;
+    b := 2;
+    xs := [ref a, ref b];
+    return xs.length;
+}

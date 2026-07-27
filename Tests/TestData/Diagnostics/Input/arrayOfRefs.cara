@@ -1,0 +1,4 @@
+def takesArrayOfRefs(xs: [ref i32; 2]) i32
+{
+    return xs.length;
+}

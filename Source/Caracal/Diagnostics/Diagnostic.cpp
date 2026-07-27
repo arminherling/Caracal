@@ -229,6 +229,8 @@ namespace Caracal
                 return "T0084";
             case DiagnosticKind::T0085_ReferenceOrSliceField:
                 return "T0085";
+            case DiagnosticKind::T0086_ReferenceOrSliceArrayElement:
+                return "T0086";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -456,6 +458,8 @@ namespace Caracal
                 return "Global constant initializers must be computable at compile time";
             case DiagnosticKind::T0085_ReferenceOrSliceField:
                 return "Fields cannot store references or slices";
+            case DiagnosticKind::T0086_ReferenceOrSliceArrayElement:
+                return "Arrays cannot store references or slices";
             case DiagnosticKind::T0075_DuplicateMethodDeclaration:
                 return "Duplicate method declaration";
             case DiagnosticKind::T0076_MemberAccessInDefaultParameter:
