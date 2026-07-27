@@ -1,5 +1,4 @@
- Error T0051
-  Default parameter type mismatch
+ Error T0051 Default parameter type mismatch
     ,-[Diagnostics/Input/defaultParameterTypeMismatch.cara:1:29]
   1 | def withBadDefault(x: i32 = "hello") i32
     .                             -------

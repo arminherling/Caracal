@@ -1,5 +1,4 @@
- Error T0011
-  Unknown field
+ Error T0011 Unknown field
     ,-[Diagnostics/Input/unknownField.cara:5:10]
   2 | }
   3 | 

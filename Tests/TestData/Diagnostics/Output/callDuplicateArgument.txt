@@ -1,5 +1,4 @@
- Error T0049
-  Duplicate argument
+ Error T0049 Duplicate argument
      ,-[Diagnostics/Input/callDuplicateArgument.cara:8:19]
    5 | 
    6 | def func() i32

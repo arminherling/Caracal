@@ -1,5 +1,4 @@
- Error T0082
-  Global constant initializers cannot call functions
+ Error T0082 Global constant initializers cannot call functions
     ,-[Diagnostics/Input/globalConstantWithCall.cara:6:6]
   3 |     return 4;
   4 | }

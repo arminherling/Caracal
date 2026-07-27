@@ -1,5 +1,4 @@
- Error T0004
-  Wrong number of annotation arguments
+ Error T0004 Wrong number of annotation arguments
     ,-[Diagnostics/Input/externAnnotationWrongNumberOfArguments.cara:1:9]
   1 | #extern(1)
     .         -

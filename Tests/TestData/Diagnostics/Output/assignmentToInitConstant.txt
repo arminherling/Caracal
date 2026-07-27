@@ -1,5 +1,4 @@
- Error T0053
-  Assignment to init constant
+ Error T0053 Assignment to init constant
     ,-[Diagnostics/Input/assignmentToInitConstant.cara:5:5]
   2 | 
   3 | def helper()

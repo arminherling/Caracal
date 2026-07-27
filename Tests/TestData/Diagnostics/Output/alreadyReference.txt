@@ -1,5 +1,4 @@
- Error T0032
-  Already a reference
+ Error T0032 Already a reference
     ,-[Diagnostics/Input/alreadyReference.cara:4:22]
   1 | def func() {
   2 |     value := 5;

@@ -1,5 +1,4 @@
- Error T0037
-  Duplicate enum field declaration
+ Error T0037 Duplicate enum field declaration
     ,-[Diagnostics/Input/duplicateEnumFieldDeclaration.cara:3:5]
   1 | enum Numbers {
   2 |     One

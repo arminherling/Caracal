@@ -1,5 +1,4 @@
- Error T0010
-  Unknown method
+ Error T0010 Unknown method
     ,-[Diagnostics/Input/scalarIntrinsicReceiver.cara:3:12]
   1 | def make() i32
   2 | {

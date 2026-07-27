@@ -1,5 +1,4 @@
- Error T0074
-  Static method type name does not match the enclosing type
+ Error T0074 Static method type name does not match the enclosing type
      ,-[Diagnostics/Input/staticMethodOnWrongType.cara:8:9]
    5 |         return 1;
    6 |     }

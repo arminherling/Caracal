@@ -1,5 +1,4 @@
- Error T0078
-  Array element type mismatch
+ Error T0078 Array element type mismatch
     ,-[Diagnostics/Input/arrayElementTypeMismatch.cara:3:14]
   1 | def make() i32
   2 | {

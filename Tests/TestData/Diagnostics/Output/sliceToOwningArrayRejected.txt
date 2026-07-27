@@ -1,5 +1,4 @@
- Error T0023
-  Explicit variable type mismatch
+ Error T0023 Explicit variable type mismatch
     ,-[Diagnostics/Input/sliceToOwningArrayRejected.cara:3:19]
   1 | def copy(values: [u8]) i32
   2 | {

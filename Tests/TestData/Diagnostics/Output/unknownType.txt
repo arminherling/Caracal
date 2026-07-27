@@ -1,5 +1,4 @@
- Error T0009
-  Unknown type
+ Error T0009 Unknown type
     ,-[Diagnostics/Input/unknownType.cara:1:17]
   1 | def main(value: MissingType) {
     .                 -----------

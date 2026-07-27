@@ -1,5 +1,4 @@
- Error T0060
-  Not all paths return a value
+ Error T0060 Not all paths return a value
     ,-[Diagnostics/Input/missingReturn.cara:1:5]
   1 | def f(c: bool) i32
     .     -

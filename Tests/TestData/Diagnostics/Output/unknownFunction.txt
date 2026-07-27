@@ -1,5 +1,4 @@
- Error T0008
-  Unknown function
+ Error T0008 Unknown function
     ,-[Diagnostics/Input/unknownFunction.cara:2:5]
   1 | def main() {
   2 |     missingCall();

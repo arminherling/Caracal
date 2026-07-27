@@ -1,5 +1,4 @@
- Error T0018
-  Non-bool if condition
+ Error T0018 Non-bool if condition
     ,-[Diagnostics/Input/nonBoolIfCondition.cara:2:8]
   1 | def main() {
   2 |     if 1 {

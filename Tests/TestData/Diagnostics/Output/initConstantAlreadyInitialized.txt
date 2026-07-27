@@ -1,5 +1,4 @@
- Error T0054
-  Init constant already initialized
+ Error T0054 Init constant already initialized
     ,-[Diagnostics/Input/initConstantAlreadyInitialized.cara:6:5]
   2 | 
   3 | def main() i32

@@ -1,5 +1,4 @@
- Warning T0042
-  Unused local variable
+ Warning T0042 Unused local variable
     ,-[Diagnostics/Input/unusedLocal.cara:2:5]
   1 | def main() i32 {
   2 |     value := 1;

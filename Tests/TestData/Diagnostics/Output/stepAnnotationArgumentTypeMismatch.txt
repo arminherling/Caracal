@@ -1,5 +1,4 @@
- Error T0005
-  Annotation argument type mismatch
+ Error T0005 Annotation argument type mismatch
     ,-[Diagnostics/Input/stepAnnotationArgumentTypeMismatch.cara:1:7]
   1 | #step("abc")
     .       -----

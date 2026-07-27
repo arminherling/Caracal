@@ -1,5 +1,4 @@
- Error T0016
-  Argument type mismatch
+ Error T0016 Argument type mismatch
     ,-[Diagnostics/Input/argumentTypeMismatchMultipleWrong.cara:7:14]
   4 | }
   5 | 

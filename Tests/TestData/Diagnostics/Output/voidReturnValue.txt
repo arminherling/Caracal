@@ -1,5 +1,4 @@
- Error T0020
-  Return type mismatch
+ Error T0020 Return type mismatch
     ,-[Diagnostics/Input/voidReturnValue.cara:2:12]
   1 | def main() {
   2 |     return 1;

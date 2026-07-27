@@ -1,5 +1,4 @@
- Error T0025
-  Arithmetic operand type mismatch
+ Error T0025 Arithmetic operand type mismatch
     ,-[Diagnostics/Input/arithmeticOperandTypeMismatch.cara:2:16]
   1 | def main() {
   2 |     value := 1 %+ true;

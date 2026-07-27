@@ -1,5 +1,4 @@
- Error T0079
-  Empty arrays are not allowed
+ Error T0079 Empty arrays are not allowed
     ,-[Diagnostics/Input/emptyArrayLiteral.cara:3:10]
   1 | def make() i32
   2 | {

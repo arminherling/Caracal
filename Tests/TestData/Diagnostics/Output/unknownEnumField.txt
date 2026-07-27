@@ -1,5 +1,4 @@
- Error T0012
-  Unknown enum field
+ Error T0012 Unknown enum field
     ,-[Diagnostics/Input/unknownEnumField.cara:6:20]
   3 | }
   4 | 

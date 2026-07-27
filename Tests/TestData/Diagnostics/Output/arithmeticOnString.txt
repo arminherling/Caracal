@@ -1,5 +1,4 @@
- Error T0065
-  Binary operator cannot be applied to this type
+ Error T0065 Binary operator cannot be applied to this type
     ,-[Diagnostics/Input/arithmeticOnString.cara:3:16]
   1 | ﻿def probe() cstring
   2 | {

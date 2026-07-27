@@ -1,5 +1,4 @@
- Error T0005
-  Annotation argument type mismatch
+ Error T0005 Annotation argument type mismatch
     ,-[Diagnostics/Input/externSymbolNotString.cara:1:18]
   1 | #extern(symbol = 1)
     .                  -

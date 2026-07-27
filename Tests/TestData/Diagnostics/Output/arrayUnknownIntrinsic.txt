@@ -1,5 +1,4 @@
- Error T0010
-  Unknown method
+ Error T0010 Unknown method
     ,-[Diagnostics/Input/arrayUnknownIntrinsic.cara:3:17]
   1 | def make(values: [i32; 4]) i32
   2 | {

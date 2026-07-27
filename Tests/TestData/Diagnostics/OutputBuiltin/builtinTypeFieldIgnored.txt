@@ -1,5 +1,4 @@
- Warning T0068
-  Field in builtin type is ignored
+ Warning T0068 Field in builtin type is ignored
     ,-[Diagnostics/InputBuiltin/builtinTypeFieldIgnored.cara:4:5]
   1 | ﻿#builtin
   2 | type i32

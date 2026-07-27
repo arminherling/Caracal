@@ -1,5 +1,4 @@
- Error T0002
-  Unexpected annotation target
+ Error T0002 Unexpected annotation target
     ,-[Diagnostics/Input/unexpectedTypeAnnotation.cara:1:1]
   1 | #flag
     . -----

@@ -1,5 +1,4 @@
- Error T0050
-  Missing required argument
+ Error T0050 Missing required argument
     ,-[Diagnostics/Input/variadicMissingRequiredArgument.cara:5:11]
   2 | def printf(format: cstring, ...) {}
   3 | 

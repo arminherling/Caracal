@@ -1,5 +1,4 @@
- Error T0024
-  Type field initializer mismatch
+ Error T0024 Type field initializer mismatch
     ,-[Diagnostics/Input/typeFieldInitializerMismatch.cara:2:18]
   1 | type Box {
   2 |     value: i32 = true

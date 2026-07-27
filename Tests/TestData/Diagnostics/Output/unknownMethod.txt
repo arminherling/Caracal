@@ -1,5 +1,4 @@
- Error T0010
-  Unknown method
+ Error T0010 Unknown method
     ,-[Diagnostics/Input/unknownMethod.cara:5:10]
   2 | }
   3 | 

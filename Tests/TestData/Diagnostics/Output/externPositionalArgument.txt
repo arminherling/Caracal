@@ -1,5 +1,4 @@
- Error T0003
-  Missing annotation arguments
+ Error T0003 Missing annotation arguments
     ,-[Diagnostics/Input/externPositionalArgument.cara:1:9]
   1 | #extern("puts")
     .         ------

@@ -1,5 +1,4 @@
- Error T0045
-  Unexpected annotation argument
+ Error T0045 Unexpected annotation argument
     ,-[Diagnostics/Input/externUnknownNamedArgument.cara:1:9]
   1 | #extern(unknown = "puts")
     .         -------

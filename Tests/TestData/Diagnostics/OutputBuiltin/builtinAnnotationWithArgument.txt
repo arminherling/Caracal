@@ -1,5 +1,4 @@
- Error T0004
-  Wrong number of annotation arguments
+ Error T0004 Wrong number of annotation arguments
     ,-[Diagnostics/InputBuiltin/builtinAnnotationWithArgument.cara:1:13]
   1 | ﻿#builtin(1)
     .             -

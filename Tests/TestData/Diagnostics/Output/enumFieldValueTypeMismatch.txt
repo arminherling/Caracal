@@ -1,5 +1,4 @@
- Error T0027
-  Enum field value type mismatch
+ Error T0027 Enum field value type mismatch
     ,-[Diagnostics/Input/enumFieldValueTypeMismatch.cara:3:12]
   1 | enum Numbers: i32 {
   2 |     One :: 1

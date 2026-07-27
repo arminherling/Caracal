@@ -1,5 +1,4 @@
- Error T0002
-  Unexpected annotation target
+ Error T0002 Unexpected annotation target
     ,-[Diagnostics/Input/stackedFunctionAnnotations.cara:2:1]
   1 | #extern()
   2 | #flag

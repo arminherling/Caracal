@@ -1,5 +1,4 @@
- Error T0065
-  Binary operator cannot be applied to this type
+ Error T0065 Binary operator cannot be applied to this type
     ,-[Diagnostics/Input/floatEquality.cara:3:16]
   1 | ﻿def equalsProbe() bool
   2 | {
@@ -11,8 +10,7 @@
   6 | def notEqualsProbe() bool
     `----
   Fix: Operator '==' expects operands that can be compared for equality.
- Error T0065
-  Binary operator cannot be applied to this type
+ Error T0065 Binary operator cannot be applied to this type
      ,-[Diagnostics/Input/floatEquality.cara:8:16]
    5 | 
    6 | def notEqualsProbe() bool

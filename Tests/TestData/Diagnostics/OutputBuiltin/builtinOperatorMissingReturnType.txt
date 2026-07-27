@@ -1,5 +1,4 @@
- Error T0072
-  Invalid operator method signature
+ Error T0072 Invalid operator method signature
     ,-[Diagnostics/InputBuiltin/builtinOperatorMissingReturnType.cara:4:13]
   1 | ﻿#builtin
   2 | type i32

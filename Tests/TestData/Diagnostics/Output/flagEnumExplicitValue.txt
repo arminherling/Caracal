@@ -1,5 +1,4 @@
- Error T0029
-  Flag enum explicit value
+ Error T0029 Flag enum explicit value
     ,-[Diagnostics/Input/flagEnumExplicitValue.cara:3:13]
   1 | #flag
   2 | enum Bits {

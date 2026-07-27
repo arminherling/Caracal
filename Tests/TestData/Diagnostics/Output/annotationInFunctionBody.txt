@@ -1,5 +1,4 @@
- Error P0010
-  Annotation not allowed here
+ Error P0010 Annotation not allowed here
     ,-[Diagnostics/Input/annotationInFunctionBody.cara:3:5]
   1 | def main() i32
   2 | {

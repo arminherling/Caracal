@@ -1,5 +1,4 @@
- Error T0058
-  Assignment through reference to constant
+ Error T0058 Assignment through reference to constant
     ,-[Diagnostics/Input/assignThroughRefToConstant.cara:5:5]
   2 | {
   3 |     x :: 5;

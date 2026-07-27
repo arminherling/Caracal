@@ -1,5 +1,4 @@
- Error T0030
-  Type.new declaration not allowed
+ Error T0030 Type.new declaration not allowed
     ,-[Diagnostics/Input/duplicateConstructorDeclaration.cara:2:9]
   1 | type Number(value: i32) {
     .            ------------

@@ -1,5 +1,4 @@
- Error T0052
-  Non-trailing default parameter
+ Error T0052 Non-trailing default parameter
     ,-[Diagnostics/Input/nonTrailingDefaultParameter.cara:1:38]
   1 | def withTrailingRequired(x: i32 = 0, y: i32) i32
     .                                      ------

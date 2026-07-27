@@ -1,5 +1,4 @@
- Error P0014
-  Free functions cannot be private
+ Error P0014 Free functions cannot be private
     ,-[Diagnostics/Input/privateFreeFunction.cara:1:5]
   1 | def _helper() i32
     .     -------

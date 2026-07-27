@@ -1,5 +1,4 @@
- Error T0010
-  Unknown method
+ Error T0010 Unknown method
     ,-[Diagnostics/Input/dotCallToUnknownMethod.cara:5:17]
   2 | {
   3 |     def value() i32

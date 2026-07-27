@@ -1,5 +1,4 @@
- Error T0062
-  Constant expression overflows its type
+ Error T0062 Constant expression overflows its type
     ,-[Diagnostics/Input/negationOverflow.cara:1:15]
   1 | ﻿wrapped :: -(-2147483647 %- 1);
     .               -------------------

@@ -1,5 +1,4 @@
- Error T0084
-  Global constant initializers must be computable at compile time
+ Error T0084 Global constant initializers must be computable at compile time
     ,-[Diagnostics/Input/globalBitwiseNotFoldable.cara:3:6]
   1 | v :: init i32;
   2 | 

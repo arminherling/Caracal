@@ -1,5 +1,4 @@
- Error T0077
-  Private methods cannot be called from outside their type
+ Error T0077 Private methods cannot be called from outside their type
      ,-[Diagnostics/Input/privateMethodCallOutsideType.cara:17:14]
   14 | def main() i32
   15 | {

@@ -1,5 +1,4 @@
- Error P0012
-  Explicit type is not allowed for init constants
+ Error P0012 Explicit type is not allowed for init constants
     ,-[Diagnostics/Input/explicitTypeOnInitConstant.cara:1:9]
   1 | value : i32 : init f32;
     .         ---

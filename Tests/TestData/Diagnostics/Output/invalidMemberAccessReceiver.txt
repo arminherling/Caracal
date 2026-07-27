@@ -1,5 +1,4 @@
- Error T0014
-  Invalid member access receiver
+ Error T0014 Invalid member access receiver
     ,-[Diagnostics/Input/invalidMemberAccessReceiver.cara:2:12]
   1 | def main() i32 {
   2 |     return 1.value;

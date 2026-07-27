@@ -1,5 +1,4 @@
- Error T0050
-  Missing required argument
+ Error T0050 Missing required argument
     ,-[Diagnostics/Input/bitwiseWrongArity.cara:3:21]
   1 | def make() i32
   2 | {

@@ -1,5 +1,4 @@
- Error T0081
-  Cannot store the result of a call that returns nothing
+ Error T0081 Cannot store the result of a call that returns nothing
     ,-[Diagnostics/Input/callReturnsNoValue.cara:4:5]
   1 | def make() i32
   2 | {
@@ -12,8 +11,7 @@
   7 | }
     `----
   Fix: Call it as its own statement or discard the result with '_'.
- Error T0081
-  Cannot store the result of a call that returns nothing
+ Error T0081 Cannot store the result of a call that returns nothing
     ,-[Diagnostics/Input/callReturnsNoValue.cara:5:5]
   2 | {
   3 |     numbers := [1, 2, 3];

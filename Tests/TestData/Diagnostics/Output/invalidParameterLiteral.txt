@@ -1,5 +1,4 @@
- Error P0011
-  Invalid parameter
+ Error P0011 Invalid parameter
     ,-[Diagnostics/Input/invalidParameterLiteral.cara:1:7]
   1 | def f(5) i32
     .       -

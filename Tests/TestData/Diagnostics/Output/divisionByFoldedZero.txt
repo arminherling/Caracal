@@ -1,5 +1,4 @@
- Error T0061
-  Division by zero
+ Error T0061 Division by zero
     ,-[Diagnostics/Input/divisionByFoldedZero.cara:1:10]
   1 | _ :: 4 / (2 %- 2);
     .          --------

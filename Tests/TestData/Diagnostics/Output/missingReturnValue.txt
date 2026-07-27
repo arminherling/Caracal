@@ -1,5 +1,4 @@
- Error T0020
-  Return type mismatch
+ Error T0020 Return type mismatch
     ,-[Diagnostics/Input/missingReturnValue.cara:2:5]
   1 | def main() i32 {
   2 |     return;

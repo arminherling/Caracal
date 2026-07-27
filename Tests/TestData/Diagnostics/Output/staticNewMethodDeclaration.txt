@@ -1,5 +1,4 @@
- Error T0030
-  Type.new declaration not allowed
+ Error T0030 Type.new declaration not allowed
     ,-[Diagnostics/Input/staticNewMethodDeclaration.cara:2:16]
   1 | type Number(value: i32) {
     .            ------------

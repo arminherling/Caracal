@@ -1,5 +1,4 @@
- Error T0063
-  Unary operator cannot be applied to this type
+ Error T0063 Unary operator cannot be applied to this type
     ,-[Diagnostics/Input/valueNegationOnNonNumeric.cara:3:12]
   1 | ﻿def probe() i32
   2 | {

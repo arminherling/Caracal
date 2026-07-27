@@ -1,5 +1,4 @@
- Error P0009
-  Positional argument after named argument
+ Error P0009 Positional argument after named argument
      ,-[Diagnostics/Input/callPositionalAfterNamedWithDefault.cara:8:21]
    5 | 
    6 | def main() i32

@@ -1,5 +1,4 @@
- Error P0013
-  Static methods cannot be private
+ Error P0013 Static methods cannot be private
     ,-[Diagnostics/Input/privateStaticMethod.cara:3:14]
   1 | type Tool
   2 | {

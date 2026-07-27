@@ -1,5 +1,4 @@
- Error T0085
-  Fields cannot store references or slices
+ Error T0085 Fields cannot store references or slices
     ,-[Diagnostics/Input/refFieldExplicit.cara:3:5]
   1 | type Holder(value: ref i32)
   2 | {

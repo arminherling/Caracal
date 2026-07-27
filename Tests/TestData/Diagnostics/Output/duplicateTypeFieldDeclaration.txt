@@ -1,5 +1,4 @@
- Error T0038
-  Duplicate type field declaration
+ Error T0038 Duplicate type field declaration
     ,-[Diagnostics/Input/duplicateTypeFieldDeclaration.cara:3:5]
   1 | type Number {
   2 |     value: i32 = 1

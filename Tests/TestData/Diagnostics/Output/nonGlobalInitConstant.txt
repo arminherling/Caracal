@@ -1,5 +1,4 @@
- Error T0056
-  Non-global init constant
+ Error T0056 Non-global init constant
     ,-[Diagnostics/Input/nonGlobalInitConstant.cara:3:5]
   1 | def main() i32
   2 | {

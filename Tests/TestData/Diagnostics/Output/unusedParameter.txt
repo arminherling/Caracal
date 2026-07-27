@@ -1,5 +1,4 @@
- Warning T0044
-  Unused parameter
+ Warning T0044 Unused parameter
     ,-[Diagnostics/Input/unusedParameter.cara:1:8]
   1 | def id(value: i32) i32 {
     .        ----------

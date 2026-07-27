@@ -1,5 +1,4 @@
- Error T0046
-  Duplicate annotation argument
+ Error T0046 Duplicate annotation argument
     ,-[Diagnostics/Input/externDuplicateSymbol.cara:1:23]
   1 | #extern(symbol = "a", symbol = "b")
     .                       ------

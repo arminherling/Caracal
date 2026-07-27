@@ -1,5 +1,4 @@
- Error T0055
-  Uninitialized init constant
+ Error T0055 Uninitialized init constant
     ,-[Diagnostics/Input/uninitializedInitConstant.cara:1:1]
   1 | g :: init i32;
     . -

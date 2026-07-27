@@ -1,5 +1,4 @@
- Error T0041
-  Number literal out of range
+ Error T0041 Number literal out of range
     ,-[Diagnostics/Input/negativeIntegerOutOfRange.cara:3:13]
   1 | ﻿def negativeIntegerOutOfRange() i32
   2 | {

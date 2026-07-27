@@ -1,5 +1,4 @@
- Error T0083
-  Bitwise methods are only available on integer types
+ Error T0083 Bitwise methods are only available on integer types
     ,-[Diagnostics/InputBuiltin/builtinIntrinsicOnFloat.cara:4:13]
   1 | #builtin
   2 | type f32

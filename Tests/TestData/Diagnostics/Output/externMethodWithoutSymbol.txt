@@ -1,5 +1,4 @@
- Error T0047
-  Extern method requires a symbol
+ Error T0047 Extern method requires a symbol
     ,-[Diagnostics/Input/externMethodWithoutSymbol.cara:3:5]
   1 | type C
   2 | {

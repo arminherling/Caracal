@@ -1,5 +1,4 @@
- Error T0002
-  Unexpected annotation target
+ Error T0002 Unexpected annotation target
     ,-[Diagnostics/Input/builtinAnnotationOnFunction.cara:1:4]
   1 | ﻿#builtin
     .    --------

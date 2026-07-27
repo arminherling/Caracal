@@ -1,5 +1,4 @@
- Error T0045
-  Unexpected annotation argument
+ Error T0045 Unexpected annotation argument
     ,-[Diagnostics/Input/stepUnexpectedNamedArgument.cara:1:7]
   1 | #step(name = "x")
     .       ----

@@ -1,5 +1,4 @@
- Error T0013
-  Invalid enum member access
+ Error T0013 Invalid enum member access
     ,-[Diagnostics/Input/invalidEnumMemberAccess.cara:6:20]
   3 | }
   4 | 

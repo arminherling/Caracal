@@ -1,5 +1,4 @@
- Error T0057
-  Assignment to constant
+ Error T0057 Assignment to constant
     ,-[Diagnostics/Input/assignmentToGlobalConstant.cara:5:5]
   2 | 
   3 | def main() i32

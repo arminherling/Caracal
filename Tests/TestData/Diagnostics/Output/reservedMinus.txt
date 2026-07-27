@@ -1,5 +1,4 @@
- Error P0016
-  Plain arithmetic operators are reserved until checked arithmetic exists
+ Error P0016 Plain arithmetic operators are reserved until checked arithmetic exists
      ,-[Diagnostics/Input/reservedMinus.cara:9:18]
    6 | def main() i32
    7 | {

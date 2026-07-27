@@ -1,5 +1,4 @@
- Warning T0059
-  Unreachable code
+ Warning T0059 Unreachable code
     ,-[Diagnostics/Input/unreachableCode.cara:4:5]
   1 | def func() i32
   2 | {

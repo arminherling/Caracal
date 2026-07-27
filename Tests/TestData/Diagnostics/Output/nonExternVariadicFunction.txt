@@ -1,5 +1,4 @@
- Error T0028
-  Non-extern variadic function
+ Error T0028 Non-extern variadic function
     ,-[Diagnostics/Input/nonExternVariadicFunction.cara:1:33]
   1 | def printfLike(format: cstring, ...) {
     .                                 ---

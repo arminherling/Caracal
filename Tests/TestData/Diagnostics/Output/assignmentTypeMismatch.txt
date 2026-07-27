@@ -1,5 +1,4 @@
- Error T0021
-  Assignment type mismatch
+ Error T0021 Assignment type mismatch
     ,-[Diagnostics/Input/assignmentTypeMismatch.cara:3:13]
   1 | def main() {
   2 |     value: i32 = 0;

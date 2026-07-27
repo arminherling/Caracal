@@ -1,5 +1,4 @@
- Error T0050
-  Missing required argument
+ Error T0050 Missing required argument
     ,-[Diagnostics/Input/callMissingRequiredArgument.cara:6:13]
   3 | }
   4 | 

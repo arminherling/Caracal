@@ -1,5 +1,4 @@
- Error T0040
-  Duplicate type declaration
+ Error T0040 Duplicate type declaration
     ,-[Diagnostics/Input/duplicateTypeDeclaration.cara:4:6]
   1 | type Number() {
     .      ------

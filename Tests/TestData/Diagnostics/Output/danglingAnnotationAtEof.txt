@@ -1,5 +1,4 @@
- Error P0007
-  Dangling annotation
+ Error P0007 Dangling annotation
     ,-[Diagnostics/Input/danglingAnnotationAtEof.cara:1:1]
   1 | #extern()
     . -------

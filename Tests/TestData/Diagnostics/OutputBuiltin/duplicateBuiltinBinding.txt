@@ -1,5 +1,4 @@
- Error T0067
-  Builtin type is already bound
+ Error T0067 Builtin type is already bound
      ,-[Diagnostics/InputBuiltin/duplicateBuiltinBinding.cara:7:6]
    1 | ﻿#builtin
    2 | type i32

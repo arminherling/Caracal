@@ -1,5 +1,4 @@
- Error P0005
-  Invalid statement
+ Error P0005 Invalid statement
     ,-[Diagnostics/Input/invalidStatementRun.cara:3:5]
   1 | def main() i32
   2 | {

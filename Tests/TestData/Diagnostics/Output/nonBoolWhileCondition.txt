@@ -1,5 +1,4 @@
- Error T0019
-  Non-bool while condition
+ Error T0019 Non-bool while condition
     ,-[Diagnostics/Input/nonBoolWhileCondition.cara:2:11]
   1 | def main() {
   2 |     while 1 {

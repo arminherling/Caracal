@@ -1,5 +1,4 @@
- Error T0031
-  Functions cannot return references or slices
+ Error T0031 Functions cannot return references or slices
     ,-[Diagnostics/Input/referenceReturnType.cara:1:16]
   1 | def getValue() ref i32 {
     .                -------
@@ -9,8 +8,7 @@
   4 | 
     `----
   Fix: Return an owning copy of the value instead.
- Error T0020
-  Return type mismatch
+ Error T0020 Return type mismatch
     ,-[Diagnostics/Input/referenceReturnType.cara:2:12]
   1 | def getValue() ref i32 {
   2 |     return 1;

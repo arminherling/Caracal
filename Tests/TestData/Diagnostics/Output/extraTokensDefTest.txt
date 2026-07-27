@@ -1,5 +1,4 @@
- Error P0001
-  Unexpected token
+ Error P0001 Unexpected token
     ,-[Diagnostics/Input/extraTokensDefTest.cara:3:3]
   1 | ﻿def main() {
   2 | }
@@ -8,8 +7,7 @@
     .   `-- Expected identifier but got end of file
     `----
   Fix: Add a identifier before the end of file.
- Error P0001
-  Unexpected token
+ Error P0001 Unexpected token
     ,-[Diagnostics/Input/extraTokensDefTest.cara:3:3]
   1 | ﻿def main() {
   2 | }
@@ -18,8 +16,7 @@
     .   `-- Expected '(' but got end of file
     `----
   Fix: Add a '(' before the end of file.
- Error P0001
-  Unexpected token
+ Error P0001 Unexpected token
     ,-[Diagnostics/Input/extraTokensDefTest.cara:3:3]
   1 | ﻿def main() {
   2 | }
@@ -28,8 +25,7 @@
     .   `-- Expected ')' but got end of file
     `----
   Fix: Add a ')' before the end of file.
- Error P0001
-  Unexpected token
+ Error P0001 Unexpected token
     ,-[Diagnostics/Input/extraTokensDefTest.cara:3:3]
   1 | ﻿def main() {
   2 | }
@@ -38,8 +34,7 @@
     .   `-- Expected identifier but got end of file
     `----
   Fix: Add a identifier before the end of file.
- Error P0001
-  Unexpected token
+ Error P0001 Unexpected token
     ,-[Diagnostics/Input/extraTokensDefTest.cara:3:3]
   1 | ﻿def main() {
   2 | }
@@ -48,8 +43,7 @@
     .   `-- Expected '{' but got end of file
     `----
   Fix: Add a '{' before the end of file.
- Error P0001
-  Unexpected token
+ Error P0001 Unexpected token
     ,-[Diagnostics/Input/extraTokensDefTest.cara:3:3]
   1 | ﻿def main() {
   2 | }

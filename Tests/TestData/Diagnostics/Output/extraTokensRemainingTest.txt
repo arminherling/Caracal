@@ -1,5 +1,4 @@
- Error L0001
-  Illegal character
+ Error L0001 Illegal character
     ,-[Diagnostics/Input/extraTokensRemainingTest.cara:3:1]
   1 | def main() {
   2 | }
@@ -9,8 +8,7 @@
   4 | 
     `----
   Fix: Remove the unsupported character.
- Error L0001
-  Illegal character
+ Error L0001 Illegal character
     ,-[Diagnostics/Input/extraTokensRemainingTest.cara:3:2]
   1 | def main() {
   2 | }
@@ -20,8 +18,7 @@
   4 | 
     `----
   Fix: Remove the unsupported character.
- Error L0001
-  Illegal character
+ Error L0001 Illegal character
     ,-[Diagnostics/Input/extraTokensRemainingTest.cara:3:3]
   1 | def main() {
   2 | }

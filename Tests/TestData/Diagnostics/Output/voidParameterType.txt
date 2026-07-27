@@ -1,5 +1,4 @@
- Error T0064
-  Parameter cannot have type 'void'
+ Error T0064 Parameter cannot have type 'void'
     ,-[Diagnostics/Input/voidParameterType.cara:1:18]
   1 | ﻿def takesVoid(x: void) i32
     .                  -------

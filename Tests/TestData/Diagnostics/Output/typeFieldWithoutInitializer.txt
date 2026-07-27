@@ -1,5 +1,4 @@
- Error P0008
-  Uninitialized field
+ Error P0008 Uninitialized field
     ,-[Diagnostics/Input/typeFieldWithoutInitializer.cara:3:5]
   1 | type Number()
   2 | {

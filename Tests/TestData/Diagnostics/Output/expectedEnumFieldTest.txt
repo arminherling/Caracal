@@ -1,5 +1,4 @@
- Error P0004
-  Invalid enum field
+ Error P0004 Invalid enum field
     ,-[Diagnostics/Input/expectedEnumFieldTest.cara:2:5]
   1 | enum Example {
   2 |     123

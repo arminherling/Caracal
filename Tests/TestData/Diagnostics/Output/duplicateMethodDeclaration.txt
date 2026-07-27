@@ -1,5 +1,4 @@
- Error T0075
-  Duplicate method declaration
+ Error T0075 Duplicate method declaration
      ,-[Diagnostics/Input/duplicateMethodDeclaration.cara:8:9]
    1 | type Counter
    2 | {

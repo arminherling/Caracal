@@ -1,5 +1,4 @@
- Error T0010
-  Unknown method
+ Error T0010 Unknown method
     ,-[Diagnostics/Input/bitwiseOperatorNotCallable.cara:3:14]
   1 | def make() i32
   2 | {

@@ -1,5 +1,4 @@
- Error T0048
-  Unknown argument name
+ Error T0048 Unknown argument name
      ,-[Diagnostics/Input/callUnknownArgumentName.cara:8:16]
    5 | 
    6 | def func() i32

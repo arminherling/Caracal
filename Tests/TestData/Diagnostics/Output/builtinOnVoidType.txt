@@ -1,5 +1,4 @@
- Error T0066
-  Not a builtin type
+ Error T0066 Not a builtin type
     ,-[Diagnostics/Input/builtinOnVoidType.cara:2:6]
   1 | ﻿#builtin
   2 | type void

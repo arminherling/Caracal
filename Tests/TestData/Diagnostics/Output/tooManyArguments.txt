@@ -1,5 +1,4 @@
- Error T0015
-  Argument count mismatch
+ Error T0015 Argument count mismatch
      ,-[Diagnostics/Input/tooManyArguments.cara:8:21]
    5 | 
    6 | def func() i32

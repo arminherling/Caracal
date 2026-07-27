@@ -1,5 +1,4 @@
- Error T0080
-  Array length mismatch
+ Error T0080 Array length mismatch
     ,-[Diagnostics/Input/arrayLengthMismatch.cara:3:20]
   1 | def make() i32
   2 | {

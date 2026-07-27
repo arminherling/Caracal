@@ -1,5 +1,4 @@
- Error T0002
-  Unexpected annotation target
+ Error T0002 Unexpected annotation target
     ,-[Diagnostics/Input/builtinAnnotationOnEnum.cara:1:4]
   1 | ﻿#builtin
     .    --------

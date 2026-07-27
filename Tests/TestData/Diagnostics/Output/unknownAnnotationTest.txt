@@ -1,5 +1,4 @@
- Error T0001
-  Unknown annotation
+ Error T0001 Unknown annotation
     ,-[Diagnostics/Input/unknownAnnotationTest.cara:1:1]
   1 | #mystery
     . --------

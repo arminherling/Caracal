@@ -1,5 +1,4 @@
- Error P0003
-  Unexpected top-level token
+ Error P0003 Unexpected top-level token
     ,-[Diagnostics/Input/extraTokensRefTest.cara:3:1]
   1 | def main() {
   2 | }

@@ -1,5 +1,4 @@
- Error T0039
-  Duplicate function declaration
+ Error T0039 Duplicate function declaration
     ,-[Diagnostics/Input/duplicateFunctionDeclaration.cara:5:5]
   1 | def value() i32 {
     .     -----

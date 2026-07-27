@@ -1,5 +1,4 @@
- Error T0007
-  Unknown name
+ Error T0007 Unknown name
     ,-[Diagnostics/Input/defaultReferencesParameter.cara:1:26]
   1 | def foo(x: i32, y: i32 = x) i32
     .                          -

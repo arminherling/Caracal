@@ -1,5 +1,4 @@
- Error P0007
-  Dangling annotation
+ Error P0007 Dangling annotation
     ,-[Diagnostics/Input/annotationBeforeInvalidStatement.cara:1:1]
   1 | #flag
     . -----
@@ -9,8 +8,7 @@
   4 | {
     `----
   Fix: Remove the extra annotation or attach it to the next supported declaration.
- Error P0003
-  Unexpected top-level token
+ Error P0003 Unexpected top-level token
     ,-[Diagnostics/Input/annotationBeforeInvalidStatement.cara:2:1]
   1 | #flag
   2 | )

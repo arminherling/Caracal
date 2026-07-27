@@ -1,5 +1,4 @@
- Error T0022
-  Explicit constant type mismatch
+ Error T0022 Explicit constant type mismatch
     ,-[Diagnostics/Input/explicitConstantTypeMismatch.cara:1:14]
   1 | value: i32 : true;
     .              ----

@@ -1,5 +1,4 @@
- Error T0035
-  Duplicate variable declaration
+ Error T0035 Duplicate variable declaration
     ,-[Diagnostics/Input/duplicateDeclaration.cara:3:5]
   1 | def main() {
   2 |     value: i32 = 0;

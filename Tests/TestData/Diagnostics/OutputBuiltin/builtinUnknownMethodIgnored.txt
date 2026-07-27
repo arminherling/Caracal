@@ -1,5 +1,4 @@
- Warning T0071
-  Unknown method in builtin type is ignored
+ Warning T0071 Unknown method in builtin type is ignored
     ,-[Diagnostics/InputBuiltin/builtinUnknownMethodIgnored.cara:4:13]
   1 | ﻿#builtin
   2 | type i32
