@@ -40,6 +40,7 @@ namespace Caracal
         [[nodiscard]] const OperatorSignature* tryGetOperatorSignature(Type type, UnaryOperatorKind operation) const noexcept;
         TypeDefinition& bindBuiltinTypeDefinition(Type type, const TypeDefinitionStatement* statement) noexcept;
         [[nodiscard]] FunctionDefinition& getFunctionDefinition(Type type) noexcept;
+        [[nodiscard]] const FunctionDefinition* tryGetFunctionDefinition(Type type) const noexcept;
         [[nodiscard]] Type tryGetTypeByName(std::string_view name) const noexcept;
         [[nodiscard]] std::string_view getNameByType(Type type) const noexcept;
 

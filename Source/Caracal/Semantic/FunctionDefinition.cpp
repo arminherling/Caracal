@@ -38,4 +38,14 @@ namespace Caracal
     {
         m_isVariadic = isVariadic;
     }
+
+    bool IsBitwiseIntrinsicKind(IntrinsicKind kind) noexcept
+    {
+        return kind == IntrinsicKind::BitAnd
+            || kind == IntrinsicKind::BitOr
+            || kind == IntrinsicKind::BitXor
+            || kind == IntrinsicKind::BitNot
+            || kind == IntrinsicKind::ShiftLeft
+            || kind == IntrinsicKind::ShiftRight;
+    }
 }

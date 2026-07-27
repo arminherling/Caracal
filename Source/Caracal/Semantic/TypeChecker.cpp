@@ -1330,7 +1330,7 @@ namespace Caracal
         }
     }
 
-    [[nodiscard]] static bool ContainsFunctionCall(const Expression* expression) noexcept
+    [[nodiscard]] static bool ContainsRuntimeCall(const Expression* expression, const SemanticContext& module) noexcept
     {
         if (expression == nullptr)
         {
@@ -1341,31 +1341,50 @@ namespace Caracal
         {
             case NodeKind::FunctionCallExpression:
             {
+                const auto* call = static_cast<const FunctionCallExpression*>(expression);
+                if (call->functionType() != Type::Undefined())
+                {
+                    const auto* definition = module.tryGetFunctionDefinition(call->functionType());
+                    if (definition != nullptr && IsBitwiseIntrinsicKind(definition->intrinsicKind()))
+                    {
+                        // foldable builtins are fine but arguments can force this into a runtime call
+                        for (const auto& argument : call->arguments())
+                        {
+                            if (ContainsRuntimeCall(argument.value().get(), module))
+                            {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    }
+                }
+
                 return true;
             }
             case NodeKind::GroupingExpression:
             {
-                return ContainsFunctionCall(static_cast<const GroupingExpression*>(expression)->expression().get());
+                return ContainsRuntimeCall(static_cast<const GroupingExpression*>(expression)->expression().get(), module);
             }
             case NodeKind::UnaryExpression:
             {
-                return ContainsFunctionCall(static_cast<const UnaryExpression*>(expression)->expression().get());
+                return ContainsRuntimeCall(static_cast<const UnaryExpression*>(expression)->expression().get(), module);
             }
             case NodeKind::BinaryExpression:
             {
                 const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
-                return ContainsFunctionCall(binaryExpression->leftExpression().get())
-                    || ContainsFunctionCall(binaryExpression->rightExpression().get());
+                return ContainsRuntimeCall(binaryExpression->leftExpression().get(), module)
+                    || ContainsRuntimeCall(binaryExpression->rightExpression().get(), module);
             }
             case NodeKind::MemberAccessExpression:
             {
-                return ContainsFunctionCall(static_cast<const MemberAccessExpression*>(expression)->expression().get());
+                return ContainsRuntimeCall(static_cast<const MemberAccessExpression*>(expression)->expression().get(), module);
             }
             case NodeKind::ArrayLiteral:
             {
                 for (const auto& element : static_cast<const ArrayLiteral*>(expression)->elements())
                 {
-                    if (ContainsFunctionCall(element.get()))
+                    if (ContainsRuntimeCall(element.get(), module))
                     {
                         return true;
                     }
@@ -1480,7 +1499,7 @@ namespace Caracal
             }
 
             if (statement->isGlobalConstant()
-                && ContainsFunctionCall(rightExpression)
+                && ContainsRuntimeCall(rightExpression, m_module)
                 && !IsConstructorCallExpression(rightExpression))
             {
                 m_diagnostics.addGlobalConstantWithCallError(

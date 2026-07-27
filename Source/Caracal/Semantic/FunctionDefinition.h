@@ -34,6 +34,8 @@ namespace Caracal
         ShiftRight,
     };
 
+    [[nodiscard]] CARACAL_API bool IsBitwiseIntrinsicKind(IntrinsicKind kind) noexcept;
+
     class FunctionDefinition
     {
     public:

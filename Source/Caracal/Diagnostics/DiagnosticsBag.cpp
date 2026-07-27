@@ -1552,6 +1552,22 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addGlobalConstantNotComputableError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& name)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0084_GlobalConstantNotComputable,
+            source,
+            location,
+            "Initialize '" + name + "' with values that are known at compile time.");
+        diagnostic.addPrimaryLabel(location, "This initializer uses values that are not known until the program runs");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addDuplicateDeclarationError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,

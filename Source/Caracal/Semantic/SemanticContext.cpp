@@ -180,6 +180,14 @@ namespace Caracal
             return invalidFunction;
     }
 
+    const FunctionDefinition* SemanticContext::tryGetFunctionDefinition(Type type) const noexcept
+    {
+        if (const auto index = m_functionDefinitionIndexById.find(type.id()); index != m_functionDefinitionIndexById.end())
+            return &m_functionDefinitions.at(index->second);
+
+        return nullptr;
+    }
+
     Type SemanticContext::tryGetTypeByName(std::string_view name) const noexcept
     {
         if (const auto result = m_nameToTypes.find(std::string(name)); result != m_nameToTypes.end())

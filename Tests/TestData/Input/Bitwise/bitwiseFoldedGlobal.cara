@@ -1,0 +1,7 @@
+mask :: i32.bitOr(8, 4);
+flags :: u8.shiftLeft(1'u8, 3);
+
+def read() i32
+{
+    return mask;
+}

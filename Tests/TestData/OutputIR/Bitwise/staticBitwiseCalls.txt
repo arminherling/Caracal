@@ -1,21 +1,9 @@
 define mask() i32
 block entry(0):
-    %0 = const 12 : i32
-    %1 = const 10 : i32
-    %2 = bit_and %0, %1 : i32
-    %3 = const 1 : i32
-    %4 = const 31 : i32
-    %5 = bit_and %3, %4 : i32
-    %6 = shift_right %2, %5 : i32
-    return %6
+    %0 = const 4 : i32
+    return %0
 
 define flags() u8
 block entry(0):
-    %0 = const 3 : u8
-    %1 = const 1 : u8
-    %2 = const 2 : i32
-    %3 = const 7 : i32
-    %4 = bit_and %2, %3 : i32
-    %5 = shift_left %1, %4 : u8
-    %6 = bit_or %0, %5 : u8
-    return %6
+    %0 = const 7 : u8
+    return %0

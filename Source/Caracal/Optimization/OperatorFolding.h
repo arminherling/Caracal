@@ -41,4 +41,10 @@ namespace Caracal
     [[nodiscard]] CARACAL_API FoldResult FoldLogicalOr(const FoldValue& lhs, const FoldValue& rhs);
     [[nodiscard]] CARACAL_API FoldResult FoldValueNegation(const FoldValue& value);
     [[nodiscard]] CARACAL_API FoldResult FoldLogicalNegation(const FoldValue& value);
+    [[nodiscard]] CARACAL_API FoldResult FoldBitAnd(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldBitOr(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldBitXor(const FoldValue& lhs, const FoldValue& rhs);
+    [[nodiscard]] CARACAL_API FoldResult FoldBitNot(const FoldValue& value);
+    [[nodiscard]] CARACAL_API FoldResult FoldShiftLeft(const FoldValue& value, const FoldValue& amount);
+    [[nodiscard]] CARACAL_API FoldResult FoldShiftRight(const FoldValue& value, const FoldValue& amount);
 }

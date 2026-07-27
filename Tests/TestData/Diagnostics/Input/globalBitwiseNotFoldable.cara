@@ -1,0 +1,9 @@
+v :: init i32;
+
+g :: i32.bitAnd(v, 5);
+
+def main() i32
+{
+    v = 3;
+    return g;
+}

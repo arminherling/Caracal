@@ -346,4 +346,107 @@ namespace Caracal
             },
             value);
     }
+
+    template <typename TOperation>
+    [[nodiscard]] static FoldResult FoldBitwiseBinary(const FoldValue& lhs, const FoldValue& rhs, TOperation operation)
+    {
+        return std::visit(
+            [&operation](const auto& left, const auto& right) -> FoldResult
+            {
+                using Left = std::decay_t<decltype(left)>;
+                using Right = std::decay_t<decltype(right)>;
+
+                if constexpr (!std::is_same_v<Left, Right>)
+                {
+                    return FoldResult{ FoldResultKind::NotFoldable, FoldValue{} };
+                }
+                else if constexpr (std::is_same_v<Left, u8> || std::is_same_v<Left, i32>)
+                {
+                    return FoldResult{ FoldResultKind::Value, FoldValue{ static_cast<Left>(operation(left, right)) } };
+                }
+                else
+                {
+                    return FoldResult{ FoldResultKind::NotFoldable, FoldValue{} };
+                }
+            },
+            lhs,
+            rhs);
+    }
+
+    FoldResult FoldBitAnd(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldBitwiseBinary(lhs, rhs, [](auto left, auto right) { return left & right; });
+    }
+
+    FoldResult FoldBitOr(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldBitwiseBinary(lhs, rhs, [](auto left, auto right) { return left | right; });
+    }
+
+    FoldResult FoldBitXor(const FoldValue& lhs, const FoldValue& rhs)
+    {
+        return FoldBitwiseBinary(lhs, rhs, [](auto left, auto right) { return left ^ right; });
+    }
+
+    FoldResult FoldBitNot(const FoldValue& value)
+    {
+        return std::visit(
+            [](const auto& payload) -> FoldResult
+            {
+                using Payload = std::decay_t<decltype(payload)>;
+
+                if constexpr (std::is_same_v<Payload, u8> || std::is_same_v<Payload, i32>)
+                {
+                    return FoldResult{ FoldResultKind::Value, FoldValue{ static_cast<Payload>(~payload) } };
+                }
+                else
+                {
+                    return FoldResult{ FoldResultKind::NotFoldable, FoldValue{} };
+                }
+            },
+            value);
+    }
+
+    template <typename TOperation>
+    [[nodiscard]] static FoldResult FoldShift(const FoldValue& value, const FoldValue& amount, TOperation operation)
+    {
+        return std::visit(
+            [&operation](const auto& left, const auto& right) -> FoldResult
+            {
+                using Left = std::decay_t<decltype(left)>;
+                using Right = std::decay_t<decltype(right)>;
+
+                // the amount is always an i32, masked to the operand width exactly like the runtime
+                if constexpr (!std::is_same_v<Right, i32>)
+                {
+                    return FoldResult{ FoldResultKind::NotFoldable, FoldValue{} };
+                }
+                else if constexpr (std::is_same_v<Left, u8>)
+                {
+                    return FoldResult{ FoldResultKind::Value, FoldValue{ static_cast<u8>(operation(left, right & 7)) } };
+                }
+                else if constexpr (std::is_same_v<Left, i32>)
+                {
+                    return FoldResult{ FoldResultKind::Value, FoldValue{ static_cast<i32>(operation(left, right & 31)) } };
+                }
+                else
+                {
+                    return FoldResult{ FoldResultKind::NotFoldable, FoldValue{} };
+                }
+            },
+            value,
+            amount);
+    }
+
+    FoldResult FoldShiftLeft(const FoldValue& value, const FoldValue& amount)
+    {
+        // shifting in unsigned space matches the runtime wraparound for signed values
+        return FoldShift(value, amount, [](auto left, i32 maskedAmount) { return static_cast<std::uint32_t>(left) << maskedAmount; });
+    }
+
+    FoldResult FoldShiftRight(const FoldValue& value, const FoldValue& amount)
+    {
+        // signed values shift arithmetic and unsigned values shift logical, matching the emitted instructions
+        return FoldShift(value, amount, [](auto left, i32 maskedAmount) { return left >> maskedAmount; });
+    }
 }

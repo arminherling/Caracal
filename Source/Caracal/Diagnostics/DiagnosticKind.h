@@ -78,6 +78,7 @@ namespace Caracal
         T0074_StaticMethodTypeNameMismatch,
         T0081_CallReturnsNoValue,
         T0082_GlobalConstantWithCall,
+        T0084_GlobalConstantNotComputable,
 
         // Duplicate declaration diagnostics
         T0033_DuplicateDeclaration,

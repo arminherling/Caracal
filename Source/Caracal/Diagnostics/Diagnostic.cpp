@@ -223,6 +223,8 @@ namespace Caracal
                 return "T0082";
             case DiagnosticKind::T0083_BitwiseMethodOnNonIntegerType:
                 return "T0083";
+            case DiagnosticKind::T0084_GlobalConstantNotComputable:
+                return "T0084";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -444,6 +446,8 @@ namespace Caracal
                 return "Cannot store the result of a call that returns nothing";
             case DiagnosticKind::T0082_GlobalConstantWithCall:
                 return "Global constant initializers cannot call functions";
+            case DiagnosticKind::T0084_GlobalConstantNotComputable:
+                return "Global constant initializers must be computable at compile time";
             case DiagnosticKind::T0075_DuplicateMethodDeclaration:
                 return "Duplicate method declaration";
             case DiagnosticKind::T0076_MemberAccessInDefaultParameter:

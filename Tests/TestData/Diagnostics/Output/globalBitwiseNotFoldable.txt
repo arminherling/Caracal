@@ -1,0 +1,13 @@
+ Error T0084
+  Global constant initializers must be computable at compile time
+    ,-[Diagnostics/Input/globalBitwiseNotFoldable.cara:3:6]
+  1 | v :: init i32;
+  2 | 
+  3 | g :: i32.bitAnd(v, 5);
+    .      ----------------
+    .              `-- This initializer uses values that are not known until the program runs
+  4 | 
+  5 | def main() i32
+  6 | {
+    `----
+  Fix: Initialize 'g' with values that are known at compile time.

@@ -73,6 +73,18 @@ namespace Caracal
                             const auto& name = static_cast<const NameExpression*>(declaration->leftExpression().get())->name();
                             m_constantScopes.back().try_emplace(name, *foldedInitializer);
                         }
+
+                        // a builtin call the checker allowed through must actually have folded away
+                        if (!declaration->isInit()
+                            && declaration->isGlobalConstant()
+                            && declaration->leftExpression()->kind() == NodeKind::NameExpression
+                            && containsUnfoldedBitwiseCall(declaration->rightExpression().get()))
+                        {
+                            m_diagnostics.addGlobalConstantNotComputableError(
+                                tokens.source(),
+                                declaration->rightExpression()->sourceLocation(tokens),
+                                static_cast<const NameExpression*>(declaration->leftExpression().get())->name());
+                        }
                         break;
                     }
                     case NodeKind::VariableDeclaration:
@@ -344,6 +356,14 @@ namespace Caracal
                     return;
                 }
 
+                if (expression->binaryOperator() == BinaryOperatorKind::MemberAccess
+                    && right->kind() == NodeKind::FunctionCallExpression)
+                {
+                    foldExpression(right, tokens);
+                    foldBitwiseIntrinsicCall(expression, static_cast<FunctionCallExpression*>(right));
+                    return;
+                }
+
                 foldExpression(left, tokens);
                 foldExpression(right, tokens);
 
@@ -380,6 +400,147 @@ namespace Caracal
                         tokens.source(),
                         expression->sourceLocation(tokens),
                         FormatTypeName(m_module, operandType));
+                }
+            }
+
+            void foldBitwiseIntrinsicCall(BinaryExpression* expression, const FunctionCallExpression* call)
+            {
+                if (call->functionType() == Type::Undefined())
+                {
+                    return;
+                }
+
+                const auto* definition = m_module.tryGetFunctionDefinition(call->functionType());
+                if (definition == nullptr)
+                {
+                    return;
+                }
+
+                const auto& orderedArguments = call->orderedArguments();
+                if (orderedArguments.empty())
+                {
+                    return;
+                }
+
+                const auto* firstValue = tryGetFoldedOperand(orderedArguments[0]);
+                if (firstValue == nullptr)
+                {
+                    return;
+                }
+
+                auto folded = FoldResult{ FoldResultKind::NotFoldable, FoldValue{} };
+                if (definition->intrinsicKind() == IntrinsicKind::BitNot)
+                {
+                    folded = FoldBitNot(*firstValue);
+                }
+                else
+                {
+                    if (orderedArguments.size() < 2)
+                    {
+                        return;
+                    }
+
+                    const auto* secondValue = tryGetFoldedOperand(orderedArguments[1]);
+                    if (secondValue == nullptr)
+                    {
+                        return;
+                    }
+
+                    switch (definition->intrinsicKind())
+                    {
+                        case IntrinsicKind::BitAnd:
+                        {
+                            folded = FoldBitAnd(*firstValue, *secondValue);
+                            break;
+                        }
+                        case IntrinsicKind::BitOr:
+                        {
+                            folded = FoldBitOr(*firstValue, *secondValue);
+                            break;
+                        }
+                        case IntrinsicKind::BitXor:
+                        {
+                            folded = FoldBitXor(*firstValue, *secondValue);
+                            break;
+                        }
+                        case IntrinsicKind::ShiftLeft:
+                        {
+                            folded = FoldShiftLeft(*firstValue, *secondValue);
+                            break;
+                        }
+                        case IntrinsicKind::ShiftRight:
+                        {
+                            folded = FoldShiftRight(*firstValue, *secondValue);
+                            break;
+                        }
+                        default:
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                if (folded.kind == FoldResultKind::Value)
+                {
+                    expression->setFoldedValue(folded.value);
+                }
+            }
+
+            [[nodiscard]] bool containsUnfoldedBitwiseCall(const Expression* expression) const
+            {
+                if (expression == nullptr)
+                {
+                    return false;
+                }
+
+                switch (expression->kind())
+                {
+                    case NodeKind::GroupingExpression:
+                    {
+                        return containsUnfoldedBitwiseCall(static_cast<const GroupingExpression*>(expression)->expression().get());
+                    }
+                    case NodeKind::UnaryExpression:
+                    {
+                        return containsUnfoldedBitwiseCall(static_cast<const UnaryExpression*>(expression)->expression().get());
+                    }
+                    case NodeKind::ArrayLiteral:
+                    {
+                        for (const auto& element : static_cast<const ArrayLiteral*>(expression)->elements())
+                        {
+                            if (containsUnfoldedBitwiseCall(element.get()))
+                            {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    }
+                    case NodeKind::BinaryExpression:
+                    {
+                        const auto* binaryExpression = static_cast<const BinaryExpression*>(expression);
+                        if (binaryExpression->binaryOperator() == BinaryOperatorKind::MemberAccess
+                            && binaryExpression->rightExpression()->kind() == NodeKind::FunctionCallExpression)
+                        {
+                            const auto* call = static_cast<const FunctionCallExpression*>(binaryExpression->rightExpression().get());
+                            if (call->functionType() != Type::Undefined())
+                            {
+                                const auto* definition = m_module.tryGetFunctionDefinition(call->functionType());
+                                if (definition != nullptr && IsBitwiseIntrinsicKind(definition->intrinsicKind()))
+                                {
+                                    return !expression->foldedValue().has_value();
+                                }
+                            }
+
+                            return false;
+                        }
+
+                        return containsUnfoldedBitwiseCall(binaryExpression->leftExpression().get())
+                            || containsUnfoldedBitwiseCall(binaryExpression->rightExpression().get());
+                    }
+                    default:
+                    {
+                        return false;
+                    }
                 }
             }
 

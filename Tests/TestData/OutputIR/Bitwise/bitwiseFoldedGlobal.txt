@@ -1,0 +1,8 @@
+global mask : i32 = 12
+global flags : u8 = 8
+
+define read() i32
+block entry(0):
+    %0 = address_of_global @mask : ref i32
+    %1 = load_value %0 : i32
+    return %1
