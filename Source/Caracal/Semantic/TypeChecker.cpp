@@ -2736,6 +2736,28 @@ namespace Caracal
                         }
 
                         auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+                        if (methodDefinition.intrinsicKind() == IntrinsicKind::ArraySet
+                            && binaryExpression->leftExpression()->kind() == NodeKind::NameExpression)
+                        {
+                            const auto& receiverName = static_cast<const NameExpression*>(binaryExpression->leftExpression().get())->name();
+                            if (currentScope()->tryGetVariableBindingKind(receiverName) == VariableBindingKind::LocalConstant)
+                            {
+                                m_diagnostics.addMutatingMethodOnConstantError(
+                                    tokens.source(),
+                                    binaryExpression->leftExpression()->sourceLocation(tokens),
+                                    receiverName,
+                                    name);
+                            }
+                            else if (currentScope()->variableReferencesConstant(receiverName))
+                            {
+                                m_diagnostics.addMutatingMethodThroughConstantReferenceError(
+                                    tokens.source(),
+                                    binaryExpression->leftExpression()->sourceLocation(tokens),
+                                    receiverName,
+                                    name);
+                            }
+                        }
+
                         if (!typeCheckCallArguments(functionCallExpression, methodDefinition, tokens))
                         {
                             return Type::Undefined();

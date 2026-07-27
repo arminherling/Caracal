@@ -1,0 +1,7 @@
+def main() i32
+{
+    xs :: [1, 2, 3];
+    view := ref xs;
+    view.set(0, 9);
+    return xs.at(0);
+}

@@ -1,0 +1,7 @@
+values :: [4, 5, 6];
+
+def main() i32
+{
+    values.set(1, 9);
+    return values.at(1);
+}

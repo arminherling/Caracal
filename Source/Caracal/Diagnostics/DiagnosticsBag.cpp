@@ -691,6 +691,32 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addMutatingMethodOnConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName, const std::string& methodName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0087_MutatingMethodOnConstant,
+            source,
+            location,
+            "Declare '" + constantName + "' as a variable if it needs to change, or remove the '" + methodName + "' call.");
+        diagnostic.addPrimaryLabel(location, "'" + constantName + "' is a constant and cannot be modified.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addMutatingMethodThroughConstantReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& referenceName, const std::string& methodName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0088_MutatingMethodThroughConstantReference,
+            source,
+            location,
+            "Reference a variable instead if it needs to change, or remove the '" + methodName + "' call.");
+        diagnostic.addPrimaryLabel(location, "'" + referenceName + "' references a constant and cannot be written through.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addAssignmentThroughConstantReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& referenceName)
     {
         auto diagnostic = Diagnostic(

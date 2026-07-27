@@ -77,6 +77,8 @@ namespace Caracal
         void addNonGlobalInitConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName);
         void addAssignmentToConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName);
         void addAssignmentThroughConstantReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& referenceName);
+        void addMutatingMethodOnConstantError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& constantName, const std::string& methodName);
+        void addMutatingMethodThroughConstantReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& referenceName, const std::string& methodName);
         void addUnreachableCodeWarning(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addMissingReturnError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& functionName, const std::string& returnTypeName);
         void addDivisionByZeroError(const SourceTextSharedPtr& source, const SourceLocation& location);

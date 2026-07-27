@@ -128,6 +128,8 @@ namespace Caracal
         // Constness diagnostics
         T0057_AssignmentToConstant,
         T0058_AssignmentThroughConstantReference,
+        T0087_MutatingMethodOnConstant,
+        T0088_MutatingMethodThroughConstantReference,
 
         // Control-flow diagnostics
         T0059_UnreachableCode,
