@@ -128,4 +128,18 @@ namespace Caracal
 
         return &result->second;
     }
+
+    void Module::registerBuiltinTypeDescription(Type type, const BuiltinTypeDescription& description)
+    {
+        m_builtinTypeDescriptionsById.try_emplace(type.toBaseType().id(), description);
+    }
+
+    const BuiltinTypeDescription* Module::tryGetBuiltinTypeDescription(Type type) const noexcept
+    {
+        const auto result = m_builtinTypeDescriptionsById.find(type.toBaseType().id());
+        if (result == m_builtinTypeDescriptionsById.end())
+            return nullptr;
+
+        return &result->second;
+    }
 }

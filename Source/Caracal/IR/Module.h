@@ -54,6 +54,8 @@ namespace Caracal
         [[nodiscard]] const ArrayTypeDescription* tryGetArrayType(Type type) const noexcept;
         void setWellKnownTypes(const WellKnownTypes& wellKnownTypes) noexcept { m_wellKnownTypes = wellKnownTypes; }
         [[nodiscard]] const WellKnownTypes& wellKnown() const noexcept { return m_wellKnownTypes; }
+        void registerBuiltinTypeDescription(Type type, const BuiltinTypeDescription& description);
+        [[nodiscard]] const BuiltinTypeDescription* tryGetBuiltinTypeDescription(Type type) const noexcept;
 
     private:
         std::vector<EnumDeclaration> m_enums;
@@ -71,5 +73,6 @@ namespace Caracal
         std::unordered_map<i32, std::string> m_registeredTypeNames;
         std::unordered_map<i32, ArrayTypeDescription> m_arrayTypes;
         WellKnownTypes m_wellKnownTypes;
+        std::unordered_map<i32, BuiltinTypeDescription> m_builtinTypeDescriptionsById;
     };
 }

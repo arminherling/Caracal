@@ -964,18 +964,6 @@ namespace Caracal
 
         if (baseType == Type::Void())
             m_builder.append("void");
-        else if (baseType == m_module.wellKnown().boolean)
-            m_builder.append("bool");
-        else if (baseType == m_module.wellKnown().u8)
-            m_builder.append("u8");
-        else if (baseType == m_module.wellKnown().i32)
-            m_builder.append("i32");
-        else if (baseType == m_module.wellKnown().f32)
-            m_builder.append("f32");
-        else if (baseType == m_module.wellKnown().cstring)
-            m_builder.append("cstring");
-        else if (baseType == m_module.wellKnown().rawptr)
-            m_builder.append("rawptr");
         else if (baseType == Type::Discard())
             m_builder.append("discard");
         else if (baseType == Type::Undefined())

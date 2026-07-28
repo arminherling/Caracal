@@ -181,11 +181,23 @@ namespace Caracal
     {
     }
 
+    void IRLowerer::registerBuiltinTypes(Module& module) noexcept
+    {
+        module.setWellKnownTypes(m_semanticContext.wellKnown());
+
+        for (const auto& [typeId, description] : m_semanticContext.builtinTypeDescriptions())
+        {
+            const auto builtinType = Type{ typeId, TypeKind::Builtin };
+            module.registerBuiltinTypeDescription(builtinType, description);
+            module.registerTypeName(builtinType, std::string(m_semanticContext.getNameByType(builtinType)));
+        }
+    }
+
     bool IRLowerer::lower(Module& module) noexcept
     {
         resetState();
         m_globalTypes.clear();
-        module.setWellKnownTypes(m_semanticContext.wellKnown());
+        registerBuiltinTypes(module);
 
         // array types have no TypeDeclaration, so the printer needs their canonical names registered
         for (const auto arrayType : m_semanticContext.arrayTypes())
@@ -1563,11 +1575,16 @@ namespace Caracal
             case IntrinsicKind::ShiftRight:
             {
                 // mask the amount so out of range shifts stay defined instead of poisoning the result
-                // TODO rework this part once we got more builtin integer types
                 auto maskValue = 31;
-                if (resultType == m_semanticContext.wellKnown().u8)
+                if (const auto* description = m_semanticContext.tryGetBuiltinTypeDescription(resultType))
                 {
-                    maskValue = 7;
+                    if ((description->bits & (description->bits - 1)) != 0)
+                    {
+                        // bits - 1 only equals modulo for power of two widths, this needs a remainder instruction instead
+                        TODO("Shift amount masking is not implemented for non power of two widths");
+                    }
+
+                    maskValue = description->bits - 1;
                 }
 
                 const auto maskId = m_nextTemporaryId++;

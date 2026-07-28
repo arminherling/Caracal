@@ -83,6 +83,7 @@ namespace Caracal
         void createBuiltinType(Type type, std::string_view name, bool addVariants = false);
         [[nodiscard]] TypeDefinition& createBuiltinTypeFromDescription(std::string_view name, const BuiltinTypeDescription& description, const TypeDefinitionStatement* statement) noexcept;
         [[nodiscard]] const BuiltinTypeDescription* tryGetBuiltinTypeDescription(Type type) const noexcept;
+        [[nodiscard]] const std::unordered_map<i32, BuiltinTypeDescription>& builtinTypeDescriptions() const noexcept { return m_builtinTypeDescriptionsById; }
         void refreshWellKnownTypes() noexcept;
         [[nodiscard]] const WellKnownTypes& wellKnown() const noexcept { return m_wellKnownTypes; }
 

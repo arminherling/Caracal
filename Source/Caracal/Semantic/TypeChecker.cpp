@@ -326,24 +326,6 @@ namespace Caracal
         return description;
     }
 
-    static bool DoesLiteralFitType(std::string_view lexeme, Type type, const WellKnownTypes& wellKnown)
-    {
-        if (type == wellKnown.u8)
-        {
-            return TryParseU8Literal(lexeme).has_value();
-        }
-        else if (type == wellKnown.i32)
-        {
-            return TryParseI32Literal(lexeme).has_value();
-        }
-        else if (type == wellKnown.f32)
-        {
-            return TryParseF32Literal(lexeme).has_value();
-        }
-
-        return true;
-    }
-
     static std::optional<NumberLiteral::ParsedValue> TryParseNumberLiteralValue(std::string_view lexeme, Type type, const WellKnownTypes& wellKnown)
     {
         if (type == wellKnown.u8)
@@ -964,7 +946,9 @@ namespace Caracal
 
         const auto* operatorDefinition = TryGetBuiltinOperatorDefinition(methodName);
         const auto* intrinsicDefinition = TryGetBuiltinIntrinsicDefinition(methodName);
-        if (intrinsicDefinition != nullptr && typeType != m_module.wellKnown().i32 && typeType != m_module.wellKnown().u8)
+        const auto* typeDescription = m_module.tryGetBuiltinTypeDescription(typeType);
+        const auto isIntegerType = typeDescription != nullptr && typeDescription->kind == BuiltinTypeKind::Int;
+        if (intrinsicDefinition != nullptr && !isIntegerType)
         {
             m_diagnostics.addBitwiseMethodOnNonIntegerTypeError(
                 tokens.source(),
@@ -3843,6 +3827,26 @@ namespace Caracal
             && targetType.isBaseType())
         {
             return m_module.getArrayElementType(sourceType) == m_module.getArrayElementType(targetType);
+        }
+
+        // numbers are only allowed to be assigned to a bigger type and only same signedness
+        if (sourceType.isBaseType() && targetType.isBaseType())
+        {
+            const auto* sourceDescription = m_module.tryGetBuiltinTypeDescription(sourceType);
+            const auto* targetDescription = m_module.tryGetBuiltinTypeDescription(targetType);
+            if (sourceDescription != nullptr && targetDescription != nullptr
+                && sourceDescription->kind == targetDescription->kind
+                && sourceDescription->bits < targetDescription->bits)
+            {
+                if (sourceDescription->kind == BuiltinTypeKind::Int)
+                {
+                    return sourceDescription->isSigned == targetDescription->isSigned;
+                }
+                if (sourceDescription->kind == BuiltinTypeKind::Float)
+                {
+                    return true;
+                }
+            }
         }
 
         return false;

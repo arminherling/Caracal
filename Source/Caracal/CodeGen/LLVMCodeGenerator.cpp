@@ -613,7 +613,8 @@ namespace Caracal
 
                 amount = m_irBuilder->CreateZExtOrTrunc(amount, value->getType());
                 // signed types shift arithmetic and unsigned types shift logical
-                if (shiftRight.type().toBaseType() == m_irModule.wellKnown().u8)
+                const auto* description = m_irModule.tryGetBuiltinTypeDescription(shiftRight.type());
+                if (description != nullptr && !description->isSigned)
                 {
                     defineValue(shiftRight.resultId(), m_irBuilder->CreateLShr(value, amount, "shift_right"));
                 }
@@ -957,18 +958,34 @@ namespace Caracal
             return llvm::PointerType::getUnqual(context);
         else if (type == Type::Void())
             return llvm::Type::getVoidTy(context);
-        else if (type == m_irModule.wellKnown().boolean)
-            return llvm::Type::getInt1Ty(context);
-        else if (type == m_irModule.wellKnown().u8)
-            return llvm::Type::getInt8Ty(context);
-        else if (type == m_irModule.wellKnown().i32)
-            return llvm::Type::getInt32Ty(context);
-        else if (type == m_irModule.wellKnown().f32)
-            return llvm::Type::getFloatTy(context);
-        else if (type == m_irModule.wellKnown().cstring)
-            return llvm::PointerType::getUnqual(context);
-        else if (type == m_irModule.wellKnown().rawptr)
-            return llvm::PointerType::getUnqual(context);
+
+        // lower types with the builtin annotation
+        if (const auto* description = m_irModule.tryGetBuiltinTypeDescription(type))
+        {
+            switch (description->kind)
+            {
+                case BuiltinTypeKind::Int:
+                {
+                    return llvm::Type::getIntNTy(context, static_cast<unsigned>(description->bits));
+                }
+                case BuiltinTypeKind::Float:
+                {
+                    if (description->bits == 64)
+                    {
+                        return llvm::Type::getDoubleTy(context);
+                    }
+                    return llvm::Type::getFloatTy(context);
+                }
+                case BuiltinTypeKind::Bool:
+                {
+                    return llvm::Type::getInt1Ty(context);
+                }
+                case BuiltinTypeKind::Pointer:
+                {
+                    return llvm::PointerType::getUnqual(context);
+                }
+            }
+        }
 
         // a fixed array lowers to an inline llvm array of its element type
         if (type.kind() == TypeKind::FixedArray)

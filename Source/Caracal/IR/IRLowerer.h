@@ -132,6 +132,7 @@ namespace Caracal
         [[nodiscard]] std::optional<ValueRef> emitCall(const FunctionCallExpression* expression, std::optional<ValueRef> implicitArgument = std::nullopt) noexcept;
         
         void resetState();
+        void registerBuiltinTypes(Module& module) noexcept;
         void restoreLocalValues(const LocalStateMap& values) noexcept;
         void mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept;
 
