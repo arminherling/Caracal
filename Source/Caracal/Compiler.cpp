@@ -73,6 +73,24 @@ namespace Caracal
         return coreDirectory;
     }
 
+    static std::filesystem::path ResolvePreludeDirectory()
+    {
+        const auto executablePath = llvm::sys::fs::getMainExecutable(nullptr, nullptr);
+        if (executablePath.empty())
+        {
+            std::cout << "Warning: could not determine the compiler location, compiling without the Prelude directory\n";
+            return {};
+        }
+
+        auto preludeDirectory = std::filesystem::path(executablePath).parent_path() / "Prelude";
+        if (!std::filesystem::exists(preludeDirectory))
+        {
+            std::cout << "Warning: no Prelude directory found next to the compiler, compiling without it\n";
+        }
+
+        return preludeDirectory;
+    }
+
     static bool PopulateModule(SemanticContext& semanticContext, llvm::Module& llvmModule)
     {
         Module irModule{};
@@ -146,7 +164,7 @@ namespace Caracal
             return 1;
         }
 
-        auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(coreDirectoryPath / "Prelude");
+        auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(ResolvePreludeDirectory());
         if (preludeSources.empty())
             std::cout << "Warning: no prelude found!! operators will not type check!!\n";
 

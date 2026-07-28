@@ -122,7 +122,7 @@ namespace
         auto preludeSources = std::vector<std::string>{};
         if (withPrelude)
         {
-            preludeSources = Caracal::SemanticContext::CollectPreludeSources(RepositoryRootDirectory() / "Core" / "Prelude");
+            preludeSources = Caracal::SemanticContext::CollectPreludeSources(RepositoryRootDirectory() / "Prelude");
         }
         Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
@@ -166,7 +166,7 @@ namespace
             .defaultFloatingType = Caracal::Type::F32(),
             .defaultEnumBaseType = Caracal::Type::U8()
         };
-        const auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(RepositoryRootDirectory() / "Core" / "Prelude");
+        const auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(RepositoryRootDirectory() / "Prelude");
         Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 
         auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
