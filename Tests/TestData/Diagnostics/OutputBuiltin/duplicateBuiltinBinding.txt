@@ -1,13 +1,13 @@
  Error T0067 Builtin type is already bound
      ,-[Diagnostics/InputBuiltin/duplicateBuiltinBinding.cara:7:6]
-   1 | ﻿#builtin
+   1 | #builtin(kind = int, bits = 32, signed = true)
    2 | type i32
      .      ---
      .       `-- Previous declaration is here
    3 | {
    4 | }
    5 | 
-   6 | #builtin
+   6 | #builtin(kind = int, bits = 32, signed = true)
    7 | type i32
      .      ---
      .       `-- Builtin type 'i32' is already bound to a declaration

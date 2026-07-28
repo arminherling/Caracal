@@ -4,6 +4,7 @@
 #include <Caracal/API.h>
 #include <Caracal/Constants.h>
 #include <Caracal/Semantic/Type.h>
+#include <Caracal/Semantic/BuiltinTypeDescription.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/ConstantDefinition.h>
 #include <Caracal/Semantic/EnumDefinition.h>
@@ -80,6 +81,10 @@ namespace Caracal
             Type type) noexcept;
         void addGlobalDiscardExpression(const Expression* expression) noexcept;
         void createBuiltinType(Type type, std::string_view name, bool addVariants = false);
+        [[nodiscard]] TypeDefinition& createBuiltinTypeFromDescription(std::string_view name, const BuiltinTypeDescription& description, const TypeDefinitionStatement* statement) noexcept;
+        [[nodiscard]] const BuiltinTypeDescription* tryGetBuiltinTypeDescription(Type type) const noexcept;
+        void refreshWellKnownTypes() noexcept;
+        [[nodiscard]] const WellKnownTypes& wellKnown() const noexcept { return m_wellKnownTypes; }
 
         [[nodiscard]] const std::vector<TypeDefinition>& typeDefinitions() const noexcept { return m_typeDefinitions; }
         [[nodiscard]] const std::vector<ConstantDefinition>& constantDefinitions() const noexcept { return m_constantDefinitions; }
@@ -108,6 +113,8 @@ namespace Caracal
         std::unordered_map<i32, ArrayTypeInfo> m_arrayTypeInfoById;
         std::vector<Type> m_arrayTypes;
         std::unordered_map<std::string, Type> m_arrayIntrinsicsByFullName;
+        std::unordered_map<i32, BuiltinTypeDescription> m_builtinTypeDescriptionsById;
+        WellKnownTypes m_wellKnownTypes;
         i32 m_nextId = 0;
         // TODO keep the parsetrees alive here for now
         std::vector<ParseTreeUPtr> m_preludeParseTrees;

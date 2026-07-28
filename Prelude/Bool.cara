@@ -1,4 +1,4 @@
-#builtin
+#builtin(kind = bool)
 type bool
 {
     def bool.equals(lhs: bool, rhs: bool) bool {}

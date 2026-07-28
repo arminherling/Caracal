@@ -1,4 +1,4 @@
-#builtin
+#builtin(kind = pointer)
 type cstring
 {
     def cstring.equals(lhs: cstring, rhs: cstring) bool {}

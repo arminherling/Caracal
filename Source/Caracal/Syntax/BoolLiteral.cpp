@@ -3,7 +3,7 @@
 namespace Caracal
 {
     BoolLiteral::BoolLiteral(const Token& literalToken, bool value)
-        : Expression(NodeKind::BoolLiteral, Type::Bool())
+        : Expression(NodeKind::BoolLiteral, Type::Undefined())
         , m_literalToken{ literalToken }
         , m_value{ value }
     {

@@ -226,15 +226,15 @@ namespace Caracal
 
                         const auto baseType = literal->type().toBaseType();
                         const auto& parsedValue = literal->parsedValue().value();
-                        if (baseType == Type::I32())
+                        if (baseType == m_module.wellKnown().i32)
                         {
                             literal->setFoldedValue(FoldValue{ std::get<i32>(parsedValue) });
                         }
-                        else if (baseType == Type::U8())
+                        else if (baseType == m_module.wellKnown().u8)
                         {
                             literal->setFoldedValue(FoldValue{ std::get<u8>(parsedValue) });
                         }
-                        else if (baseType == Type::F32())
+                        else if (baseType == m_module.wellKnown().f32)
                         {
                             literal->setFoldedValue(FoldValue{ std::get<f32>(parsedValue) });
                         }
@@ -332,7 +332,7 @@ namespace Caracal
                     expression->setFoldedValue(folded.value);
                 }
                 else if (folded.kind == FoldResultKind::Overflow 
-                    && (operandType == Type::I32() || operandType == Type::U8()))
+                    && (operandType == m_module.wellKnown().i32 || operandType == m_module.wellKnown().u8))
                 {
                     m_diagnostics.addConstantOverflowError(
                         tokens.source(),
@@ -387,14 +387,14 @@ namespace Caracal
                     expression->setFoldedValue(folded.value);
                 }
                 else if (folded.kind == FoldResultKind::DivideByZero
-                    && (operandType == Type::I32() || operandType == Type::U8()))
+                    && (operandType == m_module.wellKnown().i32 || operandType == m_module.wellKnown().u8))
                 {
                     m_diagnostics.addDivisionByZeroError(
                         tokens.source(),
                         right->sourceLocation(tokens));
                 }
                 else if (folded.kind == FoldResultKind::Overflow
-                    && (operandType == Type::I32() || operandType == Type::U8()))
+                    && (operandType == m_module.wellKnown().i32 || operandType == m_module.wellKnown().u8))
                 {
                     m_diagnostics.addConstantOverflowError(
                         tokens.source(),

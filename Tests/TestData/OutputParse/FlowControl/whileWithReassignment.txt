@@ -11,7 +11,7 @@ FunctionDefinitionStatement: {
     }
     BlockNode(3): {
         VariableDeclaration: {
-            Type: bool
+            Type: undefined
             Left: {
                 NameExpression: {
                     Type: undefined

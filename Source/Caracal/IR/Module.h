@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <Caracal/Semantic/BuiltinTypeDescription.h>
 #include <Caracal/IR/ConstructedGlobalDeclaration.h>
 #include <Caracal/IR/EnumDeclaration.h>
 #include <Caracal/IR/ExternFunction.h>
@@ -51,6 +52,8 @@ namespace Caracal
         void registerTypeName(Type type, std::string name);
         void registerArrayType(Type type, Type elementType, i32 length);
         [[nodiscard]] const ArrayTypeDescription* tryGetArrayType(Type type) const noexcept;
+        void setWellKnownTypes(const WellKnownTypes& wellKnownTypes) noexcept { m_wellKnownTypes = wellKnownTypes; }
+        [[nodiscard]] const WellKnownTypes& wellKnown() const noexcept { return m_wellKnownTypes; }
 
     private:
         std::vector<EnumDeclaration> m_enums;
@@ -67,5 +70,6 @@ namespace Caracal
         std::unordered_map<i32, size_t> m_typeIndices;
         std::unordered_map<i32, std::string> m_registeredTypeNames;
         std::unordered_map<i32, ArrayTypeDescription> m_arrayTypes;
+        WellKnownTypes m_wellKnownTypes;
     };
 }

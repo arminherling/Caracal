@@ -1,4 +1,4 @@
-#builtin
+#builtin(kind = int, bits = 8, signed = false)
 type u8
 {
     def u8.add(lhs: u8, rhs: u8) u8 {}

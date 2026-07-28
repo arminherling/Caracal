@@ -1,6 +1,6 @@
  Warning T0068 Field in builtin type is ignored
     ,-[Diagnostics/InputBuiltin/builtinTypeFieldIgnored.cara:4:5]
-  1 | ﻿#builtin
+  1 | #builtin(kind = int, bits = 32, signed = true)
   2 | type i32
   3 | {
   4 |     x: i32 = 0

@@ -1,6 +1,6 @@
  Warning T0069 Constructor in builtin type is ignored
     ,-[Diagnostics/InputBuiltin/builtinTypeConstructorIgnored.cara:2:9]
-  1 | ﻿#builtin
+  1 | #builtin(kind = int, bits = 32, signed = true)
   2 | type i32(x: i32)
     .         --------
     .             `-- Constructor on builtin type 'i32' is ignored

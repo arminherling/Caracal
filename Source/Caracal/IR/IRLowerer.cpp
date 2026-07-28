@@ -128,7 +128,7 @@ namespace Caracal
         return function.tryGetBlock(blockId.value());
     }
 
-    static std::optional<ConstantValue> CreateConstantValue(const NumberLiteral& literal) noexcept
+    static std::optional<ConstantValue> CreateConstantValue(const NumberLiteral& literal, const WellKnownTypes& wellKnown) noexcept
     {
         if (!literal.hasParsedValue())
             return std::nullopt;
@@ -136,13 +136,13 @@ namespace Caracal
         const auto baseType = literal.type().toBaseType();
         const auto& parsedValue = literal.parsedValue().value();
 
-        if (baseType == Type::U8())
+        if (baseType == wellKnown.u8)
             return ConstantValue::FromU8(std::get<u8>(parsedValue));
 
-        if (baseType == Type::I32())
+        if (baseType == wellKnown.i32)
             return ConstantValue::FromI32(std::get<i32>(parsedValue));
 
-        if (baseType == Type::F32())
+        if (baseType == wellKnown.f32)
             return ConstantValue::FromF32(std::get<f32>(parsedValue));
 
         return std::nullopt;
@@ -158,19 +158,19 @@ namespace Caracal
             value);
     }
 
-    static std::optional<ConstantValue> CreateEnumConstantValue(Type baseType, i32 value) noexcept
+    static std::optional<ConstantValue> CreateEnumConstantValue(Type baseType, i32 value, const WellKnownTypes& wellKnown) noexcept
     {
         const auto normalizedBaseType = baseType.toBaseType();
-        if (normalizedBaseType == Type::Bool())
+        if (normalizedBaseType == wellKnown.boolean)
             return ConstantValue::FromBool(value != 0);
 
-        if (normalizedBaseType == Type::U8())
+        if (normalizedBaseType == wellKnown.u8)
             return ConstantValue::FromU8(static_cast<u8>(value));
 
-        if (normalizedBaseType == Type::I32())
+        if (normalizedBaseType == wellKnown.i32)
             return ConstantValue::FromI32(value);
 
-        if (normalizedBaseType == Type::F32())
+        if (normalizedBaseType == wellKnown.f32)
             return ConstantValue::FromF32(static_cast<f32>(value));
 
         return std::nullopt;
@@ -185,6 +185,7 @@ namespace Caracal
     {
         resetState();
         m_globalTypes.clear();
+        module.setWellKnownTypes(m_semanticContext.wellKnown());
 
         // array types have no TypeDeclaration, so the printer needs their canonical names registered
         for (const auto arrayType : m_semanticContext.arrayTypes())
@@ -1283,7 +1284,7 @@ namespace Caracal
             m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
                 indexId,
                 ConstantValue::FromI32(static_cast<i32>(index)),
-                Type::I32()));
+                m_semanticContext.wellKnown().i32));
 
             const auto elementAddressId = m_nextTemporaryId++;
             m_currentBlock->addInstruction(std::make_unique<ElementAddressInstruction>(
@@ -1391,7 +1392,7 @@ namespace Caracal
         m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
             lengthId,
             ConstantValue::FromI32(m_semanticContext.getArrayLength(sourceType)),
-            Type::I32()));
+            m_semanticContext.wellKnown().i32));
 
         const auto sliceId = m_nextTemporaryId++;
         m_currentBlock->addInstruction(std::make_unique<MakeSliceInstruction>(
@@ -1564,7 +1565,7 @@ namespace Caracal
                 // mask the amount so out of range shifts stay defined instead of poisoning the result
                 // TODO rework this part once we got more builtin integer types
                 auto maskValue = 31;
-                if (resultType == Type::U8())
+                if (resultType == m_semanticContext.wellKnown().u8)
                 {
                     maskValue = 7;
                 }
@@ -1573,10 +1574,10 @@ namespace Caracal
                 m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
                     maskId,
                     ConstantValue::FromI32(maskValue),
-                    Type::I32()));
+                    m_semanticContext.wellKnown().i32));
 
                 const auto maskedAmountId = m_nextTemporaryId++;
-                m_currentBlock->addInstruction(std::make_unique<BitAndInstruction>(maskedAmountId, secondValue.value(), ValueRef{ maskId }, Type::I32()));
+                m_currentBlock->addInstruction(std::make_unique<BitAndInstruction>(maskedAmountId, secondValue.value(), ValueRef{ maskId }, m_semanticContext.wellKnown().i32));
 
                 const auto resultId = m_nextTemporaryId++;
                 if (intrinsicKind == IntrinsicKind::ShiftLeft)
@@ -1791,7 +1792,7 @@ namespace Caracal
         {
             case NodeKind::NumberLiteral:
             {
-                return CreateConstantValue(*static_cast<const NumberLiteral*>(expression));
+                return CreateConstantValue(*static_cast<const NumberLiteral*>(expression), m_semanticContext.wellKnown());
             }
             case NodeKind::StringLiteral:
             {
@@ -1861,7 +1862,7 @@ namespace Caracal
         if (enumField.expression() != nullptr)
             return tryLowerConstantExpression(enumField.expression());
 
-        return CreateEnumConstantValue(enumDefinition.baseType(), enumField.value());
+        return CreateEnumConstantValue(enumDefinition.baseType(), enumField.value(), m_semanticContext.wellKnown());
     }
 
     std::optional<ConstantValue> IRLowerer::tryLowerEnumMemberConstant(const BinaryExpression* expression) noexcept
@@ -1951,7 +1952,7 @@ namespace Caracal
             case NodeKind::NumberLiteral:
             {
                 const auto* literal = static_cast<const NumberLiteral*>(expression);
-                const auto constantValue = CreateConstantValue(*literal);
+                const auto constantValue = CreateConstantValue(*literal, m_semanticContext.wellKnown());
                 if (!constantValue.has_value())
                     return std::nullopt;
 
@@ -2117,7 +2118,7 @@ namespace Caracal
                             m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
                                 temporaryId,
                                 ConstantValue::FromI32(m_semanticContext.getArrayLength(receiverType)),
-                                Type::I32()));
+                                m_semanticContext.wellKnown().i32));
                             return ValueRef{ temporaryId };
                         }
 
@@ -2127,8 +2128,8 @@ namespace Caracal
                             if (!receiverAddress.has_value())
                                 return std::nullopt;
 
-                            const auto lengthAddress = emitFieldAddress(receiverAddress.value(), receiverType, ArrayLengthMemberName, 1, Type::I32());
-                            return emitLoad(lengthAddress, Type::I32());
+                            const auto lengthAddress = emitFieldAddress(receiverAddress.value(), receiverType, ArrayLengthMemberName, 1, m_semanticContext.wellKnown().i32);
+                            return emitLoad(lengthAddress, m_semanticContext.wellKnown().i32);
                         }
 
                         if (binaryExpression->leftExpression()->type().kind() == TypeKind::Enum)
@@ -2188,7 +2189,7 @@ namespace Caracal
                     case BinaryOperatorKind::Division:
                     {
                         const auto operandType = binaryExpression->leftExpression()->type().toValue();
-                        if (operandType == Type::I32() || operandType == Type::U8())
+                        if (operandType == m_semanticContext.wellKnown().i32 || operandType == m_semanticContext.wellKnown().u8)
                         {
                             const auto lhsConvertedId = temporaryId;
                             m_currentBlock->addInstruction(std::make_unique<IntToFloatInstruction>(lhsConvertedId, leftValue.value(), operandType, expression->type()));
@@ -2279,7 +2280,7 @@ namespace Caracal
         phiInputs.emplace_back(rightExitBlock->id(), rightValue.value());
 
         const auto phiId = m_nextTemporaryId++;
-        m_currentBlock->addInstruction(std::make_unique<PhiInstruction>(phiId, std::move(phiInputs), Type::Bool()));
+        m_currentBlock->addInstruction(std::make_unique<PhiInstruction>(phiId, std::move(phiInputs), m_semanticContext.wellKnown().boolean));
         return ValueRef{ phiId };
     }
 

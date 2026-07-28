@@ -613,7 +613,7 @@ namespace Caracal
 
                 amount = m_irBuilder->CreateZExtOrTrunc(amount, value->getType());
                 // signed types shift arithmetic and unsigned types shift logical
-                if (shiftRight.type().toBaseType() == Type::U8())
+                if (shiftRight.type().toBaseType() == m_irModule.wellKnown().u8)
                 {
                     defineValue(shiftRight.resultId(), m_irBuilder->CreateLShr(value, amount, "shift_right"));
                 }
@@ -638,7 +638,7 @@ namespace Caracal
 
                 auto* floatType = llvm::Type::getFloatTy(m_llvmModule.getContext());
                 llvm::Value* result = nullptr;
-                if (conversion.sourceType().toBaseType() == Type::U8())
+                if (conversion.sourceType().toBaseType() == m_irModule.wellKnown().u8)
                 {
                     result = m_irBuilder->CreateUIToFP(operand, floatType, "int_to_float");
                 }
@@ -695,7 +695,7 @@ namespace Caracal
         if ((kind == InstructionKind::Equal || kind == InstructionKind::NotEqual) && lhs->getType()->isPointerTy())
             return emitStringEquality(resultId, lhs, rhs, kind);
 
-        const auto isUnsigned = operandType.toValue() == Type::U8();
+        const auto isUnsigned = operandType.toValue() == m_irModule.wellKnown().u8;
         const auto isFloat = lhs->getType()->isFloatingPointTy();
         if (isFloat)
         {
@@ -957,17 +957,17 @@ namespace Caracal
             return llvm::PointerType::getUnqual(context);
         else if (type == Type::Void())
             return llvm::Type::getVoidTy(context);
-        else if (type == Type::Bool())
+        else if (type == m_irModule.wellKnown().boolean)
             return llvm::Type::getInt1Ty(context);
-        else if (type == Type::U8())
+        else if (type == m_irModule.wellKnown().u8)
             return llvm::Type::getInt8Ty(context);
-        else if (type == Type::I32())
+        else if (type == m_irModule.wellKnown().i32)
             return llvm::Type::getInt32Ty(context);
-        else if (type == Type::F32())
+        else if (type == m_irModule.wellKnown().f32)
             return llvm::Type::getFloatTy(context);
-        else if (type == Type::String())
+        else if (type == m_irModule.wellKnown().cstring)
             return llvm::PointerType::getUnqual(context);
-        else if (type == Type::RawPointer())
+        else if (type == m_irModule.wellKnown().rawptr)
             return llvm::PointerType::getUnqual(context);
 
         // a fixed array lowers to an inline llvm array of its element type

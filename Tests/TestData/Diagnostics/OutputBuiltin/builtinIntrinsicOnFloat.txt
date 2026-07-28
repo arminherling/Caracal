@@ -1,6 +1,6 @@
  Error T0083 Bitwise methods are only available on integer types
     ,-[Diagnostics/InputBuiltin/builtinIntrinsicOnFloat.cara:4:13]
-  1 | #builtin
+  1 | #builtin(kind = float, bits = 32)
   2 | type f32
   3 | {
   4 |     def f32.bitAnd(lhs: f32, rhs: f32) f32 {}

@@ -39,9 +39,9 @@ static void FileTests(
     CaraTest::isTrue(!diagnostics.hasErrors());
 
     Caracal::TypeCheckerOptions options{
-        .defaultIntegerType = Caracal::Type::I32(),
-        .defaultFloatingType = Caracal::Type::F32(),
-        .defaultEnumBaseType = Caracal::Type::U8()
+        .defaultIntegerType = "i32",
+        .defaultFloatingType = "f32",
+        .defaultEnumBaseType = "u8"
     };
     const auto preludePath = std::filesystem::path(__FILE__).parent_path() / "../../../Prelude";
     const auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(preludePath);

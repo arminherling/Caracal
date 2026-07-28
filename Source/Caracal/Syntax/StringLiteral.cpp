@@ -5,7 +5,7 @@ namespace Caracal
     StringLiteral::StringLiteral(
         const Token& literalToken,
         const std::string& escapedContent)
-        : Expression(NodeKind::StringLiteral, Type::String())
+        : Expression(NodeKind::StringLiteral, Type::Undefined())
         , m_literalToken{ literalToken }
         , m_escapedContent {escapedContent}
     {

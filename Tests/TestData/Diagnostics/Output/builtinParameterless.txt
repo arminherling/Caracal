@@ -1,0 +1,10 @@
+ Error T0003 Missing annotation arguments
+    ,-[Diagnostics/Input/builtinParameterless.cara:1:1]
+  1 | #builtin
+    . --------
+    .     `-- Annotation '#builtin' is missing the 'kind' argument.
+  2 | type custom
+  3 | {
+  4 | }
+    `----
+  Fix: Provide the argument as kind = "...".

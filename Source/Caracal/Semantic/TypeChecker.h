@@ -58,6 +58,7 @@ namespace Caracal
         
     private:
         void collectDeclarations();
+        void resolveWellKnownTypes();
         void collectMethodDeclarations();
         void typeCheckFunctionSignatures();
         void typeCheckTypeSignatures();
@@ -127,6 +128,9 @@ namespace Caracal
         
         const std::vector<ParseTreeUPtr>& m_parseTrees;
         TypeCheckerOptions m_options;
+        Type m_defaultIntegerType = Type::Undefined();
+        Type m_defaultFloatingType = Type::Undefined();
+        Type m_defaultEnumBaseType = Type::Undefined();
         SemanticContext& m_module;
         DiagnosticsBag& m_diagnostics;
         Type m_currentReturnType;

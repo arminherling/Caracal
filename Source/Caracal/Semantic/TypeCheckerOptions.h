@@ -1,14 +1,14 @@
 ﻿#pragma once
 
 #include <Caracal/API.h>
-#include <Caracal/Semantic/Type.h>
+#include <string>
 
 namespace Caracal
 {
     struct CARACAL_API TypeCheckerOptions
     {
-        Type defaultIntegerType;
-        Type defaultFloatingType;
-        Type defaultEnumBaseType;
+        std::string defaultIntegerType;
+        std::string defaultFloatingType;
+        std::string defaultEnumBaseType;
     };
 }

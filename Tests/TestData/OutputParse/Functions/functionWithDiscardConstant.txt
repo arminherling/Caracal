@@ -7,7 +7,7 @@ FunctionDefinitionStatement: {
     }
     BlockNode(1): {
         ConstantDeclaration: {
-            Type: bool
+            Type: undefined
             Left: {
                 Discard: _
             }

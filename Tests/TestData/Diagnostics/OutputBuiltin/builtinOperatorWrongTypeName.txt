@@ -1,6 +1,6 @@
  Error T0072 Invalid operator method signature
     ,-[Diagnostics/InputBuiltin/builtinOperatorWrongTypeName.cara:4:14]
-  1 | ﻿#builtin
+  1 | #builtin(kind = int, bits = 32, signed = true)
   2 | type i32
   3 | {
   4 |     def bool.add(lhs: i32, rhs: i32) i32 {}

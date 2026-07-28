@@ -63,14 +63,6 @@ namespace Caracal
         module.createBuiltinType(Type::Undefined(), "undefined", false);
         module.createBuiltinType(Type::Void(), "void", false);
 
-        module.createBuiltinType(Type::Bool(), "bool");
-        module.createBuiltinType(Type::U8(), "u8");
-        module.createBuiltinType(Type::I32(), "i32");
-        module.createBuiltinType(Type::F32(), "f32");
-        module.createBuiltinType(Type::String(), "cstring");
-        module.createBuiltinType(Type::RawPointer(), "rawptr");
-        module.m_nextId = 2000;
-
         // TODO we should move this part in the future
         // prelude is core library code, we will abort if there are errors
         DiagnosticsBag preludeDiagnostics{};
@@ -94,6 +86,22 @@ namespace Caracal
             std::abort();
         }
 
+        if (!preludeSources.empty())
+        {
+            const auto& wellKnown = module.wellKnown();
+            if (wellKnown.boolean == Type::Undefined()
+                || wellKnown.u8 == Type::Undefined()
+                || wellKnown.i32 == Type::Undefined()
+                || wellKnown.f32 == Type::Undefined()
+                || wellKnown.cstring == Type::Undefined()
+                || wellKnown.rawptr == Type::Undefined())
+            {
+                std::cerr << "error: the prelude did not define all builtin types\n";
+                std::abort();
+            }
+        }
+
+        module.m_nextId = std::max(module.m_nextId, 2000);
         module.m_preludeParseTrees = std::move(preludeTrees);
 
         return module;
@@ -296,13 +304,13 @@ namespace Caracal
         if (methodName == "at")
         {
             parameters.emplace_back(ImplicitThisName, baseArrayType.toReference());
-            parameters.emplace_back("index", Type::I32());
+            parameters.emplace_back("index", m_wellKnownTypes.i32);
             returnTypes.push_back(elementType);
         }
         else if (methodName == "set")
         {
             parameters.emplace_back(ImplicitThisName, baseArrayType.toReference());
-            parameters.emplace_back("index", Type::I32());
+            parameters.emplace_back("index", m_wellKnownTypes.i32);
             parameters.emplace_back("value", elementType);
             returnTypes.push_back(Type::Void());
         }
@@ -356,6 +364,48 @@ namespace Caracal
         m_typeDefinitionIndexById.try_emplace(typeId, m_typeDefinitions.size() - 1);
 
         return m_typeDefinitions.back();
+    }
+
+    TypeDefinition& SemanticContext::createBuiltinTypeFromDescription(std::string_view name, const BuiltinTypeDescription& description, const TypeDefinitionStatement* statement) noexcept
+    {
+        auto typeName = std::string(name);
+        auto typeId = m_nextId += VariantCount;
+        auto valueType = Type{ typeId, TypeKind::Builtin };
+        m_typeNames.try_emplace(typeId, typeName);
+        m_nameToTypes.try_emplace(typeName, valueType);
+        m_builtinTypeDescriptionsById.try_emplace(typeId, description);
+        m_typeDefinitions.emplace_back(statement, valueType, typeName);
+        m_typeDefinitionIndexById.try_emplace(typeId, m_typeDefinitions.size() - 1);
+
+        return m_typeDefinitions.back();
+    }
+
+    const BuiltinTypeDescription* SemanticContext::tryGetBuiltinTypeDescription(Type type) const noexcept
+    {
+        const auto it = m_builtinTypeDescriptionsById.find(type.toBaseType().id());
+        if (it == m_builtinTypeDescriptionsById.end())
+        {
+            return nullptr;
+        }
+
+        return &it->second;
+    }
+
+    void SemanticContext::refreshWellKnownTypes() noexcept
+    {
+        m_wellKnownTypes.boolean = tryGetTypeByName("bool");
+        m_wellKnownTypes.u8 = tryGetTypeByName("u8");
+        m_wellKnownTypes.u16 = tryGetTypeByName("u16");
+        m_wellKnownTypes.u32 = tryGetTypeByName("u32");
+        m_wellKnownTypes.u64 = tryGetTypeByName("u64");
+        m_wellKnownTypes.i8 = tryGetTypeByName("i8");
+        m_wellKnownTypes.i16 = tryGetTypeByName("i16");
+        m_wellKnownTypes.i32 = tryGetTypeByName("i32");
+        m_wellKnownTypes.i64 = tryGetTypeByName("i64");
+        m_wellKnownTypes.f32 = tryGetTypeByName("f32");
+        m_wellKnownTypes.f64 = tryGetTypeByName("f64");
+        m_wellKnownTypes.cstring = tryGetTypeByName("cstring");
+        m_wellKnownTypes.rawptr = tryGetTypeByName("rawptr");
     }
 
     TypeDefinition& SemanticContext::bindBuiltinTypeDefinition(Type type, const TypeDefinitionStatement* statement) noexcept

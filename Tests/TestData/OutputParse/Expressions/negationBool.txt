@@ -1,11 +1,11 @@
 ConstantDeclaration: {
-    Type: bool
+    Type: undefined
     Left: {
         Discard: _
     }
     Right: {
         UnaryExpression: {
-            Type: bool
+            Type: undefined
             Operation: LogicalNegation
             Expression: {
                 BoolLiteral: true

@@ -1,5 +1,10 @@
-﻿#builtin
+#builtin(kind = int, bits = 32, signed = true)
 type i32
 {
-    def i32.add(lhs: i32, rhs: bool) i32 {}
+    def i32.add(lhs: i32, rhs: f32) i32 {}
+}
+
+#builtin(kind = float, bits = 32)
+type f32
+{
 }

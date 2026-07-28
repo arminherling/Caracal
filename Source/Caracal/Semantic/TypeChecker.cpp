@@ -22,17 +22,17 @@ namespace Caracal
         std::string_view name;
         TokenKind targetKind;
         i32 requiredArgumentCount;
-        Type parameterType;
+        bool requiresIntegerArgument;
         std::string_view namedStringArgument;
     };
 
     static const AnnotationDefinition* GetAnnotationDefinition(AnnotationKind kind)
     {
         static const AnnotationDefinition Definitions[] = {
-            { AnnotationKind::Extern, ExternAnnotationName, TokenKind::DefKeyword, 0, Type::Undefined(), SymbolAnnotationArgumentName },
-            { AnnotationKind::Flag, FlagAnnotationName, TokenKind::EnumKeyword, 0, Type::Undefined(), "" },
-            { AnnotationKind::Step, StepAnnotationName, TokenKind::EnumKeyword, 1, Type::I32(), "" },
-            { AnnotationKind::Builtin, BuiltinAnnotationName, TokenKind::TypeKeyword, 0, Type::Undefined(), "" },
+            { AnnotationKind::Extern, ExternAnnotationName, TokenKind::DefKeyword, 0, false, SymbolAnnotationArgumentName },
+            { AnnotationKind::Flag, FlagAnnotationName, TokenKind::EnumKeyword, 0, false, "" },
+            { AnnotationKind::Step, StepAnnotationName, TokenKind::EnumKeyword, 1, true, "" },
+            { AnnotationKind::Builtin, BuiltinAnnotationName, TokenKind::TypeKeyword, 0, false, "" },
         };
 
         for (const auto& definition : Definitions)
@@ -274,17 +274,69 @@ namespace Caracal
         return value;
     }
 
-    static bool DoesLiteralFitType(std::string_view lexeme, Type type)
+    static BuiltinTypeDescription ExtractBuiltinTypeDescription(const std::vector<AnnotationNodeUPtr>& annotations)
     {
-        if (type == Type::U8())
+        BuiltinTypeDescription description{};
+        for (const auto& annotation : annotations)
+        {
+            if (annotation->kind() != AnnotationKind::Builtin)
+            {
+                continue;
+            }
+
+            for (const auto& argument : annotation->arguments())
+            {
+                if (!argument.isNamed())
+                {
+                    continue;
+                }
+
+                const auto* value = argument.value().get();
+                if (argument.name() == KindAnnotationArgumentName && value->kind() == NodeKind::NameExpression)
+                {
+                    const auto& kindName = static_cast<const NameExpression*>(value)->name();
+                    if (kindName == BuiltinKindFloatName)
+                    {
+                        description.kind = BuiltinTypeKind::Float;
+                    }
+                    else if (kindName == BuiltinKindBoolName)
+                    {
+                        description.kind = BuiltinTypeKind::Bool;
+                    }
+                    else if (kindName == BuiltinKindPointerName)
+                    {
+                        description.kind = BuiltinTypeKind::Pointer;
+                    }
+                }
+                else if (argument.name() == BitsAnnotationArgumentName && value->kind() == NodeKind::NumberLiteral)
+                {
+                    const auto parsed = TryParseI32Literal(static_cast<const NumberLiteral*>(value)->literalLexeme());
+                    if (parsed.has_value())
+                    {
+                        description.bits = parsed.value();
+                    }
+                }
+                else if (argument.name() == SignedAnnotationArgumentName && value->kind() == NodeKind::BoolLiteral)
+                {
+                    description.isSigned = static_cast<const BoolLiteral*>(value)->value();
+                }
+            }
+        }
+
+        return description;
+    }
+
+    static bool DoesLiteralFitType(std::string_view lexeme, Type type, const WellKnownTypes& wellKnown)
+    {
+        if (type == wellKnown.u8)
         {
             return TryParseU8Literal(lexeme).has_value();
         }
-        else if (type == Type::I32())
+        else if (type == wellKnown.i32)
         {
             return TryParseI32Literal(lexeme).has_value();
         }
-        else if (type == Type::F32())
+        else if (type == wellKnown.f32)
         {
             return TryParseF32Literal(lexeme).has_value();
         }
@@ -292,9 +344,9 @@ namespace Caracal
         return true;
     }
 
-    static std::optional<NumberLiteral::ParsedValue> TryParseNumberLiteralValue(std::string_view lexeme, Type type)
+    static std::optional<NumberLiteral::ParsedValue> TryParseNumberLiteralValue(std::string_view lexeme, Type type, const WellKnownTypes& wellKnown)
     {
-        if (type == Type::U8())
+        if (type == wellKnown.u8)
         {
             const auto value = TryParseU8Literal(lexeme);
             if (!value.has_value())
@@ -303,7 +355,7 @@ namespace Caracal
             return NumberLiteral::ParsedValue{ value.value() };
         }
 
-        if (type == Type::I32())
+        if (type == wellKnown.i32)
         {
             const auto value = TryParseI32Literal(lexeme);
             if (!value.has_value())
@@ -312,7 +364,7 @@ namespace Caracal
             return NumberLiteral::ParsedValue{ value.value() };
         }
 
-        if (type == Type::F32())
+        if (type == wellKnown.f32)
         {
             const auto value = TryParseF32Literal(lexeme);
             if (!value.has_value())
@@ -324,7 +376,7 @@ namespace Caracal
         return std::nullopt;
     }
 
-    static std::optional<i32> TryConvertEnumFieldLiteralValue(const NumberLiteral& literal)
+    static std::optional<i32> TryConvertEnumFieldLiteralValue(const NumberLiteral& literal, const WellKnownTypes& wellKnown)
     {
         if (!literal.hasParsedValue())
         {
@@ -332,12 +384,12 @@ namespace Caracal
         }
 
         const auto literalType = literal.type();
-        if (literalType == Type::U8())
+        if (literalType == wellKnown.u8)
         {
             return static_cast<i32>(std::get<u8>(literal.parsedValue().value()));
         }
 
-        if (literalType == Type::I32())
+        if (literalType == wellKnown.i32)
         {
             return std::get<i32>(literal.parsedValue().value());
         }
@@ -379,6 +431,7 @@ namespace Caracal
         }
 
         collectDeclarations();
+        resolveWellKnownTypes();
         collectMethodDeclarations();
 
         typeCheckFunctionSignatures();
@@ -489,6 +542,15 @@ namespace Caracal
                         if (typeStatement->isBuiltin())
                         {
                             const auto builtinType = m_module.tryGetTypeByName(typeStatement->name());
+                            if (builtinType == Type::Undefined())
+                            {
+                                const auto description = ExtractBuiltinTypeDescription(typeStatement->annotations());
+                                auto& typeDefinition = m_module.createBuiltinTypeFromDescription(typeStatement->name(), description, typeStatement);
+                                typeStatement->setType(typeDefinition.type());
+                                m_typeDeclarations.push_back(typeStatement);
+                                break;
+                            }
+
                             if (builtinType.kind() != TypeKind::Builtin || builtinType.id() < 0)
                             {
                                 m_diagnostics.addNotABuiltinTypeError(
@@ -614,6 +676,14 @@ namespace Caracal
                 }
             }
         }
+    }
+
+    void TypeChecker::resolveWellKnownTypes()
+    {
+        m_module.refreshWellKnownTypes();
+        m_defaultIntegerType = m_module.tryGetTypeByName(m_options.defaultIntegerType);
+        m_defaultFloatingType = m_module.tryGetTypeByName(m_options.defaultFloatingType);
+        m_defaultEnumBaseType = m_module.tryGetTypeByName(m_options.defaultEnumBaseType);
     }
 
     void TypeChecker::collectMethodDeclarations()
@@ -894,7 +964,7 @@ namespace Caracal
 
         const auto* operatorDefinition = TryGetBuiltinOperatorDefinition(methodName);
         const auto* intrinsicDefinition = TryGetBuiltinIntrinsicDefinition(methodName);
-        if (intrinsicDefinition != nullptr && typeType != Type::I32() && typeType != Type::U8())
+        if (intrinsicDefinition != nullptr && typeType != m_module.wellKnown().i32 && typeType != m_module.wellKnown().u8)
         {
             m_diagnostics.addBitwiseMethodOnNonIntegerTypeError(
                 tokens.source(),
@@ -963,7 +1033,7 @@ namespace Caracal
                     {
                         isValidSignature = parameters.size() == 2
                             && parameters[0].type() == typeType
-                            && parameters[1].type() == Type::I32();
+                            && parameters[1].type() == m_module.wellKnown().i32;
                         break;
                     }
                 }
@@ -1888,7 +1958,7 @@ namespace Caracal
     {
         const auto& enumName = statement->name();
         auto baseType = Type::Undefined();
-        auto defaultBaseType = m_options.defaultEnumBaseType;
+        auto defaultBaseType = m_defaultEnumBaseType;
         auto enumType = statement->type();
         if (enumType == Type::Undefined())
         {
@@ -1979,7 +2049,7 @@ namespace Caracal
 
                 if (expression->kind() == NodeKind::NumberLiteral)
                 {
-                    const auto value = TryConvertEnumFieldLiteralValue(*static_cast<NumberLiteral*>(expression));
+                    const auto value = TryConvertEnumFieldLiteralValue(*static_cast<NumberLiteral*>(expression), m_module.wellKnown());
                     if (value.has_value())
                     {
                         enumDefinition.addField(fieldName, value.value(), fieldLocation);
@@ -2012,10 +2082,16 @@ namespace Caracal
 
     bool TypeChecker::validateBuiltinAnnotationArguments(const AnnotationNode* annotation, const TokenBuffer& tokens)
     {
-        // TODO remove once the builtin types are fully defined in the prelude
+        // builtins need to at least define their kind
         if (annotation->arguments().empty())
         {
-            return true;
+            m_diagnostics.addAnnotationMissingArgumentsError(
+                tokens.source(),
+                annotation->argumentsLocation(tokens),
+                annotation->kind(),
+                annotation->name(),
+                KindAnnotationArgumentName);
+            return false;
         }
 
         const Argument* kindArgument = nullptr;
@@ -2114,7 +2190,11 @@ namespace Caracal
             auto bits = 0;
             if (bitsValue->kind() == NodeKind::NumberLiteral)
             {
-                bits = convertToI32(static_cast<NumberLiteral*>(bitsValue), tokens);
+                const auto parsed = TryParseI32Literal(static_cast<const NumberLiteral*>(bitsValue)->literalLexeme());
+                if (parsed.has_value())
+                {
+                    bits = parsed.value();
+                }
             }
 
             // llvm supports integers up to 65k bits
@@ -2310,8 +2390,9 @@ namespace Caracal
             return false;
         }
 
-        if (definition->parameterType != Type::Undefined())
+        if (definition->requiresIntegerArgument)
         {
+            const auto expectedType = m_module.wellKnown().i32;
             auto* argument = firstPositionalArgument;
             auto argumentType = typeCheckExpression(argument, tokens);
             if (argumentType == Type::Undefined())
@@ -2326,24 +2407,24 @@ namespace Caracal
                     argument->sourceLocation(tokens),
                     annotation->kind(),
                     annotation->name(),
-                    "a " + FormatTypeName(m_module, definition->parameterType) + " number literal argument",
+                    "a " + FormatTypeName(m_module, expectedType) + " number literal argument",
                     "an expression of type '" + FormatTypeName(m_module, argumentType) + "'");
                 return false;
             }
 
-            if (argumentType != definition->parameterType)
+            if (argumentType != expectedType)
             {
                 m_diagnostics.addAnnotationArgumentTypeMismatchError(
                     tokens.source(),
                     argument->sourceLocation(tokens),
                     annotation->kind(),
                     annotation->name(),
-                    "a " + FormatTypeName(m_module, definition->parameterType) + " number literal argument",
+                    "a " + FormatTypeName(m_module, expectedType) + " number literal argument",
                     "a number literal of type '" + FormatTypeName(m_module, argumentType) + "'");
                 return false;
             }
 
-            if (definition->parameterType == Type::I32() && i32ArgumentValue != nullptr)
+            if (i32ArgumentValue != nullptr)
             {
                 *i32ArgumentValue = convertToI32(static_cast<NumberLiteral*>(argument), tokens);
             }
@@ -2553,7 +2634,7 @@ namespace Caracal
     {
         auto conditionType = typeCheckExpression(statement->condition().get(), tokens);
         conditionType = coerceConditionType(conditionType, statement->condition().get());
-        if (conditionType != Type::Undefined() && conditionType != Type::Bool())
+        if (conditionType != Type::Undefined() && conditionType != m_module.wellKnown().boolean)
         {
             m_diagnostics.addNonBoolIfConditionError(
                 tokens.source(),
@@ -2573,7 +2654,7 @@ namespace Caracal
     {
         auto conditionType = typeCheckExpression(statement->condition().get(), tokens);
         conditionType = coerceConditionType(conditionType, statement->condition().get());
-        if (conditionType != Type::Undefined() && conditionType != Type::Bool())
+        if (conditionType != Type::Undefined() && conditionType != m_module.wellKnown().boolean)
         {
             m_diagnostics.addNonBoolWhileConditionError(
                 tokens.source(),
@@ -2638,8 +2719,13 @@ namespace Caracal
         switch (expression->kind())
         {
             case NodeKind::StringLiteral:
+            {
+                expression->setType(m_module.wellKnown().cstring);
+                return expression->type();
+            }
             case NodeKind::BoolLiteral:
             {
+                expression->setType(m_module.wellKnown().boolean);
                 return expression->type();
             }
             case NodeKind::NumberLiteral:
@@ -2974,9 +3060,10 @@ namespace Caracal
                         auto* memberNameExpression = static_cast<NameExpression*>(binaryExpression->rightExpression().get());
                         if (memberNameExpression->name() == ArrayLengthMemberName)
                         {
-                            memberNameExpression->setType(Type::I32());
-                            binaryExpression->setType(Type::I32());
-                            return Type::I32();
+                            const auto lengthType = m_module.wellKnown().i32;
+                            memberNameExpression->setType(lengthType);
+                            binaryExpression->setType(lengthType);
+                            return lengthType;
                         }
 
                         m_diagnostics.addUnknownFieldError(
@@ -3393,7 +3480,7 @@ namespace Caracal
             if (m_contextualNumberType.has_value())
             {
                 const auto contextualType = m_contextualNumberType.value();
-                if (!isFloatingLiteral && (contextualType == Type::U8() || contextualType == Type::I32()))
+                if (!isFloatingLiteral && (contextualType == m_module.wellKnown().u8 || contextualType == m_module.wellKnown().i32))
                 {
                     numberType = contextualType;
                 }
@@ -3401,18 +3488,19 @@ namespace Caracal
 
             if (numberType == Type::Undefined() && isFloatingLiteral)
             {
-                numberType = m_options.defaultFloatingType;
+                numberType = m_defaultFloatingType;
             }
             else if (numberType == Type::Undefined())
             {
-                numberType = m_options.defaultIntegerType;
+                numberType = m_defaultIntegerType;
             }
         }
 
-        if (numberType == Type::U8() || numberType == Type::I32() || numberType == Type::F32())
+        if (numberType != Type::Undefined()
+            && (numberType == m_module.wellKnown().u8 || numberType == m_module.wellKnown().i32 || numberType == m_module.wellKnown().f32))
         {
-            parsedValue = TryParseNumberLiteralValue(literal->literalLexeme(), numberType);
-            if (!parsedValue.has_value() && m_negatedLiteralContext && numberType == Type::I32())
+            parsedValue = TryParseNumberLiteralValue(literal->literalLexeme(), numberType, m_module.wellKnown());
+            if (!parsedValue.has_value() && m_negatedLiteralContext && numberType == m_module.wellKnown().i32)
             {
                 const auto negatedValue = TryParseNegatedI32Literal(literal->literalLexeme());
                 if (negatedValue.has_value())
@@ -3703,7 +3791,7 @@ namespace Caracal
     i32 TypeChecker::convertToI32(NumberLiteral* literal, const TokenBuffer& tokens)
     {
         auto literalType = typeCheckNumberLiteral(literal, tokens);
-        if (literalType != Type::I32())
+        if (literalType == Type::Undefined() || literalType != m_module.wellKnown().i32)
         {
             return 0;
         }
@@ -3714,7 +3802,7 @@ namespace Caracal
                 tokens.source(),
                 literal->sourceLocation(tokens),
                 literal->literalLexeme(),
-                FormatTypeName(m_module, Type::I32()));
+                FormatTypeName(m_module, m_module.wellKnown().i32));
             return 0;
         }
 
@@ -3723,7 +3811,7 @@ namespace Caracal
 
     Type TypeChecker::coerceConditionType(Type conditionType, Expression* conditionExpression)
     {
-        if (conditionType == Type::Bool())
+        if (conditionType == m_module.wellKnown().boolean)
         {
             return conditionType;
         }
@@ -3731,10 +3819,10 @@ namespace Caracal
         if (conditionType.kind() == TypeKind::Enum)
         {
             auto& enumDefinition = m_module.getEnumDefinition(conditionType);
-            if (enumDefinition.baseType() == Type::Bool())
+            if (enumDefinition.baseType() == m_module.wellKnown().boolean)
             {
-                conditionExpression->setType(Type::Bool());
-                return Type::Bool();
+                conditionExpression->setType(m_module.wellKnown().boolean);
+                return m_module.wellKnown().boolean;
             }
         }
 

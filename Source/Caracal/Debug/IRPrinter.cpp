@@ -58,13 +58,13 @@ namespace Caracal
         return *functionName;
     }
 
-    static std::string FormatLiteralData(const ConstantValue::LiteralData& value, Type type)
+    static std::string FormatLiteralData(const Module& module, const ConstantValue::LiteralData& value, Type type)
     {
-        return std::visit([type](const auto& payload) -> std::string
+        return std::visit([&module, type](const auto& payload) -> std::string
             {
                 using Payload = std::decay_t<decltype(payload)>;
 
-                const auto formatStringLiteral = [type](std::string_view text) -> std::string
+                const auto formatStringLiteral = [&module, type](std::string_view text) -> std::string
                     {
                         std::string formatted = "\"";
                         formatted.reserve(text.size() + 2);
@@ -96,7 +96,7 @@ namespace Caracal
                             }
                         }
 
-                        if (type == Type::String())
+                        if (type == module.wellKnown().cstring)
                             formatted += "\\0";
 
                         formatted += '"';
@@ -142,10 +142,10 @@ namespace Caracal
             }, value);
     }
 
-    static std::string FormatLiteralConstantValue(const ConstantValue& value, Type type)
+    static std::string FormatLiteralConstantValue(const Module& module, const ConstantValue& value, Type type)
     {
         if (const auto* literalData = value.tryGetLiteralData())
-            return FormatLiteralData(*literalData, type);
+            return FormatLiteralData(module, *literalData, type);
 
         if (const auto* enumConstant = value.tryGetEnumConstant())
             return enumConstant->enumName + "." + enumConstant->fieldName;
@@ -160,7 +160,7 @@ namespace Caracal
                     formatted += ", ";
                 }
 
-                formatted += FormatLiteralConstantValue((*aggregate)[index], Type::Undefined());
+                formatted += FormatLiteralConstantValue(module, (*aggregate)[index], Type::Undefined());
             }
 
             formatted += "]";
@@ -179,10 +179,10 @@ namespace Caracal
                 underlyingType = enumDeclaration->baseType();
 
             return enumConstant->enumName + "." + enumConstant->fieldName + " (= "
-                + FormatLiteralData(enumConstant->underlyingValue, underlyingType) + ")";
+                + FormatLiteralData(module, enumConstant->underlyingValue, underlyingType) + ")";
         }
 
-        return FormatLiteralConstantValue(value, type);
+        return FormatLiteralConstantValue(module, value, type);
     }
 
     static std::string_view ResolveParameterName(const std::vector<std::string>& parameterNames, size_t index) noexcept
@@ -281,7 +281,7 @@ namespace Caracal
                 .appendIndented("")
                 .append(field.name)
                 .append(" = ")
-                .append(FormatLiteralConstantValue(field.value, enumDeclaration.baseType()))
+                .append(FormatLiteralConstantValue(m_module, field.value, enumDeclaration.baseType()))
                 .appendLine("");
         }
         m_builder.popIndentation();
@@ -319,7 +319,7 @@ namespace Caracal
         appendType(globalDeclaration.type());
         m_builder
             .append(" = ")
-            .append(FormatLiteralConstantValue(globalDeclaration.value(), globalDeclaration.type()))
+            .append(FormatLiteralConstantValue(m_module, globalDeclaration.value(), globalDeclaration.type()))
             .appendLine("");
     }
 
@@ -964,17 +964,17 @@ namespace Caracal
 
         if (baseType == Type::Void())
             m_builder.append("void");
-        else if (baseType == Type::Bool())
+        else if (baseType == m_module.wellKnown().boolean)
             m_builder.append("bool");
-        else if (baseType == Type::U8())
+        else if (baseType == m_module.wellKnown().u8)
             m_builder.append("u8");
-        else if (baseType == Type::I32())
+        else if (baseType == m_module.wellKnown().i32)
             m_builder.append("i32");
-        else if (baseType == Type::F32())
+        else if (baseType == m_module.wellKnown().f32)
             m_builder.append("f32");
-        else if (baseType == Type::String())
+        else if (baseType == m_module.wellKnown().cstring)
             m_builder.append("cstring");
-        else if (baseType == Type::RawPointer())
+        else if (baseType == m_module.wellKnown().rawptr)
             m_builder.append("rawptr");
         else if (baseType == Type::Discard())
             m_builder.append("discard");

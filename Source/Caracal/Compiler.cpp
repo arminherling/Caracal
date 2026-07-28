@@ -169,9 +169,9 @@ namespace Caracal
             std::cout << "Warning: no prelude found!! operators will not type check!!\n";
 
         Caracal::TypeCheckerOptions options{
-            .defaultIntegerType = Caracal::Type::I32(),
-            .defaultFloatingType = Caracal::Type::F32(),
-            .defaultEnumBaseType = Caracal::Type::U8()
+            .defaultIntegerType = "i32",
+            .defaultFloatingType = "f32",
+            .defaultEnumBaseType = "u8"
         };
         Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
 

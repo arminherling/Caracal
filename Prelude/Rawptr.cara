@@ -1,0 +1,4 @@
+#builtin(kind = pointer)
+type rawptr
+{
+}

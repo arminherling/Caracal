@@ -1,9 +1,9 @@
-﻿#builtin
+#builtin(kind = int, bits = 32, signed = true)
 type i32
 {
 }
 
-#builtin
+#builtin(kind = int, bits = 32, signed = true)
 type i32
 {
 }

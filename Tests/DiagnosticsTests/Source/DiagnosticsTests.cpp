@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <iostream>
 #include <fstream>
 #include <stdexcept>
 #include <tuple>
@@ -114,9 +115,9 @@ namespace
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
         const Caracal::TypeCheckerOptions options{
-            .defaultIntegerType = Caracal::Type::I32(),
-            .defaultFloatingType = Caracal::Type::F32(),
-            .defaultEnumBaseType = Caracal::Type::U8()
+            .defaultIntegerType = "i32",
+            .defaultFloatingType = "f32",
+            .defaultEnumBaseType = "u8"
         };
 
         auto preludeSources = std::vector<std::string>{};
@@ -162,9 +163,9 @@ namespace
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
 
         const Caracal::TypeCheckerOptions options{
-            .defaultIntegerType = Caracal::Type::I32(),
-            .defaultFloatingType = Caracal::Type::F32(),
-            .defaultEnumBaseType = Caracal::Type::U8()
+            .defaultIntegerType = "i32",
+            .defaultFloatingType = "f32",
+            .defaultEnumBaseType = "u8"
         };
         const auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(RepositoryRootDirectory() / "Prelude");
         Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);

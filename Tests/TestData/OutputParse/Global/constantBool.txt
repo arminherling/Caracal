@@ -1,5 +1,5 @@
 ConstantDeclaration: {
-    Type: bool
+    Type: undefined
     Left: {
         NameExpression: {
             Type: undefined
