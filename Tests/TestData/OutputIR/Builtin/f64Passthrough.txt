@@ -1,0 +1,4 @@
+define passthrough(%0: f64 "value") f64
+block entry(0):
+    %0 = parameter 0 : f64 "value"
+    return %0

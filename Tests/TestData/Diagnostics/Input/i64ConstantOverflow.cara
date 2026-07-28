@@ -1,0 +1,2 @@
+overflowed :: 9223372036854775807'i64 %+ 1'i64;
+dividedByZero :: 1'i64 / 0'i64;

@@ -1,0 +1,4 @@
+def passthrough(value: f64) f64
+{
+    return value;
+}

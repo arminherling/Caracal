@@ -1,0 +1,22 @@
+def widen(narrow: i32) i64
+{
+    wide : i64 = narrow;
+    return wide;
+}
+
+def widenUnsigned(narrow: u8) u16
+{
+    wide : u16 = narrow;
+    return wide;
+}
+
+type Holder(value: i32)
+{
+    wide : i64 = value
+}
+
+def holderWide(value: i32) i64
+{
+    holder := Holder.new(value);
+    return holder.wide;
+}

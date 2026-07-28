@@ -8,7 +8,7 @@
 
 namespace Caracal
 {
-    using FoldValue = std::variant<bool, u8, i32, float>;
+    using FoldValue = std::variant<bool, u8, u16, u32, u64, i8, i16, i32, i64, float, f64>;
 
     enum class FoldResultKind
     {

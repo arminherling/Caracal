@@ -1,0 +1,24 @@
+def wrapAdd(left: u64, right: u64) u64
+{
+    return left %+ right;
+}
+
+def wrapMultiply(left: u64, right: u64) u64
+{
+    return left %* right;
+}
+
+def main() i32
+{
+    addWrapOk := wrapAdd(18446744073709551615'u64, 1'u64) == 0'u64;
+    mulWrapOk := wrapMultiply(4294967296'u64, 4294967296'u64) == 0'u64;
+    lshrOk := u64.shiftRight(9223372036854775808'u64, 63) == 1'u64;
+    bitOk := u64.bitNot(0'u64) == 18446744073709551615'u64;
+    highBitCmpOk := wrapAdd(18446744073709551615'u64, 0'u64) > 1'u64;
+    if addWrapOk and mulWrapOk and lshrOk and bitOk and highBitCmpOk
+    {
+        return 42;
+    }
+
+    return 0;
+}

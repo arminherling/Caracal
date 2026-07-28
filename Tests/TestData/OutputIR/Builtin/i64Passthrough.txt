@@ -1,0 +1,4 @@
+define passthrough(%0: i64 "value") i64
+block entry(0):
+    %0 = parameter 0 : i64 "value"
+    return %0

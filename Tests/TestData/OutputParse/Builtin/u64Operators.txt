@@ -1,0 +1,411 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: wrapAdd
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: left
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u64
+            }
+        }
+        ParameterNode: {
+            Name: right
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u64
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: u64
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: left
+                    }
+                }
+                Operation: AdditionWrapping
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: right
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: wrapMultiply
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: left
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u64
+            }
+        }
+        ParameterNode: {
+            Name: right
+            TypeNameNode: {
+                Type: undefined
+                Lexeme: u64
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: u64
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: left
+                    }
+                }
+                Operation: MultiplicationWrapping
+                Right: {
+                    NameExpression: {
+                        Type: undefined
+                        Name: right
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(7): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: addWrapOk
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: wrapAdd
+                            }
+                            ArgumentsNode(2): {
+                                NumberLiteral: 18446744073709551615
+                                TypeNameNode: {
+                                    Type: undefined
+                                    Lexeme: u64
+                                }
+                                NumberLiteral: 1
+                                TypeNameNode: {
+                                    Type: undefined
+                                    Lexeme: u64
+                                }
+                            }
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NumberLiteral: 0
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: u64
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: mulWrapOk
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: wrapMultiply
+                            }
+                            ArgumentsNode(2): {
+                                NumberLiteral: 4294967296
+                                TypeNameNode: {
+                                    Type: undefined
+                                    Lexeme: u64
+                                }
+                                NumberLiteral: 4294967296
+                                TypeNameNode: {
+                                    Type: undefined
+                                    Lexeme: u64
+                                }
+                            }
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NumberLiteral: 0
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: u64
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: lshrOk
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: u64
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: shiftRight
+                                    }
+                                    ArgumentsNode(2): {
+                                        NumberLiteral: 9223372036854775808
+                                        TypeNameNode: {
+                                            Type: undefined
+                                            Lexeme: u64
+                                        }
+                                        NumberLiteral: 63
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NumberLiteral: 1
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: u64
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: bitOk
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: u64
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: bitNot
+                                    }
+                                    ArgumentsNode(1): {
+                                        NumberLiteral: 0
+                                        TypeNameNode: {
+                                            Type: undefined
+                                            Lexeme: u64
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NumberLiteral: 18446744073709551615
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: u64
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: highBitCmpOk
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: wrapAdd
+                            }
+                            ArgumentsNode(2): {
+                                NumberLiteral: 18446744073709551615
+                                TypeNameNode: {
+                                    Type: undefined
+                                    Lexeme: u64
+                                }
+                                NumberLiteral: 0
+                                TypeNameNode: {
+                                    Type: undefined
+                                    Lexeme: u64
+                                }
+                            }
+                        }
+                    }
+                    Operation: GreaterThan
+                    Right: {
+                        NumberLiteral: 1
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: u64
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                BinaryExpression: {
+                                    Type: undefined
+                                    Left: {
+                                        BinaryExpression: {
+                                            Type: undefined
+                                            Left: {
+                                                NameExpression: {
+                                                    Type: undefined
+                                                    Name: addWrapOk
+                                                }
+                                            }
+                                            Operation: LogicalAnd
+                                            Right: {
+                                                NameExpression: {
+                                                    Type: undefined
+                                                    Name: mulWrapOk
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Operation: LogicalAnd
+                                    Right: {
+                                        NameExpression: {
+                                            Type: undefined
+                                            Name: lshrOk
+                                        }
+                                    }
+                                }
+                            }
+                            Operation: LogicalAnd
+                            Right: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: bitOk
+                                }
+                            }
+                        }
+                    }
+                    Operation: LogicalAnd
+                    Right: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: highBitCmpOk
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 42
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 0
+        }
+    }
+}

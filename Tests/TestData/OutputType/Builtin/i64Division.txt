@@ -1,0 +1,116 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(4): {
+        VariableDeclaration: {
+            Type: f64
+            Left: {
+                NameExpression: {
+                    Type: f64
+                    Name: quotient
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: f64
+                    Left: {
+                        NumberLiteral: 9000000000
+                        TypeNameNode: {
+                            Type: i64
+                            Lexeme: i64
+                        }
+                    }
+                    Operation: Division
+                    Right: {
+                        NumberLiteral: 2
+                        TypeNameNode: {
+                            Type: i64
+                            Lexeme: i64
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: bool
+            Left: {
+                NameExpression: {
+                    Type: bool
+                    Name: inRange
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        BinaryExpression: {
+                            Type: bool
+                            Left: {
+                                NumberLiteral: 4499999999.0
+                                TypeNameNode: {
+                                    Type: f64
+                                    Lexeme: f64
+                                }
+                            }
+                            Operation: LessThan
+                            Right: {
+                                NameExpression: {
+                                    Type: f64
+                                    Name: quotient
+                                }
+                            }
+                        }
+                    }
+                    Operation: LogicalAnd
+                    Right: {
+                        BinaryExpression: {
+                            Type: bool
+                            Left: {
+                                NameExpression: {
+                                    Type: f64
+                                    Name: quotient
+                                }
+                            }
+                            Operation: LessThan
+                            Right: {
+                                NumberLiteral: 4500000001.0
+                                TypeNameNode: {
+                                    Type: f64
+                                    Lexeme: f64
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                NameExpression: {
+                    Type: bool
+                    Name: inRange
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 1
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 0
+        }
+    }
+}

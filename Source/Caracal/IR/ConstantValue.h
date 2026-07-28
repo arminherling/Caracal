@@ -13,7 +13,7 @@ namespace Caracal
     class CARACAL_API ConstantValue
     {
     public:
-        using LiteralData = std::variant<bool, u8, i32, float, std::string>;
+        using LiteralData = std::variant<bool, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, std::string>;
 
         struct EnumConstant final
         {
@@ -31,7 +31,9 @@ namespace Caracal
         static ConstantValue FromBool(bool value) noexcept;
         static ConstantValue FromU8(u8 value) noexcept;
         static ConstantValue FromI32(i32 value) noexcept;
-        static ConstantValue FromF32(float value) noexcept;
+        static ConstantValue FromI64(i64 value) noexcept;
+        static ConstantValue FromF64(f64 value) noexcept;
+        static ConstantValue FromF32(f32 value) noexcept;
         static ConstantValue FromString(std::string value) noexcept;
         static ConstantValue FromLiteralData(LiteralData value) noexcept;
         static ConstantValue FromEnum(Type enumType, std::string enumName, std::string fieldName, LiteralData underlyingValue) noexcept;

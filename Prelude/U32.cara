@@ -1,0 +1,24 @@
+#builtin(kind = int, bits = 32, signed = false)
+type u32
+{
+    def u32.add(lhs: u32, rhs: u32) u32 {}
+    def u32.subtract(lhs: u32, rhs: u32) u32 {}
+    def u32.multiply(lhs: u32, rhs: u32) u32 {}
+    def u32.divide(lhs: u32, rhs: u32) f32 {}
+
+    def u32.negate(value: u32) u32 {}
+
+    def u32.bitAnd(lhs: u32, rhs: u32) u32 {}
+    def u32.bitOr(lhs: u32, rhs: u32) u32 {}
+    def u32.bitXor(lhs: u32, rhs: u32) u32 {}
+    def u32.bitNot(value: u32) u32 {}
+    def u32.shiftLeft(value: u32, amount: i32) u32 {}
+    def u32.shiftRight(value: u32, amount: i32) u32 {}
+
+    def u32.equals(lhs: u32, rhs: u32) bool {}
+    def u32.notEquals(lhs: u32, rhs: u32) bool {}
+    def u32.lessThan(lhs: u32, rhs: u32) bool {}
+    def u32.lessOrEqual(lhs: u32, rhs: u32) bool {}
+    def u32.greaterThan(lhs: u32, rhs: u32) bool {}
+    def u32.greaterOrEqual(lhs: u32, rhs: u32) bool {}
+}

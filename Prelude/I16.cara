@@ -1,0 +1,24 @@
+#builtin(kind = int, bits = 16, signed = true)
+type i16
+{
+    def i16.add(lhs: i16, rhs: i16) i16 {}
+    def i16.subtract(lhs: i16, rhs: i16) i16 {}
+    def i16.multiply(lhs: i16, rhs: i16) i16 {}
+    def i16.divide(lhs: i16, rhs: i16) f32 {}
+
+    def i16.negate(value: i16) i16 {}
+
+    def i16.bitAnd(lhs: i16, rhs: i16) i16 {}
+    def i16.bitOr(lhs: i16, rhs: i16) i16 {}
+    def i16.bitXor(lhs: i16, rhs: i16) i16 {}
+    def i16.bitNot(value: i16) i16 {}
+    def i16.shiftLeft(value: i16, amount: i32) i16 {}
+    def i16.shiftRight(value: i16, amount: i32) i16 {}
+
+    def i16.equals(lhs: i16, rhs: i16) bool {}
+    def i16.notEquals(lhs: i16, rhs: i16) bool {}
+    def i16.lessThan(lhs: i16, rhs: i16) bool {}
+    def i16.lessOrEqual(lhs: i16, rhs: i16) bool {}
+    def i16.greaterThan(lhs: i16, rhs: i16) bool {}
+    def i16.greaterOrEqual(lhs: i16, rhs: i16) bool {}
+}

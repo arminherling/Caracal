@@ -1,0 +1,19 @@
+define main() i32
+block entry(0):
+    %0 = const 4500000000.000000 : f64
+    %1 = const 4499999999.000000 : f64
+    %2 = less_than %1, %0 : bool
+    branch if %2, and.rhs(1), and.merge(2)
+block and.rhs(1):
+    %3 = const 4500000001.000000 : f64
+    %4 = less_than %0, %3 : bool
+    jump and.merge(2)
+block and.merge(2):
+    %5 = phi [entry(0): %2], [and.rhs(1): %4] : bool
+    branch if %5, if.true(3), if.continuation(4)
+block if.true(3):
+    %6 = const 1 : i32
+    return %6
+block if.continuation(4):
+    %7 = const 0 : i32
+    return %7

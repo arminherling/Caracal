@@ -1,0 +1,8 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i64 @passthrough(i64 %0) {
+entry:
+  ret i64 %0
+}

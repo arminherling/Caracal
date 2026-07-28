@@ -1,0 +1,60 @@
+define wrapAdd(%0: u64 "left", %1: u64 "right") u64
+block entry(0):
+    %0 = parameter 0 : u64 "left"
+    %1 = parameter 1 : u64 "right"
+    %2 = add %0, %1 : u64
+    return %2
+
+define wrapMultiply(%0: u64 "left", %1: u64 "right") u64
+block entry(0):
+    %0 = parameter 0 : u64 "left"
+    %1 = parameter 1 : u64 "right"
+    %2 = multiply %0, %1 : u64
+    return %2
+
+define main() i32
+block entry(0):
+    %0 = const 18446744073709551615 : u64
+    %1 = const 1 : u64
+    %2 = call wrapAdd(%0, %1) : u64
+    %3 = const 0 : u64
+    %4 = equal %2, %3 : bool
+    %5 = const 4294967296 : u64
+    %6 = const 4294967296 : u64
+    %7 = call wrapMultiply(%5, %6) : u64
+    %8 = const 0 : u64
+    %9 = equal %7, %8 : bool
+    %10 = const true : bool
+    %11 = const true : bool
+    %12 = const 18446744073709551615 : u64
+    %13 = const 0 : u64
+    %14 = call wrapAdd(%12, %13) : u64
+    %15 = const 1 : u64
+    %16 = greater_than %14, %15 : bool
+    branch if %4, and.rhs(1), and.merge(2)
+block and.rhs(1):
+    jump and.merge(2)
+block and.merge(2):
+    %17 = phi [entry(0): %4], [and.rhs(1): %9] : bool
+    branch if %17, and.rhs(3), and.merge(4)
+block and.rhs(3):
+    jump and.merge(4)
+block and.merge(4):
+    %18 = phi [and.merge(2): %17], [and.rhs(3): %10] : bool
+    branch if %18, and.rhs(5), and.merge(6)
+block and.rhs(5):
+    jump and.merge(6)
+block and.merge(6):
+    %19 = phi [and.merge(4): %18], [and.rhs(5): %11] : bool
+    branch if %19, and.rhs(7), and.merge(8)
+block and.rhs(7):
+    jump and.merge(8)
+block and.merge(8):
+    %20 = phi [and.merge(6): %19], [and.rhs(7): %16] : bool
+    branch if %20, if.true(9), if.continuation(10)
+block if.true(9):
+    %21 = const 42 : i32
+    return %21
+block if.continuation(10):
+    %22 = const 0 : i32
+    return %22

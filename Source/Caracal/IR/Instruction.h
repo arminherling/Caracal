@@ -33,6 +33,7 @@ namespace Caracal
         StoreValue,
         ValueNegation,
         IntToFloat,
+        IntWiden,
         LogicalNegation,
         Call,
         CallVoid,

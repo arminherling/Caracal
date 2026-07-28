@@ -16,6 +16,7 @@
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
+#include <Caracal/IR/IntWidenInstruction.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
@@ -115,12 +116,12 @@ namespace Caracal
                     }
                 }
 
-                if constexpr (std::is_same_v<Payload, u8> || std::is_same_v<Payload, i32>)
+                if constexpr (std::is_integral_v<Payload> && !std::is_same_v<Payload, bool>)
                     return std::to_string(payload);
 
-                if constexpr (std::is_same_v<Payload, float>)
+                if constexpr (std::is_same_v<Payload, f32> || std::is_same_v<Payload, f64>)
                 {
-                    char buffer[32]{};
+                    char buffer[40]{};
                     const auto [end, error] = std::to_chars(buffer, buffer + sizeof(buffer), payload, std::chars_format::fixed, 6);
                     if (error != std::errc{})
                         return "<invalid-f32>";
@@ -577,6 +578,20 @@ namespace Caracal
                 m_builder.appendIndented("");
                 appendValue(ValueRef{ conversion.resultId() });
                 m_builder.append(" = int_to_float ");
+                appendValue(conversion.operandValue());
+                m_builder.append(" : ");
+                appendType(conversion.sourceType());
+                m_builder.append(" -> ");
+                appendType(conversion.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::IntWiden:
+            {
+                const auto& conversion = static_cast<const IntWidenInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ conversion.resultId() });
+                m_builder.append(" = int_widen ");
                 appendValue(conversion.operandValue());
                 m_builder.append(" : ");
                 appendType(conversion.sourceType());

@@ -19,6 +19,7 @@
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
+#include <Caracal/IR/IntWidenInstruction.h>
 #include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
@@ -637,15 +638,45 @@ namespace Caracal
                 if (operand == nullptr)
                     return false;
 
-                auto* floatType = llvm::Type::getFloatTy(m_llvmModule.getContext());
+                auto* floatType = lowerType(conversion.type());
+                if (floatType == nullptr)
+                    return false;
+
                 llvm::Value* result = nullptr;
-                if (conversion.sourceType().toBaseType() == m_irModule.wellKnown().u8)
+                const auto* sourceDescription = m_irModule.tryGetBuiltinTypeDescription(conversion.sourceType());
+                if (sourceDescription != nullptr && !sourceDescription->isSigned)
                 {
                     result = m_irBuilder->CreateUIToFP(operand, floatType, "int_to_float");
                 }
                 else
                 {
                     result = m_irBuilder->CreateSIToFP(operand, floatType, "int_to_float");
+                }
+
+                defineValue(conversion.resultId(), result);
+                return true;
+            }
+            case InstructionKind::IntWiden:
+            {
+                const auto& conversion = static_cast<const IntWidenInstruction&>(instruction);
+                auto* operand = tryResolve(conversion.operandValue());
+                if (operand == nullptr)
+                    return false;
+
+                auto* targetType = lowerType(conversion.type());
+                if (targetType == nullptr)
+                    return false;
+
+                // the source descriptor decides sign extension vs zero extension
+                const auto* description = m_irModule.tryGetBuiltinTypeDescription(conversion.sourceType());
+                llvm::Value* result = nullptr;
+                if (description != nullptr && !description->isSigned)
+                {
+                    result = m_irBuilder->CreateZExt(operand, targetType, "int_widen");
+                }
+                else
+                {
+                    result = m_irBuilder->CreateSExt(operand, targetType, "int_widen");
                 }
 
                 defineValue(conversion.resultId(), result);
@@ -696,7 +727,8 @@ namespace Caracal
         if ((kind == InstructionKind::Equal || kind == InstructionKind::NotEqual) && lhs->getType()->isPointerTy())
             return emitStringEquality(resultId, lhs, rhs, kind);
 
-        const auto isUnsigned = operandType.toValue() == m_irModule.wellKnown().u8;
+        const auto* operandDescription = m_irModule.tryGetBuiltinTypeDescription(operandType.toValue());
+        const auto isUnsigned = operandDescription != nullptr && !operandDescription->isSigned;
         const auto isFloat = lhs->getType()->isFloatingPointTy();
         if (isFloat)
         {
@@ -1071,15 +1103,13 @@ namespace Caracal
 
                     return llvm::ConstantInt::getFalse(context);
                 }
-                else if constexpr (std::is_same_v<Payload, u8>)
+                else if constexpr (std::is_integral_v<Payload> && !std::is_same_v<Payload, bool>)
                 {
-                    return llvm::ConstantInt::get(llvm::Type::getInt8Ty(context), payload);
+                    constexpr auto isSignedPayload = std::is_signed_v<Payload>;
+                    auto* integerType = llvm::Type::getIntNTy(context, static_cast<unsigned>(sizeof(Payload) * 8));
+                    return llvm::ConstantInt::get(integerType, static_cast<std::uint64_t>(payload), isSignedPayload);
                 }
-                else if constexpr (std::is_same_v<Payload, i32>)
-                {
-                    return llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), static_cast<std::uint64_t>(payload), true);
-                }
-                else if constexpr (std::is_same_v<Payload, float>)
+                else if constexpr (std::is_same_v<Payload, f32> || std::is_same_v<Payload, f64>)
                 {
                     return llvm::ConstantFP::get(context, llvm::APFloat(payload));
                 }

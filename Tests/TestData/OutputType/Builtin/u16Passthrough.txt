@@ -1,0 +1,28 @@
+FunctionDefinitionStatement: {
+    Type: (u16) -> u16
+    Name: passthrough
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: u16
+                Lexeme: u16
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: u16
+            Lexeme: u16
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: u16
+            NameExpression: {
+                Type: u16
+                Name: value
+            }
+        }
+    }
+}

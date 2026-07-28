@@ -1,0 +1,411 @@
+FunctionDefinitionStatement: {
+    Type: (u64, u64) -> u64
+    Name: wrapAdd
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: left
+            TypeNameNode: {
+                Type: u64
+                Lexeme: u64
+            }
+        }
+        ParameterNode: {
+            Name: right
+            TypeNameNode: {
+                Type: u64
+                Lexeme: u64
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: u64
+            Lexeme: u64
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: u64
+            BinaryExpression: {
+                Type: u64
+                Left: {
+                    NameExpression: {
+                        Type: u64
+                        Name: left
+                    }
+                }
+                Operation: AdditionWrapping
+                Right: {
+                    NameExpression: {
+                        Type: u64
+                        Name: right
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (u64, u64) -> u64
+    Name: wrapMultiply
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: left
+            TypeNameNode: {
+                Type: u64
+                Lexeme: u64
+            }
+        }
+        ParameterNode: {
+            Name: right
+            TypeNameNode: {
+                Type: u64
+                Lexeme: u64
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: u64
+            Lexeme: u64
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: u64
+            BinaryExpression: {
+                Type: u64
+                Left: {
+                    NameExpression: {
+                        Type: u64
+                        Name: left
+                    }
+                }
+                Operation: MultiplicationWrapping
+                Right: {
+                    NameExpression: {
+                        Type: u64
+                        Name: right
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(7): {
+        VariableDeclaration: {
+            Type: bool
+            Left: {
+                NameExpression: {
+                    Type: bool
+                    Name: addWrapOk
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        FunctionCallExpression: {
+                            Type: u64
+                            Function type: (u64, u64) -> u64
+                            NameExpression: {
+                                Type: (u64, u64) -> u64
+                                Name: wrapAdd
+                            }
+                            ArgumentsNode(2): {
+                                NumberLiteral: 18446744073709551615
+                                TypeNameNode: {
+                                    Type: u64
+                                    Lexeme: u64
+                                }
+                                NumberLiteral: 1
+                                TypeNameNode: {
+                                    Type: u64
+                                    Lexeme: u64
+                                }
+                            }
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NumberLiteral: 0
+                        TypeNameNode: {
+                            Type: u64
+                            Lexeme: u64
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: bool
+            Left: {
+                NameExpression: {
+                    Type: bool
+                    Name: mulWrapOk
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        FunctionCallExpression: {
+                            Type: u64
+                            Function type: (u64, u64) -> u64
+                            NameExpression: {
+                                Type: (u64, u64) -> u64
+                                Name: wrapMultiply
+                            }
+                            ArgumentsNode(2): {
+                                NumberLiteral: 4294967296
+                                TypeNameNode: {
+                                    Type: u64
+                                    Lexeme: u64
+                                }
+                                NumberLiteral: 4294967296
+                                TypeNameNode: {
+                                    Type: u64
+                                    Lexeme: u64
+                                }
+                            }
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NumberLiteral: 0
+                        TypeNameNode: {
+                            Type: u64
+                            Lexeme: u64
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: bool
+            Left: {
+                NameExpression: {
+                    Type: bool
+                    Name: lshrOk
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        BinaryExpression: {
+                            Type: u64
+                            Left: {
+                                NameExpression: {
+                                    Type: u64
+                                    Name: u64
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: u64
+                                    Function type: (u64, i32) -> u64
+                                    NameExpression: {
+                                        Type: (u64, i32) -> u64
+                                        Name: shiftRight
+                                    }
+                                    ArgumentsNode(2): {
+                                        NumberLiteral: 9223372036854775808
+                                        TypeNameNode: {
+                                            Type: u64
+                                            Lexeme: u64
+                                        }
+                                        NumberLiteral: 63
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NumberLiteral: 1
+                        TypeNameNode: {
+                            Type: u64
+                            Lexeme: u64
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: bool
+            Left: {
+                NameExpression: {
+                    Type: bool
+                    Name: bitOk
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        BinaryExpression: {
+                            Type: u64
+                            Left: {
+                                NameExpression: {
+                                    Type: u64
+                                    Name: u64
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: u64
+                                    Function type: (u64) -> u64
+                                    NameExpression: {
+                                        Type: (u64) -> u64
+                                        Name: bitNot
+                                    }
+                                    ArgumentsNode(1): {
+                                        NumberLiteral: 0
+                                        TypeNameNode: {
+                                            Type: u64
+                                            Lexeme: u64
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NumberLiteral: 18446744073709551615
+                        TypeNameNode: {
+                            Type: u64
+                            Lexeme: u64
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: bool
+            Left: {
+                NameExpression: {
+                    Type: bool
+                    Name: highBitCmpOk
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        FunctionCallExpression: {
+                            Type: u64
+                            Function type: (u64, u64) -> u64
+                            NameExpression: {
+                                Type: (u64, u64) -> u64
+                                Name: wrapAdd
+                            }
+                            ArgumentsNode(2): {
+                                NumberLiteral: 18446744073709551615
+                                TypeNameNode: {
+                                    Type: u64
+                                    Lexeme: u64
+                                }
+                                NumberLiteral: 0
+                                TypeNameNode: {
+                                    Type: u64
+                                    Lexeme: u64
+                                }
+                            }
+                        }
+                    }
+                    Operation: GreaterThan
+                    Right: {
+                        NumberLiteral: 1
+                        TypeNameNode: {
+                            Type: u64
+                            Lexeme: u64
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        BinaryExpression: {
+                            Type: bool
+                            Left: {
+                                BinaryExpression: {
+                                    Type: bool
+                                    Left: {
+                                        BinaryExpression: {
+                                            Type: bool
+                                            Left: {
+                                                NameExpression: {
+                                                    Type: bool
+                                                    Name: addWrapOk
+                                                }
+                                            }
+                                            Operation: LogicalAnd
+                                            Right: {
+                                                NameExpression: {
+                                                    Type: bool
+                                                    Name: mulWrapOk
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Operation: LogicalAnd
+                                    Right: {
+                                        NameExpression: {
+                                            Type: bool
+                                            Name: lshrOk
+                                        }
+                                    }
+                                }
+                            }
+                            Operation: LogicalAnd
+                            Right: {
+                                NameExpression: {
+                                    Type: bool
+                                    Name: bitOk
+                                }
+                            }
+                        }
+                    }
+                    Operation: LogicalAnd
+                    Right: {
+                        NameExpression: {
+                            Type: bool
+                            Name: highBitCmpOk
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 42
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 0
+        }
+    }
+}

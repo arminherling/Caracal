@@ -1,0 +1,16 @@
+#builtin(kind = float, bits = 64)
+type f64
+{
+    def f64.add(lhs: f64, rhs: f64) f64 {}
+    def f64.subtract(lhs: f64, rhs: f64) f64 {}
+    def f64.multiply(lhs: f64, rhs: f64) f64 {}
+    def f64.divide(lhs: f64, rhs: f64) f64 {}
+
+    def f64.negate(value: f64) f64 {}
+
+    // omit equals/ not equals for floats because they are usually cause bugs
+    def f64.lessThan(lhs: f64, rhs: f64) bool {}
+    def f64.lessOrEqual(lhs: f64, rhs: f64) bool {}
+    def f64.greaterThan(lhs: f64, rhs: f64) bool {}
+    def f64.greaterOrEqual(lhs: f64, rhs: f64) bool {}
+}

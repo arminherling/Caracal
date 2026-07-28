@@ -15,7 +15,7 @@ namespace Caracal
     class CARACAL_API NumberLiteral : public Expression
     {
     public:
-        using ParsedValue = std::variant<u8, i32, f32>;
+        using ParsedValue = std::variant<u8, u16, u32, u64, i8, i16, i32, i64, f32, f64>;
 
         NumberLiteral(
             const Token& literalToken,

@@ -1,0 +1,24 @@
+#builtin(kind = int, bits = 64, signed = false)
+type u64
+{
+    def u64.add(lhs: u64, rhs: u64) u64 {}
+    def u64.subtract(lhs: u64, rhs: u64) u64 {}
+    def u64.multiply(lhs: u64, rhs: u64) u64 {}
+    def u64.divide(lhs: u64, rhs: u64) f64 {}
+
+    def u64.negate(value: u64) u64 {}
+
+    def u64.bitAnd(lhs: u64, rhs: u64) u64 {}
+    def u64.bitOr(lhs: u64, rhs: u64) u64 {}
+    def u64.bitXor(lhs: u64, rhs: u64) u64 {}
+    def u64.bitNot(value: u64) u64 {}
+    def u64.shiftLeft(value: u64, amount: i32) u64 {}
+    def u64.shiftRight(value: u64, amount: i32) u64 {}
+
+    def u64.equals(lhs: u64, rhs: u64) bool {}
+    def u64.notEquals(lhs: u64, rhs: u64) bool {}
+    def u64.lessThan(lhs: u64, rhs: u64) bool {}
+    def u64.lessOrEqual(lhs: u64, rhs: u64) bool {}
+    def u64.greaterThan(lhs: u64, rhs: u64) bool {}
+    def u64.greaterOrEqual(lhs: u64, rhs: u64) bool {}
+}

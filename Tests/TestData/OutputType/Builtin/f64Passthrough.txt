@@ -1,0 +1,28 @@
+FunctionDefinitionStatement: {
+    Type: (f64) -> f64
+    Name: passthrough
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: f64
+                Lexeme: f64
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: f64
+            Lexeme: f64
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: f64
+            NameExpression: {
+                Type: f64
+                Name: value
+            }
+        }
+    }
+}

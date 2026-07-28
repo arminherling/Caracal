@@ -1,0 +1,38 @@
+ Error T0041 Number literal out of range
+    ,-[Diagnostics/Input/smallIntRanges.cara:3:15]
+  1 | def main() i32
+  2 | {
+  3 |     tooBig :: 128'i8;
+    .               ---
+    .                `-- Literal '128' does not fit in type 'i8'
+  4 |     negative :: 18446744073709551616'u64;
+  5 |     wrongWidth :: 70000'u16;
+  6 |     return 0;
+    `----
+  Fix: Use a smaller literal that fits in type 'i8', or change the target type.
+ Error T0041 Number literal out of range
+    ,-[Diagnostics/Input/smallIntRanges.cara:4:17]
+  1 | def main() i32
+  2 | {
+  3 |     tooBig :: 128'i8;
+  4 |     negative :: 18446744073709551616'u64;
+    .                 --------------------
+    .                           `-- Literal '18446744073709551616' does not fit in type 'u64'
+  5 |     wrongWidth :: 70000'u16;
+  6 |     return 0;
+  7 | }
+    `----
+  Fix: Use a smaller literal that fits in type 'u64', or change the target type.
+ Error T0041 Number literal out of range
+    ,-[Diagnostics/Input/smallIntRanges.cara:5:19]
+  2 | {
+  3 |     tooBig :: 128'i8;
+  4 |     negative :: 18446744073709551616'u64;
+  5 |     wrongWidth :: 70000'u16;
+    .                   -----
+    .                     `-- Literal '70000' does not fit in type 'u16'
+  6 |     return 0;
+  7 | }
+  8 | 
+    `----
+  Fix: Use a smaller literal that fits in type 'u16', or change the target type.

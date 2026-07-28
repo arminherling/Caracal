@@ -1,0 +1,24 @@
+#builtin(kind = int, bits = 8, signed = true)
+type i8
+{
+    def i8.add(lhs: i8, rhs: i8) i8 {}
+    def i8.subtract(lhs: i8, rhs: i8) i8 {}
+    def i8.multiply(lhs: i8, rhs: i8) i8 {}
+    def i8.divide(lhs: i8, rhs: i8) f32 {}
+
+    def i8.negate(value: i8) i8 {}
+
+    def i8.bitAnd(lhs: i8, rhs: i8) i8 {}
+    def i8.bitOr(lhs: i8, rhs: i8) i8 {}
+    def i8.bitXor(lhs: i8, rhs: i8) i8 {}
+    def i8.bitNot(value: i8) i8 {}
+    def i8.shiftLeft(value: i8, amount: i32) i8 {}
+    def i8.shiftRight(value: i8, amount: i32) i8 {}
+
+    def i8.equals(lhs: i8, rhs: i8) bool {}
+    def i8.notEquals(lhs: i8, rhs: i8) bool {}
+    def i8.lessThan(lhs: i8, rhs: i8) bool {}
+    def i8.lessOrEqual(lhs: i8, rhs: i8) bool {}
+    def i8.greaterThan(lhs: i8, rhs: i8) bool {}
+    def i8.greaterOrEqual(lhs: i8, rhs: i8) bool {}
+}

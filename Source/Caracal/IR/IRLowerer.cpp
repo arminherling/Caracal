@@ -25,6 +25,7 @@
 #include <Caracal/IR/GreaterOrEqualInstruction.h>
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
+#include <Caracal/IR/IntWidenInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
 #include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
@@ -140,8 +141,12 @@ namespace Caracal
                     return ConstantValue::FromU8(value);
                 else if constexpr (std::is_same_v<Payload, i32>)
                     return ConstantValue::FromI32(value);
+                else if constexpr (std::is_same_v<Payload, i64>)
+                    return ConstantValue::FromI64(value);
                 else if constexpr (std::is_same_v<Payload, f32>)
                     return ConstantValue::FromF32(value);
+                else if constexpr (std::is_same_v<Payload, f64>)
+                    return ConstantValue::FromF64(value);
                 else
                     return std::nullopt;
             }, literal.parsedValue().value());
@@ -360,7 +365,7 @@ namespace Caracal
         const auto& typeDefinition = m_semanticContext.getTypeDefinition(definition.parentType());
         for (const auto& fieldDefinition : typeDefinition.fields())
         {
-            const auto loweredValue = lowerValueExpression(fieldDefinition.expression());
+            const auto loweredValue = lowerValueExpressionExpecting(fieldDefinition.expression(), fieldDefinition.type());
             if (!loweredValue.has_value())
                 continue;
 
@@ -1395,6 +1400,31 @@ namespace Caracal
     std::optional<ValueRef> IRLowerer::lowerValueExpressionExpecting(const Expression* expression, Type targetType) noexcept
     {
         const auto sourceType = expression->type().toValue();
+
+        // integers widen one way within the same signedness, the checker already validated the coercion
+        if (sourceType.isBaseType() && targetType.isBaseType() && sourceType != targetType)
+        {
+            const auto* sourceDescription = m_semanticContext.tryGetBuiltinTypeDescription(sourceType);
+            const auto* targetDescription = m_semanticContext.tryGetBuiltinTypeDescription(targetType);
+            if (sourceDescription != nullptr && targetDescription != nullptr
+                && sourceDescription->kind == BuiltinTypeKind::Int
+                && targetDescription->kind == BuiltinTypeKind::Int
+                && sourceDescription->bits < targetDescription->bits)
+            {
+                const auto loweredValue = lowerValueExpression(expression);
+                if (!loweredValue.has_value())
+                    return std::nullopt;
+
+                const auto widenedId = m_nextTemporaryId++;
+                m_currentBlock->addInstruction(std::make_unique<IntWidenInstruction>(
+                    widenedId,
+                    loweredValue.value(),
+                    sourceType,
+                    targetType));
+                return ValueRef{ widenedId };
+            }
+        }
+
         if (targetType.kind() != TypeKind::Slice || sourceType.kind() != TypeKind::FixedArray)
         {
             return lowerValueExpression(expression);
@@ -2219,7 +2249,8 @@ namespace Caracal
                     case BinaryOperatorKind::Division:
                     {
                         const auto operandType = binaryExpression->leftExpression()->type().toValue();
-                        if (operandType == m_semanticContext.wellKnown().i32 || operandType == m_semanticContext.wellKnown().u8)
+                        const auto* operandDescription = m_semanticContext.tryGetBuiltinTypeDescription(operandType);
+                        if (operandDescription != nullptr && operandDescription->kind == BuiltinTypeKind::Int)
                         {
                             const auto lhsConvertedId = temporaryId;
                             m_currentBlock->addInstruction(std::make_unique<IntToFloatInstruction>(lhsConvertedId, leftValue.value(), operandType, expression->type()));

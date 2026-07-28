@@ -17,7 +17,17 @@ namespace Caracal
         return ConstantValue{ Data{ LiteralData{ value } } };
     }
 
-    ConstantValue ConstantValue::FromF32(float value) noexcept
+    ConstantValue ConstantValue::FromI64(i64 value) noexcept
+    {
+        return ConstantValue{ Data{ LiteralData{ value } } };
+    }
+
+    ConstantValue ConstantValue::FromF64(f64 value) noexcept
+    {
+        return ConstantValue{ Data{ LiteralData{ value } } };
+    }
+
+    ConstantValue ConstantValue::FromF32(f32 value) noexcept
     {
         return ConstantValue{ Data{ LiteralData{ value } } };
     }

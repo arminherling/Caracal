@@ -1,0 +1,28 @@
+FunctionDefinitionStatement: {
+    Type: (i8) -> i8
+    Name: passthrough
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i8
+                Lexeme: i8
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i8
+            Lexeme: i8
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i8
+            NameExpression: {
+                Type: i8
+                Name: value
+            }
+        }
+    }
+}

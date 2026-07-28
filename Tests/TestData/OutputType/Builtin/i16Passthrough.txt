@@ -1,0 +1,28 @@
+FunctionDefinitionStatement: {
+    Type: (i16) -> i16
+    Name: passthrough
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i16
+                Lexeme: i16
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i16
+            Lexeme: i16
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i16
+            NameExpression: {
+                Type: i16
+                Name: value
+            }
+        }
+    }
+}

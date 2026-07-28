@@ -260,6 +260,20 @@ namespace Caracal
         return static_cast<u8>(value);
     }
 
+    static std::optional<f64> TryParseF64Literal(std::string_view lexeme)
+    {
+        f64 value = 0.0;
+        const auto* begin = lexeme.data();
+        const auto* end = begin + lexeme.size();
+        const auto result = std::from_chars(begin, end, value);
+        if (result.ec != std::errc{} || result.ptr != end || !std::isfinite(value))
+        {
+            return std::nullopt;
+        }
+
+        return value;
+    }
+
     static std::optional<float> TryParseF32Literal(std::string_view lexeme)
     {
         float value = 0.0f;
@@ -336,13 +350,18 @@ namespace Caracal
 
         if (description->kind == BuiltinTypeKind::Float)
         {
-            // TODO handle f64 too
-            if (description->bits != 32)
+            if (description->bits == 32)
             {
-                return std::nullopt;
+                const auto value = TryParseF32Literal(lexeme);
+                if (!value.has_value())
+                {
+                    return std::nullopt;
+                }
+
+                return NumberLiteral::ParsedValue{ value.value() };
             }
 
-            const auto value = TryParseF32Literal(lexeme);
+            const auto value = TryParseF64Literal(lexeme);
             if (!value.has_value())
             {
                 return std::nullopt;
@@ -384,17 +403,36 @@ namespace Caracal
             return std::nullopt;
         }
 
-        if (!description->isSigned && description->bits <= 8)
+        if (description->isSigned)
+        {
+            if (description->bits <= 8)
+            {
+                return NumberLiteral::ParsedValue{ static_cast<i8>(magnitude) };
+            }
+            if (description->bits <= 16)
+            {
+                return NumberLiteral::ParsedValue{ static_cast<i16>(magnitude) };
+            }
+            if (description->bits <= 32)
+            {
+                return NumberLiteral::ParsedValue{ static_cast<i32>(magnitude) };
+            }
+            return NumberLiteral::ParsedValue{ static_cast<i64>(magnitude) };
+        }
+
+        if (description->bits <= 8)
         {
             return NumberLiteral::ParsedValue{ static_cast<u8>(magnitude) };
         }
-
-        if (description->isSigned && description->bits <= 32)
+        if (description->bits <= 16)
         {
-            return NumberLiteral::ParsedValue{ static_cast<i32>(magnitude) };
+            return NumberLiteral::ParsedValue{ static_cast<u16>(magnitude) };
         }
-
-        return std::nullopt;
+        if (description->bits <= 32)
+        {
+            return NumberLiteral::ParsedValue{ static_cast<u32>(magnitude) };
+        }
+        return NumberLiteral::ParsedValue{ static_cast<u64>(magnitude) };
     }
 
     static std::optional<i32> TryConvertEnumFieldLiteralValue(const NumberLiteral& literal)
@@ -407,8 +445,15 @@ namespace Caracal
         return std::visit([](const auto value) -> std::optional<i32>
             {
                 using Payload = std::decay_t<decltype(value)>;
-                if constexpr (std::is_same_v<Payload, u8> || std::is_same_v<Payload, i32>)
+                if constexpr (std::is_integral_v<Payload> && !std::is_same_v<Payload, bool>)
                 {
+                    // the EnumDefinition stores field values as i32
+                    if (static_cast<i64>(value) < std::numeric_limits<i32>::min()
+                        || static_cast<i64>(value) > std::numeric_limits<i32>::max())
+                    {
+                        return std::nullopt;
+                    }
+
                     return static_cast<i32>(value);
                 }
                 else

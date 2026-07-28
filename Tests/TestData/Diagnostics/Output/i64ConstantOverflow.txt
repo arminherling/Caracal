@@ -1,0 +1,18 @@
+ Error T0062 Constant expression overflows its type
+    ,-[Diagnostics/Input/i64ConstantOverflow.cara:1:15]
+  1 | overflowed :: 9223372036854775807'i64 %+ 1'i64;
+    .               ----------------------------
+    .                             `-- This constant expression does not fit in 'i64'.
+  2 | dividedByZero :: 1'i64 / 0'i64;
+  3 | 
+    `----
+  Fix: Use a wider type, or values that fit in 'i64'.
+ Error T0061 Division by zero
+    ,-[Diagnostics/Input/i64ConstantOverflow.cara:2:26]
+  1 | overflowed :: 9223372036854775807'i64 %+ 1'i64;
+  2 | dividedByZero :: 1'i64 / 0'i64;
+    .                          -
+    .                          `-- Integer division by zero.
+  3 | 
+    `----
+  Fix: Divide by a non-zero value.

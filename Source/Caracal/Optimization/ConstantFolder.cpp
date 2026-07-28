@@ -32,6 +32,12 @@ namespace Caracal
 {
     namespace
     {
+        static bool IsIntegerType(const SemanticContext& module, Type type)
+        {
+            const auto* description = module.tryGetBuiltinTypeDescription(type);
+            return description != nullptr && description->kind == BuiltinTypeKind::Int;
+        }
+
         static std::string FormatTypeName(const SemanticContext& module, Type type)
         {
             return std::string(module.getNameByType(type));
@@ -322,7 +328,7 @@ namespace Caracal
                     expression->setFoldedValue(folded.value);
                 }
                 else if (folded.kind == FoldResultKind::Overflow 
-                    && (operandType == m_module.wellKnown().i32 || operandType == m_module.wellKnown().u8))
+                    && IsIntegerType(m_module, operandType))
                 {
                     m_diagnostics.addConstantOverflowError(
                         tokens.source(),
@@ -377,14 +383,14 @@ namespace Caracal
                     expression->setFoldedValue(folded.value);
                 }
                 else if (folded.kind == FoldResultKind::DivideByZero
-                    && (operandType == m_module.wellKnown().i32 || operandType == m_module.wellKnown().u8))
+                    && IsIntegerType(m_module, operandType))
                 {
                     m_diagnostics.addDivisionByZeroError(
                         tokens.source(),
                         right->sourceLocation(tokens));
                 }
                 else if (folded.kind == FoldResultKind::Overflow
-                    && (operandType == m_module.wellKnown().i32 || operandType == m_module.wellKnown().u8))
+                    && IsIntegerType(m_module, operandType))
                 {
                     m_diagnostics.addConstantOverflowError(
                         tokens.source(),

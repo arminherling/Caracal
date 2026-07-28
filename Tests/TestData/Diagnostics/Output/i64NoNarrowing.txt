@@ -1,0 +1,13 @@
+ Error T0023 Explicit variable type mismatch
+    ,-[Diagnostics/Input/i64NoNarrowing.cara:4:20]
+  1 | def main() i32
+  2 | {
+  3 |     wide : i64 = 9000000000'i64;
+  4 |     narrow : i32 = wide;
+    .                    ----
+    .                      `-- Variable is declared as 'i32', but its initializer has type 'i64'
+  5 |     return 0;
+  6 | }
+  7 | 
+    `----
+  Fix: Initialize this variable with a value of type 'i32' or change its explicit type.

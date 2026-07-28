@@ -1,0 +1,7 @@
+def main() i32
+{
+    tooBig :: 128'i8;
+    negative :: 18446744073709551616'u64;
+    wrongWidth :: 70000'u16;
+    return 0;
+}

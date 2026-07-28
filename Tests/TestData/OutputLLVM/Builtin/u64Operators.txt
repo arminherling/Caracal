@@ -1,0 +1,60 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+define i64 @wrapAdd(i64 %0, i64 %1) {
+entry:
+  %add = add i64 %0, %1
+  ret i64 %add
+}
+
+define i64 @wrapMultiply(i64 %0, i64 %1) {
+entry:
+  %multiply = mul i64 %0, %1
+  ret i64 %multiply
+}
+
+define i32 @main() {
+entry:
+  %call = call i64 @wrapAdd(i64 -1, i64 1)
+  %equal = icmp eq i64 %call, 0
+  %call7 = call i64 @wrapMultiply(i64 4294967296, i64 4294967296)
+  %equal8 = icmp eq i64 %call7, 0
+  %call9 = call i64 @wrapAdd(i64 -1, i64 0)
+  %greater_than = icmp ugt i64 %call9, 1
+  br i1 %equal, label %and.rhs, label %and.merge
+
+and.rhs:                                          ; preds = %entry
+  br label %and.merge
+
+and.merge:                                        ; preds = %and.rhs, %entry
+  %phi = phi i1 [ %equal, %entry ], [ %equal8, %and.rhs ]
+  br i1 %phi, label %and.rhs1, label %and.merge2
+
+and.rhs1:                                         ; preds = %and.merge
+  br label %and.merge2
+
+and.merge2:                                       ; preds = %and.rhs1, %and.merge
+  %phi10 = phi i1 [ %phi, %and.merge ], [ true, %and.rhs1 ]
+  br i1 %phi10, label %and.rhs3, label %and.merge4
+
+and.rhs3:                                         ; preds = %and.merge2
+  br label %and.merge4
+
+and.merge4:                                       ; preds = %and.rhs3, %and.merge2
+  %phi11 = phi i1 [ %phi10, %and.merge2 ], [ true, %and.rhs3 ]
+  br i1 %phi11, label %and.rhs5, label %and.merge6
+
+and.rhs5:                                         ; preds = %and.merge4
+  br label %and.merge6
+
+and.merge6:                                       ; preds = %and.rhs5, %and.merge4
+  %phi12 = phi i1 [ %phi11, %and.merge4 ], [ %greater_than, %and.rhs5 ]
+  br i1 %phi12, label %if.true, label %if.continuation
+
+if.true:                                          ; preds = %and.merge6
+  ret i32 42
+
+if.continuation:                                  ; preds = %and.merge6
+  ret i32 0
+}
