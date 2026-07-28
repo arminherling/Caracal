@@ -326,57 +326,96 @@ namespace Caracal
         return description;
     }
 
-    static std::optional<NumberLiteral::ParsedValue> TryParseNumberLiteralValue(std::string_view lexeme, Type type, const WellKnownTypes& wellKnown)
+    static std::optional<NumberLiteral::ParsedValue> TryParseNumberLiteralValue(std::string_view lexeme, Type type, const SemanticContext& module)
     {
-        if (type == wellKnown.u8)
+        const auto* description = module.tryGetBuiltinTypeDescription(type);
+        if (description == nullptr)
         {
-            const auto value = TryParseU8Literal(lexeme);
-            if (!value.has_value())
-                return std::nullopt;
-
-            return NumberLiteral::ParsedValue{ value.value() };
+            return std::nullopt;
         }
 
-        if (type == wellKnown.i32)
+        if (description->kind == BuiltinTypeKind::Float)
         {
-            const auto value = TryParseI32Literal(lexeme);
-            if (!value.has_value())
+            // TODO handle f64 too
+            if (description->bits != 32)
+            {
                 return std::nullopt;
+            }
 
-            return NumberLiteral::ParsedValue{ value.value() };
-        }
-
-        if (type == wellKnown.f32)
-        {
             const auto value = TryParseF32Literal(lexeme);
             if (!value.has_value())
+            {
                 return std::nullopt;
+            }
 
             return NumberLiteral::ParsedValue{ value.value() };
+        }
+
+        if (description->kind != BuiltinTypeKind::Int)
+        {
+            return std::nullopt;
+        }
+
+        u64 magnitude = 0;
+        const auto* begin = lexeme.data();
+        const auto* end = begin + lexeme.size();
+        const auto result = std::from_chars(begin, end, magnitude);
+        if (result.ec != std::errc{} || result.ptr != end)
+        {
+            return std::nullopt;
+        }
+
+        auto maxValue = u64{ 0 };
+        if (description->isSigned)
+        {
+            maxValue = (u64{ 1 } << (description->bits - 1)) - 1;
+        }
+        else if (description->bits == 64)
+        {
+            maxValue = std::numeric_limits<u64>::max();
+        }
+        else
+        {
+            maxValue = (u64{ 1 } << description->bits) - 1;
+        }
+
+        if (magnitude > maxValue)
+        {
+            return std::nullopt;
+        }
+
+        if (!description->isSigned && description->bits <= 8)
+        {
+            return NumberLiteral::ParsedValue{ static_cast<u8>(magnitude) };
+        }
+
+        if (description->isSigned && description->bits <= 32)
+        {
+            return NumberLiteral::ParsedValue{ static_cast<i32>(magnitude) };
         }
 
         return std::nullopt;
     }
 
-    static std::optional<i32> TryConvertEnumFieldLiteralValue(const NumberLiteral& literal, const WellKnownTypes& wellKnown)
+    static std::optional<i32> TryConvertEnumFieldLiteralValue(const NumberLiteral& literal)
     {
         if (!literal.hasParsedValue())
         {
             return std::nullopt;
         }
 
-        const auto literalType = literal.type();
-        if (literalType == wellKnown.u8)
-        {
-            return static_cast<i32>(std::get<u8>(literal.parsedValue().value()));
-        }
-
-        if (literalType == wellKnown.i32)
-        {
-            return std::get<i32>(literal.parsedValue().value());
-        }
-
-        return std::nullopt;
+        return std::visit([](const auto value) -> std::optional<i32>
+            {
+                using Payload = std::decay_t<decltype(value)>;
+                if constexpr (std::is_same_v<Payload, u8> || std::is_same_v<Payload, i32>)
+                {
+                    return static_cast<i32>(value);
+                }
+                else
+                {
+                    return std::nullopt;
+                }
+            }, literal.parsedValue().value());
     }
 
     bool typeCheck(
@@ -2033,7 +2072,7 @@ namespace Caracal
 
                 if (expression->kind() == NodeKind::NumberLiteral)
                 {
-                    const auto value = TryConvertEnumFieldLiteralValue(*static_cast<NumberLiteral*>(expression), m_module.wellKnown());
+                    const auto value = TryConvertEnumFieldLiteralValue(*static_cast<NumberLiteral*>(expression));
                     if (value.has_value())
                     {
                         enumDefinition.addField(fieldName, value.value(), fieldLocation);
@@ -3464,7 +3503,8 @@ namespace Caracal
             if (m_contextualNumberType.has_value())
             {
                 const auto contextualType = m_contextualNumberType.value();
-                if (!isFloatingLiteral && (contextualType == m_module.wellKnown().u8 || contextualType == m_module.wellKnown().i32))
+                const auto* contextualDescription = m_module.tryGetBuiltinTypeDescription(contextualType);
+                if (!isFloatingLiteral && contextualDescription != nullptr && contextualDescription->kind == BuiltinTypeKind::Int)
                 {
                     numberType = contextualType;
                 }
@@ -3480,11 +3520,14 @@ namespace Caracal
             }
         }
 
+        const auto* numberDescription = m_module.tryGetBuiltinTypeDescription(numberType);
         if (numberType != Type::Undefined()
-            && (numberType == m_module.wellKnown().u8 || numberType == m_module.wellKnown().i32 || numberType == m_module.wellKnown().f32))
+            && numberDescription != nullptr
+            && (numberDescription->kind == BuiltinTypeKind::Int || numberDescription->kind == BuiltinTypeKind::Float))
         {
-            parsedValue = TryParseNumberLiteralValue(literal->literalLexeme(), numberType, m_module.wellKnown());
-            if (!parsedValue.has_value() && m_negatedLiteralContext && numberType == m_module.wellKnown().i32)
+            parsedValue = TryParseNumberLiteralValue(literal->literalLexeme(), numberType, m_module);
+            if (!parsedValue.has_value() && m_negatedLiteralContext
+                && numberDescription->kind == BuiltinTypeKind::Int && numberDescription->isSigned && numberDescription->bits == 32)
             {
                 const auto negatedValue = TryParseNegatedI32Literal(literal->literalLexeme());
                 if (negatedValue.has_value())

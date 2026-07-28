@@ -224,20 +224,10 @@ namespace Caracal
                             break;
                         }
 
-                        const auto baseType = literal->type().toBaseType();
-                        const auto& parsedValue = literal->parsedValue().value();
-                        if (baseType == m_module.wellKnown().i32)
-                        {
-                            literal->setFoldedValue(FoldValue{ std::get<i32>(parsedValue) });
-                        }
-                        else if (baseType == m_module.wellKnown().u8)
-                        {
-                            literal->setFoldedValue(FoldValue{ std::get<u8>(parsedValue) });
-                        }
-                        else if (baseType == m_module.wellKnown().f32)
-                        {
-                            literal->setFoldedValue(FoldValue{ std::get<f32>(parsedValue) });
-                        }
+                        std::visit([literal](const auto value)
+                            {
+                                literal->setFoldedValue(FoldValue{ value });
+                            }, literal->parsedValue().value());
                         break;
                     }
                     case NodeKind::BoolLiteral:

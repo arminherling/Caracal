@@ -128,24 +128,23 @@ namespace Caracal
         return function.tryGetBlock(blockId.value());
     }
 
-    static std::optional<ConstantValue> CreateConstantValue(const NumberLiteral& literal, const WellKnownTypes& wellKnown) noexcept
+    static std::optional<ConstantValue> CreateConstantValue(const NumberLiteral& literal) noexcept
     {
         if (!literal.hasParsedValue())
             return std::nullopt;
 
-        const auto baseType = literal.type().toBaseType();
-        const auto& parsedValue = literal.parsedValue().value();
-
-        if (baseType == wellKnown.u8)
-            return ConstantValue::FromU8(std::get<u8>(parsedValue));
-
-        if (baseType == wellKnown.i32)
-            return ConstantValue::FromI32(std::get<i32>(parsedValue));
-
-        if (baseType == wellKnown.f32)
-            return ConstantValue::FromF32(std::get<f32>(parsedValue));
-
-        return std::nullopt;
+        return std::visit([](const auto value) -> std::optional<ConstantValue>
+            {
+                using Payload = std::decay_t<decltype(value)>;
+                if constexpr (std::is_same_v<Payload, u8>)
+                    return ConstantValue::FromU8(value);
+                else if constexpr (std::is_same_v<Payload, i32>)
+                    return ConstantValue::FromI32(value);
+                else if constexpr (std::is_same_v<Payload, f32>)
+                    return ConstantValue::FromF32(value);
+                else
+                    return std::nullopt;
+            }, literal.parsedValue().value());
     }
 
     static ConstantValue FromFoldValue(const FoldValue& value) noexcept
@@ -158,20 +157,34 @@ namespace Caracal
             value);
     }
 
-    static std::optional<ConstantValue> CreateEnumConstantValue(Type baseType, i32 value, const WellKnownTypes& wellKnown) noexcept
+    static std::optional<ConstantValue> CreateEnumConstantValue(Type baseType, i32 value, const SemanticContext& semanticContext) noexcept
     {
-        const auto normalizedBaseType = baseType.toBaseType();
-        if (normalizedBaseType == wellKnown.boolean)
-            return ConstantValue::FromBool(value != 0);
+        const auto* description = semanticContext.tryGetBuiltinTypeDescription(baseType);
+        if (description == nullptr)
+            return std::nullopt;
 
-        if (normalizedBaseType == wellKnown.u8)
-            return ConstantValue::FromU8(static_cast<u8>(value));
+        switch (description->kind)
+        {
+            case BuiltinTypeKind::Bool:
+            {
+                return ConstantValue::FromBool(value != 0);
+            }
+            case BuiltinTypeKind::Int:
+            {
+                if (!description->isSigned && description->bits <= 8)
+                    return ConstantValue::FromU8(static_cast<u8>(value));
 
-        if (normalizedBaseType == wellKnown.i32)
-            return ConstantValue::FromI32(value);
-
-        if (normalizedBaseType == wellKnown.f32)
-            return ConstantValue::FromF32(static_cast<f32>(value));
+                return ConstantValue::FromI32(value);
+            }
+            case BuiltinTypeKind::Float:
+            {
+                return ConstantValue::FromF32(static_cast<f32>(value));
+            }
+            case BuiltinTypeKind::Pointer:
+            {
+                return std::nullopt;
+            }
+        }
 
         return std::nullopt;
     }
@@ -1809,7 +1822,7 @@ namespace Caracal
         {
             case NodeKind::NumberLiteral:
             {
-                return CreateConstantValue(*static_cast<const NumberLiteral*>(expression), m_semanticContext.wellKnown());
+                return CreateConstantValue(*static_cast<const NumberLiteral*>(expression));
             }
             case NodeKind::StringLiteral:
             {
@@ -1879,7 +1892,7 @@ namespace Caracal
         if (enumField.expression() != nullptr)
             return tryLowerConstantExpression(enumField.expression());
 
-        return CreateEnumConstantValue(enumDefinition.baseType(), enumField.value(), m_semanticContext.wellKnown());
+        return CreateEnumConstantValue(enumDefinition.baseType(), enumField.value(), m_semanticContext);
     }
 
     std::optional<ConstantValue> IRLowerer::tryLowerEnumMemberConstant(const BinaryExpression* expression) noexcept
@@ -1969,7 +1982,7 @@ namespace Caracal
             case NodeKind::NumberLiteral:
             {
                 const auto* literal = static_cast<const NumberLiteral*>(expression);
-                const auto constantValue = CreateConstantValue(*literal, m_semanticContext.wellKnown());
+                const auto constantValue = CreateConstantValue(*literal);
                 if (!constantValue.has_value())
                     return std::nullopt;
 
