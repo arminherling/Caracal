@@ -1,0 +1,10 @@
+ Error T0046 Duplicate annotation argument
+    ,-[Diagnostics/InputBuiltin/builtinDuplicateKind.cara:1:22]
+  1 | #builtin(kind = int, kind = int, bits = 32, signed = true)
+    .                      ----
+    .                        `-- Annotation '#builtin' already has an argument named 'kind'.
+  2 | type i32
+  3 | {
+  4 | }
+    `----
+  Fix: Remove the duplicate argument.

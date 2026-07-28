@@ -1,0 +1,4 @@
+#builtin(kind = float, bits = 16)
+type f32
+{
+}

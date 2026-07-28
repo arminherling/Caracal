@@ -1,0 +1,10 @@
+ Error T0005 Annotation argument type mismatch
+    ,-[Diagnostics/InputBuiltin/builtinUnknownKind.cara:1:17]
+  1 | #builtin(kind = banana, bits = 32, signed = true)
+    .                 ------
+    .                    `-- Annotation '#builtin' expects one of 'int', 'float', 'bool' or 'pointer' for 'kind', but got 'banana'.
+  2 | type i32
+  3 | {
+  4 | }
+    `----
+  Fix: Change the annotation argument to the expected type.

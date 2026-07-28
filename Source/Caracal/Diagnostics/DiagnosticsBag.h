@@ -46,6 +46,7 @@ namespace Caracal
         void addAnnotationWrongNumberOfArgumentsError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, i32 expectedCount, i32 actualCount);
         void addAnnotationArgumentTypeMismatchError(const SourceTextSharedPtr& source, const SourceLocation& location, AnnotationKind annotationKind, const std::string& annotationName, const std::string& expectedDescription, const std::string& actualDescription);
         void addUnexpectedAnnotationArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, const std::string& argumentName);
+        void addUnsupportedAnnotationArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& argumentName, const std::string& kindName);
         void addDuplicateAnnotationArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, const std::string& argumentName);
         void addExternMethodRequiresSymbolError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName);
         void addConflictingEnumAnnotationsError(const SourceTextSharedPtr& source, const SourceLocation& location, const SourceLocation& otherLocation, const std::string& annotationName, const std::string& otherAnnotationName);
@@ -96,6 +97,7 @@ namespace Caracal
         void addUnknownBuiltinMethodIgnoredWarning(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName);
         void addInvalidOperatorMethodSignatureError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& expectedSignature);
         void addBitwiseMethodOnNonIntegerTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName);
+        void addUnsupportedFloatBitsError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addMethodCallMissingDotError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName);
         void addMemberAccessInDefaultParameterError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addPrivateMethodCallOutsideTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName);

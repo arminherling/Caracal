@@ -122,6 +122,18 @@ namespace Caracal
         return nullptr;
     }
 
+    static std::string FormatAnnotationArgumentValue(const Expression* expression, const TokenBuffer& tokens)
+    {
+        const auto location = expression->sourceLocation(tokens);
+        const auto& text = tokens.source()->text;
+        if (location.startIndex < 0 || location.endIndex > static_cast<i32>(text.size()) || location.endIndex <= location.startIndex)
+        {
+            return {};
+        }
+
+        return text.substr(location.startIndex, location.endIndex - location.startIndex);
+    }
+
     static std::optional<SourceLocation> GetTypeFieldLocation(const TypeDefinition& typeDefinition, const FieldDefinition& fieldDefinition, const TokenBuffer& tokens)
     {
         const auto fieldIndex = static_cast<size_t>(fieldDefinition.index());
@@ -1998,6 +2010,182 @@ namespace Caracal
         }
     }
 
+    bool TypeChecker::validateBuiltinAnnotationArguments(const AnnotationNode* annotation, const TokenBuffer& tokens)
+    {
+        // TODO remove once the builtin types are fully defined in the prelude
+        if (annotation->arguments().empty())
+        {
+            return true;
+        }
+
+        const Argument* kindArgument = nullptr;
+        const Argument* bitsArgument = nullptr;
+        const Argument* signedArgument = nullptr;
+        std::vector<std::string_view> seenArgumentNames;
+        for (const auto& argument : annotation->arguments())
+        {
+            if (!argument.isNamed())
+            {
+                m_diagnostics.addAnnotationArgumentTypeMismatchError(
+                    tokens.source(),
+                    argument.value()->sourceLocation(tokens),
+                    annotation->kind(),
+                    annotation->name(),
+                    "named arguments like 'kind = int'",
+                    "a positional argument");
+                return false;
+            }
+
+            const auto nameLocation = tokens.getSourceLocation(argument.nameToken().value());
+            if (std::find(seenArgumentNames.begin(), seenArgumentNames.end(), argument.name()) != seenArgumentNames.end())
+            {
+                m_diagnostics.addDuplicateAnnotationArgumentError(tokens.source(), nameLocation, annotation->name(), argument.name());
+                return false;
+            }
+            seenArgumentNames.push_back(argument.name());
+
+            if (argument.name() == KindAnnotationArgumentName)
+            {
+                kindArgument = &argument;
+            }
+            else if (argument.name() == BitsAnnotationArgumentName)
+            {
+                bitsArgument = &argument;
+            }
+            else if (argument.name() == SignedAnnotationArgumentName)
+            {
+                signedArgument = &argument;
+            }
+            else
+            {
+                m_diagnostics.addUnexpectedAnnotationArgumentError(tokens.source(), nameLocation, annotation->name(), argument.name());
+                return false;
+            }
+        }
+
+        if (kindArgument == nullptr)
+        {
+            m_diagnostics.addAnnotationMissingArgumentsError(
+                tokens.source(),
+                annotation->argumentsLocation(tokens),
+                annotation->kind(),
+                annotation->name(),
+                KindAnnotationArgumentName);
+            return false;
+        }
+
+        auto kindName = std::string_view();
+        const auto* kindValue = kindArgument->value().get();
+        if (kindValue->kind() == NodeKind::NameExpression)
+        {
+            kindName = static_cast<const NameExpression*>(kindValue)->name();
+        }
+
+        const auto isInt = kindName == BuiltinKindIntName;
+        const auto isFloat = kindName == BuiltinKindFloatName;
+        const auto isBool = kindName == BuiltinKindBoolName;
+        const auto isPointer = kindName == BuiltinKindPointerName;
+        if (!isInt && !isFloat && !isBool && !isPointer)
+        {
+            m_diagnostics.addAnnotationArgumentTypeMismatchError(
+                tokens.source(),
+                kindValue->sourceLocation(tokens),
+                annotation->kind(),
+                annotation->name(),
+                "one of 'int', 'float', 'bool' or 'pointer' for 'kind'",
+                "'" + FormatAnnotationArgumentValue(kindValue, tokens) + "'");
+            return false;
+        }
+
+        if (isInt || isFloat)
+        {
+            if (bitsArgument == nullptr)
+            {
+                m_diagnostics.addAnnotationMissingArgumentsError(
+                    tokens.source(),
+                    annotation->argumentsLocation(tokens),
+                    annotation->kind(),
+                    annotation->name(),
+                    BitsAnnotationArgumentName);
+                return false;
+            }
+
+            auto* bitsValue = bitsArgument->value().get();
+            auto bits = 0;
+            if (bitsValue->kind() == NodeKind::NumberLiteral)
+            {
+                bits = convertToI32(static_cast<NumberLiteral*>(bitsValue), tokens);
+            }
+
+            // llvm supports integers up to 65k bits
+            if (isInt && !(bits >= 1 && bits <= 65535))
+            {
+                m_diagnostics.addAnnotationArgumentTypeMismatchError(
+                    tokens.source(),
+                    bitsValue->sourceLocation(tokens),
+                    annotation->kind(),
+                    annotation->name(),
+                    "a number between 1 and 65535 for 'bits'",
+                    "'" + FormatAnnotationArgumentValue(bitsValue, tokens) + "'");
+                return false;
+            }
+
+            if (isFloat && !(bits == 32 || bits == 64))
+            {
+                m_diagnostics.addUnsupportedFloatBitsError(
+                    tokens.source(),
+                    bitsValue->sourceLocation(tokens));
+                return false;
+            }
+        }
+        else if (bitsArgument != nullptr)
+        {
+            m_diagnostics.addUnsupportedAnnotationArgumentError(
+                tokens.source(),
+                tokens.getSourceLocation(bitsArgument->nameToken().value()),
+                std::string(bitsArgument->name()),
+                std::string(kindName));
+            return false;
+        }
+
+        if (isInt)
+        {
+            if (signedArgument == nullptr)
+            {
+                m_diagnostics.addAnnotationMissingArgumentsError(
+                    tokens.source(),
+                    annotation->argumentsLocation(tokens),
+                    annotation->kind(),
+                    annotation->name(),
+                    SignedAnnotationArgumentName);
+                return false;
+            }
+
+            if (signedArgument->value()->kind() != NodeKind::BoolLiteral)
+            {
+                m_diagnostics.addAnnotationArgumentTypeMismatchError(
+                    tokens.source(),
+                    signedArgument->value()->sourceLocation(tokens),
+                    annotation->kind(),
+                    annotation->name(),
+                    "'true' or 'false' for 'signed'",
+                    "'" + FormatAnnotationArgumentValue(signedArgument->value().get(), tokens) + "'");
+                return false;
+            }
+        }
+        else if (signedArgument != nullptr)
+        {
+            m_diagnostics.addUnsupportedAnnotationArgumentError(
+                tokens.source(),
+                tokens.getSourceLocation(signedArgument->nameToken().value()),
+                std::string(signedArgument->name()),
+                std::string(kindName));
+            return false;
+        }
+
+        return true;
+    }
+
     bool TypeChecker::validateNamedAnnotationArguments(const AnnotationNode* annotation, std::string_view namedStringArgument, const TokenBuffer& tokens, std::optional<std::string>* stringArgumentValue)
     {
         std::vector<std::string_view> seenArgumentNames;
@@ -2064,6 +2252,11 @@ namespace Caracal
         {
             m_diagnostics.addUnexpectedAnnotationTargetError(tokens.source(), annotationLocation);
             return false;
+        }
+
+        if (annotation->kind() == AnnotationKind::Builtin)
+        {
+            return validateBuiltinAnnotationArguments(annotation, tokens);
         }
 
         if (!validateNamedAnnotationArguments(annotation, definition->namedStringArgument, tokens, stringArgumentValue))

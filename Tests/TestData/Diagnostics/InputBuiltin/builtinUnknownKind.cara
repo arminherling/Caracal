@@ -1,0 +1,4 @@
+#builtin(kind = banana, bits = 32, signed = true)
+type i32
+{
+}

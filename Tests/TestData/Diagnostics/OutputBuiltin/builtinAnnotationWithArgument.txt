@@ -1,10 +1,10 @@
- Error T0004 Wrong number of annotation arguments
+ Error T0005 Annotation argument type mismatch
     ,-[Diagnostics/InputBuiltin/builtinAnnotationWithArgument.cara:1:13]
   1 | ﻿#builtin(1)
     .             -
-    .             `-- Annotation '#builtin' expects 0 argument(s), but got 1.
+    .             `-- Annotation '#builtin' expects named arguments like 'kind = int', but got a positional argument.
   2 | type i32
   3 | {
   4 | }
     `----
-  Fix: Remove the unexpected annotation arguments.
+  Fix: Change the annotation argument to the expected type.

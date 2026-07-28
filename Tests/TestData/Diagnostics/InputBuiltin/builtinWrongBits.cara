@@ -1,0 +1,4 @@
+#builtin(kind = int, bits = 0, signed = true)
+type i32
+{
+}

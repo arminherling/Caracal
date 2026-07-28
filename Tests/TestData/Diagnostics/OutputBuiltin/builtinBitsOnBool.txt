@@ -1,0 +1,10 @@
+ Error T0045 Unexpected annotation argument
+    ,-[Diagnostics/InputBuiltin/builtinBitsOnBool.cara:1:23]
+  1 | #builtin(kind = bool, bits = 8)
+    .                       ----
+    .                         `-- 'bits' is not supported for 'bool'
+  2 | type bool
+  3 | {
+  4 | }
+    `----
+  Fix: Remove the 'bits' argument.

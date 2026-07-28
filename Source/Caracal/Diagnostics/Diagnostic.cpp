@@ -229,6 +229,8 @@ namespace Caracal
                 return "T0082";
             case DiagnosticKind::T0083_BitwiseMethodOnNonIntegerType:
                 return "T0083";
+            case DiagnosticKind::T0089_UnsupportedFloatBits:
+                return "T0089";
             case DiagnosticKind::T0084_GlobalConstantNotComputable:
                 return "T0084";
             case DiagnosticKind::T0085_ReferenceOrSliceField:
@@ -454,6 +456,8 @@ namespace Caracal
                 return "Invalid operator method signature";
             case DiagnosticKind::T0083_BitwiseMethodOnNonIntegerType:
                 return "Bitwise methods are only available on integer types";
+            case DiagnosticKind::T0089_UnsupportedFloatBits:
+                return "Unsupported bit count for floats";
             case DiagnosticKind::T0073_MethodCallMissingDot:
                 return "Method call is missing the leading dot";
             case DiagnosticKind::T0074_StaticMethodTypeNameMismatch:

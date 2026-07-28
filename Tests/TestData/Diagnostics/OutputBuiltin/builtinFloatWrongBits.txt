@@ -1,0 +1,10 @@
+ Error T0089 Unsupported bit count for floats
+    ,-[Diagnostics/InputBuiltin/builtinFloatWrongBits.cara:1:31]
+  1 | #builtin(kind = float, bits = 16)
+    .                               --
+    .                                `-- Floats only support 32 or 64 bits
+  2 | type f32
+  3 | {
+  4 | }
+    `----
+  Fix: Change 'bits' to 32 or 64.

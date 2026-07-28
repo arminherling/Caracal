@@ -1,0 +1,10 @@
+ Error T0003 Missing annotation arguments
+    ,-[Diagnostics/InputBuiltin/builtinMissingSigned.cara:1:10]
+  1 | #builtin(kind = int, bits = 32)
+    .          ---------------------
+    .                    `-- Annotation '#builtin' is missing the 'signed' argument.
+  2 | type i32
+  3 | {
+  4 | }
+    `----
+  Fix: Provide the argument as signed = "...".

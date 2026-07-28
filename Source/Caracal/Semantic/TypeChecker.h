@@ -115,6 +115,7 @@ namespace Caracal
         [[nodiscard]] const TokenBuffer* tryTokensFor(const Statement* statement) const;
         [[nodiscard]] bool validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue = nullptr, std::optional<std::string>* stringArgumentValue = nullptr);
         [[nodiscard]] bool validateNamedAnnotationArguments(const AnnotationNode* annotation, std::string_view namedStringArgument, const TokenBuffer& tokens, std::optional<std::string>* stringArgumentValue);
+        [[nodiscard]] bool validateBuiltinAnnotationArguments(const AnnotationNode* annotation, const TokenBuffer& tokens);
         [[nodiscard]] bool validateCallableAnnotations(const std::vector<AnnotationNodeUPtr>& annotations, const TokenBuffer& tokens, std::optional<std::string>& symbolName);
         void validateEnumAnnotation(const EnumDefinitionStatement* statement, const TokenBuffer& tokens, bool& isFlag, std::optional<i32>& stepValue);
         void validateTypeAnnotation(const TypeDefinitionStatement* statement, const TokenBuffer& tokens);

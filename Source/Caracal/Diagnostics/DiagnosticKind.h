@@ -151,5 +151,6 @@ namespace Caracal
         T0071_UnknownBuiltinMethodIgnored,
         T0072_InvalidOperatorMethodSignature,
         T0083_BitwiseMethodOnNonIntegerType,
+        T0089_UnsupportedFloatBits,
     };
 }

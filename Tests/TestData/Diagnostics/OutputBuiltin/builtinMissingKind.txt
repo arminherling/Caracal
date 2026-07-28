@@ -1,0 +1,10 @@
+ Error T0003 Missing annotation arguments
+    ,-[Diagnostics/InputBuiltin/builtinMissingKind.cara:1:10]
+  1 | #builtin(bits = 32, signed = true)
+    .          ------------------------
+    .                      `-- Annotation '#builtin' is missing the 'kind' argument.
+  2 | type i32
+  3 | {
+  4 | }
+    `----
+  Fix: Provide the argument as kind = "...".

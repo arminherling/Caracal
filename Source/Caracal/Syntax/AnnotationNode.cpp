@@ -41,8 +41,19 @@ namespace Caracal
             return SourceLocation{ openParenthesisLocation.startIndex, closeParenthesisLocation.endIndex };
         }
 
-        const auto firstArgumentLocation = m_arguments.front().value()->sourceLocation(tokens);
+        // the arguments span includes argument names but not the parentheses
+        const auto& firstArgument = m_arguments.front();
+        auto startIndex = 0;
+        if (firstArgument.isNamed())
+        {
+            startIndex = tokens.getSourceLocation(firstArgument.nameToken().value()).startIndex;
+        }
+        else
+        {
+            startIndex = firstArgument.value()->sourceLocation(tokens).startIndex;
+        }
+
         const auto lastArgumentLocation = m_arguments.back().value()->sourceLocation(tokens);
-        return SourceLocation{ firstArgumentLocation.startIndex, lastArgumentLocation.endIndex };
+        return SourceLocation{ startIndex, lastArgumentLocation.endIndex };
     }
 }

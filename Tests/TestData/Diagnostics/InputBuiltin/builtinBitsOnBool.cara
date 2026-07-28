@@ -1,0 +1,4 @@
+#builtin(kind = bool, bits = 8)
+type bool
+{
+}

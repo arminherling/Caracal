@@ -1,0 +1,10 @@
+ Error T0005 Annotation argument type mismatch
+    ,-[Diagnostics/InputBuiltin/builtinWrongBits.cara:1:29]
+  1 | #builtin(kind = int, bits = 0, signed = true)
+    .                             -
+    .                             `-- Annotation '#builtin' expects a number between 1 and 65535 for 'bits', but got '0'.
+  2 | type i32
+  3 | {
+  4 | }
+    `----
+  Fix: Change the annotation argument to the expected type.

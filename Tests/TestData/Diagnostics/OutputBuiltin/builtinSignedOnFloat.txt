@@ -1,0 +1,10 @@
+ Error T0045 Unexpected annotation argument
+    ,-[Diagnostics/InputBuiltin/builtinSignedOnFloat.cara:1:35]
+  1 | #builtin(kind = float, bits = 32, signed = true)
+    .                                   ------
+    .                                      `-- 'signed' is not supported for 'float'
+  2 | type f32
+  3 | {
+  4 | }
+    `----
+  Fix: Remove the 'signed' argument.

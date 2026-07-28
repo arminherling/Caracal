@@ -583,6 +583,32 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addUnsupportedAnnotationArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& argumentName, const std::string& kindName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0045_UnexpectedAnnotationArgument,
+            source,
+            location,
+            "Remove the '" + argumentName + "' argument.");
+        diagnostic.addPrimaryLabel(location, "'" + argumentName + "' is not supported for '" + kindName + "'");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addUnsupportedFloatBitsError(const SourceTextSharedPtr& source, const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0089_UnsupportedFloatBits,
+            source,
+            location,
+            "Change 'bits' to 32 or 64.");
+        diagnostic.addPrimaryLabel(location, "Floats only support 32 or 64 bits");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addUnexpectedAnnotationArgumentError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& annotationName, const std::string& argumentName)
     {
         auto diagnostic = Diagnostic(
