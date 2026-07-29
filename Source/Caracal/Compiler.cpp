@@ -310,6 +310,10 @@ namespace Caracal
         if (!PopulateModule(semanticContext, *llvmModule))
             return std::make_pair(false, std::string{});
 
+        // catch malformed IR before it is snapshotted, verifyModule returns true when broken
+        if (llvm::verifyModule(*llvmModule, &llvm::errs()))
+            return std::make_pair(false, std::string{});
+
         std::string irOutput;
         llvm::raw_string_ostream irStream(irOutput);
         llvmModule->print(irStream, nullptr, true, true);
