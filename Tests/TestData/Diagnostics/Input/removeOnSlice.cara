@@ -1,0 +1,5 @@
+def first(values: [i32]) i32
+{
+    values.remove(0);
+    return values.at(0);
+}

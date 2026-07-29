@@ -1,0 +1,86 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: [i32; _]
+            Left: {
+                NameExpression: {
+                    Type: [i32; _]
+                    Name: xs
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: [i32; _]
+                    Lexeme: [i32; _]
+                    Kind: Dynamic
+                    DataType: {
+                        TypeNameNode: {
+                            Type: i32
+                            Lexeme: i32
+                        }
+                    }
+                }
+            }
+            Right: {
+                ArrayLiteral(0): {
+                    Type: [i32; _]
+                    Dynamic: true
+                }
+            }
+        }
+        ExpressionStatement: {
+            BinaryExpression: {
+                Type: void
+                Left: {
+                    NameExpression: {
+                        Type: [i32; _]
+                        Name: xs
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: void
+                        Function type: (ref [i32; _], i32) -> void
+                        NameExpression: {
+                            Type: (ref [i32; _], i32) -> void
+                            Name: add
+                        }
+                        ArgumentsNode(1): {
+                            NumberLiteral: 1
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: [i32; _]
+                        Name: xs
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: length
+                    }
+                }
+            }
+        }
+    }
+}

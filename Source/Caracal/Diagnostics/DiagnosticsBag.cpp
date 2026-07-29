@@ -1627,6 +1627,23 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addMethodRequiresDynamicArrayError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& receiverTypeName,
+        const std::string& dynamicTypeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0090_MethodRequiresDynamicArray,
+            source,
+            location,
+            "Change the type to a dynamic array like '" + dynamicTypeName + "' if it needs to grow or shrink.");
+        diagnostic.addPrimaryLabel(location, "Type '" + receiverTypeName + "' cannot change its length");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addAlreadyReferenceError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location)

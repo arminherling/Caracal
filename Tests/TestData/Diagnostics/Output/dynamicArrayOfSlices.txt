@@ -1,0 +1,10 @@
+ Error T0086 Arrays cannot store references or slices
+    ,-[Diagnostics/Input/dynamicArrayOfSlices.cara:1:30]
+  1 | def takesSlices(values: ref [[i32]; _]) i32
+    .                              -----
+    .                                `-- Storing references or slices is not allowed
+  2 | {
+  3 |     return values.length;
+  4 | }
+    `----
+  Fix: Store owning copies of the values instead.

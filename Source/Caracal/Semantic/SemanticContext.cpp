@@ -314,6 +314,18 @@ namespace Caracal
             parameters.emplace_back("value", elementType);
             returnTypes.push_back(Type::Void());
         }
+        else if (methodName == "add" && baseArrayType.kind() == TypeKind::DynamicArray)
+        {
+            parameters.emplace_back(ImplicitThisName, baseArrayType.toReference());
+            parameters.emplace_back("value", elementType);
+            returnTypes.push_back(Type::Void());
+        }
+        else if (methodName == "remove" && baseArrayType.kind() == TypeKind::DynamicArray)
+        {
+            parameters.emplace_back(ImplicitThisName, baseArrayType.toReference());
+            parameters.emplace_back("index", m_wellKnownTypes.i32);
+            returnTypes.push_back(Type::Void());
+        }
         else
         {
             return Type::Undefined();
@@ -326,9 +338,21 @@ namespace Caracal
         {
             m_functionDefinitions.back().setIntrinsicKind(IntrinsicKind::ArrayAt);
         }
-        else
+        else if (methodName == "set")
         {
             m_functionDefinitions.back().setIntrinsicKind(IntrinsicKind::ArraySet);
+        }
+        else if (methodName == "add")
+        {
+            m_functionDefinitions.back().setIntrinsicKind(IntrinsicKind::ArrayAdd);
+        }
+        else if (methodName == "remove")
+        {
+            m_functionDefinitions.back().setIntrinsicKind(IntrinsicKind::ArrayRemove);
+        }
+        else
+        {
+            TODO("Unhandled array intrinsic method");
         }
         m_functionDefinitionIndexById.try_emplace(methodId, m_functionDefinitions.size() - 1);
         m_arrayIntrinsicsByFullName.try_emplace(std::move(fullMethodName), methodType);

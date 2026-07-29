@@ -1711,7 +1711,19 @@ namespace Caracal
         }
 
         auto* rightExpression = statement->rightExpression().get();
-        auto rightType = typeCheckExpression(rightExpression, tokens);
+        auto rightType = Type::Undefined();
+        {
+            // use the explicit type for the initializer
+            auto contextualType = std::optional<Type>{};
+            if (declaredType.kind() == TypeKind::FixedArray
+                || declaredType.kind() == TypeKind::DynamicArray
+                || declaredType.kind() == TypeKind::Slice)
+            {
+                contextualType = declaredType;
+            }
+            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualType };
+            rightType = typeCheckExpression(rightExpression, tokens);
+        }
 
         // the declared type wins for the binding, the initializer only has to be assignable to it
         auto bindingType = rightType;
@@ -1855,7 +1867,19 @@ namespace Caracal
                 }
             }
         }
-        auto rightType = typeCheckExpression(statement->rightExpression().get(), tokens);
+        auto rightType = Type::Undefined();
+        {
+            // use the explicit type for the initializer
+            auto contextualType = std::optional<Type>{};
+            if (leftType.kind() == TypeKind::FixedArray
+                || leftType.kind() == TypeKind::DynamicArray
+                || leftType.kind() == TypeKind::Slice)
+            {
+                contextualType = leftType;
+            }
+            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualType };
+            rightType = typeCheckExpression(statement->rightExpression().get(), tokens);
+        }
         if (rightType.isReference())
         {
             rightType = rightType.toValue();
@@ -3074,16 +3098,31 @@ namespace Caracal
                         auto methodType = m_module.tryGetOrCreateArrayIntrinsic(receiverType, name);
                         if (methodType == Type::Undefined())
                         {
-                            m_diagnostics.addUnknownMethodError(
-                                tokens.source(),
-                                functionCallExpression->sourceLocation(tokens),
-                                FormatTypeName(m_module, receiverType),
-                                name);
+                            if (name == "add" || name == "remove")
+                            {
+                                const auto elementType = m_module.getArrayElementType(receiverType);
+                                const auto dynamicTypeName = "[" + FormatTypeName(m_module, elementType) + "; _]";
+                                m_diagnostics.addMethodRequiresDynamicArrayError(
+                                    tokens.source(),
+                                    functionCallExpression->sourceLocation(tokens),
+                                    FormatTypeName(m_module, receiverType),
+                                    dynamicTypeName);
+                            }
+                            else
+                            {
+                                m_diagnostics.addUnknownMethodError(
+                                    tokens.source(),
+                                    functionCallExpression->sourceLocation(tokens),
+                                    FormatTypeName(m_module, receiverType),
+                                    name);
+                            }
                             return Type::Undefined();
                         }
 
                         auto& methodDefinition = m_module.getFunctionDefinition(methodType);
-                        if (methodDefinition.intrinsicKind() == IntrinsicKind::ArraySet
+                        if ((methodDefinition.intrinsicKind() == IntrinsicKind::ArraySet
+                            || methodDefinition.intrinsicKind() == IntrinsicKind::ArrayAdd
+                            || methodDefinition.intrinsicKind() == IntrinsicKind::ArrayRemove)
                             && binaryExpression->leftExpression()->kind() == NodeKind::NameExpression)
                         {
                             const auto& receiverName = static_cast<const NameExpression*>(binaryExpression->leftExpression().get())->name();
@@ -3602,6 +3641,15 @@ namespace Caracal
     {
         if (literal->elements().empty())
         {
+            // an explicit dynamic array type provides the element type for an empty dynamic literal
+            if (literal->isDynamic() && m_contextualNumberType.has_value()
+                && m_contextualNumberType.value().kind() == TypeKind::DynamicArray)
+            {
+                const auto arrayType = m_contextualNumberType.value().toValue();
+                literal->setType(arrayType);
+                return arrayType;
+            }
+
             m_diagnostics.addEmptyArrayLiteralError(
                 tokens.source(),
                 literal->sourceLocation(tokens));
@@ -3670,8 +3718,16 @@ namespace Caracal
                 literal->sourceLocation(tokens));
         }
 
-        const auto length = static_cast<i32>(literal->elements().size());
-        const auto arrayType = m_module.getOrCreateArrayType(TypeKind::FixedArray, elementType, length);
+        auto arrayType = Type::Undefined();
+        if (literal->isDynamic())
+        {
+            arrayType = m_module.getOrCreateArrayType(TypeKind::DynamicArray, elementType, 0);
+        }
+        else
+        {
+            const auto length = static_cast<i32>(literal->elements().size());
+            arrayType = m_module.getOrCreateArrayType(TypeKind::FixedArray, elementType, length);
+        }
         literal->setType(arrayType);
         return arrayType;
     }

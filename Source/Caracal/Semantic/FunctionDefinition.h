@@ -26,6 +26,8 @@ namespace Caracal
         None,
         ArrayAt,
         ArraySet,
+        ArrayAdd,
+        ArrayRemove,
         BitAnd,
         BitOr,
         BitXor,

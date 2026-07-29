@@ -1,0 +1,5 @@
+define take(%0: ref [i32; _] "values") i32
+block entry(0):
+    %0 = parameter 0 : ref [i32; _] "values"
+    %1 = const 0 : i32
+    return %1

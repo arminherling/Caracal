@@ -1,0 +1,8 @@
+def main() i32
+{
+    xs := [1, ...];
+    xs.add(2);
+    xs.add(3);
+    xs.set(0, 4);
+    return xs.at(0) %+ xs.length;
+}

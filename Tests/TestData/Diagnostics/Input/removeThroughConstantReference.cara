@@ -1,0 +1,7 @@
+def main() i32
+{
+    xs :: [1, 2, ...];
+    view := ref xs;
+    view.remove(0);
+    return view.length;
+}

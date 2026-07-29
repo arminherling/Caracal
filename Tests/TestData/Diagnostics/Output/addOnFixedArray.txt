@@ -1,0 +1,13 @@
+ Error T0090 Only dynamic arrays can add or remove elements
+    ,-[Diagnostics/Input/addOnFixedArray.cara:4:8]
+  1 | def main() i32
+  2 | {
+  3 |     xs := [1, 2, 3];
+  4 |     xs.add(4);
+    .        ------
+    .           `-- Type '[i32; 3]' cannot change its length
+  5 |     return xs.length;
+  6 | }
+  7 | 
+    `----
+  Fix: Change the type to a dynamic array like '[i32; _]' if it needs to grow or shrink.

@@ -1,0 +1,5 @@
+def first(values: [i32]) i32
+{
+    values.add(4);
+    return values.at(0);
+}

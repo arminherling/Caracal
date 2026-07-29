@@ -1,0 +1,4 @@
+def take(values: ref [i32; _]) i32
+{
+    return 0;
+}

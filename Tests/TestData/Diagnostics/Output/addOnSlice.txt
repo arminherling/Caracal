@@ -1,0 +1,12 @@
+ Error T0090 Only dynamic arrays can add or remove elements
+    ,-[Diagnostics/Input/addOnSlice.cara:3:12]
+  1 | def first(values: [i32]) i32
+  2 | {
+  3 |     values.add(4);
+    .            ------
+    .               `-- Type '[i32]' cannot change its length
+  4 |     return values.at(0);
+  5 | }
+  6 | 
+    `----
+  Fix: Change the type to a dynamic array like '[i32; _]' if it needs to grow or shrink.

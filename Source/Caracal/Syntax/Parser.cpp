@@ -901,9 +901,17 @@ namespace Caracal
         auto openBracket = advanceOnMatch(TokenKind::OpenBracket);
 
         std::vector<ExpressionUPtr> elements;
+        std::optional<Token> ellipsisToken{};
         auto current = currentToken();
         while (current.kind != TokenKind::CloseBracket && current.kind != TokenKind::EndOfFile)
         {
+            if (current.kind == TokenKind::Ellipsis)
+            {
+                // a trailing ellipsis marks a dynamic array literal and must be the last entry
+                ellipsisToken = advanceOnMatch(TokenKind::Ellipsis);
+                break;
+            }
+
             const auto positionBeforeElement = m_currentIndex;
             elements.push_back(parseExpression(scope));
 
@@ -919,8 +927,6 @@ namespace Caracal
             current = currentToken();
         }
 
-        // TODO dynamic array literals
-        std::optional<Token> ellipsisToken{};
         auto closeBracket = advanceOnMatch(TokenKind::CloseBracket);
 
         return std::make_unique<ArrayLiteral>(openBracket, std::move(elements), ellipsisToken, closeBracket);
@@ -987,7 +993,6 @@ namespace Caracal
         auto arrayKind = ArrayTypeKind::Slice;
         std::optional<Token> semicolonToken{};
         NumberLiteralUPtr lengthLiteral{};
-        // TODO parse dynamic arrays
         std::optional<Token> underscoreToken{};
 
         if (currentToken().kind == TokenKind::Semicolon)
@@ -997,6 +1002,11 @@ namespace Caracal
             {
                 arrayKind = ArrayTypeKind::Fixed;
                 lengthLiteral = parseNumberLiteral();
+            }
+            else if (currentToken().kind == TokenKind::Underscore)
+            {
+                arrayKind = ArrayTypeKind::Dynamic;
+                underscoreToken = advanceOnMatch(TokenKind::Underscore);
             }
             else
             {

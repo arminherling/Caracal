@@ -1,0 +1,33 @@
+FunctionDefinitionStatement: {
+    Type: (ref [i32; _]) -> i32
+    Name: take
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: values
+            ArrayTypeNameNode: {
+                Type: ref [i32; _]
+                Lexeme: [i32; _]
+                Ref: true
+                Kind: Dynamic
+                DataType: {
+                    TypeNameNode: {
+                        Type: i32
+                        Lexeme: i32
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 0
+        }
+    }
+}

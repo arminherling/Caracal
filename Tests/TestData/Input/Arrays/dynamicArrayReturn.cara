@@ -1,0 +1,11 @@
+def make() [i32; _]
+{
+    xs : [i32; _] = [1, 2, ...];
+    return xs;
+}
+
+def main() i32
+{
+    xs := make();
+    return xs.length;
+}

@@ -1,0 +1,36 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: make
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: [i32; _]
+            Left: {
+                NameExpression: {
+                    Type: [i32; _]
+                    Name: values
+                }
+            }
+            Right: {
+                ArrayLiteral(3): {
+                    Type: [i32; _]
+                    Dynamic: true
+                    NumberLiteral: 1
+                    NumberLiteral: 2
+                    NumberLiteral: 3
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 0
+        }
+    }
+}

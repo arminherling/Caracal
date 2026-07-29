@@ -1,0 +1,4 @@
+def takesRefs(values: ref [ref i32; _]) i32
+{
+    return values.length;
+}

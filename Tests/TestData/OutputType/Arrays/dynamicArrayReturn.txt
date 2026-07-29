@@ -1,0 +1,112 @@
+FunctionDefinitionStatement: {
+    Type: () -> [i32; _]
+    Name: make
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        ArrayTypeNameNode: {
+            Type: [i32; _]
+            Lexeme: [i32; _]
+            Kind: Dynamic
+            DataType: {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: [i32; _]
+            Left: {
+                NameExpression: {
+                    Type: [i32; _]
+                    Name: xs
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: [i32; _]
+                    Lexeme: [i32; _]
+                    Kind: Dynamic
+                    DataType: {
+                        TypeNameNode: {
+                            Type: i32
+                            Lexeme: i32
+                        }
+                    }
+                }
+            }
+            Right: {
+                ArrayLiteral(2): {
+                    Type: [i32; _]
+                    Dynamic: true
+                    NumberLiteral: 1
+                    NumberLiteral: 2
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: [i32; _]
+            NameExpression: {
+                Type: [i32; _]
+                Name: xs
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: [i32; _]
+            Left: {
+                NameExpression: {
+                    Type: [i32; _]
+                    Name: xs
+                }
+            }
+            Right: {
+                FunctionCallExpression: {
+                    Type: [i32; _]
+                    Function type: () -> [i32; _]
+                    NameExpression: {
+                        Type: () -> [i32; _]
+                        Name: make
+                    }
+                    ArgumentsNode(0): {
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: [i32; _]
+                        Name: xs
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: length
+                    }
+                }
+            }
+        }
+    }
+}

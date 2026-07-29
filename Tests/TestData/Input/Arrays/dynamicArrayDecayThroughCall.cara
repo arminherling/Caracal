@@ -1,0 +1,10 @@
+def sum(values: [i32]) i32
+{
+    return values.at(0) %+ values.at(1);
+}
+
+def main() i32
+{
+    xs := [40, 2, ...];
+    return sum(xs);
+}

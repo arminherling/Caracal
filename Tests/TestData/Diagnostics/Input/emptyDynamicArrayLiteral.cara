@@ -1,0 +1,12 @@
+def bare() i32
+{
+    _ := [...];
+    return 0;
+}
+
+def fixedContext() i32
+{
+    xs : [i32; 3] = [...];
+    _ := xs;
+    return 0;
+}

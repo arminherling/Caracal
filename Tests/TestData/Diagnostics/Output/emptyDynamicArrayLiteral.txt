@@ -1,0 +1,25 @@
+ Error T0079 Empty arrays are not allowed
+    ,-[Diagnostics/Input/emptyDynamicArrayLiteral.cara:3:10]
+  1 | def bare() i32
+  2 | {
+  3 |     _ := [...];
+    .          -----
+    .            `-- Empty arrays are not allowed
+  4 |     return 0;
+  5 | }
+  6 | 
+    `----
+  Fix: Add at least one element to the array literal.
+ Error T0079 Empty arrays are not allowed
+     ,-[Diagnostics/Input/emptyDynamicArrayLiteral.cara:9:21]
+   6 | 
+   7 | def fixedContext() i32
+   8 | {
+   9 |     xs : [i32; 3] = [...];
+     .                     -----
+     .                       `-- Empty arrays are not allowed
+  10 |     _ := xs;
+  11 |     return 0;
+  12 | }
+     `----
+  Fix: Add at least one element to the array literal.
