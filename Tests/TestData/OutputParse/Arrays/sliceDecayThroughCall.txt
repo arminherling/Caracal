@@ -84,9 +84,27 @@ FunctionDefinitionStatement: {
                     Name: total
                 }
                 ArgumentsNode(1): {
-                    NameExpression: {
+                    BinaryExpression: {
                         Type: undefined
-                        Name: numbers
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: numbers
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            FunctionCallExpression: {
+                                Type: undefined
+                                Function type: undefined
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: slice
+                                }
+                                ArgumentsNode(0): {
+                                }
+                            }
+                        }
                     }
                 }
             }

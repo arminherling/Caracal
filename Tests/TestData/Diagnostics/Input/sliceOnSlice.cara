@@ -1,0 +1,5 @@
+def first(values: [i32]) i32
+{
+    _ := values.slice();
+    return values.at(0);
+}

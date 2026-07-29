@@ -122,9 +122,27 @@ FunctionDefinitionStatement: {
                     Name: sum
                 }
                 ArgumentsNode(1): {
-                    NameExpression: {
-                        Type: [i32; _]
-                        Name: xs
+                    BinaryExpression: {
+                        Type: [i32]
+                        Left: {
+                            NameExpression: {
+                                Type: [i32; _]
+                                Name: xs
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            FunctionCallExpression: {
+                                Type: [i32]
+                                Function type: (ref [i32; _]) -> [i32]
+                                NameExpression: {
+                                    Type: (ref [i32; _]) -> [i32]
+                                    Name: slice
+                                }
+                                ArgumentsNode(0): {
+                                }
+                            }
+                        }
                     }
                 }
             }

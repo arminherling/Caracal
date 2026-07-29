@@ -6,5 +6,5 @@ def total(values: [i32]) i32
 def use() i32
 {
     numbers := [1, 2, 3];
-    return total(numbers);
+    return total(numbers.slice());
 }

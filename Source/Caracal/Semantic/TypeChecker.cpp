@@ -1743,6 +1743,24 @@ namespace Caracal
         {
             referencesConstant = currentScope()->variableReferencesConstant(static_cast<const NameExpression*>(strippedRight)->name());
         }
+        else if (strippedRight->kind() == NodeKind::BinaryExpression)
+        {
+            // a slice() view borrows its receiver, a view of a constant stays constant
+            const auto* binaryRight = static_cast<const BinaryExpression*>(strippedRight);
+            if (binaryRight->binaryOperator() == BinaryOperatorKind::MemberAccess
+                && binaryRight->rightExpression()->kind() == NodeKind::FunctionCallExpression
+                && binaryRight->leftExpression()->kind() == NodeKind::NameExpression)
+            {
+                const auto* callExpression = static_cast<const FunctionCallExpression*>(binaryRight->rightExpression().get());
+                if (callExpression->functionType() != Type::Undefined()
+                    && m_module.getFunctionDefinition(callExpression->functionType()).intrinsicKind() == IntrinsicKind::ArraySlice)
+                {
+                    const auto& receiverName = static_cast<const NameExpression*>(binaryRight->leftExpression().get())->name();
+                    referencesConstant = currentScope()->tryGetVariableBindingKind(receiverName) == VariableBindingKind::LocalConstant
+                        || currentScope()->variableReferencesConstant(receiverName);
+                }
+            }
+        }
 
         auto leftExpression = statement->leftExpression().get();
         if (leftExpression->kind() == NodeKind::NameExpression)
@@ -3962,15 +3980,6 @@ namespace Caracal
         if (sourceType == targetType)
         {
             return true;
-        }
-
-        // owning arrays decay to a slice over the same element type, never the reverse
-        if (targetType.kind() == TypeKind::Slice
-            && (sourceType.kind() == TypeKind::FixedArray || sourceType.kind() == TypeKind::DynamicArray)
-            && sourceType.isBaseType()
-            && targetType.isBaseType())
-        {
-            return m_module.getArrayElementType(sourceType) == m_module.getArrayElementType(targetType);
         }
 
         // numbers are only allowed to be assigned to a bigger type and only same signedness

@@ -1,0 +1,12 @@
+ Error T0010 Unknown method
+    ,-[Diagnostics/Input/sliceOnSlice.cara:3:17]
+  1 | def first(values: [i32]) i32
+  2 | {
+  3 |     _ := values.slice();
+    .                 -------
+    .                    `-- Type '[i32]' has no method 'slice'
+  4 |     return values.at(0);
+  5 | }
+  6 | 
+    `----
+  Fix: Add this method to the type, or rename the call to an existing method.

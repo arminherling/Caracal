@@ -1425,37 +1425,7 @@ namespace Caracal
             }
         }
 
-        if (targetType.kind() != TypeKind::Slice || sourceType.kind() != TypeKind::FixedArray)
-        {
-            return lowerValueExpression(expression);
-        }
-
-        // fixed array decays into a slice
-        auto baseAddress = lowerAddressExpression(expression);
-        if (!baseAddress.has_value())
-        {
-            const auto loweredValue = lowerValueExpression(expression);
-            if (!loweredValue.has_value())
-                return std::nullopt;
-
-            baseAddress = spillValueToTempSlot(expression, loweredValue.value());
-            if (!baseAddress.has_value())
-                return std::nullopt;
-        }
-
-        const auto lengthId = m_nextTemporaryId++;
-        m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
-            lengthId,
-            ConstantValue::FromI32(m_semanticContext.getArrayLength(sourceType)),
-            m_semanticContext.wellKnown().i32));
-
-        const auto sliceId = m_nextTemporaryId++;
-        m_currentBlock->addInstruction(std::make_unique<MakeSliceInstruction>(
-            sliceId,
-            baseAddress.value(),
-            ValueRef{ lengthId },
-            targetType));
-        return ValueRef{ sliceId };
+        return lowerValueExpression(expression);
     }
 
     std::optional<ValueRef> IRLowerer::lowerMethodReceiverAddress(const Expression* receiverExpression) noexcept
@@ -1484,7 +1454,8 @@ namespace Caracal
         if (functionDefinition.functionType() == FunctionType::Intrinsic)
         {
             if (functionDefinition.intrinsicKind() == IntrinsicKind::ArrayAt
-                || functionDefinition.intrinsicKind() == IntrinsicKind::ArraySet)
+                || functionDefinition.intrinsicKind() == IntrinsicKind::ArraySet
+                || functionDefinition.intrinsicKind() == IntrinsicKind::ArraySlice)
             {
                 return lowerArrayIntrinsicCall(expression, receiverExpression, functionDefinition);
             }
@@ -1539,6 +1510,34 @@ namespace Caracal
                 elementAddress.value(),
                 elementType));
             return ValueRef{};
+        }
+
+        if (functionDefinition.intrinsicKind() == IntrinsicKind::ArraySlice)
+        {
+            const auto receiverType = receiverExpression->type().toValue();
+            if (receiverType.kind() != TypeKind::FixedArray)
+            {
+                // TODO handle dynamic arrays
+                return std::nullopt;
+            }
+
+            const auto receiverAddress = lowerMethodReceiverAddress(receiverExpression);
+            if (!receiverAddress.has_value())
+                return std::nullopt;
+
+            const auto lengthId = m_nextTemporaryId++;
+            m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+                lengthId,
+                ConstantValue::FromI32(m_semanticContext.getArrayLength(receiverType)),
+                m_semanticContext.wellKnown().i32));
+
+            const auto sliceId = m_nextTemporaryId++;
+            m_currentBlock->addInstruction(std::make_unique<MakeSliceInstruction>(
+                sliceId,
+                receiverAddress.value(),
+                ValueRef{ lengthId },
+                expression->type().toValue()));
+            return ValueRef{ sliceId };
         }
 
         return std::nullopt;

@@ -80,9 +80,27 @@ FunctionDefinitionStatement: {
                 }
             }
             Right: {
-                NameExpression: {
-                    Type: [i32; 4]
-                    Name: values
+                BinaryExpression: {
+                    Type: [i32]
+                    Left: {
+                        NameExpression: {
+                            Type: [i32; 4]
+                            Name: values
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: [i32]
+                            Function type: (ref [i32; 4]) -> [i32]
+                            NameExpression: {
+                                Type: (ref [i32; 4]) -> [i32]
+                                Name: slice
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -1,0 +1,18 @@
+def total(values: [i32]) i32
+{
+    return values.length;
+}
+
+def use() i32
+{
+    numbers := [1, 2, 3];
+    return total(numbers);
+}
+
+def declare() i32
+{
+    numbers := [1, 2, 3];
+    view : [i32] = numbers;
+    _ := view;
+    return 0;
+}

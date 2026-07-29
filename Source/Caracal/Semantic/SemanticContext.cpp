@@ -326,6 +326,11 @@ namespace Caracal
             parameters.emplace_back("index", m_wellKnownTypes.i32);
             returnTypes.push_back(Type::Void());
         }
+        else if (methodName == "slice" && baseArrayType.kind() != TypeKind::Slice)
+        {
+            parameters.emplace_back(ImplicitThisName, baseArrayType.toReference());
+            returnTypes.push_back(getOrCreateArrayType(TypeKind::Slice, elementType, 0));
+        }
         else
         {
             return Type::Undefined();
@@ -349,6 +354,10 @@ namespace Caracal
         else if (methodName == "remove")
         {
             m_functionDefinitions.back().setIntrinsicKind(IntrinsicKind::ArrayRemove);
+        }
+        else if (methodName == "slice")
+        {
+            m_functionDefinitions.back().setIntrinsicKind(IntrinsicKind::ArraySlice);
         }
         else
         {

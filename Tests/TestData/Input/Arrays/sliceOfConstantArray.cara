@@ -1,0 +1,6 @@
+def main() i32
+{
+    xs :: [40, 2, 3];
+    view := xs.slice();
+    return view.at(0) %+ view.at(1);
+}

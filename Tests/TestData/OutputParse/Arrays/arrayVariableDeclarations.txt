@@ -80,9 +80,27 @@ FunctionDefinitionStatement: {
                 }
             }
             Right: {
-                NameExpression: {
+                BinaryExpression: {
                     Type: undefined
-                    Name: values
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: values
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: slice
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
+                    }
                 }
             }
         }

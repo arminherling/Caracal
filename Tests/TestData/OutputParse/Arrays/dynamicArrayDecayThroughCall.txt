@@ -122,9 +122,27 @@ FunctionDefinitionStatement: {
                     Name: sum
                 }
                 ArgumentsNode(1): {
-                    NameExpression: {
+                    BinaryExpression: {
                         Type: undefined
-                        Name: xs
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: xs
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            FunctionCallExpression: {
+                                Type: undefined
+                                Function type: undefined
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: slice
+                                }
+                                ArgumentsNode(0): {
+                                }
+                            }
+                        }
                     }
                 }
             }
