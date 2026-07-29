@@ -1627,6 +1627,21 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addDynamicArrayElementError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0091_DynamicArrayElement,
+            source,
+            location,
+            "Store fixed arrays for now, nesting arrives with the copy and destruction design.");
+        diagnostic.addPrimaryLabel(location, "Storing dynamic arrays inside arrays is not supported");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addMethodRequiresDynamicArrayError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,

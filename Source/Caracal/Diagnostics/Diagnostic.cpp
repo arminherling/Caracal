@@ -239,6 +239,8 @@ namespace Caracal
                 return "T0086";
             case DiagnosticKind::T0090_MethodRequiresDynamicArray:
                 return "T0090";
+            case DiagnosticKind::T0091_DynamicArrayElement:
+                return "T0091";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -476,6 +478,8 @@ namespace Caracal
                 return "Arrays cannot store references or slices";
             case DiagnosticKind::T0090_MethodRequiresDynamicArray:
                 return "Only dynamic arrays can add or remove elements";
+            case DiagnosticKind::T0091_DynamicArrayElement:
+                return "Arrays cannot store dynamic arrays";
             case DiagnosticKind::T0075_DuplicateMethodDeclaration:
                 return "Duplicate method declaration";
             case DiagnosticKind::T0076_MemberAccessInDefaultParameter:

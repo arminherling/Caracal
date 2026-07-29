@@ -3741,6 +3741,12 @@ namespace Caracal
                 tokens.source(),
                 literal->sourceLocation(tokens));
         }
+        else if (elementType.kind() == TypeKind::DynamicArray)
+        {
+            m_diagnostics.addDynamicArrayElementError(
+                tokens.source(),
+                literal->sourceLocation(tokens));
+        }
 
         auto arrayType = Type::Undefined();
         if (literal->isDynamic())
@@ -3799,6 +3805,12 @@ namespace Caracal
         if (elementType.isReference() || elementType.kind() == TypeKind::Slice)
         {
             m_diagnostics.addReferenceOrSliceArrayElementError(
+                tokens.source(),
+                arrayTypeNameNode->elementType()->sourceLocation(tokens));
+        }
+        else if (elementType.kind() == TypeKind::DynamicArray)
+        {
+            m_diagnostics.addDynamicArrayElementError(
                 tokens.source(),
                 arrayTypeNameNode->elementType()->sourceLocation(tokens));
         }

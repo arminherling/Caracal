@@ -1,0 +1,10 @@
+def takesNested(values: ref [[i32; _]; 2]) i32
+{
+    return values.length;
+}
+
+def makeNested() i32
+{
+    xs := [[1, 2, ...], ...];
+    return xs.length;
+}

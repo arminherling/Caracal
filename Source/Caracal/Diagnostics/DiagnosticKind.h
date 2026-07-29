@@ -83,6 +83,7 @@ namespace Caracal
         T0085_ReferenceOrSliceField,
         T0086_ReferenceOrSliceArrayElement,
         T0090_MethodRequiresDynamicArray,
+        T0091_DynamicArrayElement,
 
         // Duplicate declaration diagnostics
         T0033_DuplicateDeclaration,
