@@ -25,6 +25,10 @@ type C
     #extern(symbol = "realloc")
     def C.realloc(pointer: rawptr, size: i64) rawptr {}
 
+    // copies size bytes between possibly overlapping memory regions
+    #extern(symbol = "memmove")
+    def C.memmove(destination: rawptr, source: rawptr, size: i64) rawptr {}
+
     // releases an allocation, the pointer must not be used afterwards
     #extern(symbol = "free")
     def C.dealloc(pointer: rawptr) {}

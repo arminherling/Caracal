@@ -1,0 +1,69 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+declare ptr @calloc(i64 %0, i64 %1)
+
+declare ptr @realloc(ptr %0, i64 %1)
+
+define i32 @main() {
+entry:
+  %xs = alloca { ptr, i32, i32 }, align 8
+  %call = call ptr @calloc(i64 8, i64 4)
+  %data = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 0
+  store ptr %call, ptr %data, align 8
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 1
+  store i32 1, ptr %length, align 4
+  %capacity = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 2
+  store i32 8, ptr %capacity, align 4
+  %element = getelementptr i32, ptr %call, i32 0
+  store i32 1, ptr %element, align 4
+  %data1 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 0
+  %length2 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 1
+  %capacity3 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 2
+  %load = load ptr, ptr %data1, align 8
+  %load4 = load i32, ptr %length2, align 4
+  %load5 = load i32, ptr %capacity3, align 4
+  %is_full = icmp eq i32 %load4, %load5
+  %doubled = mul i32 %load5, 2
+  %new_capacity = select i1 %is_full, i32 %doubled, i32 %load5
+  %widened = sext i32 %new_capacity to i64
+  %bytes = mul i64 %widened, 4
+  %grown = call ptr @realloc(ptr %load, i64 %bytes)
+  store ptr %grown, ptr %data1, align 8
+  store i32 %new_capacity, ptr %capacity3, align 4
+  %element6 = getelementptr i32, ptr %grown, i32 %load4
+  store i32 2, ptr %element6, align 4
+  %new_length = add i32 %load4, 1
+  store i32 %new_length, ptr %length2, align 4
+  %data7 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 0
+  %length8 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 1
+  %capacity9 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 2
+  %load10 = load ptr, ptr %data7, align 8
+  %load11 = load i32, ptr %length8, align 4
+  %load12 = load i32, ptr %capacity9, align 4
+  %is_full13 = icmp eq i32 %load11, %load12
+  %doubled14 = mul i32 %load12, 2
+  %new_capacity15 = select i1 %is_full13, i32 %doubled14, i32 %load12
+  %widened16 = sext i32 %new_capacity15 to i64
+  %bytes17 = mul i64 %widened16, 4
+  %grown18 = call ptr @realloc(ptr %load10, i64 %bytes17)
+  store ptr %grown18, ptr %data7, align 8
+  store i32 %new_capacity15, ptr %capacity9, align 4
+  %element19 = getelementptr i32, ptr %grown18, i32 %load11
+  store i32 3, ptr %element19, align 4
+  %new_length20 = add i32 %load11, 1
+  store i32 %new_length20, ptr %length8, align 4
+  %data21 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 0
+  %load22 = load ptr, ptr %data21, align 8
+  %element23 = getelementptr i32, ptr %load22, i32 0
+  store i32 4, ptr %element23, align 4
+  %data24 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 0
+  %load25 = load ptr, ptr %data24, align 8
+  %element26 = getelementptr i32, ptr %load25, i32 0
+  %load27 = load i32, ptr %element26, align 4
+  %length28 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 1
+  %load29 = load i32, ptr %length28, align 4
+  %add = add i32 %load27, %load29
+  ret i32 %add
+}

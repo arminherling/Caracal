@@ -26,6 +26,9 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/IntWidenInstruction.h>
+#include <Caracal/IR/ArrayAddInstruction.h>
+#include <Caracal/IR/ArrayCopyInstruction.h>
+#include <Caracal/IR/ArrayRemoveInstruction.h>
 #include <Caracal/IR/SizeOfInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
 #include <Caracal/IR/JumpTerminator.h>
@@ -1278,7 +1281,9 @@ namespace Caracal
         }
 
         const auto needsAddressStorage = m_addressTakenLocals.contains(nameExpression->name());
-        if (nameExpression->type().kind() == TypeKind::Type || nameExpression->type().kind() == TypeKind::FixedArray)
+        if (nameExpression->type().kind() == TypeKind::Type
+            || nameExpression->type().kind() == TypeKind::FixedArray
+            || nameExpression->type().kind() == TypeKind::DynamicArray)
         {
             const auto addressId = allocateSlotFromExpression(
                 nameExpression->name(),
@@ -1553,9 +1558,39 @@ namespace Caracal
         return allocateLocalSlot("temp", valueType, value);
     }
 
-    std::optional<ValueRef> IRLowerer::lowerValueExpressionExpecting(const Expression* expression, Type targetType) noexcept
+    std::optional<ValueRef> IRLowerer::lowerValueExpressionExpecting(const Expression* expression, Type targetType, bool copyOwningDynamic) noexcept
     {
         const auto sourceType = expression->type().toValue();
+
+        // value semantics: binding, assigning or passing an existing owning dynamic array deep-copies it
+        if (copyOwningDynamic
+            && targetType.kind() == TypeKind::DynamicArray
+            && !targetType.isReference()
+            && sourceType.kind() == TypeKind::DynamicArray
+            && !expression->type().isReference()
+            && StripGroupings(expression)->kind() == NodeKind::NameExpression)
+        {
+            auto sourceAddress = lowerAddressExpression(expression);
+            if (!sourceAddress.has_value())
+            {
+                const auto sourceValue = lowerValueExpression(expression);
+                if (!sourceValue.has_value())
+                    return std::nullopt;
+
+                sourceAddress = spillValueToTempSlot(expression, sourceValue.value());
+                if (!sourceAddress.has_value())
+                    return std::nullopt;
+            }
+
+            const auto copyId = m_nextTemporaryId++;
+            m_currentBlock->addInstruction(std::make_unique<ArrayCopyInstruction>(
+                copyId,
+                sourceAddress.value(),
+                targetType,
+                ensureRequiredExtern("C.calloc"),
+                ensureRequiredExtern("C.memmove")));
+            return ValueRef{ copyId };
+        }
 
         // integers widen one way within the same signedness, the checker already validated the coercion
         if (sourceType.isBaseType() && targetType.isBaseType() && sourceType != targetType)
@@ -1611,7 +1646,9 @@ namespace Caracal
         {
             if (functionDefinition.intrinsicKind() == IntrinsicKind::ArrayAt
                 || functionDefinition.intrinsicKind() == IntrinsicKind::ArraySet
-                || functionDefinition.intrinsicKind() == IntrinsicKind::ArraySlice)
+                || functionDefinition.intrinsicKind() == IntrinsicKind::ArraySlice
+                || functionDefinition.intrinsicKind() == IntrinsicKind::ArrayAdd
+                || functionDefinition.intrinsicKind() == IntrinsicKind::ArrayRemove)
             {
                 return lowerArrayIntrinsicCall(expression, receiverExpression, functionDefinition);
             }
@@ -1665,6 +1702,42 @@ namespace Caracal
                 value.value(),
                 elementAddress.value(),
                 elementType));
+            return ValueRef{};
+        }
+
+        if (functionDefinition.intrinsicKind() == IntrinsicKind::ArrayAdd
+            || functionDefinition.intrinsicKind() == IntrinsicKind::ArrayRemove)
+        {
+            const auto receiverType = receiverExpression->type().toValue();
+            const auto receiverAddress = lowerMethodReceiverAddress(receiverExpression);
+            if (!receiverAddress.has_value())
+                return std::nullopt;
+
+            const auto& orderedArguments = expression->orderedArguments();
+            if (orderedArguments.empty())
+                return std::nullopt;
+
+            const auto argumentType = functionDefinition.parameters()[1].type();
+            const auto argument = lowerValueExpressionExpecting(orderedArguments[0], argumentType);
+            if (!argument.has_value())
+                return std::nullopt;
+
+            if (functionDefinition.intrinsicKind() == IntrinsicKind::ArrayAdd)
+            {
+                m_currentBlock->addInstruction(std::make_unique<ArrayAddInstruction>(
+                    receiverAddress.value(),
+                    argument.value(),
+                    receiverType,
+                    ensureRequiredExtern("C.realloc")));
+            }
+            else
+            {
+                m_currentBlock->addInstruction(std::make_unique<ArrayRemoveInstruction>(
+                    receiverAddress.value(),
+                    argument.value(),
+                    receiverType,
+                    ensureRequiredExtern("C.memmove")));
+            }
             return ValueRef{};
         }
 
@@ -1998,7 +2071,7 @@ namespace Caracal
             return true;
         }
 
-        const auto loweredValue = lowerValueExpressionExpecting(statement->expression().value().get(), m_currentReturnType);
+        const auto loweredValue = lowerValueExpressionExpecting(statement->expression().value().get(), m_currentReturnType, false);
         if (!loweredValue.has_value())
             return false;
 

@@ -17,6 +17,9 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/IntWidenInstruction.h>
+#include <Caracal/IR/ArrayAddInstruction.h>
+#include <Caracal/IR/ArrayCopyInstruction.h>
+#include <Caracal/IR/ArrayRemoveInstruction.h>
 #include <Caracal/IR/SizeOfInstruction.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
@@ -546,6 +549,42 @@ namespace Caracal
                 appendValue(makeSlice.length());
                 m_builder.append(" : ");
                 appendType(makeSlice.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::ArrayAdd:
+            {
+                const auto& arrayAdd = static_cast<const ArrayAddInstruction&>(instruction);
+                m_builder.appendIndented("array_add ");
+                appendValue(arrayAdd.descriptorAddress());
+                m_builder.append(", ");
+                appendValue(arrayAdd.value());
+                m_builder.append(" : ");
+                appendType(arrayAdd.arrayType());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::ArrayRemove:
+            {
+                const auto& arrayRemove = static_cast<const ArrayRemoveInstruction&>(instruction);
+                m_builder.appendIndented("array_remove ");
+                appendValue(arrayRemove.descriptorAddress());
+                m_builder.append(", ");
+                appendValue(arrayRemove.index());
+                m_builder.append(" : ");
+                appendType(arrayRemove.arrayType());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::ArrayCopy:
+            {
+                const auto& arrayCopy = static_cast<const ArrayCopyInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ arrayCopy.resultId() });
+                m_builder.append(" = array_copy ");
+                appendValue(arrayCopy.sourceAddress());
+                m_builder.append(" : ");
+                appendType(arrayCopy.arrayType());
                 m_builder.appendLine("");
                 break;
             }

@@ -1,0 +1,40 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+declare ptr @calloc(i64 %0, i64 %1)
+
+declare ptr @memmove(ptr %0, ptr %1, i64 %2)
+
+define i32 @main() {
+entry:
+  %xs = alloca { ptr, i32, i32 }, align 8
+  %call = call ptr @calloc(i64 8, i64 4)
+  %data = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 0
+  store ptr %call, ptr %data, align 8
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 1
+  store i32 3, ptr %length, align 4
+  %capacity = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 2
+  store i32 8, ptr %capacity, align 4
+  %element = getelementptr i32, ptr %call, i32 0
+  store i32 1, ptr %element, align 4
+  %element1 = getelementptr i32, ptr %call, i32 1
+  store i32 2, ptr %element1, align 4
+  %element2 = getelementptr i32, ptr %call, i32 2
+  store i32 3, ptr %element2, align 4
+  %data3 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 0
+  %length4 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 1
+  %load = load ptr, ptr %data3, align 8
+  %load5 = load i32, ptr %length4, align 4
+  %element6 = getelementptr i32, ptr %load, i32 1
+  %element7 = getelementptr i32, ptr %load, i32 2
+  %tail_count = sub i32 %load5, 2
+  %widened = sext i32 %tail_count to i64
+  %bytes = mul i64 %widened, 4
+  %shifted = call ptr @memmove(ptr %element6, ptr %element7, i64 %bytes)
+  %new_length = sub i32 %load5, 1
+  store i32 %new_length, ptr %length4, align 4
+  %length8 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %xs, i32 0, i32 1
+  %load9 = load i32, ptr %length8, align 4
+  ret i32 %load9
+}

@@ -139,6 +139,7 @@ namespace Caracal
             const auto& wellKnownTypes = module.wellKnown();
             ValidateCompilerEmittedCall(module, "calloc", { wellKnownTypes.i64, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
             ValidateCompilerEmittedCall(module, "realloc", { wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
+            ValidateCompilerEmittedCall(module, "memmove", { wellKnownTypes.rawptr, wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
         }
 
         // prelude definitions only lower on demand, the boundary lets the lowerer skip them

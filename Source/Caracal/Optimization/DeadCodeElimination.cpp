@@ -17,6 +17,9 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/IntWidenInstruction.h>
+#include <Caracal/IR/ArrayAddInstruction.h>
+#include <Caracal/IR/ArrayCopyInstruction.h>
+#include <Caracal/IR/ArrayRemoveInstruction.h>
 #include <Caracal/IR/SizeOfInstruction.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
@@ -96,6 +99,25 @@ namespace Caracal
                 }
                 case InstructionKind::SizeOf:
                 {
+                    break;
+                }
+                case InstructionKind::ArrayAdd:
+                {
+                    const auto& arrayAdd = static_cast<const ArrayAddInstruction&>(instruction);
+                    usedIds.insert(arrayAdd.descriptorAddress().id());
+                    usedIds.insert(arrayAdd.value().id());
+                    break;
+                }
+                case InstructionKind::ArrayRemove:
+                {
+                    const auto& arrayRemove = static_cast<const ArrayRemoveInstruction&>(instruction);
+                    usedIds.insert(arrayRemove.descriptorAddress().id());
+                    usedIds.insert(arrayRemove.index().id());
+                    break;
+                }
+                case InstructionKind::ArrayCopy:
+                {
+                    usedIds.insert(static_cast<const ArrayCopyInstruction&>(instruction).sourceAddress().id());
                     break;
                 }
                 case InstructionKind::LogicalNegation:
@@ -369,6 +391,11 @@ namespace Caracal
                 case InstructionKind::SizeOf:
                 {
                     resultId = static_cast<const SizeOfInstruction&>(instruction).resultId();
+                    return true;
+                }
+                case InstructionKind::ArrayCopy:
+                {
+                    resultId = static_cast<const ArrayCopyInstruction&>(instruction).resultId();
                     return true;
                 }
                 case InstructionKind::LogicalNegation:

@@ -1,0 +1,20 @@
+#include <Caracal/IR/ArrayCopyInstruction.h>
+
+namespace Caracal
+{
+    ArrayCopyInstruction::ArrayCopyInstruction(TemporaryId resultId, ValueRef sourceAddress, Type arrayType, FunctionId callocFunctionId, FunctionId memmoveFunctionId) noexcept
+        : Instruction{ InstructionKind::ArrayCopy }
+        , m_resultId{ resultId }
+        , m_sourceAddress{ sourceAddress }
+        , m_arrayType{ arrayType }
+        , m_callocFunctionId{ callocFunctionId }
+        , m_memmoveFunctionId{ memmoveFunctionId }
+    {
+    }
+
+    void ArrayCopyInstruction::remapValueIds(const ValueIdMap& remap) noexcept
+    {
+        m_resultId = remapTemporaryId(remap, m_resultId);
+        m_sourceAddress = ValueRef{ remapTemporaryId(remap, m_sourceAddress.id()) };
+    }
+}

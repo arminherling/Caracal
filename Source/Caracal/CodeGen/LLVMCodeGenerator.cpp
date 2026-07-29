@@ -20,6 +20,9 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/IntWidenInstruction.h>
+#include <Caracal/IR/ArrayAddInstruction.h>
+#include <Caracal/IR/ArrayCopyInstruction.h>
+#include <Caracal/IR/ArrayRemoveInstruction.h>
 #include <Caracal/IR/SizeOfInstruction.h>
 #include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
@@ -458,6 +461,125 @@ namespace Caracal
                 slice = m_irBuilder->CreateInsertValue(slice, baseAddress, { 0 });
                 slice = m_irBuilder->CreateInsertValue(slice, length, { 1 }, "slice");
                 defineValue(makeSlice.resultId(), slice);
+                return true;
+            }
+            case InstructionKind::ArrayAdd:
+            {
+                const auto& arrayAdd = static_cast<const ArrayAddInstruction&>(instruction);
+                auto* descriptorAddress = tryResolve(arrayAdd.descriptorAddress());
+                auto* value = tryResolve(arrayAdd.value());
+                auto* descriptorType = lowerType(arrayAdd.arrayType());
+                auto* reallocCallee = tryResolveCallee(arrayAdd.reallocFunctionId());
+                const auto* arrayInfo = m_irModule.tryGetArrayType(arrayAdd.arrayType());
+                if (descriptorAddress == nullptr || value == nullptr || descriptorType == nullptr || reallocCallee == nullptr || arrayInfo == nullptr)
+                    return false;
+
+                auto* elementType = lowerType(arrayInfo->elementType);
+                if (elementType == nullptr)
+                    return false;
+
+                auto& context = m_llvmModule.getContext();
+                auto* i32Type = llvm::Type::getInt32Ty(context);
+                auto* i64Type = llvm::Type::getInt64Ty(context);
+                auto* dataPointerAddress = m_irBuilder->CreateStructGEP(descriptorType, descriptorAddress, 0, "data");
+                auto* lengthAddress = m_irBuilder->CreateStructGEP(descriptorType, descriptorAddress, 1, "length");
+                auto* capacityAddress = m_irBuilder->CreateStructGEP(descriptorType, descriptorAddress, 2, "capacity");
+                auto* data = m_irBuilder->CreateLoad(llvm::PointerType::getUnqual(context), dataPointerAddress, "load");
+                auto* length = m_irBuilder->CreateLoad(i32Type, lengthAddress, "load");
+                auto* capacity = m_irBuilder->CreateLoad(i32Type, capacityAddress, "load");
+
+                // branchless growth, a same-size realloc when there is room keeps the pointer stable
+                auto* isFull = m_irBuilder->CreateICmpEQ(length, capacity, "is_full");
+                auto* doubled = m_irBuilder->CreateMul(capacity, llvm::ConstantInt::get(i32Type, 2), "doubled");
+                auto* newCapacity = m_irBuilder->CreateSelect(isFull, doubled, capacity, "new_capacity");
+                auto* newCapacity64 = m_irBuilder->CreateSExt(newCapacity, i64Type, "widened");
+                const auto elementSize = m_llvmModule.getDataLayout().getTypeAllocSize(elementType);
+                auto* byteCount = m_irBuilder->CreateMul(newCapacity64, llvm::ConstantInt::get(i64Type, elementSize.getFixedValue()), "bytes");
+                auto* newData = m_irBuilder->CreateCall(reallocCallee, { data, byteCount }, "grown");
+                m_irBuilder->CreateStore(newData, dataPointerAddress);
+                m_irBuilder->CreateStore(newCapacity, capacityAddress);
+
+                auto* elementAddress = m_irBuilder->CreateGEP(elementType, newData, { length }, "element");
+                m_irBuilder->CreateStore(value, elementAddress);
+                auto* newLength = m_irBuilder->CreateAdd(length, llvm::ConstantInt::get(i32Type, 1), "new_length");
+                m_irBuilder->CreateStore(newLength, lengthAddress);
+                return true;
+            }
+            case InstructionKind::ArrayRemove:
+            {
+                const auto& arrayRemove = static_cast<const ArrayRemoveInstruction&>(instruction);
+                auto* descriptorAddress = tryResolve(arrayRemove.descriptorAddress());
+                auto* index = tryResolve(arrayRemove.index());
+                auto* descriptorType = lowerType(arrayRemove.arrayType());
+                auto* memmoveCallee = tryResolveCallee(arrayRemove.memmoveFunctionId());
+                const auto* arrayInfo = m_irModule.tryGetArrayType(arrayRemove.arrayType());
+                if (descriptorAddress == nullptr || index == nullptr || descriptorType == nullptr || memmoveCallee == nullptr || arrayInfo == nullptr)
+                    return false;
+
+                auto* elementType = lowerType(arrayInfo->elementType);
+                if (elementType == nullptr)
+                    return false;
+
+                auto& context = m_llvmModule.getContext();
+                auto* i32Type = llvm::Type::getInt32Ty(context);
+                auto* i64Type = llvm::Type::getInt64Ty(context);
+                auto* dataPointerAddress = m_irBuilder->CreateStructGEP(descriptorType, descriptorAddress, 0, "data");
+                auto* lengthAddress = m_irBuilder->CreateStructGEP(descriptorType, descriptorAddress, 1, "length");
+                auto* data = m_irBuilder->CreateLoad(llvm::PointerType::getUnqual(context), dataPointerAddress, "load");
+                auto* length = m_irBuilder->CreateLoad(i32Type, lengthAddress, "load");
+
+                // shift the tail one slot left over the removed element, memmove handles the overlap
+                auto* destination = m_irBuilder->CreateGEP(elementType, data, { index }, "element");
+                auto* sourceIndex = m_irBuilder->CreateAdd(index, llvm::ConstantInt::get(i32Type, 1), "source_index");
+                auto* source = m_irBuilder->CreateGEP(elementType, data, { sourceIndex }, "element");
+                auto* tailCount = m_irBuilder->CreateSub(length, sourceIndex, "tail_count");
+                auto* tailCount64 = m_irBuilder->CreateSExt(tailCount, i64Type, "widened");
+                const auto elementSize = m_llvmModule.getDataLayout().getTypeAllocSize(elementType);
+                auto* byteCount = m_irBuilder->CreateMul(tailCount64, llvm::ConstantInt::get(i64Type, elementSize.getFixedValue()), "bytes");
+                m_irBuilder->CreateCall(memmoveCallee, { destination, source, byteCount }, "shifted");
+                auto* newLength = m_irBuilder->CreateSub(length, llvm::ConstantInt::get(i32Type, 1), "new_length");
+                m_irBuilder->CreateStore(newLength, lengthAddress);
+                return true;
+            }
+            case InstructionKind::ArrayCopy:
+            {
+                const auto& arrayCopy = static_cast<const ArrayCopyInstruction&>(instruction);
+                auto* sourceAddress = tryResolve(arrayCopy.sourceAddress());
+                auto* descriptorType = lowerType(arrayCopy.arrayType());
+                auto* callocCallee = tryResolveCallee(arrayCopy.callocFunctionId());
+                auto* memmoveCallee = tryResolveCallee(arrayCopy.memmoveFunctionId());
+                const auto* arrayInfo = m_irModule.tryGetArrayType(arrayCopy.arrayType());
+                if (sourceAddress == nullptr || descriptorType == nullptr || callocCallee == nullptr || memmoveCallee == nullptr || arrayInfo == nullptr)
+                    return false;
+
+                auto* elementType = lowerType(arrayInfo->elementType);
+                if (elementType == nullptr)
+                    return false;
+
+                auto& context = m_llvmModule.getContext();
+                auto* i32Type = llvm::Type::getInt32Ty(context);
+                auto* i64Type = llvm::Type::getInt64Ty(context);
+                auto* dataPointerAddress = m_irBuilder->CreateStructGEP(descriptorType, sourceAddress, 0, "data");
+                auto* lengthAddress = m_irBuilder->CreateStructGEP(descriptorType, sourceAddress, 1, "length");
+                auto* capacityAddress = m_irBuilder->CreateStructGEP(descriptorType, sourceAddress, 2, "capacity");
+                auto* sourceData = m_irBuilder->CreateLoad(llvm::PointerType::getUnqual(context), dataPointerAddress, "load");
+                auto* length = m_irBuilder->CreateLoad(i32Type, lengthAddress, "load");
+                auto* capacity = m_irBuilder->CreateLoad(i32Type, capacityAddress, "load");
+
+                // a copy keeps the source capacity, every dynamic array is created with at least capacity 8
+                const auto elementSize = m_llvmModule.getDataLayout().getTypeAllocSize(elementType);
+                auto* elementSizeValue = llvm::ConstantInt::get(i64Type, elementSize.getFixedValue());
+                auto* capacity64 = m_irBuilder->CreateSExt(capacity, i64Type, "widened");
+                auto* newData = m_irBuilder->CreateCall(callocCallee, { capacity64, elementSizeValue }, "copy");
+                auto* length64 = m_irBuilder->CreateSExt(length, i64Type, "widened");
+                auto* byteCount = m_irBuilder->CreateMul(length64, elementSizeValue, "bytes");
+                m_irBuilder->CreateCall(memmoveCallee, { newData, sourceData, byteCount }, "copied");
+
+                llvm::Value* descriptor = llvm::PoisonValue::get(descriptorType);
+                descriptor = m_irBuilder->CreateInsertValue(descriptor, newData, { 0 });
+                descriptor = m_irBuilder->CreateInsertValue(descriptor, length, { 1 });
+                descriptor = m_irBuilder->CreateInsertValue(descriptor, capacity, { 2 }, "array_copy");
+                defineValue(arrayCopy.resultId(), descriptor);
                 return true;
             }
             case InstructionKind::LoadValue:

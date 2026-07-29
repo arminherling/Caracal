@@ -128,7 +128,7 @@ namespace Caracal
         [[nodiscard]] std::optional<ValueRef> lowerAddressExpression(const Expression* expression) noexcept;
         [[nodiscard]] bool referenceArgumentAliasesConstant(const Expression* argument) const noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerValueExpression(const Expression* expression) noexcept;
-        [[nodiscard]] std::optional<ValueRef> lowerValueExpressionExpecting(const Expression* expression, Type targetType) noexcept;
+        [[nodiscard]] std::optional<ValueRef> lowerValueExpressionExpecting(const Expression* expression, Type targetType, bool copyOwningDynamic = true) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerShortCircuitExpression(const BinaryExpression* expression) noexcept;
         [[nodiscard]] bool lowerExpressionForEffect(const Expression* expression) noexcept;
         [[nodiscard]] std::optional<ValueRef> emitCall(const FunctionCallExpression* expression, std::optional<ValueRef> implicitArgument = std::nullopt) noexcept;
