@@ -1567,7 +1567,6 @@ namespace Caracal
             && targetType.kind() == TypeKind::DynamicArray
             && !targetType.isReference()
             && sourceType.kind() == TypeKind::DynamicArray
-            && !expression->type().isReference()
             && StripGroupings(expression)->kind() == NodeKind::NameExpression)
         {
             auto sourceAddress = lowerAddressExpression(expression);

@@ -1,0 +1,9 @@
+def main() i32
+{
+    xs := [40, 2, ...];
+    view := ref xs;
+    ys := [1, ...];
+    ys = view;
+    ys.set(0, 7);
+    return xs.at(0) %+ ys.at(0) %+ xs.length;
+}
