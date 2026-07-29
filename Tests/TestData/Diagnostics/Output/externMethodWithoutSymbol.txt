@@ -1,11 +1,11 @@
  Error T0047 Extern method requires a symbol
     ,-[Diagnostics/Input/externMethodWithoutSymbol.cara:3:5]
-  1 | type C
+  1 | type Box
   2 | {
   3 |     #extern 
     .     -------
-    .        `-- Method 'C.printf' is extern but has no symbol, a method needs to specify the external symbol.
-  4 |     def C.printf(message: cstring) i32 {}
+    .        `-- Method 'Box.printf' is extern but has no symbol, a method needs to specify the external symbol.
+  4 |     def Box.printf(message: cstring) i32 {}
   5 | }
   6 | 
     `----

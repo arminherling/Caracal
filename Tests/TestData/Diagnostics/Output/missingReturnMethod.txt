@@ -1,10 +1,10 @@
  Error T0060 Not all paths return a value
-    ,-[Diagnostics/Input/missingReturnMethod.cara:3:11]
-  1 | type C()
+    ,-[Diagnostics/Input/missingReturnMethod.cara:3:13]
+  1 | type Box()
   2 | {
-  3 |     def C.bad(flag: bool) i32
-    .           ---
-    .            `-- 'bad' does not return a value on all paths.
+  3 |     def Box.bad(flag: bool) i32
+    .             ---
+    .              `-- 'bad' does not return a value on all paths.
   4 |     {
   5 |         if flag
   6 |         {

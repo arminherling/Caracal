@@ -30,6 +30,41 @@ namespace Caracal
         }
     }
 
+    static void ValidateCompilerEmittedCall(
+        SemanticContext& module,
+        const char* methodName,
+        const std::vector<Type>& parameterTypes,
+        Type returnType)
+    {
+        const auto methodType = module.tryGetExternFunctionByFullName(std::string("C.") + methodName);
+        auto matches = methodType != Type::Undefined();
+        if (matches)
+        {
+            const auto& definition = module.getFunctionDefinition(methodType);
+            const auto& parameters = definition.parameters();
+            matches = definition.symbolName().has_value()
+                && parameters.size() == parameterTypes.size()
+                && definition.returnTypes().size() == 1
+                && definition.returnTypes().front() == returnType;
+            if (matches)
+            {
+                for (size_t index = 0; index < parameterTypes.size(); ++index)
+                {
+                    if (parameters[index].type() != parameterTypes[index])
+                    {
+                        matches = false;
+                    }
+                }
+            }
+        }
+
+        if (!matches)
+        {
+            std::cerr << "error: the prelude did not define 'C." << methodName << "' with the signature the compiler emits\n";
+            std::abort();
+        }
+    }
+
     std::vector<std::string> SemanticContext::CollectPreludeSources(const std::filesystem::path& preludeDirectory) noexcept
     {
         std::vector<std::filesystem::path> caraFilePaths{};
@@ -99,7 +134,16 @@ namespace Caracal
                 std::cerr << "error: the prelude did not define all builtin types\n";
                 std::abort();
             }
+
+            // the compiler emits calls to these bindings itself, so their absence or a signature drift must fail fast
+            const auto& wellKnownTypes = module.wellKnown();
+            ValidateCompilerEmittedCall(module, "calloc", { wellKnownTypes.i64, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
+            ValidateCompilerEmittedCall(module, "realloc", { wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
         }
+
+        // prelude definitions only lower on demand, the boundary lets the lowerer skip them
+        module.m_preludeFunctionDefinitionCount = module.m_functionDefinitions.size();
+        module.m_preludeTypeDefinitionCount = module.m_typeDefinitions.size();
 
         module.m_nextId = std::max(module.m_nextId, 2000);
         module.m_preludeParseTrees = std::move(preludeTrees);
@@ -279,6 +323,32 @@ namespace Caracal
         }
 
         return 0;
+    }
+
+    void SemanticContext::markExternRequired(Type functionType) noexcept
+    {
+        for (const auto existing : m_requiredExternFunctions)
+        {
+            if (existing == functionType)
+            {
+                return;
+            }
+        }
+
+        m_requiredExternFunctions.push_back(functionType);
+    }
+
+    Type SemanticContext::tryGetExternFunctionByFullName(std::string_view fullName) const noexcept
+    {
+        for (const auto& definition : m_functionDefinitions)
+        {
+            if (definition.symbolName().has_value() && definition.fullName() == fullName)
+            {
+                return definition.type();
+            }
+        }
+
+        return Type::Undefined();
     }
 
     Type SemanticContext::tryGetOrCreateArrayIntrinsic(Type arrayType, std::string_view methodName) noexcept

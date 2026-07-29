@@ -568,7 +568,7 @@ namespace Caracal
                             if (existingType.kind() == TypeKind::Enum)
                             {
                                 auto* otherStatement = m_module.getEnumDefinition(existingType).statement();
-                                if (otherStatement != nullptr)
+                                if (otherStatement != nullptr && m_statementTokens.contains(otherStatement))
                                 {
                                     const auto& otherTokens = tokensFor(otherStatement);
                                     otherSource = otherTokens.source();
@@ -578,7 +578,7 @@ namespace Caracal
                             else if (existingType.kind() == TypeKind::Type)
                             {
                                 auto* otherStatement = m_module.getTypeDefinition(existingType).statement();
-                                if (otherStatement != nullptr)
+                                if (otherStatement != nullptr && m_statementTokens.contains(otherStatement))
                                 {
                                     const auto& otherTokens = tokensFor(otherStatement);
                                     otherSource = otherTokens.source();
@@ -662,7 +662,7 @@ namespace Caracal
                             if (existingType.kind() == TypeKind::Enum)
                             {
                                 auto* otherStatement = m_module.getEnumDefinition(existingType).statement();
-                                if (otherStatement != nullptr)
+                                if (otherStatement != nullptr && m_statementTokens.contains(otherStatement))
                                 {
                                     const auto& otherTokens = tokensFor(otherStatement);
                                     otherSource = otherTokens.source();
@@ -672,7 +672,7 @@ namespace Caracal
                             else if (existingType.kind() == TypeKind::Type)
                             {
                                 auto* otherStatement = m_module.getTypeDefinition(existingType).statement();
-                                if (otherStatement != nullptr)
+                                if (otherStatement != nullptr && m_statementTokens.contains(otherStatement))
                                 {
                                     const auto& otherTokens = tokensFor(otherStatement);
                                     otherSource = otherTokens.source();
@@ -2737,7 +2737,7 @@ namespace Caracal
                 FormatTypeName(m_module, m_currentReturnType));
         }
 
-        popScope(true);
+        popScope(!statement->isExtern());
     }
 
     void TypeChecker::typeCheckIfStatement(IfStatement* statement, const TokenBuffer& tokens)
@@ -3443,6 +3443,12 @@ namespace Caracal
     Type TypeChecker::typeCheckResolvedFunctionCall(FunctionCallExpression* functionCallExpression, Type functionType, const TokenBuffer& tokens)
     {
         const auto& functionDefinition = m_module.getFunctionDefinition(functionType);
+
+        // extern declarations only reach codegen when a call requires them
+        if (functionDefinition.symbolName().has_value())
+        {
+            m_module.markExternRequired(functionType);
+        }
 
         if (!typeCheckCallArguments(functionCallExpression, functionDefinition, tokens))
         {

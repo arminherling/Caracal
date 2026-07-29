@@ -1,5 +1,5 @@
-type C
+type Box
 {
     #extern 
-    def C.printf(message: cstring) i32 {}
+    def Box.printf(message: cstring) i32 {}
 }

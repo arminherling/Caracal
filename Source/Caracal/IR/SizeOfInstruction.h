@@ -1,0 +1,23 @@
+#pragma once
+
+#include <Caracal/IR/Instruction.h>
+#include <Caracal/IR/ValueRef.h>
+
+namespace Caracal
+{
+    class SizeOfInstruction final : public Instruction
+    {
+    public:
+        SizeOfInstruction(TemporaryId resultId, Type measuredType, Type type) noexcept;
+
+        [[nodiscard]] TemporaryId resultId() const noexcept { return m_resultId; }
+        [[nodiscard]] Type measuredType() const noexcept { return m_measuredType; }
+        [[nodiscard]] Type type() const noexcept { return m_type; }
+        void remapValueIds(const ValueIdMap& remap) noexcept override;
+
+    private:
+        TemporaryId m_resultId;
+        Type m_measuredType;
+        Type m_type;
+    };
+}

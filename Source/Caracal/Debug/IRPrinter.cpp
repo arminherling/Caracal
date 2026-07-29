@@ -17,6 +17,7 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/IntWidenInstruction.h>
+#include <Caracal/IR/SizeOfInstruction.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
@@ -597,6 +598,18 @@ namespace Caracal
                 appendType(conversion.sourceType());
                 m_builder.append(" -> ");
                 appendType(conversion.type());
+                m_builder.appendLine("");
+                break;
+            }
+            case InstructionKind::SizeOf:
+            {
+                const auto& sizeOf = static_cast<const SizeOfInstruction&>(instruction);
+                m_builder.appendIndented("");
+                appendValue(ValueRef{ sizeOf.resultId() });
+                m_builder.append(" = size_of ");
+                appendType(sizeOf.measuredType());
+                m_builder.append(" : ");
+                appendType(sizeOf.type());
                 m_builder.appendLine("");
                 break;
             }

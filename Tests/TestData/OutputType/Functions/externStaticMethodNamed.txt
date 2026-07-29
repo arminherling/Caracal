@@ -1,12 +1,12 @@
 TypeDefinitionStatement: {
-    Type: C
-    Name: C
+    Type: Box
+    Name: Box
     BlockNode(1): {
         MethodDefinitionStatement: {
             Type: (cstring, C Variadic) -> i32
             Modifier: Static
             MethodNameNode: {
-                MethodName: C.printf
+                MethodName: Box.printf
             }
             Annotation: {
                 Name: extern
@@ -62,8 +62,8 @@ FunctionDefinitionStatement: {
                 Type: i32
                 Left: {
                     NameExpression: {
-                        Type: C
-                        Name: C
+                        Type: Box
+                        Name: Box
                     }
                 }
                 Operation: MemberAccess

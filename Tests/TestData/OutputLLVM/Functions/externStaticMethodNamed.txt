@@ -12,7 +12,7 @@ entry:
   ret i32 %call
 }
 
-define void @C.new(ptr nonnull %0) {
+define void @Box.new(ptr nonnull %0) {
 entry:
   ret void
 }

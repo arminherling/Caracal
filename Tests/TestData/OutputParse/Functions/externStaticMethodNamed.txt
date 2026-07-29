@@ -1,12 +1,12 @@
 TypeDefinitionStatement: {
     Type: undefined
-    Name: C
+    Name: Box
     BlockNode(1): {
         MethodDefinitionStatement: {
             Type: undefined
             Modifier: Static
             MethodNameNode: {
-                MethodName: C.printf
+                MethodName: Box.printf
             }
             Annotation: {
                 Name: extern
@@ -63,7 +63,7 @@ FunctionDefinitionStatement: {
                 Left: {
                     NameExpression: {
                         Type: undefined
-                        Name: C
+                        Name: Box
                     }
                 }
                 Operation: MemberAccess

@@ -29,6 +29,7 @@
 
 namespace Caracal
 {
+    class ArrayLiteral;
     class CARACAL_API IRLowerer
     {
     private:
@@ -114,6 +115,7 @@ namespace Caracal
         [[nodiscard]] bool localNeedsPhi(const std::vector<IncomingLocalValues>& incomingValues, const std::string& name, const LocalState& firstState) const noexcept;
         [[nodiscard]] bool tryLowerConstructorCallIntoAddress(const Expression* expression, ValueRef destinationAddress) noexcept;
         [[nodiscard]] bool tryLowerArrayLiteralIntoAddress(const Expression* expression, ValueRef destinationAddress, Type arrayType) noexcept;
+        [[nodiscard]] bool lowerDynamicArrayLiteralIntoAddress(const ArrayLiteral* literal, ValueRef destinationAddress, Type arrayType) noexcept;
         [[nodiscard]] std::optional<ValueRef> allocateSlotFromExpression(std::string localName, const Expression* expression, Type valueType) noexcept;
         [[nodiscard]] std::optional<ValueRef> spillValueToTempSlot(const Expression* expression, ValueRef value) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerMethodReceiverAddress(const Expression* receiverExpression) noexcept;
@@ -130,6 +132,9 @@ namespace Caracal
         [[nodiscard]] std::optional<ValueRef> lowerShortCircuitExpression(const BinaryExpression* expression) noexcept;
         [[nodiscard]] bool lowerExpressionForEffect(const Expression* expression) noexcept;
         [[nodiscard]] std::optional<ValueRef> emitCall(const FunctionCallExpression* expression, std::optional<ValueRef> implicitArgument = std::nullopt) noexcept;
+        void registerRequiredExterns(Module& module) noexcept;
+        void registerExternDefinition(const FunctionDefinition& definition, Module& module) noexcept;
+        [[nodiscard]] FunctionId ensureRequiredExtern(const std::string& fullName) noexcept;
         
         void resetState();
         void registerBuiltinTypes(Module& module) noexcept;
@@ -137,6 +142,8 @@ namespace Caracal
         void mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept;
 
         SemanticContext& m_semanticContext;
+        Module* m_currentModule{ nullptr };
+        std::unordered_map<std::string, FunctionId> m_runtimeExternIds;
         LocalStateMap m_locals;
         std::unordered_set<std::string> m_addressTakenLocals;
         std::unordered_map<std::string, Type> m_globalTypes;

@@ -1,0 +1,33 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+declare ptr @calloc(i64 %0, i64 %1)
+
+define { ptr, i32, i32 } @make() {
+entry:
+  %temp = alloca { ptr, i32, i32 }, align 8
+  %call = call ptr @calloc(i64 8, i64 4)
+  %data = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp, i32 0, i32 0
+  store ptr %call, ptr %data, align 8
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp, i32 0, i32 1
+  store i32 2, ptr %length, align 4
+  %capacity = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp, i32 0, i32 2
+  store i32 8, ptr %capacity, align 4
+  %element = getelementptr i32, ptr %call, i32 0
+  store i32 1, ptr %element, align 4
+  %element1 = getelementptr i32, ptr %call, i32 1
+  store i32 2, ptr %element1, align 4
+  %load = load { ptr, i32, i32 }, ptr %temp, align 8
+  ret { ptr, i32, i32 } %load
+}
+
+define i32 @main() {
+entry:
+  %temp = alloca { ptr, i32, i32 }, align 8
+  %call = call { ptr, i32, i32 } @make()
+  store { ptr, i32, i32 } %call, ptr %temp, align 8
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp, i32 0, i32 1
+  %load = load i32, ptr %length, align 4
+  ret i32 %load
+}

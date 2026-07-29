@@ -1,0 +1,9 @@
+type C()
+{
+    x :: 5
+}
+
+def main() i32
+{
+    return 0;
+}

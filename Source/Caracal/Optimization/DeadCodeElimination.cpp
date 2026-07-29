@@ -17,6 +17,7 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/IntWidenInstruction.h>
+#include <Caracal/IR/SizeOfInstruction.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
 #include <Caracal/IR/LoadValueInstruction.h>
@@ -91,6 +92,10 @@ namespace Caracal
                 case InstructionKind::IntWiden:
                 {
                     usedIds.insert(static_cast<const IntWidenInstruction&>(instruction).operandValue().id());
+                    break;
+                }
+                case InstructionKind::SizeOf:
+                {
                     break;
                 }
                 case InstructionKind::LogicalNegation:
@@ -273,6 +278,7 @@ namespace Caracal
                 case InstructionKind::ValueNegation:
                 case InstructionKind::IntToFloat:
                 case InstructionKind::IntWiden:
+                case InstructionKind::SizeOf:
                 case InstructionKind::LogicalNegation:
                 case InstructionKind::Add:
                 case InstructionKind::Subtract:
@@ -358,6 +364,11 @@ namespace Caracal
                 case InstructionKind::IntWiden:
                 {
                     resultId = static_cast<const IntWidenInstruction&>(instruction).resultId();
+                    return true;
+                }
+                case InstructionKind::SizeOf:
+                {
+                    resultId = static_cast<const SizeOfInstruction&>(instruction).resultId();
                     return true;
                 }
                 case InstructionKind::LogicalNegation:

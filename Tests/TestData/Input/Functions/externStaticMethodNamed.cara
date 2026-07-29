@@ -1,10 +1,10 @@
-type C
+type Box
 {
     #extern(symbol = "printf")
-    def C.printf(message: cstring, ...) i32 {}
+    def Box.printf(message: cstring, ...) i32 {}
 }
 
 def func() i32
 {
-    return C.printf("hi");
+    return Box.printf("hi");
 }

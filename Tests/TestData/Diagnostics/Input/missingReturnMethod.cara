@@ -1,6 +1,6 @@
-type C()
+type Box()
 {
-    def C.bad(flag: bool) i32
+    def Box.bad(flag: bool) i32
     {
         if flag
         {

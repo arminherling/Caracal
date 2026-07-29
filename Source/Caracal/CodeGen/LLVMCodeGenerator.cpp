@@ -20,6 +20,7 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/IntWidenInstruction.h>
+#include <Caracal/IR/SizeOfInstruction.h>
 #include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
 #include <Caracal/IR/LessThanInstruction.h>
@@ -424,8 +425,9 @@ namespace Caracal
                 if (baseAddress == nullptr || index == nullptr)
                     return false;
 
-                // a slice's base is its loaded data pointer, so the address is element-typed
-                if (elementAddress.arrayType().kind() == TypeKind::Slice)
+                // a slice's or dynamic array's base is its loaded data pointer, so the address is element-typed
+                if (elementAddress.arrayType().kind() == TypeKind::Slice
+                    || elementAddress.arrayType().kind() == TypeKind::DynamicArray)
                 {
                     auto* elementType = lowerType(elementAddress.type());
                     if (elementType == nullptr)
@@ -654,6 +656,18 @@ namespace Caracal
                 }
 
                 defineValue(conversion.resultId(), result);
+                return true;
+            }
+            case InstructionKind::SizeOf:
+            {
+                const auto& sizeOf = static_cast<const SizeOfInstruction&>(instruction);
+                auto* measuredType = lowerType(sizeOf.measuredType());
+                auto* resultType = lowerType(sizeOf.type());
+                if (measuredType == nullptr || resultType == nullptr)
+                    return false;
+
+                const auto size = m_llvmModule.getDataLayout().getTypeAllocSize(measuredType);
+                defineValue(sizeOf.resultId(), llvm::ConstantInt::get(resultType, size.getFixedValue()));
                 return true;
             }
             case InstructionKind::IntWiden:
@@ -1036,6 +1050,10 @@ namespace Caracal
         // a slice lowers to a { pointer, i32 length } pair
         if (type.kind() == TypeKind::Slice)
             return llvm::StructType::get(llvm::PointerType::getUnqual(context), llvm::Type::getInt32Ty(context));
+
+        // a dynamic array lowers to a { pointer, i32 length, i32 capacity }
+        if (type.kind() == TypeKind::DynamicArray)
+            return llvm::StructType::get(llvm::PointerType::getUnqual(context), llvm::Type::getInt32Ty(context), llvm::Type::getInt32Ty(context));
 
         // an enum lowers to its underlying integer type
         if (const auto* enumDeclaration = m_irModule.tryGetEnum(type))

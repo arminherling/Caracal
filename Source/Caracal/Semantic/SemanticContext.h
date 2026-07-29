@@ -92,6 +92,11 @@ namespace Caracal
         [[nodiscard]] const std::vector<const Expression*>& globalDiscardExpressions() const noexcept { return m_globalDiscardExpressions; }
         [[nodiscard]] const std::vector<EnumDefinition>& enumDefinitions() const noexcept { return m_enumDefinitions; }
         [[nodiscard]] const std::vector<FunctionDefinition>& functionDefinitions() const noexcept { return m_functionDefinitions; }
+        [[nodiscard]] const std::vector<Type>& requiredExternFunctions() const noexcept { return m_requiredExternFunctions; }
+        [[nodiscard]] size_t preludeFunctionDefinitionCount() const noexcept { return m_preludeFunctionDefinitionCount; }
+        [[nodiscard]] size_t preludeTypeDefinitionCount() const noexcept { return m_preludeTypeDefinitionCount; }
+        void markExternRequired(Type functionType) noexcept;
+        [[nodiscard]] Type tryGetExternFunctionByFullName(std::string_view fullName) const noexcept;
 
     private:
         struct ArrayTypeInfo
@@ -102,6 +107,9 @@ namespace Caracal
 
         std::vector<TypeDefinition> m_typeDefinitions;
         std::vector<EnumDefinition> m_enumDefinitions;
+        std::vector<Type> m_requiredExternFunctions;
+        size_t m_preludeFunctionDefinitionCount{ 0 };
+        size_t m_preludeTypeDefinitionCount{ 0 };
         std::vector<FunctionDefinition> m_functionDefinitions;
         std::vector<ConstantDefinition> m_constantDefinitions;
         std::vector<const Expression*> m_globalDiscardExpressions;

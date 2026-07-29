@@ -26,6 +26,7 @@
 #include <Caracal/IR/GreaterThanInstruction.h>
 #include <Caracal/IR/IntToFloatInstruction.h>
 #include <Caracal/IR/IntWidenInstruction.h>
+#include <Caracal/IR/SizeOfInstruction.h>
 #include <Caracal/IR/BranchIfTerminator.h>
 #include <Caracal/IR/JumpTerminator.h>
 #include <Caracal/IR/LessOrEqualInstruction.h>
@@ -213,9 +214,12 @@ namespace Caracal
 
     bool IRLowerer::lower(Module& module) noexcept
     {
+        m_currentModule = &module;
+        m_runtimeExternIds.clear();
         resetState();
         m_globalTypes.clear();
         registerBuiltinTypes(module);
+        registerRequiredExterns(module);
 
         // array types have no TypeDeclaration, so the printer needs their canonical names registered
         for (const auto arrayType : m_semanticContext.arrayTypes())
@@ -250,8 +254,13 @@ namespace Caracal
                 return false;
         }
 
-        for (const auto& typeDefinition : m_semanticContext.typeDefinitions())
+        for (size_t typeIndex = 0; typeIndex < m_semanticContext.typeDefinitions().size(); ++typeIndex)
         {
+            // prelude types like "C" only exist for the extern bindings, nothing to lower
+            if (typeIndex < m_semanticContext.preludeTypeDefinitionCount())
+                continue;
+
+            const auto& typeDefinition = m_semanticContext.typeDefinitions()[typeIndex];
             if (typeDefinition.statement() == nullptr)
                 continue;
 
@@ -294,8 +303,13 @@ namespace Caracal
                 return false;
         }
 
-        for (const auto& functionDefinition : m_semanticContext.functionDefinitions())
+        for (size_t definitionIndex = 0; definitionIndex < m_semanticContext.functionDefinitions().size(); ++definitionIndex)
         {
+            // prelude definitions only lower when needed
+            if (definitionIndex < m_semanticContext.preludeFunctionDefinitionCount())
+                continue;
+
+            const auto& functionDefinition = m_semanticContext.functionDefinitions()[definitionIndex];
             if (functionDefinition.functionType() == FunctionType::SynthesizedConstructor)
             {
                 if (!lowerSynthesizedConstructorDefinition(functionDefinition, module))
@@ -524,7 +538,7 @@ namespace Caracal
         const auto functionId = definition.type().id();
         if (isExtern)
         {
-            module.addExternFunction(ExternFunction{ functionId, functionName, definition.symbolName(), parameters, returnType });
+            registerExternDefinition(definition, module);
             return true;
         }
 
@@ -716,6 +730,51 @@ namespace Caracal
             fieldIndex,
             fieldType.toReference()));
         return ValueRef{ temporaryId };
+    }
+
+    void IRLowerer::registerRequiredExterns(Module& module) noexcept
+    {
+        for (const auto functionType : m_semanticContext.requiredExternFunctions())
+        {
+            registerExternDefinition(m_semanticContext.getFunctionDefinition(functionType), module);
+        }
+    }
+
+    void IRLowerer::registerExternDefinition(const FunctionDefinition& definition, Module& module) noexcept
+    {
+        const auto functionId = definition.type().id();
+        if (module.tryGetExternFunction(functionId) != nullptr)
+            return;
+
+        std::vector<IRParameter> parameters;
+        for (const auto& parameter : definition.parameters())
+        {
+            parameters.emplace_back(parameter.name(), parameter.type());
+        }
+
+        auto returnType = Type::Void();
+        if (!definition.returnTypes().empty())
+        {
+            returnType = definition.returnTypes().front();
+        }
+
+        module.addExternFunction(ExternFunction{ functionId, definition.fullName(), definition.symbolName(), parameters, returnType });
+    }
+
+    FunctionId IRLowerer::ensureRequiredExtern(const std::string& fullName) noexcept
+    {
+        if (const auto existing = m_runtimeExternIds.find(fullName); existing != m_runtimeExternIds.end())
+            return existing->second;
+
+        // compiler-emitted calls resolve the real prelude binding, the prelude validation guarantees it exists
+        const auto methodType = m_semanticContext.tryGetExternFunctionByFullName(fullName);
+        if (methodType == Type::Undefined())
+            return FunctionId{ -1 };
+
+        m_semanticContext.markExternRequired(methodType);
+        registerExternDefinition(m_semanticContext.getFunctionDefinition(methodType), *m_currentModule);
+        m_runtimeExternIds.try_emplace(fullName, methodType.id());
+        return methodType.id();
     }
 
     ValueRef IRLowerer::emitLoad(ValueRef address, Type valueType) noexcept
@@ -1302,6 +1361,9 @@ namespace Caracal
         if (stripped == nullptr || stripped->kind() != NodeKind::ArrayLiteral)
             return false;
 
+        if (arrayType.kind() == TypeKind::DynamicArray)
+            return lowerDynamicArrayLiteralIntoAddress(static_cast<const ArrayLiteral*>(stripped), destinationAddress, arrayType);
+
         if (arrayType.kind() != TypeKind::FixedArray)
             return false;
 
@@ -1320,6 +1382,100 @@ namespace Caracal
             m_currentBlock->addInstruction(std::make_unique<ElementAddressInstruction>(
                 elementAddressId,
                 destinationAddress,
+                arrayType,
+                ValueRef{ indexId },
+                elementType));
+
+            // nested literals fill their element storage directly instead of through a temp slot
+            if (tryLowerArrayLiteralIntoAddress(elements[index].get(), ValueRef{ elementAddressId }, elementType))
+                continue;
+
+            const auto elementValue = lowerValueExpressionExpecting(elements[index].get(), elementType);
+            if (!elementValue.has_value())
+                return false;
+
+            m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
+                elementValue.value(),
+                ValueRef{ elementAddressId },
+                elementType));
+        }
+
+        return true;
+    }
+
+    bool IRLowerer::lowerDynamicArrayLiteralIntoAddress(const ArrayLiteral* literal, ValueRef destinationAddress, Type arrayType) noexcept
+    {
+        const auto elementType = m_semanticContext.getArrayElementType(arrayType);
+        const auto count = static_cast<i32>(literal->elements().size());
+        auto capacity = count;
+        if (capacity < 8)
+        {
+            capacity = 8;
+        }
+
+        // calloc(capacity, sizeof(element)) provides the zero-initialized backing buffer
+        const auto capacityArgumentId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+            capacityArgumentId,
+            ConstantValue::FromI64(capacity),
+            m_semanticContext.wellKnown().i64));
+
+        const auto elementSizeId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<SizeOfInstruction>(
+            elementSizeId,
+            elementType,
+            m_semanticContext.wellKnown().i64));
+
+        const auto callocId = ensureRequiredExtern("C.calloc");
+
+        const auto dataPointerId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<CallInstruction>(
+            dataPointerId,
+            callocId,
+            std::vector<ValueRef>{ ValueRef{ capacityArgumentId }, ValueRef{ elementSizeId } },
+            m_semanticContext.wellKnown().rawptr));
+
+        const auto dataFieldAddress = emitFieldAddress(destinationAddress, arrayType, "data", 0, elementType.toReference());
+        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
+            ValueRef{ dataPointerId },
+            dataFieldAddress,
+            elementType.toReference()));
+
+        const auto lengthId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+            lengthId,
+            ConstantValue::FromI32(count),
+            m_semanticContext.wellKnown().i32));
+        const auto lengthFieldAddress = emitFieldAddress(destinationAddress, arrayType, "length", 1, m_semanticContext.wellKnown().i32);
+        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
+            ValueRef{ lengthId },
+            lengthFieldAddress,
+            m_semanticContext.wellKnown().i32));
+
+        const auto capacityId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+            capacityId,
+            ConstantValue::FromI32(capacity),
+            m_semanticContext.wellKnown().i32));
+        const auto capacityFieldAddress = emitFieldAddress(destinationAddress, arrayType, "capacity", 2, m_semanticContext.wellKnown().i32);
+        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
+            ValueRef{ capacityId },
+            capacityFieldAddress,
+            m_semanticContext.wellKnown().i32));
+
+        const auto& elements = literal->elements();
+        for (size_t index = 0; index < elements.size(); ++index)
+        {
+            const auto indexId = m_nextTemporaryId++;
+            m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+                indexId,
+                ConstantValue::FromI32(static_cast<i32>(index)),
+                m_semanticContext.wellKnown().i32));
+
+            const auto elementAddressId = m_nextTemporaryId++;
+            m_currentBlock->addInstruction(std::make_unique<ElementAddressInstruction>(
+                elementAddressId,
+                ValueRef{ dataPointerId },
                 arrayType,
                 ValueRef{ indexId },
                 elementType));
@@ -1515,27 +1671,36 @@ namespace Caracal
         if (functionDefinition.intrinsicKind() == IntrinsicKind::ArraySlice)
         {
             const auto receiverType = receiverExpression->type().toValue();
-            if (receiverType.kind() != TypeKind::FixedArray)
-            {
-                // TODO handle dynamic arrays
-                return std::nullopt;
-            }
-
             const auto receiverAddress = lowerMethodReceiverAddress(receiverExpression);
             if (!receiverAddress.has_value())
                 return std::nullopt;
 
-            const auto lengthId = m_nextTemporaryId++;
-            m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
-                lengthId,
-                ConstantValue::FromI32(m_semanticContext.getArrayLength(receiverType)),
-                m_semanticContext.wellKnown().i32));
+            auto baseAddress = receiverAddress.value();
+            auto length = ValueRef{};
+            if (receiverType.kind() == TypeKind::FixedArray)
+            {
+                const auto lengthId = m_nextTemporaryId++;
+                m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+                    lengthId,
+                    ConstantValue::FromI32(m_semanticContext.getArrayLength(receiverType)),
+                    m_semanticContext.wellKnown().i32));
+                length = ValueRef{ lengthId };
+            }
+            else
+            {
+                // a dynamic array's slice view loads the data pointer and the runtime length
+                const auto elementType = m_semanticContext.getArrayElementType(receiverType);
+                const auto dataPointerAddress = emitFieldAddress(baseAddress, receiverType, "data", 0, elementType.toReference());
+                baseAddress = emitLoad(dataPointerAddress, elementType.toReference());
+                const auto lengthAddress = emitFieldAddress(receiverAddress.value(), receiverType, ArrayLengthMemberName, 1, m_semanticContext.wellKnown().i32);
+                length = emitLoad(lengthAddress, m_semanticContext.wellKnown().i32);
+            }
 
             const auto sliceId = m_nextTemporaryId++;
             m_currentBlock->addInstruction(std::make_unique<MakeSliceInstruction>(
                 sliceId,
-                receiverAddress.value(),
-                ValueRef{ lengthId },
+                baseAddress,
+                length,
                 expression->type().toValue()));
             return ValueRef{ sliceId };
         }
@@ -1685,9 +1850,9 @@ namespace Caracal
 
         const auto elementType = m_semanticContext.getArrayElementType(receiverType);
         auto baseAddress = receiverAddress.value();
-        if (receiverType.kind() == TypeKind::Slice)
+        if (receiverType.kind() == TypeKind::Slice || receiverType.kind() == TypeKind::DynamicArray)
         {
-            // the slice's data pointer is its first field
+            // the slice's or dynamic array's data pointer is its first field
             const auto dataPointerAddress = emitFieldAddress(baseAddress, receiverType, "data", 0, elementType.toReference());
             baseAddress = emitLoad(dataPointerAddress, elementType.toReference());
         }
@@ -2181,7 +2346,7 @@ namespace Caracal
                             return ValueRef{ temporaryId };
                         }
 
-                        if (receiverType.kind() == TypeKind::Slice)
+                        if (receiverType.kind() == TypeKind::Slice || receiverType.kind() == TypeKind::DynamicArray)
                         {
                             const auto receiverAddress = lowerIntrinsicReceiverAddress(binaryExpression->leftExpression().get());
                             if (!receiverAddress.has_value())

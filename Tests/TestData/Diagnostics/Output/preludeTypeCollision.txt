@@ -1,0 +1,10 @@
+ Error T0040 Duplicate type declaration
+    ,-[Diagnostics/Input/preludeTypeCollision.cara:1:6]
+  1 | type C()
+    .      -
+    .      `-- Type 'C' is already declared
+  2 | {
+  3 |     x :: 5
+  4 | }
+    `----
+  Fix: Rename this type declaration, or remove the duplicate.

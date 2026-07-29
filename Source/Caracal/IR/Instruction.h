@@ -34,6 +34,7 @@ namespace Caracal
         ValueNegation,
         IntToFloat,
         IntWiden,
+        SizeOf,
         LogicalNegation,
         Call,
         CallVoid,
