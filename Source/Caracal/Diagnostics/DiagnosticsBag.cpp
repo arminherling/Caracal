@@ -1642,6 +1642,21 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addReferenceToNonVariableError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0092_ReferenceToNonVariable,
+            source,
+            location,
+            "Bind the value to a local variable first.");
+        diagnostic.addPrimaryLabel(location, "'ref' expects a variable name");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addMethodRequiresDynamicArrayError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,

@@ -2997,13 +2997,20 @@ namespace Caracal
                     return Type::Undefined();
                 }
 
-                if (const auto* strippedOperand = StripGroupings(operand); strippedOperand->kind() == NodeKind::NameExpression)
+                const auto* strippedOperand = StripGroupings(operand);
+                if (strippedOperand->kind() != NodeKind::NameExpression)
                 {
-                    const auto& name = static_cast<const NameExpression*>(strippedOperand)->name();
-                    if (currentScope()->tryGetVariableBindingKind(name) == VariableBindingKind::LocalConstant)
-                    {
-                        unaryExpression->setReferencesConstant(true);
-                    }
+                    // TODO handle member references 
+                    m_diagnostics.addReferenceToNonVariableError(
+                        tokens.source(),
+                        unaryExpression->sourceLocation(tokens));
+                    return Type::Undefined();
+                }
+
+                const auto& name = static_cast<const NameExpression*>(strippedOperand)->name();
+                if (currentScope()->tryGetVariableBindingKind(name) == VariableBindingKind::LocalConstant)
+                {
+                    unaryExpression->setReferencesConstant(true);
                 }
 
                 auto referenceType = type.toReference();

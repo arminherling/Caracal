@@ -1,0 +1,12 @@
+type Box()
+{
+    x : i32 = 5
+}
+
+def main() i32
+{
+    b := Box.new();
+    r := ref b.x;
+    _ := r;
+    return 0;
+}
