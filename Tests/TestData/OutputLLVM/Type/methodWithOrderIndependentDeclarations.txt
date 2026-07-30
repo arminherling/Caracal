@@ -4,6 +4,14 @@ target triple = "x86_64-unknown-none"
 
 %Two = type { i32 }
 
+declare i32 @strcmp(ptr %0, ptr %1)
+
+declare ptr @calloc(i64 %0, i64 %1)
+
+declare ptr @realloc(ptr %0, i64 %1)
+
+declare ptr @memmove(ptr %0, ptr %1, i64 %2)
+
 define i32 @Two.value(ptr nonnull %0) {
 entry:
   %call = call i32 @Two.one(ptr %0)

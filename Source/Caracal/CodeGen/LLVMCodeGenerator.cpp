@@ -859,10 +859,6 @@ namespace Caracal
         if (lhs == nullptr || rhs == nullptr)
             return false;
 
-        // cstring equality uses strcmp and not pointer equality, so we need to special case it here
-        if ((kind == InstructionKind::Equal || kind == InstructionKind::NotEqual) && lhs->getType()->isPointerTy())
-            return emitStringEquality(resultId, lhs, rhs, kind);
-
         const auto* operandDescription = m_irModule.tryGetBuiltinTypeDescription(operandType.toValue());
         const auto isUnsigned = operandDescription != nullptr && !operandDescription->isSigned;
         const auto isFloat = lhs->getType()->isFloatingPointTy();
@@ -1041,28 +1037,6 @@ namespace Caracal
                 }
             }
         }
-    }
-
-    bool LLVMCodeGenerator::emitStringEquality(TemporaryId resultId, llvm::Value* left, llvm::Value* right, InstructionKind kind) noexcept
-    {
-        // strcmp is declared in the Core library
-        auto* strcmp = m_llvmModule.getFunction("strcmp");
-        if (strcmp == nullptr)
-        {
-            llvm::errs() << "Error: string comparison requires 'strcmp'.\n";
-            return false;
-        }
-
-        // strcmp returns 0 when the strings are equal, so compare its result against 0
-        auto* comparison = m_irBuilder->CreateCall(strcmp, { left, right }, "strcmp");
-        auto* zero = llvm::ConstantInt::get(llvm::Type::getInt32Ty(m_llvmModule.getContext()), 0);
-
-        if (kind == InstructionKind::Equal)
-            defineValue(resultId, m_irBuilder->CreateICmpEQ(comparison, zero, "equal"));
-        else
-            defineValue(resultId, m_irBuilder->CreateICmpNE(comparison, zero, "not_equal"));
-
-        return true;
     }
 
     bool LLVMCodeGenerator::lowerTerminator(const Terminator& terminator) noexcept

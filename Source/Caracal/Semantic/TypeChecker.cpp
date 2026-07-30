@@ -928,7 +928,12 @@ namespace Caracal
         auto& functionDefinition = m_module.getFunctionDefinition(functionType);
         const auto& parameterNodes = statement->parametersNode()->parameters();
         std::optional<std::string> symbolName;
-        const auto isExtern = validateCallableAnnotations(statement->annotations(), tokens, symbolName);
+        auto isRequiredExtern = false;
+        const auto isExtern = validateCallableAnnotations(statement->annotations(), tokens, symbolName, isRequiredExtern);
+        if (isExtern && isRequiredExtern)
+        {
+            m_module.markExternRequired(functionType);
+        }
         const auto isVariadic = !parameterNodes.empty() && parameterNodes.back()->isVariadic();
         if (isVariadic && !isExtern)
         {
@@ -1357,7 +1362,12 @@ namespace Caracal
         auto& methodDefinition = m_module.getFunctionDefinition(methodType);
 
         std::optional<std::string> symbolName;
-        const auto isExtern = validateCallableAnnotations(methodStatement->annotations(), tokens, symbolName);
+        auto isRequiredExtern = false;
+        const auto isExtern = validateCallableAnnotations(methodStatement->annotations(), tokens, symbolName, isRequiredExtern);
+        if (isExtern && isRequiredExtern)
+        {
+            m_module.markExternRequired(methodType);
+        }
         if (isExtern && !symbolName.has_value())
         {
             // methods need to specify the extern symbol name
@@ -2376,7 +2386,7 @@ namespace Caracal
         return true;
     }
 
-    bool TypeChecker::validateNamedAnnotationArguments(const AnnotationNode* annotation, std::string_view namedStringArgument, const TokenBuffer& tokens, std::optional<std::string>* stringArgumentValue)
+    bool TypeChecker::validateNamedAnnotationArguments(const AnnotationNode* annotation, std::string_view namedStringArgument, const TokenBuffer& tokens, std::optional<std::string>* stringArgumentValue, bool* requiredValue)
     {
         std::vector<std::string_view> seenArgumentNames;
         for (const auto& argument : annotation->arguments())
@@ -2393,6 +2403,30 @@ namespace Caracal
                 return false;
             }
             seenArgumentNames.push_back(argument.name());
+
+            // the extern annotation optionally marks bindings the compiler itself emits calls to
+            if (annotation->kind() == AnnotationKind::Extern && argument.name() == "required")
+            {
+                auto* requiredExpression = argument.value().get();
+                if (requiredExpression->kind() != NodeKind::BoolLiteral)
+                {
+                    const auto requiredArgumentType = typeCheckExpression(requiredExpression, tokens);
+                    m_diagnostics.addAnnotationArgumentTypeMismatchError(
+                        tokens.source(),
+                        requiredExpression->sourceLocation(tokens),
+                        annotation->kind(),
+                        annotation->name(),
+                        "a bool literal for 'required'",
+                        "an expression of type '" + FormatTypeName(m_module, requiredArgumentType) + "'");
+                    return false;
+                }
+
+                if (requiredValue != nullptr)
+                {
+                    *requiredValue = static_cast<const BoolLiteral*>(requiredExpression)->value();
+                }
+                continue;
+            }
 
             if (namedStringArgument.empty() || argument.name() != namedStringArgument)
             {
@@ -2428,7 +2462,7 @@ namespace Caracal
         return true;
     }
 
-    bool TypeChecker::validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue, std::optional<std::string>* stringArgumentValue)
+    bool TypeChecker::validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue, std::optional<std::string>* stringArgumentValue, bool* requiredValue)
     {
         const auto annotationLocation = annotation->sourceLocation(tokens);
         const auto* definition = GetAnnotationDefinition(annotation->kind());
@@ -2449,7 +2483,7 @@ namespace Caracal
             return validateBuiltinAnnotationArguments(annotation, tokens);
         }
 
-        if (!validateNamedAnnotationArguments(annotation, definition->namedStringArgument, tokens, stringArgumentValue))
+        if (!validateNamedAnnotationArguments(annotation, definition->namedStringArgument, tokens, stringArgumentValue, requiredValue))
         {
             return false;
         }
@@ -2543,14 +2577,14 @@ namespace Caracal
         return true;
     }
 
-    bool TypeChecker::validateCallableAnnotations(const std::vector<AnnotationNodeUPtr>& annotations, const TokenBuffer& tokens, std::optional<std::string>& symbolName)
+    bool TypeChecker::validateCallableAnnotations(const std::vector<AnnotationNodeUPtr>& annotations, const TokenBuffer& tokens, std::optional<std::string>& symbolName, bool& isRequired)
     {
         auto isExtern = false;
         for (const auto& annotationNode : annotations)
         {
             const auto* annotation = annotationNode.get();
             std::optional<std::string> annotationSymbolName;
-            if (!validateAnnotation(annotation, TokenKind::DefKeyword, tokens, nullptr, &annotationSymbolName))
+            if (!validateAnnotation(annotation, TokenKind::DefKeyword, tokens, nullptr, &annotationSymbolName, &isRequired))
             {
                 continue;
             }
@@ -3031,6 +3065,11 @@ namespace Caracal
                         if (methodType != Type::Undefined())
                         {
                             auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+                            if (methodDefinition.symbolName().has_value())
+                            {
+                                m_module.markExternRequired(methodType);
+                            }
+
                             if (methodDefinition.functionType() == FunctionType::PrivateMethod && m_currentType != leftType)
                             {
                                 m_diagnostics.addPrivateMethodCallOutsideTypeError(

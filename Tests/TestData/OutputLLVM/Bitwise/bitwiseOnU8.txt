@@ -2,6 +2,14 @@
 source_filename = "CaracalModule"
 target triple = "x86_64-unknown-none"
 
+declare i32 @strcmp(ptr %0, ptr %1)
+
+declare ptr @calloc(i64 %0, i64 %1)
+
+declare ptr @realloc(ptr %0, i64 %1)
+
+declare ptr @memmove(ptr %0, ptr %1, i64 %2)
+
 define i1 @results() {
 entry:
   br i1 true, label %and.rhs, label %and.merge

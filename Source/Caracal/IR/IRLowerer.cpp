@@ -218,7 +218,7 @@ namespace Caracal
     bool IRLowerer::lower(Module& module) noexcept
     {
         m_currentModule = &module;
-        m_runtimeExternIds.clear();
+        m_externFunctionIdCache.clear();
         resetState();
         m_globalTypes.clear();
         registerBuiltinTypes(module);
@@ -764,19 +764,16 @@ namespace Caracal
         module.addExternFunction(ExternFunction{ functionId, definition.fullName(), definition.symbolName(), parameters, returnType });
     }
 
-    FunctionId IRLowerer::ensureRequiredExtern(const std::string& fullName) noexcept
+    FunctionId IRLowerer::resolveExternFunctionId(const std::string& fullName) noexcept
     {
-        if (const auto existing = m_runtimeExternIds.find(fullName); existing != m_runtimeExternIds.end())
+        if (const auto existing = m_externFunctionIdCache.find(fullName); existing != m_externFunctionIdCache.end())
             return existing->second;
 
-        // compiler-emitted calls resolve the real prelude binding, the prelude validation guarantees it exists
         const auto methodType = m_semanticContext.tryGetExternFunctionByFullName(fullName);
         if (methodType == Type::Undefined())
             return FunctionId{ -1 };
 
-        m_semanticContext.markExternRequired(methodType);
-        registerExternDefinition(m_semanticContext.getFunctionDefinition(methodType), *m_currentModule);
-        m_runtimeExternIds.try_emplace(fullName, methodType.id());
+        m_externFunctionIdCache.try_emplace(fullName, methodType.id());
         return methodType.id();
     }
 
@@ -1431,7 +1428,7 @@ namespace Caracal
             elementType,
             m_semanticContext.wellKnown().i64));
 
-        const auto callocId = ensureRequiredExtern("C.calloc");
+        const auto callocId = resolveExternFunctionId("C.calloc");
 
         const auto dataPointerId = m_nextTemporaryId++;
         m_currentBlock->addInstruction(std::make_unique<CallInstruction>(
@@ -1586,8 +1583,8 @@ namespace Caracal
                 copyId,
                 sourceAddress.value(),
                 targetType,
-                ensureRequiredExtern("C.calloc"),
-                ensureRequiredExtern("C.memmove")));
+                resolveExternFunctionId("C.calloc"),
+                resolveExternFunctionId("C.memmove")));
             return ValueRef{ copyId };
         }
 
@@ -1727,7 +1724,7 @@ namespace Caracal
                     receiverAddress.value(),
                     argument.value(),
                     receiverType,
-                    ensureRequiredExtern("C.realloc")));
+                    resolveExternFunctionId("C.realloc")));
             }
             else
             {
@@ -1735,7 +1732,7 @@ namespace Caracal
                     receiverAddress.value(),
                     argument.value(),
                     receiverType,
-                    ensureRequiredExtern("C.memmove")));
+                    resolveExternFunctionId("C.memmove")));
             }
             return ValueRef{};
         }
@@ -2503,11 +2500,43 @@ namespace Caracal
                         break;
                     }
                     case BinaryOperatorKind::Equal:
-                        m_currentBlock->addInstruction(std::make_unique<EqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
-                        break;
                     case BinaryOperatorKind::NotEqual:
-                        m_currentBlock->addInstruction(std::make_unique<NotEqualInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
+                    {
+                        // we use strcmp for comparing cstrings
+                        auto lhs = leftValue.value();
+                        auto rhs = rightValue.value();
+                        auto operandType = comparisonOperandType;
+                        if (comparisonOperandType == m_semanticContext.wellKnown().cstring)
+                        {
+                            const auto strcmpId = resolveExternFunctionId("C.strcmp");
+                            const auto callId = m_nextTemporaryId++;
+                            m_currentBlock->addInstruction(std::make_unique<CallInstruction>(
+                                callId,
+                                strcmpId,
+                                std::vector<ValueRef>{ lhs, rhs },
+                                m_semanticContext.wellKnown().i32));
+
+                            const auto zeroId = m_nextTemporaryId++;
+                            m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+                                zeroId,
+                                ConstantValue::FromI32(0),
+                                m_semanticContext.wellKnown().i32));
+
+                            lhs = ValueRef{ callId };
+                            rhs = ValueRef{ zeroId };
+                            operandType = m_semanticContext.wellKnown().i32;
+                        }
+
+                        if (binaryExpression->binaryOperator() == BinaryOperatorKind::Equal)
+                        {
+                            m_currentBlock->addInstruction(std::make_unique<EqualInstruction>(temporaryId, lhs, rhs, expression->type(), operandType));
+                        }
+                        else
+                        {
+                            m_currentBlock->addInstruction(std::make_unique<NotEqualInstruction>(temporaryId, lhs, rhs, expression->type(), operandType));
+                        }
                         break;
+                    }
                     case BinaryOperatorKind::LessThan:
                         m_currentBlock->addInstruction(std::make_unique<LessThanInstruction>(temporaryId, leftValue.value(), rightValue.value(), expression->type(), comparisonOperandType));
                         break;

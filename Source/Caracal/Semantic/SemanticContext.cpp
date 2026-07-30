@@ -40,6 +40,19 @@ namespace Caracal
         auto matches = methodType != Type::Undefined();
         if (matches)
         {
+            // the compiler emits calls to it, so the binding must carry required = true
+            auto isMarkedRequired = false;
+            for (const auto requiredType : module.requiredExternFunctions())
+            {
+                if (requiredType == methodType)
+                {
+                    isMarkedRequired = true;
+                }
+            }
+            matches = isMarkedRequired;
+        }
+        if (matches)
+        {
             const auto& definition = module.getFunctionDefinition(methodType);
             const auto& parameters = definition.parameters();
             matches = definition.symbolName().has_value()
@@ -140,6 +153,7 @@ namespace Caracal
             ValidateCompilerEmittedCall(module, "calloc", { wellKnownTypes.i64, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
             ValidateCompilerEmittedCall(module, "realloc", { wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
             ValidateCompilerEmittedCall(module, "memmove", { wellKnownTypes.rawptr, wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
+            ValidateCompilerEmittedCall(module, "strcmp", { wellKnownTypes.cstring, wellKnownTypes.cstring }, wellKnownTypes.i32);
         }
 
         // prelude definitions only lower on demand, the boundary lets the lowerer skip them

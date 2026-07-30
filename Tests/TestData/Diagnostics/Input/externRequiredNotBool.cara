@@ -1,0 +1,7 @@
+#extern(symbol = "puts", required = 1)
+def myPuts(message: cstring) i32 {}
+
+def main() i32
+{
+    return 0;
+}

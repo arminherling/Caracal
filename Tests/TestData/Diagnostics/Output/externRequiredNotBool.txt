@@ -1,0 +1,10 @@
+ Error T0005 Annotation argument type mismatch
+    ,-[Diagnostics/Input/externRequiredNotBool.cara:1:37]
+  1 | #extern(symbol = "puts", required = 1)
+    .                                     -
+    .                                     `-- Annotation '#extern' expects a bool literal for 'required', but got an expression of type 'i32'.
+  2 | def myPuts(message: cstring) i32 {}
+  3 | 
+  4 | def main() i32
+    `----
+  Fix: Change the annotation argument to the expected type.

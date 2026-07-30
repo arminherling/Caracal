@@ -14,19 +14,19 @@ type C
     def C.clock() i32 {}
 
     // compares two C strings, returns 0 when they are equal, non-zero otherwise
-    #extern(symbol = "strcmp")
+    #extern(symbol = "strcmp", required = true)
     def C.strcmp(left: cstring, right: cstring) i32 {}
 
     // allocates count * size bytes of zero-initialized heap memory, returns a null pointer on failure
-    #extern(symbol = "calloc")
+    #extern(symbol = "calloc", required = true)
     def C.calloc(count: i64, size: i64) rawptr {}
 
     // resizes an allocation to size bytes, the returned pointer may differ from the given one
-    #extern(symbol = "realloc")
+    #extern(symbol = "realloc", required = true)
     def C.realloc(pointer: rawptr, size: i64) rawptr {}
 
     // copies size bytes between possibly overlapping memory regions
-    #extern(symbol = "memmove")
+    #extern(symbol = "memmove", required = true)
     def C.memmove(destination: rawptr, source: rawptr, size: i64) rawptr {}
 
     // releases an allocation, the pointer must not be used afterwards

@@ -54,7 +54,6 @@ namespace Caracal
         [[nodiscard]] bool lowerInstruction(const Instruction& instruction) noexcept;
         [[nodiscard]] bool lowerTerminator(const Terminator& terminator) noexcept;
         [[nodiscard]] bool emitBinary(TemporaryId resultId, ValueRef leftRef, ValueRef rightRef, InstructionKind kind, Type operandType = Type::Undefined()) noexcept;
-        [[nodiscard]] bool emitStringEquality(TemporaryId resultId, llvm::Value* left, llvm::Value* right, InstructionKind kind) noexcept;
         [[nodiscard]] bool buildCallArguments(const std::vector<ValueRef>& arguments, llvm::Function* callee, std::vector<llvm::Value*>& argumentValues) noexcept;
 
         [[nodiscard]] llvm::FunctionType* tryLowerFunctionType(Type returnType, const std::vector<IRParameter>& parameters) const noexcept;

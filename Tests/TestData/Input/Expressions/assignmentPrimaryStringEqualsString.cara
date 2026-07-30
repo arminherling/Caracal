@@ -1,6 +1,3 @@
-#extern()
-def strcmp(left: cstring, right: cstring) i32 {}
-
 def func()
 {
     x :: "123" == "123";

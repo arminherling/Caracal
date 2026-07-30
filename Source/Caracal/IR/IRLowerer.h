@@ -134,7 +134,7 @@ namespace Caracal
         [[nodiscard]] std::optional<ValueRef> emitCall(const FunctionCallExpression* expression, std::optional<ValueRef> implicitArgument = std::nullopt) noexcept;
         void registerRequiredExterns(Module& module) noexcept;
         void registerExternDefinition(const FunctionDefinition& definition, Module& module) noexcept;
-        [[nodiscard]] FunctionId ensureRequiredExtern(const std::string& fullName) noexcept;
+        [[nodiscard]] FunctionId resolveExternFunctionId(const std::string& fullName) noexcept;
         
         void resetState();
         void registerBuiltinTypes(Module& module) noexcept;
@@ -143,7 +143,7 @@ namespace Caracal
 
         SemanticContext& m_semanticContext;
         Module* m_currentModule{ nullptr };
-        std::unordered_map<std::string, FunctionId> m_runtimeExternIds;
+        std::unordered_map<std::string, FunctionId> m_externFunctionIdCache;
         LocalStateMap m_locals;
         std::unordered_set<std::string> m_addressTakenLocals;
         std::unordered_map<std::string, Type> m_globalTypes;

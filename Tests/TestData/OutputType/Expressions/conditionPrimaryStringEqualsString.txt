@@ -1,37 +1,4 @@
 FunctionDefinitionStatement: {
-    Type: (cstring, cstring) -> i32
-    Name: strcmp
-    Annotation: {
-        Name: extern
-        ArgumentsNode(0): {
-        }
-    }
-    ParametersNode(2): {
-        ParameterNode: {
-            Name: left
-            TypeNameNode: {
-                Type: cstring
-                Lexeme: cstring
-            }
-        }
-        ParameterNode: {
-            Name: right
-            TypeNameNode: {
-                Type: cstring
-                Lexeme: cstring
-            }
-        }
-    }
-    ReturnTypesNode(1): {
-        TypeNameNode: {
-            Type: i32
-            Lexeme: i32
-        }
-    }
-    BlockNode(0): {
-    }
-}
-FunctionDefinitionStatement: {
     Type: () -> void
     Name: func
     ParametersNode(0): {
