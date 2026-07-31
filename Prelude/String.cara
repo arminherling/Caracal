@@ -1,0 +1,19 @@
+type string(bytes: [u8; _])
+{
+    _bytes : [u8; _] = bytes
+
+    def length() i32
+    {
+        return ._bytes.length;
+    }
+
+    def isEmpty() bool
+    {
+        return ._bytes.length == 0;
+    }
+
+    def byteAt(index: i32) u8
+    {
+        return ._bytes.at(index);
+    }
+}

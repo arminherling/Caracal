@@ -1,0 +1,95 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(4): {
+        VariableDeclaration: {
+            Type: [u8; _]
+            Left: {
+                NameExpression: {
+                    Type: [u8; _]
+                    Name: bytes
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: [u8; _]
+                    Lexeme: [u8; _]
+                    Kind: Dynamic
+                    DataType: {
+                        TypeNameNode: {
+                            Type: u8
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            Right: {
+                ArrayLiteral(0): {
+                    Type: [u8; _]
+                    Dynamic: true
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: string
+            Left: {
+                NameExpression: {
+                    Type: string
+                    Name: s
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: string
+                    Left: {
+                        NameExpression: {
+                            Type: string
+                            Name: string
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: string
+                            Function type: (ref string, [u8; _]) -> void
+                            NameExpression: {
+                                Type: (ref string, [u8; _]) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(1): {
+                                NameExpression: {
+                                    Type: [u8; _]
+                                    Name: bytes
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: string
+            Left: {
+                Discard: _
+            }
+            Right: {
+                NameExpression: {
+                    Type: string
+                    Name: s
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 42
+        }
+    }
+}

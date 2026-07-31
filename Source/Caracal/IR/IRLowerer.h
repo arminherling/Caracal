@@ -135,6 +135,7 @@ namespace Caracal
         void registerRequiredExterns(Module& module) noexcept;
         void registerExternDefinition(const FunctionDefinition& definition, Module& module) noexcept;
         [[nodiscard]] FunctionId resolveExternFunctionId(const std::string& fullName) noexcept;
+        [[nodiscard]] bool lowerFunctionDefinitionByKind(const FunctionDefinition& definition, Module& module) noexcept;
         
         void resetState();
         void registerBuiltinTypes(Module& module) noexcept;
@@ -142,8 +143,9 @@ namespace Caracal
         void mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept;
 
         SemanticContext& m_semanticContext;
-        Module* m_currentModule{ nullptr };
         std::unordered_map<std::string, FunctionId> m_externFunctionIdCache;
+        std::vector<Type> m_requiredPreludeFunctions;
+        std::unordered_set<i32> m_queuedPreludeFunctionIds;
         LocalStateMap m_locals;
         std::unordered_set<std::string> m_addressTakenLocals;
         std::unordered_map<std::string, Type> m_globalTypes;

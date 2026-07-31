@@ -124,7 +124,9 @@ namespace Caracal
 
         if (!preludeDiagnostics.hasErrors())
         {
-            static_cast<void>(typeCheck(preludeTrees, options, module, preludeDiagnostics));
+            auto preludeOptions = options;
+            preludeOptions.isPreludePass = true;
+            static_cast<void>(typeCheck(preludeTrees, preludeOptions, module, preludeDiagnostics));
         }
 
         if (!preludeDiagnostics.diagnostics().empty())
@@ -338,6 +340,51 @@ namespace Caracal
         }
 
         return 0;
+    }
+
+    bool SemanticContext::isPreludeFunctionDefinition(Type functionType) const noexcept
+    {
+        const auto index = m_functionDefinitionIndexById.find(functionType.toBaseType().id());
+        if (index == m_functionDefinitionIndexById.end())
+        {
+            return false;
+        }
+
+        return index->second < m_preludeFunctionDefinitionCount;
+    }
+
+    bool SemanticContext::isPreludeTypeDefinition(Type type) const noexcept
+    {
+        const auto index = m_typeDefinitionIndexById.find(type.toBaseType().id());
+        if (index == m_typeDefinitionIndexById.end())
+        {
+            return false;
+        }
+
+        return index->second < m_preludeTypeDefinitionCount;
+    }
+
+    void SemanticContext::markPreludeTypeRequired(Type type) noexcept
+    {
+        const auto baseType = type.toBaseType();
+        if (baseType.kind() != TypeKind::Type || !isPreludeTypeDefinition(baseType))
+        {
+            return;
+        }
+
+        for (const auto existing : m_requiredPreludeTypes)
+        {
+            if (existing == baseType)
+            {
+                return;
+            }
+        }
+        m_requiredPreludeTypes.push_back(baseType);
+
+        for (const auto& field : getTypeDefinition(baseType).fields())
+        {
+            markPreludeTypeRequired(field.type());
+        }
     }
 
     void SemanticContext::markExternRequired(Type functionType) noexcept

@@ -217,12 +217,19 @@ namespace Caracal
 
     bool IRLowerer::lower(Module& module) noexcept
     {
-        m_currentModule = &module;
         m_externFunctionIdCache.clear();
+        m_requiredPreludeFunctions.clear();
+        m_queuedPreludeFunctionIds.clear();
         resetState();
         m_globalTypes.clear();
         registerBuiltinTypes(module);
         registerRequiredExterns(module);
+
+        for (const auto requiredType : m_semanticContext.requiredPreludeTypes())
+        {
+            if (!lowerTypeDefinition(m_semanticContext.getTypeDefinition(requiredType), module))
+                return false;
+        }
 
         // array types have no TypeDeclaration, so the printer needs their canonical names registered
         for (const auto arrayType : m_semanticContext.arrayTypes())
@@ -313,47 +320,52 @@ namespace Caracal
                 continue;
 
             const auto& functionDefinition = m_semanticContext.functionDefinitions()[definitionIndex];
-            if (functionDefinition.functionType() == FunctionType::SynthesizedConstructor)
-            {
-                if (!lowerSynthesizedConstructorDefinition(functionDefinition, module))
-                    return false;
+            if (!lowerFunctionDefinitionByKind(functionDefinition, module))
+                return false;
+        }
 
-                continue;
-            }
-
-            // intrinsics have no body, they lower inline at their call sites
-            if (functionDefinition.functionType() == FunctionType::Intrinsic)
-                continue;
-
-            const auto* statement = functionDefinition.statement();
-            switch (statement->kind())
-            {
-                case NodeKind::FunctionDefinitionStatement:
-                {
-                    const auto* functionStatement = static_cast<const FunctionDefinitionStatement*>(statement);
-                    if (!lowerFunctionDefinition(functionDefinition, functionStatement->bodyNode().get(), functionStatement->isExtern(), module))
-                        return false;
-
-                    break;
-                }
-                case NodeKind::MethodDefinitionStatement:
-                {
-                    const auto parentType = functionDefinition.parentType();
-                    if (parentType.kind() == TypeKind::Builtin && parentType.id() >= 0)
-                        break;
-
-                    const auto* methodStatement = static_cast<const MethodDefinitionStatement*>(statement);
-                    if (!lowerFunctionDefinition(functionDefinition, methodStatement->bodyNode().get(), methodStatement->isExtern(), module))
-                        return false;
-
-                    break;
-                }
-                default:
-                    break;
-            }
+        // finally lower previously marked functions
+        for (size_t queueIndex = 0; queueIndex < m_requiredPreludeFunctions.size(); ++queueIndex)
+        {
+            const auto& definition = m_semanticContext.getFunctionDefinition(m_requiredPreludeFunctions[queueIndex]);
+            if (!lowerFunctionDefinitionByKind(definition, module))
+                return false;
         }
 
         return true;
+    }
+
+    bool IRLowerer::lowerFunctionDefinitionByKind(const FunctionDefinition& functionDefinition, Module& module) noexcept
+    {
+        if (functionDefinition.functionType() == FunctionType::SynthesizedConstructor)
+        {
+            return lowerSynthesizedConstructorDefinition(functionDefinition, module);
+        }
+
+        // intrinsics have no bodies
+        if (functionDefinition.functionType() == FunctionType::Intrinsic)
+            return true;
+
+        const auto* statement = functionDefinition.statement();
+        switch (statement->kind())
+        {
+            case NodeKind::FunctionDefinitionStatement:
+            {
+                const auto* functionStatement = static_cast<const FunctionDefinitionStatement*>(statement);
+                return lowerFunctionDefinition(functionDefinition, functionStatement->bodyNode().get(), functionStatement->isExtern(), module);
+            }
+            case NodeKind::MethodDefinitionStatement:
+            {
+                const auto parentType = functionDefinition.parentType();
+                if (parentType.kind() == TypeKind::Builtin && parentType.id() >= 0)
+                    return true;
+
+                const auto* methodStatement = static_cast<const MethodDefinitionStatement*>(statement);
+                return lowerFunctionDefinition(functionDefinition, methodStatement->bodyNode().get(), methodStatement->isExtern(), module);
+            }
+            default:
+                return true;
+        }
     }
 
     bool IRLowerer::lowerSynthesizedConstructorDefinition(const FunctionDefinition& definition, Module& module) noexcept
@@ -2618,6 +2630,14 @@ namespace Caracal
 
         auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
         const auto functionId = functionDefinition.type().id();
+
+        // we need to mark required prelude functions for later
+        if (!functionDefinition.symbolName().has_value()
+            && m_semanticContext.isPreludeFunctionDefinition(functionType)
+            && m_queuedPreludeFunctionIds.insert(functionId).second)
+        {
+            m_requiredPreludeFunctions.push_back(functionType);
+        }
 
         const auto& parameterTypes = functionDefinition.parameters();
         const size_t parameterOffset = implicitArgument.has_value() ? 1 : 0;

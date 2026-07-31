@@ -1,3 +1,5 @@
+type C
+
 extern C.strcmp(%0: cstring "left", %1: cstring "right") i32 symbol "strcmp"
 
 extern C.calloc(%0: i64 "count", %1: i64 "size") rawptr symbol "calloc"

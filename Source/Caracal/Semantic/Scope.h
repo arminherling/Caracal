@@ -18,6 +18,7 @@ namespace Caracal
         Function,
         Type,
         Method,
+        StaticMethod,
     };
 
     enum class VariableBindingKind

@@ -94,6 +94,10 @@ namespace Caracal
         [[nodiscard]] const std::vector<FunctionDefinition>& functionDefinitions() const noexcept { return m_functionDefinitions; }
         [[nodiscard]] const std::vector<Type>& requiredExternFunctions() const noexcept { return m_requiredExternFunctions; }
         [[nodiscard]] size_t preludeFunctionDefinitionCount() const noexcept { return m_preludeFunctionDefinitionCount; }
+        [[nodiscard]] bool isPreludeFunctionDefinition(Type functionType) const noexcept;
+        [[nodiscard]] bool isPreludeTypeDefinition(Type type) const noexcept;
+        [[nodiscard]] const std::vector<Type>& requiredPreludeTypes() const noexcept { return m_requiredPreludeTypes; }
+        void markPreludeTypeRequired(Type type) noexcept;
         [[nodiscard]] size_t preludeTypeDefinitionCount() const noexcept { return m_preludeTypeDefinitionCount; }
         void markExternRequired(Type functionType) noexcept;
         [[nodiscard]] Type tryGetExternFunctionByFullName(std::string_view fullName) const noexcept;
@@ -108,6 +112,7 @@ namespace Caracal
         std::vector<TypeDefinition> m_typeDefinitions;
         std::vector<EnumDefinition> m_enumDefinitions;
         std::vector<Type> m_requiredExternFunctions;
+        std::vector<Type> m_requiredPreludeTypes;
         size_t m_preludeFunctionDefinitionCount{ 0 };
         size_t m_preludeTypeDefinitionCount{ 0 };
         std::vector<FunctionDefinition> m_functionDefinitions;

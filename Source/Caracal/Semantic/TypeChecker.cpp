@@ -2731,7 +2731,14 @@ namespace Caracal
             TODO("This shouldn't happen");
         }
 
-        pushScope(ScopeKind::Method);
+        if (statement->modifier() == MethodModifier::Static)
+        {
+            pushScope(ScopeKind::StaticMethod);
+        }
+        else
+        {
+            pushScope(ScopeKind::Method);
+        }
 
         auto& methodDefinition = m_module.getFunctionDefinition(methodType);
         auto& parameters = methodDefinition.parameters();
@@ -2756,8 +2763,9 @@ namespace Caracal
             TODO("Handle multiple return types in function definition");
         }
 
-        m_currentFunctionName.clear();
+        m_currentFunctionName = methodDefinition.fullName();
         typeCheckBlockNode(statement->bodyNode().get(), tokens);
+        m_currentFunctionName.clear();
 
         if (!HasExternAnnotation(statement->annotations())
             && m_currentReturnType != Type::Void()
@@ -3075,6 +3083,15 @@ namespace Caracal
                             if (methodDefinition.symbolName().has_value())
                             {
                                 m_module.markExternRequired(methodType);
+                            }
+
+                            if (!m_options.isPreludePass)
+                            {
+                                m_module.markPreludeTypeRequired(leftType);
+                                for (const auto callReturnType : methodDefinition.returnTypes())
+                                {
+                                    m_module.markPreludeTypeRequired(callReturnType);
+                                }
                             }
 
                             if (methodDefinition.functionType() == FunctionType::PrivateMethod && m_currentType != leftType)
@@ -3496,6 +3513,14 @@ namespace Caracal
             m_module.markExternRequired(functionType);
         }
 
+        if (!m_options.isPreludePass)
+        {
+            for (const auto callReturnType : functionDefinition.returnTypes())
+            {
+                m_module.markPreludeTypeRequired(callReturnType);
+            }
+        }
+
         if (!typeCheckCallArguments(functionCallExpression, functionDefinition, tokens))
         {
             return Type::Undefined();
@@ -3520,6 +3545,17 @@ namespace Caracal
 
     Type TypeChecker::typeCheckMemberAccessExpression(MemberAccessExpression* memberAccessExpression, const TokenBuffer& tokens)
     {
+        if (currentScope()->kind() == ScopeKind::StaticMethod)
+        {
+            m_diagnostics.addMemberAccessInStaticMethodError(
+                tokens.source(),
+                memberAccessExpression->sourceLocation(tokens),
+                m_currentFunctionName);
+
+            memberAccessExpression->setType(Type::Undefined());
+            return Type::Undefined();
+        }
+
         if (m_currentType == Type::Undefined())
         {
             m_diagnostics.addMemberAccessInDefaultParameterError(
@@ -3819,6 +3855,11 @@ namespace Caracal
         auto type = m_module.tryGetTypeByName(name);
         if (type != Type::Undefined())
         {
+            if (!m_options.isPreludePass)
+            {
+                m_module.markPreludeTypeRequired(type);
+            }
+
             if (typeNameNode->isReference())
             {
                 if (type.isReference())

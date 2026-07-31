@@ -1,0 +1,13 @@
+ Error T0093 Member access is not allowed in static methods
+     ,-[Diagnostics/Input/memberAccessInStaticMethod.cara:7:16]
+   4 | 
+   5 |     def Box.get() i32
+   6 |     {
+   7 |         return .value;
+     .                ------
+     .                   `-- 'Box.get' is static and has no instance
+   8 |     }
+   9 | }
+  10 | 
+     `----
+  Fix: Make 'Box.get' an instance method if it needs member access.

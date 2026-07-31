@@ -1,0 +1,45 @@
+type string
+    _bytes: [u8; _]
+
+extern C.strcmp(%0: cstring "left", %1: cstring "right") i32 symbol "strcmp"
+
+extern C.calloc(%0: i64 "count", %1: i64 "size") rawptr symbol "calloc"
+
+extern C.realloc(%0: rawptr "pointer", %1: i64 "size") rawptr symbol "realloc"
+
+extern C.memmove(%0: rawptr "destination", %1: rawptr "source", %2: i64 "size") rawptr symbol "memmove"
+
+define main() i32
+block entry(0):
+    %slot0 = allocate_local : [u8; _] "bytes"
+    %slot1 = allocate_local : string "s"
+    %0 = address_of %slot0 : ref [u8; _]
+    %1 = const 8 : i64
+    %2 = size_of u8 : i64
+    %3 = call C.calloc(%1, %2) : rawptr
+    %4 = address_of_field %0.0 : ref u8 "data"
+    store_value %3, %4 : ref u8
+    %5 = const 0 : i32
+    %6 = address_of_field %0.1 : ref i32 "length"
+    store_value %5, %6 : i32
+    %7 = const 8 : i32
+    %8 = address_of_field %0.2 : ref i32 "capacity"
+    store_value %7, %8 : i32
+    %9 = address_of %slot1 : ref string
+    %10 = array_copy %0 : [u8; _]
+    call string.new(%9, %10)
+    %11 = load_value %9 : string
+    %12 = const 42 : i32
+    return %12
+
+define string.new(%0: ref string ".this", %1: [u8; _] "bytes") void
+block entry(0):
+    %0 = parameter 0 : ref string ".this"
+    %1 = parameter 1 : [u8; _] "bytes"
+    %slot0 = allocate_local : [u8; _] "temp"
+    %2 = address_of %slot0 : ref [u8; _]
+    store_value %1, %2 : [u8; _]
+    %3 = array_copy %2 : [u8; _]
+    %4 = address_of_field %0.0 : ref [u8; _] "_bytes"
+    store_value %3, %4 : [u8; _]
+    return

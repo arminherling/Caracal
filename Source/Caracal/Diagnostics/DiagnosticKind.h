@@ -48,6 +48,7 @@ namespace Caracal
         T0073_MethodCallMissingDot,
         T0076_MemberAccessInDefaultParameter,
         T0077_PrivateMethodCallOutsideType,
+        T0093_MemberAccessInStaticMethod,
 
         // Call diagnostics
         T0015_ArgumentCountMismatch,

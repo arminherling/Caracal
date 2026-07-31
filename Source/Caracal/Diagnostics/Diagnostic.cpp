@@ -243,6 +243,8 @@ namespace Caracal
                 return "T0091";
             case DiagnosticKind::T0092_ReferenceToNonVariable:
                 return "T0092";
+            case DiagnosticKind::T0093_MemberAccessInStaticMethod:
+                return "T0093";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -484,6 +486,8 @@ namespace Caracal
                 return "Arrays cannot store dynamic arrays";
             case DiagnosticKind::T0092_ReferenceToNonVariable:
                 return "References can only be taken to variables";
+            case DiagnosticKind::T0093_MemberAccessInStaticMethod:
+                return "Member access is not allowed in static methods";
             case DiagnosticKind::T0075_DuplicateMethodDeclaration:
                 return "Duplicate method declaration";
             case DiagnosticKind::T0076_MemberAccessInDefaultParameter:

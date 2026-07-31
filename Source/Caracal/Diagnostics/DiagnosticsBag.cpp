@@ -1642,6 +1642,22 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addMemberAccessInStaticMethodError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& methodName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0093_MemberAccessInStaticMethod,
+            source,
+            location,
+            "Make '" + methodName + "' an instance method if it needs member access.");
+        diagnostic.addPrimaryLabel(location, "'" + methodName + "' is static and has no instance");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addReferenceToNonVariableError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location)

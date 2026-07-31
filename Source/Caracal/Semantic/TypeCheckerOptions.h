@@ -10,5 +10,6 @@ namespace Caracal
         std::string defaultIntegerType;
         std::string defaultFloatingType;
         std::string defaultEnumBaseType;
+        bool isPreludePass{ false };
     };
 }
