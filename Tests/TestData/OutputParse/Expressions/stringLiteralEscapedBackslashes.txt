@@ -1,0 +1,58 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: escapedBackslashes
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: cstring
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: undefined
+            StringLiteral: "bsn:\\n bst:\\t bsbsn:\\\\n end:\\"
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        StringLiteral: "\\n"
+                    }
+                    Operation: Equal
+                    Right: {
+                        StringLiteral: "\\\n"
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 1
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 42
+        }
+    }
+}

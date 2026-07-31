@@ -1,0 +1,58 @@
+FunctionDefinitionStatement: {
+    Type: () -> cstring
+    Name: escapedBackslashes
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: cstring
+            Lexeme: cstring
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: cstring
+            StringLiteral: "bsn:\\n bst:\\t bsbsn:\\\\n end:\\"
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        StringLiteral: "\\n"
+                    }
+                    Operation: Equal
+                    Right: {
+                        StringLiteral: "\\\n"
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 1
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 42
+        }
+    }
+}
