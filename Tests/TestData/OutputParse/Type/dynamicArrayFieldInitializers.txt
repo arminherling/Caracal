@@ -1,0 +1,187 @@
+TypeDefinitionStatement: {
+    Type: undefined
+    Name: Buffer
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: bytes
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: undefined
+                    Lexeme: [u8; _]
+                    Kind: Dynamic
+                    DataType: {
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            Right: {
+                ArrayLiteral(2): {
+                    Type: undefined
+                    Dynamic: true
+                    NumberLiteral: 7
+                    NumberLiteral: 9
+                }
+            }
+        }
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: spare
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: undefined
+                    Lexeme: [u8; _]
+                    Kind: Dynamic
+                    DataType: {
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            Right: {
+                ArrayLiteral(0): {
+                    Type: undefined
+                    Dynamic: true
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: b
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: Buffer
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: new
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            BinaryExpression: {
+                Type: undefined
+                Left: {
+                    BinaryExpression: {
+                        Type: undefined
+                        Left: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    BinaryExpression: {
+                                        Type: undefined
+                                        Left: {
+                                            NameExpression: {
+                                                Type: undefined
+                                                Name: b
+                                            }
+                                        }
+                                        Operation: MemberAccess
+                                        Right: {
+                                            NameExpression: {
+                                                Type: undefined
+                                                Name: bytes
+                                            }
+                                        }
+                                    }
+                                }
+                                Operation: MemberAccess
+                                Right: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: length
+                                    }
+                                }
+                            }
+                        }
+                        Operation: AdditionWrapping
+                        Right: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    BinaryExpression: {
+                                        Type: undefined
+                                        Left: {
+                                            NameExpression: {
+                                                Type: undefined
+                                                Name: b
+                                            }
+                                        }
+                                        Operation: MemberAccess
+                                        Right: {
+                                            NameExpression: {
+                                                Type: undefined
+                                                Name: spare
+                                            }
+                                        }
+                                    }
+                                }
+                                Operation: MemberAccess
+                                Right: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: length
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Operation: AdditionWrapping
+                Right: {
+                    NumberLiteral: 40
+                }
+            }
+        }
+    }
+}

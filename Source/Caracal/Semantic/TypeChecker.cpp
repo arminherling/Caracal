@@ -2686,12 +2686,25 @@ namespace Caracal
         }
 
         auto fieldExpression = statement->rightExpression().get();
-        auto expressionType = typeCheckExpression(fieldExpression, tokens);
+        auto expressionType = Type::Undefined();
+        {
+            auto contextualType = std::optional<Type>{};
+            if (fieldType.kind() == TypeKind::FixedArray
+                || fieldType.kind() == TypeKind::DynamicArray
+                || fieldType.kind() == TypeKind::Slice)
+            {
+                // remember the explicit element type so that we can type check the literals
+                contextualType = fieldType;
+            }
+            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualType };
+            expressionType = typeCheckExpression(fieldExpression, tokens);
+        }
+        
         if (fieldType == Type::Undefined())
         {
             fieldType = expressionType;
         }
-        else if (!isAssignableTo(expressionType, fieldType))
+        else if (expressionType != Type::Undefined() && !isAssignableTo(expressionType, fieldType))
         {
             const auto location = fieldExpression->sourceLocation(tokens);
             if (!tryAddArrayLengthMismatchError(tokens, location, fieldType, expressionType))

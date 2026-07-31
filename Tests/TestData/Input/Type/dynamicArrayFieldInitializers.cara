@@ -1,0 +1,11 @@
+type Buffer
+{
+    bytes : [u8; _] = [7, 9, ...]
+    spare : [u8; _] = [...]
+}
+
+def main() i32
+{
+    b := Buffer.new();
+    return b.bytes.length %+ b.spare.length %+ 40;
+}

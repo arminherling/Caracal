@@ -1,0 +1,38 @@
+ Error T0041 Number literal out of range
+    ,-[Diagnostics/Input/dynamicArrayFieldInitializerMismatch.cara:3:25]
+  1 | type Buffer
+  2 | {
+  3 |     tooBig : [u8; _] = [300, ...]
+    .                         ---
+    .                          `-- Literal '300' does not fit in type 'u8'
+  4 |     wrongKind : [u8; _] = [true, ...]
+  5 |     mixed : [u8; _] = [1, true, ...]
+  6 | }
+    `----
+  Fix: Use a smaller literal that fits in type 'u8', or change the target type.
+ Error T0024 Type field initializer mismatch
+    ,-[Diagnostics/Input/dynamicArrayFieldInitializerMismatch.cara:4:27]
+  1 | type Buffer
+  2 | {
+  3 |     tooBig : [u8; _] = [300, ...]
+  4 |     wrongKind : [u8; _] = [true, ...]
+    .                           -----------
+    .                                `-- Field is declared as '[u8; _]', but its initializer has type '[bool; _]'
+  5 |     mixed : [u8; _] = [1, true, ...]
+  6 | }
+  7 | 
+    `----
+  Fix: Initialize this field with a value of type '[u8; _]' or change the field type.
+ Error T0078 Array element type mismatch
+    ,-[Diagnostics/Input/dynamicArrayFieldInitializerMismatch.cara:5:27]
+  2 | {
+  3 |     tooBig : [u8; _] = [300, ...]
+  4 |     wrongKind : [u8; _] = [true, ...]
+  5 |     mixed : [u8; _] = [1, true, ...]
+    .                           ----
+    .                             `-- This element has type 'bool', but the previous elements have type 'u8'
+  6 | }
+  7 | 
+  8 | def main() i32
+    `----
+  Fix: Use elements of a single type in the array literal.

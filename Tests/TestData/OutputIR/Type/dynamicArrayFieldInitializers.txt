@@ -1,0 +1,72 @@
+type Buffer
+    bytes: [u8; _]
+    spare: [u8; _]
+
+extern C.strcmp(%0: cstring "left", %1: cstring "right") i32 symbol "strcmp"
+
+extern C.calloc(%0: i64 "count", %1: i64 "size") rawptr symbol "calloc"
+
+extern C.realloc(%0: rawptr "pointer", %1: i64 "size") rawptr symbol "realloc"
+
+extern C.memmove(%0: rawptr "destination", %1: rawptr "source", %2: i64 "size") rawptr symbol "memmove"
+
+define main() i32
+block entry(0):
+    %slot0 = allocate_local : Buffer "b"
+    %0 = address_of %slot0 : ref Buffer
+    call Buffer.new(%0)
+    %1 = address_of_field %0.0 : ref [u8; _] "bytes"
+    %2 = address_of_field %1.1 : ref i32 "length"
+    %3 = load_value %2 : i32
+    %4 = address_of_field %0.1 : ref [u8; _] "spare"
+    %5 = address_of_field %4.1 : ref i32 "length"
+    %6 = load_value %5 : i32
+    %7 = add %3, %6 : i32
+    %8 = const 40 : i32
+    %9 = add %7, %8 : i32
+    return %9
+
+define Buffer.new(%0: ref Buffer ".this") void
+block entry(0):
+    %0 = parameter 0 : ref Buffer ".this"
+    %slot0 = allocate_local : [u8; _] "temp"
+    %slot1 = allocate_local : [u8; _] "temp"
+    %1 = address_of %slot0 : ref [u8; _]
+    %2 = const 8 : i64
+    %3 = size_of u8 : i64
+    %4 = call C.calloc(%2, %3) : rawptr
+    %5 = address_of_field %1.0 : ref u8 "data"
+    store_value %4, %5 : ref u8
+    %6 = const 2 : i32
+    %7 = address_of_field %1.1 : ref i32 "length"
+    store_value %6, %7 : i32
+    %8 = const 8 : i32
+    %9 = address_of_field %1.2 : ref i32 "capacity"
+    store_value %8, %9 : i32
+    %10 = const 0 : i32
+    %11 = element_address %4[%10] : u8
+    %12 = const 7 : u8
+    store_value %12, %11 : u8
+    %13 = const 1 : i32
+    %14 = element_address %4[%13] : u8
+    %15 = const 9 : u8
+    store_value %15, %14 : u8
+    %16 = load_value %1 : [u8; _]
+    %17 = address_of_field %0.0 : ref [u8; _] "bytes"
+    store_value %16, %17 : [u8; _]
+    %18 = address_of %slot1 : ref [u8; _]
+    %19 = const 8 : i64
+    %20 = size_of u8 : i64
+    %21 = call C.calloc(%19, %20) : rawptr
+    %22 = address_of_field %18.0 : ref u8 "data"
+    store_value %21, %22 : ref u8
+    %23 = const 0 : i32
+    %24 = address_of_field %18.1 : ref i32 "length"
+    store_value %23, %24 : i32
+    %25 = const 8 : i32
+    %26 = address_of_field %18.2 : ref i32 "capacity"
+    store_value %25, %26 : i32
+    %27 = load_value %18 : [u8; _]
+    %28 = address_of_field %0.1 : ref [u8; _] "spare"
+    store_value %27, %28 : [u8; _]
+    return

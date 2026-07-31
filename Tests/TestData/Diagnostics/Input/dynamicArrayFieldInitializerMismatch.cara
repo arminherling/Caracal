@@ -1,0 +1,11 @@
+type Buffer
+{
+    tooBig : [u8; _] = [300, ...]
+    wrongKind : [u8; _] = [true, ...]
+    mixed : [u8; _] = [1, true, ...]
+}
+
+def main() i32
+{
+    return 0;
+}

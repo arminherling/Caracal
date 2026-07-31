@@ -1,0 +1,187 @@
+TypeDefinitionStatement: {
+    Type: Buffer
+    Name: Buffer
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: [u8; _]
+                    Name: bytes
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: [u8; _]
+                    Lexeme: [u8; _]
+                    Kind: Dynamic
+                    DataType: {
+                        TypeNameNode: {
+                            Type: u8
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            Right: {
+                ArrayLiteral(2): {
+                    Type: [u8; _]
+                    Dynamic: true
+                    NumberLiteral: 7
+                    NumberLiteral: 9
+                }
+            }
+        }
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: [u8; _]
+                    Name: spare
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: [u8; _]
+                    Lexeme: [u8; _]
+                    Kind: Dynamic
+                    DataType: {
+                        TypeNameNode: {
+                            Type: u8
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            Right: {
+                ArrayLiteral(0): {
+                    Type: [u8; _]
+                    Dynamic: true
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(2): {
+        VariableDeclaration: {
+            Type: Buffer
+            Left: {
+                NameExpression: {
+                    Type: Buffer
+                    Name: b
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: Buffer
+                    Left: {
+                        NameExpression: {
+                            Type: Buffer
+                            Name: Buffer
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: Buffer
+                            Function type: (ref Buffer) -> void
+                            NameExpression: {
+                                Type: (ref Buffer) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    BinaryExpression: {
+                        Type: i32
+                        Left: {
+                            BinaryExpression: {
+                                Type: i32
+                                Left: {
+                                    BinaryExpression: {
+                                        Type: [u8; _]
+                                        Left: {
+                                            NameExpression: {
+                                                Type: Buffer
+                                                Name: b
+                                            }
+                                        }
+                                        Operation: MemberAccess
+                                        Right: {
+                                            NameExpression: {
+                                                Type: [u8; _]
+                                                Name: bytes
+                                            }
+                                        }
+                                    }
+                                }
+                                Operation: MemberAccess
+                                Right: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: length
+                                    }
+                                }
+                            }
+                        }
+                        Operation: AdditionWrapping
+                        Right: {
+                            BinaryExpression: {
+                                Type: i32
+                                Left: {
+                                    BinaryExpression: {
+                                        Type: [u8; _]
+                                        Left: {
+                                            NameExpression: {
+                                                Type: Buffer
+                                                Name: b
+                                            }
+                                        }
+                                        Operation: MemberAccess
+                                        Right: {
+                                            NameExpression: {
+                                                Type: [u8; _]
+                                                Name: spare
+                                            }
+                                        }
+                                    }
+                                }
+                                Operation: MemberAccess
+                                Right: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: length
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Operation: AdditionWrapping
+                Right: {
+                    NumberLiteral: 40
+                }
+            }
+        }
+    }
+}

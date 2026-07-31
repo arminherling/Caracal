@@ -1,0 +1,59 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%Buffer = type { { ptr, i32, i32 }, { ptr, i32, i32 } }
+
+declare i32 @strcmp(ptr %0, ptr %1)
+
+declare ptr @calloc(i64 %0, i64 %1)
+
+declare ptr @realloc(ptr %0, i64 %1)
+
+declare ptr @memmove(ptr %0, ptr %1, i64 %2)
+
+define i32 @main() {
+entry:
+  %b = alloca %Buffer, align 8
+  call void @Buffer.new(ptr %b)
+  %bytes = getelementptr inbounds nuw %Buffer, ptr %b, i32 0, i32 0
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %bytes, i32 0, i32 1
+  %load = load i32, ptr %length, align 4
+  %spare = getelementptr inbounds nuw %Buffer, ptr %b, i32 0, i32 1
+  %length1 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %spare, i32 0, i32 1
+  %load2 = load i32, ptr %length1, align 4
+  %add = add i32 %load, %load2
+  %add3 = add i32 %add, 40
+  ret i32 %add3
+}
+
+define void @Buffer.new(ptr nonnull %0) {
+entry:
+  %temp = alloca { ptr, i32, i32 }, align 8
+  %temp1 = alloca { ptr, i32, i32 }, align 8
+  %call = call ptr @calloc(i64 8, i64 1)
+  %data = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp, i32 0, i32 0
+  store ptr %call, ptr %data, align 8
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp, i32 0, i32 1
+  store i32 2, ptr %length, align 4
+  %capacity = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp, i32 0, i32 2
+  store i32 8, ptr %capacity, align 4
+  %element = getelementptr i8, ptr %call, i32 0
+  store i8 7, ptr %element, align 1
+  %element2 = getelementptr i8, ptr %call, i32 1
+  store i8 9, ptr %element2, align 1
+  %load = load { ptr, i32, i32 }, ptr %temp, align 8
+  %bytes = getelementptr inbounds nuw %Buffer, ptr %0, i32 0, i32 0
+  store { ptr, i32, i32 } %load, ptr %bytes, align 8
+  %call3 = call ptr @calloc(i64 8, i64 1)
+  %data4 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp1, i32 0, i32 0
+  store ptr %call3, ptr %data4, align 8
+  %length5 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp1, i32 0, i32 1
+  store i32 0, ptr %length5, align 4
+  %capacity6 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp1, i32 0, i32 2
+  store i32 8, ptr %capacity6, align 4
+  %load7 = load { ptr, i32, i32 }, ptr %temp1, align 8
+  %spare = getelementptr inbounds nuw %Buffer, ptr %0, i32 0, i32 1
+  store { ptr, i32, i32 } %load7, ptr %spare, align 8
+  ret void
+}
