@@ -1942,7 +1942,7 @@ namespace Caracal
                     receiverType = receiverType.toValue();
                 }
 
-                if (receiverType.kind() == TypeKind::Type)
+                if (receiverType.kind() == TypeKind::Type && leftExpression->type() != Type::Undefined())
                 {
                     auto& typeDefinition = m_module.getTypeDefinition(receiverType);
                     const auto& fieldName = static_cast<const NameExpression*>(memberAccess->rightExpression().get())->name();

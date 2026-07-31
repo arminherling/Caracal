@@ -35,5 +35,6 @@ namespace Caracal
         Type f64 = Type::Undefined();
         Type cstring = Type::Undefined();
         Type rawptr = Type::Undefined();
+        Type string = Type::Undefined();
     };
 }

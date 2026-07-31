@@ -1,0 +1,139 @@
+type string
+    const _bytes: [u8; _]
+
+extern C.strcmp(%0: cstring "left", %1: cstring "right") i32 symbol "strcmp"
+
+extern C.calloc(%0: i64 "count", %1: i64 "size") rawptr symbol "calloc"
+
+extern C.realloc(%0: rawptr "pointer", %1: i64 "size") rawptr symbol "realloc"
+
+extern C.memmove(%0: rawptr "destination", %1: rawptr "source", %2: i64 "size") rawptr symbol "memmove"
+
+define main() i32
+block entry(0):
+    %slot0 = allocate_local : [u8; _] "a"
+    %slot1 = allocate_local : [u8; _] "b"
+    %slot2 = allocate_local : string "s"
+    %slot3 = allocate_local : string "t"
+    %0 = address_of %slot0 : ref [u8; _]
+    %1 = const 8 : i64
+    %2 = size_of u8 : i64
+    %3 = call C.calloc(%1, %2) : rawptr
+    %4 = address_of_field %0.0 : ref u8 "data"
+    store_value %3, %4 : ref u8
+    %5 = const 0 : i32
+    %6 = address_of_field %0.1 : ref i32 "length"
+    store_value %5, %6 : i32
+    %7 = const 8 : i32
+    %8 = address_of_field %0.2 : ref i32 "capacity"
+    store_value %7, %8 : i32
+    %9 = address_of %slot1 : ref [u8; _]
+    %10 = const 8 : i64
+    %11 = size_of u8 : i64
+    %12 = call C.calloc(%10, %11) : rawptr
+    %13 = address_of_field %9.0 : ref u8 "data"
+    store_value %12, %13 : ref u8
+    %14 = const 0 : i32
+    %15 = address_of_field %9.1 : ref i32 "length"
+    store_value %14, %15 : i32
+    %16 = const 8 : i32
+    %17 = address_of_field %9.2 : ref i32 "capacity"
+    store_value %16, %17 : i32
+    %18 = address_of %slot2 : ref string
+    %19 = array_copy %0 : [u8; _]
+    call string.new(%18, %19)
+    %20 = address_of %slot3 : ref string
+    %21 = array_copy %9 : [u8; _]
+    call string.new(%20, %21)
+    %22 = load_value %20 : string
+    %23 = call string.equals(%18, %22) : bool
+    branch if %23, if.true(1), if.continuation(2)
+block if.true(1):
+    %24 = load_value %18 : string
+    %25 = call string.notEquals(%20, %24) : bool
+    branch if %25, if.true(3), if.continuation(4)
+block if.true(3):
+    %26 = const 1 : i32
+    return %26
+block if.continuation(4):
+    %27 = const 42 : i32
+    return %27
+block if.continuation(2):
+    %28 = const 2 : i32
+    return %28
+
+define string.new(%0: ref string ".this", %1: [u8; _] "bytes") void
+block entry(0):
+    %0 = parameter 0 : ref string ".this"
+    %1 = parameter 1 : [u8; _] "bytes"
+    %slot0 = allocate_local : [u8; _] "temp"
+    %2 = address_of %slot0 : ref [u8; _]
+    store_value %1, %2 : [u8; _]
+    %3 = array_copy %2 : [u8; _]
+    %4 = address_of_field %0.0 : ref [u8; _] "_bytes"
+    store_value %3, %4 : [u8; _]
+    return
+
+define string.equals(%0: ref string ".this", %1: string "other") bool
+block entry(0):
+    %0 = parameter 0 : ref string ".this"
+    %1 = parameter 1 : string "other"
+    %slot0 = allocate_local : string "other"
+    %2 = address_of %slot0 : ref string
+    store_value %1, %2 : string
+    %3 = address_of_field %0.0 : ref [u8; _] "_bytes"
+    %4 = address_of_field %3.1 : ref i32 "length"
+    %5 = load_value %4 : i32
+    %6 = address_of_field %2.0 : ref [u8; _] "_bytes"
+    %7 = address_of_field %6.1 : ref i32 "length"
+    %8 = load_value %7 : i32
+    %9 = not_equal %5, %8 : bool
+    branch if %9, if.true(1), if.continuation(2)
+block if.true(1):
+    %10 = const false : bool
+    return %10
+block if.continuation(2):
+    %11 = const 0 : i32
+    jump while.condition(3)
+block while.condition(3):
+    %12 = phi [if.continuation(2): %11], [if.continuation(7): %30] : i32
+    %13 = address_of_field %0.0 : ref [u8; _] "_bytes"
+    %14 = address_of_field %13.1 : ref i32 "length"
+    %15 = load_value %14 : i32
+    %16 = less_than %12, %15 : bool
+    branch if %16, while.body(4), while.continuation(5)
+block while.body(4):
+    %17 = address_of_field %0.0 : ref [u8; _] "_bytes"
+    %18 = address_of_field %17.0 : ref u8 "data"
+    %19 = load_value %18 : ref u8
+    %20 = element_address %19[%12] : u8
+    %21 = load_value %20 : u8
+    %22 = address_of_field %2.0 : ref [u8; _] "_bytes"
+    %23 = address_of_field %22.0 : ref u8 "data"
+    %24 = load_value %23 : ref u8
+    %25 = element_address %24[%12] : u8
+    %26 = load_value %25 : u8
+    %27 = not_equal %21, %26 : bool
+    branch if %27, if.true(6), if.continuation(7)
+block if.true(6):
+    %28 = const false : bool
+    return %28
+block if.continuation(7):
+    %29 = const 1 : i32
+    %30 = add %12, %29 : i32
+    jump while.condition(3)
+block while.continuation(5):
+    %31 = const true : bool
+    return %31
+
+define string.notEquals(%0: ref string ".this", %1: string "other") bool
+block entry(0):
+    %0 = parameter 0 : ref string ".this"
+    %1 = parameter 1 : string "other"
+    %slot0 = allocate_local : string "other"
+    %2 = address_of %slot0 : ref string
+    store_value %1, %2 : string
+    %3 = load_value %2 : string
+    %4 = call string.equals(%0, %3) : bool
+    %5 = logical_negate %4 : bool
+    return %5

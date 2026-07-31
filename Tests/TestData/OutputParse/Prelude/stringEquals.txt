@@ -1,0 +1,224 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(6): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: a
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: undefined
+                    Lexeme: [u8; _]
+                    Kind: Dynamic
+                    DataType: {
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            Right: {
+                ArrayLiteral(0): {
+                    Type: undefined
+                    Dynamic: true
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: b
+                }
+            }
+            ExplicitType: {
+                ArrayTypeNameNode: {
+                    Type: undefined
+                    Lexeme: [u8; _]
+                    Kind: Dynamic
+                    DataType: {
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            Right: {
+                ArrayLiteral(0): {
+                    Type: undefined
+                    Dynamic: true
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: s
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: string
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: new
+                            }
+                            ArgumentsNode(1): {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: a
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: t
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: string
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: new
+                            }
+                            ArgumentsNode(1): {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: b
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: s
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: equals
+                            }
+                            ArgumentsNode(1): {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: t
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(2): {
+                    IfStatement: {
+                        Condition: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: t
+                                    }
+                                }
+                                Operation: MemberAccess
+                                Right: {
+                                    FunctionCallExpression: {
+                                        Type: undefined
+                                        Function type: undefined
+                                        NameExpression: {
+                                            Type: undefined
+                                            Name: notEquals
+                                        }
+                                        ArgumentsNode(1): {
+                                            NameExpression: {
+                                                Type: undefined
+                                                Name: s
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        True: {
+                            BlockNode(1): {
+                                ReturnStatement: {
+                                    Type: undefined
+                                    NumberLiteral: 1
+                                }
+                            }
+                        }
+                    }
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 42
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 2
+        }
+    }
+}

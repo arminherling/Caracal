@@ -1,6 +1,6 @@
 type string(bytes: [u8; _])
 {
-    _bytes : [u8; _] = bytes
+    _bytes : [u8; _] : bytes
 
     def length() i32
     {
@@ -15,5 +15,29 @@ type string(bytes: [u8; _])
     def byteAt(index: i32) u8
     {
         return ._bytes.at(index);
+    }
+
+    def equals(other: string) bool
+    {
+        if ._bytes.length != other._bytes.length
+        {
+            return false;
+        }
+
+        i := 0;
+        while i < ._bytes.length
+        {
+            if ._bytes.at(i) != other._bytes.at(i)
+            {
+                return false;
+            }
+            i = i %+ 1;
+        }
+        return true;
+    }
+
+    def notEquals(other: string) bool
+    {
+        return !.equals(other);
     }
 }

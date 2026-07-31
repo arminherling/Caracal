@@ -1,5 +1,5 @@
 type string
-    _bytes: [u8; _]
+    const _bytes: [u8; _]
 
 extern C.strcmp(%0: cstring "left", %1: cstring "right") i32 symbol "strcmp"
 

@@ -148,7 +148,8 @@ namespace Caracal
                 || wellKnown.i32 == Type::Undefined()
                 || wellKnown.f32 == Type::Undefined()
                 || wellKnown.cstring == Type::Undefined()
-                || wellKnown.rawptr == Type::Undefined())
+                || wellKnown.rawptr == Type::Undefined()
+                || wellKnown.string == Type::Undefined())
             {
                 std::cerr << "error: the prelude did not define all builtin types\n";
                 std::abort();
@@ -575,6 +576,7 @@ namespace Caracal
         m_wellKnownTypes.f64 = tryGetTypeByName("f64");
         m_wellKnownTypes.cstring = tryGetTypeByName("cstring");
         m_wellKnownTypes.rawptr = tryGetTypeByName("rawptr");
+        m_wellKnownTypes.string = tryGetTypeByName("string");
     }
 
     TypeDefinition& SemanticContext::bindBuiltinTypeDefinition(Type type, const TypeDefinitionStatement* statement) noexcept
