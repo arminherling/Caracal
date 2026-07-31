@@ -1824,6 +1824,68 @@ namespace Caracal
         statement->setType(expressionType);
     }
 
+    bool TypeChecker::receiverChainIsConstant(const Expression* expression, std::string& rootName, bool& referencesConstant)
+    {
+        const auto* stripped = StripGroupings(expression);
+        if (stripped == nullptr)
+        {
+            return false;
+        }
+
+        if (stripped->kind() == NodeKind::NameExpression)
+        {
+            const auto& name = static_cast<const NameExpression*>(stripped)->name();
+            if (currentScope()->tryGetVariableBindingKind(name) == VariableBindingKind::LocalConstant)
+            {
+                rootName = name;
+                referencesConstant = false;
+                return true;
+            }
+
+            if (currentScope()->variableReferencesConstant(name))
+            {
+                rootName = name;
+                referencesConstant = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (stripped->kind() == NodeKind::BinaryExpression)
+        {
+            const auto* memberAccess = static_cast<const BinaryExpression*>(stripped);
+            if (memberAccess->binaryOperator() != BinaryOperatorKind::MemberAccess
+                || memberAccess->rightExpression()->kind() != NodeKind::NameExpression)
+            {
+                return false;
+            }
+
+            // a constant anywhere along the chain makes the whole tail unwritable
+            if (receiverChainIsConstant(memberAccess->leftExpression().get(), rootName, referencesConstant))
+            {
+                return true;
+            }
+
+            auto receiverType = memberAccess->leftExpression()->type().toValue();
+            if (receiverType.kind() != TypeKind::Type)
+            {
+                return false;
+            }
+
+            const auto& fieldName = static_cast<const NameExpression*>(memberAccess->rightExpression().get())->name();
+            const auto& fieldDefinition = m_module.getTypeDefinition(receiverType).tryGetFieldByName(fieldName);
+            if (fieldDefinition.type() != Type::Undefined() && fieldDefinition.isConstant())
+            {
+                rootName = fieldName;
+                referencesConstant = false;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void TypeChecker::typeCheckAssignmentStatement(AssignmentStatement* statement, const TokenBuffer& tokens)
     {
         auto* leftExpression = statement->leftExpression().get();
@@ -1891,6 +1953,29 @@ namespace Caracal
                             tokens.source(),
                             leftExpression->sourceLocation(tokens),
                             fieldName);
+                    }
+                    else
+                    {
+                        // a constant receiver makes every field along the chain unwritable
+                        auto rootName = std::string{};
+                        auto rootReferencesConstant = false;
+                        if (receiverChainIsConstant(memberAccess->leftExpression().get(), rootName, rootReferencesConstant))
+                        {
+                            if (rootReferencesConstant)
+                            {
+                                m_diagnostics.addAssignmentThroughConstantReferenceError(
+                                    tokens.source(),
+                                    leftExpression->sourceLocation(tokens),
+                                    rootName);
+                            }
+                            else
+                            {
+                                m_diagnostics.addAssignmentToConstantError(
+                                    tokens.source(),
+                                    leftExpression->sourceLocation(tokens),
+                                    rootName);
+                            }
+                        }
                     }
                 }
             }
@@ -3232,25 +3317,28 @@ namespace Caracal
                         auto& methodDefinition = m_module.getFunctionDefinition(methodType);
                         if ((methodDefinition.intrinsicKind() == IntrinsicKind::ArraySet
                             || methodDefinition.intrinsicKind() == IntrinsicKind::ArrayAdd
-                            || methodDefinition.intrinsicKind() == IntrinsicKind::ArrayRemove)
-                            && binaryExpression->leftExpression()->kind() == NodeKind::NameExpression)
+                            || methodDefinition.intrinsicKind() == IntrinsicKind::ArrayRemove))
                         {
-                            const auto& receiverName = static_cast<const NameExpression*>(binaryExpression->leftExpression().get())->name();
-                            if (currentScope()->tryGetVariableBindingKind(receiverName) == VariableBindingKind::LocalConstant)
+                            auto rootName = std::string{};
+                            auto rootReferencesConstant = false;
+                            if (receiverChainIsConstant(binaryExpression->leftExpression().get(), rootName, rootReferencesConstant))
                             {
-                                m_diagnostics.addMutatingMethodOnConstantError(
-                                    tokens.source(),
-                                    binaryExpression->leftExpression()->sourceLocation(tokens),
-                                    receiverName,
-                                    name);
-                            }
-                            else if (currentScope()->variableReferencesConstant(receiverName))
-                            {
-                                m_diagnostics.addMutatingMethodThroughConstantReferenceError(
-                                    tokens.source(),
-                                    binaryExpression->leftExpression()->sourceLocation(tokens),
-                                    receiverName,
-                                    name);
+                                if (rootReferencesConstant)
+                                {
+                                    m_diagnostics.addMutatingMethodThroughConstantReferenceError(
+                                        tokens.source(),
+                                        binaryExpression->leftExpression()->sourceLocation(tokens),
+                                        rootName,
+                                        name);
+                                }
+                                else
+                                {
+                                    m_diagnostics.addMutatingMethodOnConstantError(
+                                        tokens.source(),
+                                        binaryExpression->leftExpression()->sourceLocation(tokens),
+                                        rootName,
+                                        name);
+                                }
                             }
                         }
 

@@ -1,0 +1,13 @@
+ Error T0087 Mutating method call on constant
+     ,-[Diagnostics/Input/addOnConstantField.cara:9:5]
+   6 | def main() i32
+   7 | {
+   8 |     h := Holder.new();
+   9 |     h.bytes.add(5);
+     .     -------
+     .        `-- 'bytes' is a constant and cannot be modified.
+  10 |     return h.bytes.at(0);
+  11 | }
+  12 | 
+     `----
+  Fix: Declare 'bytes' as a variable if it needs to change, or remove the 'add' call.

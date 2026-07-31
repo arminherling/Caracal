@@ -1,0 +1,12 @@
+type Holder
+{
+    bytes : [i32; _] = [1, 2, ...]
+}
+
+def main() i32
+{
+    h :: Holder.new();
+    view := ref h;
+    view.bytes.set(0, 9);
+    return 0;
+}

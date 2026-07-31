@@ -1,0 +1,11 @@
+type Box
+{
+    x : i32 = 5
+}
+
+def main() i32
+{
+    c :: Box.new();
+    c.x = 9;
+    return c.x;
+}

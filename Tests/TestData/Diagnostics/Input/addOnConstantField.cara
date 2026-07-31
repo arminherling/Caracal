@@ -1,0 +1,11 @@
+type Holder
+{
+    bytes : [i32; _] : [1, 2, ...]
+}
+
+def main() i32
+{
+    h := Holder.new();
+    h.bytes.add(5);
+    return h.bytes.at(0);
+}

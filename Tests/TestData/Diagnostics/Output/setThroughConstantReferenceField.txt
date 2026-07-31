@@ -1,0 +1,13 @@
+ Error T0088 Mutating method call on reference to constant
+     ,-[Diagnostics/Input/setThroughConstantReferenceField.cara:10:5]
+   7 | {
+   8 |     h :: Holder.new();
+   9 |     view := ref h;
+  10 |     view.bytes.set(0, 9);
+     .     ----------
+     .          `-- 'view' references a constant and cannot be written through.
+  11 |     return 0;
+  12 | }
+  13 | 
+     `----
+  Fix: Reference a variable instead if it needs to change, or remove the 'set' call.
