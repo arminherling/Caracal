@@ -1,0 +1,26 @@
+ Error T0094 Private fields cannot be accessed from outside their type
+    ,-[Diagnostics/Input/privateFieldAccess.cara:5:12]
+  2 | {
+  3 |     b : [u8; _] = [...];
+  4 |     s := string.new(b);
+  5 |     _ := s._bytes;
+    .            ------
+    .               `-- '_bytes' is private to 'string'
+  6 |     s._bytes = b;
+  7 |     return 0;
+  8 | }
+    `----
+  Fix: Use a method of 'string' to work with the field, or remove the leading underscore to make it public.
+ Error T0094 Private fields cannot be accessed from outside their type
+    ,-[Diagnostics/Input/privateFieldAccess.cara:6:7]
+  3 |     b : [u8; _] = [...];
+  4 |     s := string.new(b);
+  5 |     _ := s._bytes;
+  6 |     s._bytes = b;
+    .       ------
+    .          `-- '_bytes' is private to 'string'
+  7 |     return 0;
+  8 | }
+  9 | 
+    `----
+  Fix: Use a method of 'string' to work with the field, or remove the leading underscore to make it public.

@@ -1642,6 +1642,23 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addPrivateFieldAccessOutsideTypeError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& fieldName,
+        const std::string& typeName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0094_PrivateFieldAccessOutsideType,
+            source,
+            location,
+            "Use a method of '" + typeName + "' to work with the field, or remove the leading underscore to make it public.");
+        diagnostic.addPrimaryLabel(location, "'" + fieldName + "' is private to '" + typeName + "'");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addMemberAccessInStaticMethodError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,

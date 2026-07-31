@@ -1,0 +1,8 @@
+def main() i32
+{
+    b : [u8; _] = [...];
+    s := string.new(b);
+    _ := s._bytes;
+    s._bytes = b;
+    return 0;
+}

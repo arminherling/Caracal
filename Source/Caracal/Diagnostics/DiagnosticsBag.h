@@ -128,6 +128,7 @@ namespace Caracal
         void addDynamicArrayElementError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addReferenceToNonVariableError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addMemberAccessInStaticMethodError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName);
+        void addPrivateFieldAccessOutsideTypeError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName, const std::string& typeName);
         void addMethodRequiresDynamicArrayError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& receiverTypeName, const std::string& dynamicTypeName);
         void addReferenceOrSliceArrayElementError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addAlreadyReferenceError(const SourceTextSharedPtr& source, const SourceLocation& location);

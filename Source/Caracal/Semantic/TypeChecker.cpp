@@ -1916,6 +1916,10 @@ namespace Caracal
         if (leftType == Type::Discard())
             return;
 
+        // either side being undefined means its error was already reported
+        if (leftType == Type::Undefined() || rightType == Type::Undefined())
+            return;
+
         if (!isAssignableTo(rightType, leftType))
         {
             const auto location = statement->rightExpression()->sourceLocation(tokens);
@@ -3170,6 +3174,18 @@ namespace Caracal
                                 fieldNameExpression->sourceLocation(tokens),
                                 typeDefinition.name(),
                                 fieldNameExpression->name());
+                            return Type::Undefined();
+                        }
+
+                        // trying to access private fields isnt allowed
+                        const auto& accessedFieldName = fieldNameExpression->name();
+                        if (!accessedFieldName.empty() && accessedFieldName.front() == '_' && m_currentType != leftType)
+                        {
+                            m_diagnostics.addPrivateFieldAccessOutsideTypeError(
+                                tokens.source(),
+                                fieldNameExpression->sourceLocation(tokens),
+                                accessedFieldName,
+                                typeDefinition.name());
                             return Type::Undefined();
                         }
 

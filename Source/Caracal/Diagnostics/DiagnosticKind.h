@@ -49,6 +49,7 @@ namespace Caracal
         T0076_MemberAccessInDefaultParameter,
         T0077_PrivateMethodCallOutsideType,
         T0093_MemberAccessInStaticMethod,
+        T0094_PrivateFieldAccessOutsideType,
 
         // Call diagnostics
         T0015_ArgumentCountMismatch,
