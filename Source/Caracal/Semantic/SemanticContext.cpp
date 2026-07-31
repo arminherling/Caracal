@@ -1,6 +1,7 @@
 ﻿#include "SemanticContext.h"
 
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
+#include <Caracal/Optimization/ConstantFolder.h>
 #include <Caracal/Text/File.h>
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Syntax/Lexer.h>
@@ -126,7 +127,10 @@ namespace Caracal
         {
             auto preludeOptions = options;
             preludeOptions.isPreludePass = true;
-            static_cast<void>(typeCheck(preludeTrees, preludeOptions, module, preludeDiagnostics));
+            if (typeCheck(preludeTrees, preludeOptions, module, preludeDiagnostics))
+            {
+                static_cast<void>(foldConstants(preludeTrees, module, preludeDiagnostics));
+            }
         }
 
         if (!preludeDiagnostics.diagnostics().empty())
