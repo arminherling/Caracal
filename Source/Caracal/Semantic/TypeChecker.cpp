@@ -3108,17 +3108,29 @@ namespace Caracal
                 }
 
                 const auto* strippedOperand = StripGroupings(operand);
-                if (strippedOperand->kind() != NodeKind::NameExpression)
+                const auto operandIsMemberAccess = strippedOperand->kind() == NodeKind::BinaryExpression
+                    && static_cast<const BinaryExpression*>(strippedOperand)->binaryOperator() == BinaryOperatorKind::MemberAccess
+                    && static_cast<const BinaryExpression*>(strippedOperand)->rightExpression()->kind() == NodeKind::NameExpression;
+                if (strippedOperand->kind() != NodeKind::NameExpression && !operandIsMemberAccess)
                 {
-                    // TODO handle member references 
+                    // cant return references to temporaries
                     m_diagnostics.addReferenceToNonVariableError(
                         tokens.source(),
                         unaryExpression->sourceLocation(tokens));
                     return Type::Undefined();
                 }
 
-                const auto& name = static_cast<const NameExpression*>(strippedOperand)->name();
-                if (currentScope()->tryGetVariableBindingKind(name) == VariableBindingKind::LocalConstant)
+                if (operandIsMemberAccess)
+                {
+                    auto rootName = std::string{};
+                    auto rootReferencesConstant = false;
+                    if (receiverChainIsConstant(strippedOperand, rootName, rootReferencesConstant))
+                    {
+                        unaryExpression->setReferencesConstant(true);
+                    }
+                }
+                else if (const auto& name = static_cast<const NameExpression*>(strippedOperand)->name();
+                    currentScope()->tryGetVariableBindingKind(name) == VariableBindingKind::LocalConstant)
                 {
                     unaryExpression->setReferencesConstant(true);
                 }

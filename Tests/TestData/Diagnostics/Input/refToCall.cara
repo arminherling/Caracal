@@ -1,0 +1,11 @@
+def answer() i32
+{
+    return 42;
+}
+
+def main() i32
+{
+    r := ref answer();
+    _ := r;
+    return 0;
+}

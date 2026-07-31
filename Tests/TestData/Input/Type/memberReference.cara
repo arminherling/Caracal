@@ -1,12 +1,12 @@
-type Box()
+type Box
 {
-    x : i32 = 5
+    x : i32 = 40
 }
 
 def main() i32
 {
     b := Box.new();
     r := ref b.x;
-    _ := r;
-    return 0;
+    r = 42;
+    return b.x;
 }

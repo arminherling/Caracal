@@ -2020,12 +2020,7 @@ namespace Caracal
                 if (unaryExpression->unaryOperator() != UnaryOperatorKind::ReferenceOf)
                     return std::nullopt;
 
-                const auto* operand = StripGroupings(unaryExpression->expression().get());
-                if (operand == nullptr || operand->kind() != NodeKind::NameExpression)
-                    return std::nullopt;
-
-                const auto* nameExpression = static_cast<const NameExpression*>(operand);
-                return tryGetAddressBackedLocal(nameExpression->name());
+                return lowerAddressExpression(StripGroupings(unaryExpression->expression().get()));
             }
             case NodeKind::MemberAccessExpression:
             {
