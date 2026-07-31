@@ -9,63 +9,7 @@ FunctionDefinitionStatement: {
             Lexeme: i32
         }
     }
-    BlockNode(6): {
-        VariableDeclaration: {
-            Type: undefined
-            Left: {
-                NameExpression: {
-                    Type: undefined
-                    Name: a
-                }
-            }
-            ExplicitType: {
-                ArrayTypeNameNode: {
-                    Type: undefined
-                    Lexeme: [u8; _]
-                    Kind: Dynamic
-                    DataType: {
-                        TypeNameNode: {
-                            Type: undefined
-                            Lexeme: u8
-                        }
-                    }
-                }
-            }
-            Right: {
-                ArrayLiteral(0): {
-                    Type: undefined
-                    Dynamic: true
-                }
-            }
-        }
-        VariableDeclaration: {
-            Type: undefined
-            Left: {
-                NameExpression: {
-                    Type: undefined
-                    Name: b
-                }
-            }
-            ExplicitType: {
-                ArrayTypeNameNode: {
-                    Type: undefined
-                    Lexeme: [u8; _]
-                    Kind: Dynamic
-                    DataType: {
-                        TypeNameNode: {
-                            Type: undefined
-                            Lexeme: u8
-                        }
-                    }
-                }
-            }
-            Right: {
-                ArrayLiteral(0): {
-                    Type: undefined
-                    Dynamic: true
-                }
-            }
-        }
+    BlockNode(5): {
         VariableDeclaration: {
             Type: undefined
             Left: {
@@ -93,9 +37,11 @@ FunctionDefinitionStatement: {
                                 Name: new
                             }
                             ArgumentsNode(1): {
-                                NameExpression: {
+                                ArrayLiteral(2): {
                                     Type: undefined
-                                    Name: a
+                                    Dynamic: true
+                                    NumberLiteral: 72
+                                    NumberLiteral: 101
                                 }
                             }
                         }
@@ -130,9 +76,48 @@ FunctionDefinitionStatement: {
                                 Name: new
                             }
                             ArgumentsNode(1): {
-                                NameExpression: {
+                                ArrayLiteral(2): {
                                     Type: undefined
-                                    Name: b
+                                    Dynamic: true
+                                    NumberLiteral: 72
+                                    NumberLiteral: 101
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: u
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: string
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: undefined
+                            Function type: undefined
+                            NameExpression: {
+                                Type: undefined
+                                Name: new
+                            }
+                            ArgumentsNode(1): {
+                                ArrayLiteral(0): {
+                                    Type: undefined
+                                    Dynamic: true
                                 }
                             }
                         }
@@ -178,7 +163,7 @@ FunctionDefinitionStatement: {
                                 Left: {
                                     NameExpression: {
                                         Type: undefined
-                                        Name: t
+                                        Name: s
                                     }
                                 }
                                 Operation: MemberAccess
@@ -193,7 +178,7 @@ FunctionDefinitionStatement: {
                                         ArgumentsNode(1): {
                                             NameExpression: {
                                                 Type: undefined
-                                                Name: s
+                                                Name: u
                                             }
                                         }
                                     }
@@ -204,14 +189,14 @@ FunctionDefinitionStatement: {
                             BlockNode(1): {
                                 ReturnStatement: {
                                     Type: undefined
-                                    NumberLiteral: 1
+                                    NumberLiteral: 42
                                 }
                             }
                         }
                     }
                     ReturnStatement: {
                         Type: undefined
-                        NumberLiteral: 42
+                        NumberLiteral: 3
                     }
                 }
             }

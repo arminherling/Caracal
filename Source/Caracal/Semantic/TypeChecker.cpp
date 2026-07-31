@@ -1724,14 +1724,7 @@ namespace Caracal
         auto rightType = Type::Undefined();
         {
             // use the explicit type for the initializer
-            auto contextualType = std::optional<Type>{};
-            if (declaredType.kind() == TypeKind::FixedArray
-                || declaredType.kind() == TypeKind::DynamicArray
-                || declaredType.kind() == TypeKind::Slice)
-            {
-                contextualType = declaredType;
-            }
-            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualType };
+            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualTypeForExpectedType(declaredType) };
             rightType = typeCheckExpression(rightExpression, tokens);
         }
 
@@ -1982,15 +1975,8 @@ namespace Caracal
         }
         auto rightType = Type::Undefined();
         {
-            // use the explicit type for the initializer
-            auto contextualType = std::optional<Type>{};
-            if (leftType.kind() == TypeKind::FixedArray
-                || leftType.kind() == TypeKind::DynamicArray
-                || leftType.kind() == TypeKind::Slice)
-            {
-                contextualType = leftType;
-            }
-            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualType };
+            // use the assigned variable's type for the value
+            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualTypeForExpectedType(leftType) };
             rightType = typeCheckExpression(statement->rightExpression().get(), tokens);
         }
         if (rightType.isReference())
@@ -2777,15 +2763,8 @@ namespace Caracal
         auto fieldExpression = statement->rightExpression().get();
         auto expressionType = Type::Undefined();
         {
-            auto contextualType = std::optional<Type>{};
-            if (fieldType.kind() == TypeKind::FixedArray
-                || fieldType.kind() == TypeKind::DynamicArray
-                || fieldType.kind() == TypeKind::Slice)
-            {
-                // remember the explicit element type so that we can type check the literals
-                contextualType = fieldType;
-            }
-            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualType };
+            // use the explicit field type for the initializer
+            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualTypeForExpectedType(fieldType) };
             expressionType = typeCheckExpression(fieldExpression, tokens);
         }
         
@@ -3755,7 +3734,22 @@ namespace Caracal
 
         for (const auto& argument : functionCallExpression->arguments())
         {
-            typeCheckExpression(argument.value().get(), tokens);
+            // use the bound parameter type for the argument if needed, variadic arguments have no expected type
+            auto* argumentExpression = argument.value().get();
+            auto contextualType = std::optional<Type>{};
+            for (size_t i = 0; i < binding.ordered.size(); ++i)
+            {
+                if (binding.ordered[i] != argumentExpression)
+                {
+                    continue;
+                }
+
+                contextualType = contextualTypeForExpectedType(parameterTypes[i + parameterOffset].type());
+                break;
+            }
+
+            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualType };
+            typeCheckExpression(argumentExpression, tokens);
         }
 
         const auto expectedArgumentCount = parameterCount - parameterOffset;
@@ -4237,6 +4231,24 @@ namespace Caracal
         }
 
         return false;
+    }
+
+    std::optional<Type> TypeChecker::contextualTypeForExpectedType(Type expectedType) const noexcept
+    {
+        if (expectedType.kind() == TypeKind::FixedArray
+            || expectedType.kind() == TypeKind::DynamicArray
+            || expectedType.kind() == TypeKind::Slice)
+        {
+            return expectedType;
+        }
+
+        const auto* description = m_module.tryGetBuiltinTypeDescription(expectedType);
+        if (description != nullptr && description->kind == BuiltinTypeKind::Int)
+        {
+            return expectedType;
+        }
+
+        return std::nullopt;
     }
 
     bool TypeChecker::tryAddArrayLengthMismatchError(const TokenBuffer& tokens, const SourceLocation& location, Type expectedType, Type actualType)

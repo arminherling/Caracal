@@ -1,16 +1,15 @@
 def main() i32
 {
-    a : [u8; _] = [...];
-    b : [u8; _] = [...];
-    s := string.new(a);
-    t := string.new(b);
+    s := string.new([72, 101, ...]);
+    t := string.new([72, 101, ...]);
+    u := string.new([...]);
     if s.equals(t)
     {
-        if t.notEquals(s)
+        if s.notEquals(u)
         {
-            return 1;
+            return 42;
         }
-        return 42;
+        return 3;
     }
     return 2;
 }

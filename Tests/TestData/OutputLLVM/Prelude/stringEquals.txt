@@ -14,68 +14,61 @@ declare ptr @memmove(ptr %0, ptr %1, i64 %2)
 
 define i32 @main() {
 entry:
-  %a = alloca { ptr, i32, i32 }, align 8
-  %b = alloca { ptr, i32, i32 }, align 8
   %s = alloca %string, align 8
+  %temp = alloca { ptr, i32, i32 }, align 8
   %t = alloca %string, align 8
+  %temp3 = alloca { ptr, i32, i32 }, align 8
+  %u = alloca %string, align 8
+  %temp4 = alloca { ptr, i32, i32 }, align 8
   %call = call ptr @calloc(i64 8, i64 1)
-  %data = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %a, i32 0, i32 0
+  %data = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp, i32 0, i32 0
   store ptr %call, ptr %data, align 8
-  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %a, i32 0, i32 1
-  store i32 0, ptr %length, align 4
-  %capacity = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %a, i32 0, i32 2
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp, i32 0, i32 1
+  store i32 2, ptr %length, align 4
+  %capacity = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp, i32 0, i32 2
   store i32 8, ptr %capacity, align 4
-  %call3 = call ptr @calloc(i64 8, i64 1)
-  %data4 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %b, i32 0, i32 0
-  store ptr %call3, ptr %data4, align 8
-  %length5 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %b, i32 0, i32 1
-  store i32 0, ptr %length5, align 4
-  %capacity6 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %b, i32 0, i32 2
-  store i32 8, ptr %capacity6, align 4
-  %data7 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %a, i32 0, i32 0
-  %length8 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %a, i32 0, i32 1
-  %capacity9 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %a, i32 0, i32 2
-  %load = load ptr, ptr %data7, align 8
-  %load10 = load i32, ptr %length8, align 4
-  %load11 = load i32, ptr %capacity9, align 4
-  %widened = sext i32 %load11 to i64
-  %copy = call ptr @calloc(i64 %widened, i64 1)
-  %widened12 = sext i32 %load10 to i64
-  %bytes = mul i64 %widened12, 1
-  %copied = call ptr @memmove(ptr %copy, ptr %load, i64 %bytes)
-  %0 = insertvalue { ptr, i32, i32 } poison, ptr %copy, 0
-  %1 = insertvalue { ptr, i32, i32 } %0, i32 %load10, 1
-  %array_copy = insertvalue { ptr, i32, i32 } %1, i32 %load11, 2
-  call void @string.new(ptr %s, { ptr, i32, i32 } %array_copy)
-  %data13 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %b, i32 0, i32 0
-  %length14 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %b, i32 0, i32 1
-  %capacity15 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %b, i32 0, i32 2
-  %load16 = load ptr, ptr %data13, align 8
-  %load17 = load i32, ptr %length14, align 4
-  %load18 = load i32, ptr %capacity15, align 4
-  %widened19 = sext i32 %load18 to i64
-  %copy20 = call ptr @calloc(i64 %widened19, i64 1)
-  %widened21 = sext i32 %load17 to i64
-  %bytes22 = mul i64 %widened21, 1
-  %copied23 = call ptr @memmove(ptr %copy20, ptr %load16, i64 %bytes22)
-  %2 = insertvalue { ptr, i32, i32 } poison, ptr %copy20, 0
-  %3 = insertvalue { ptr, i32, i32 } %2, i32 %load17, 1
-  %array_copy24 = insertvalue { ptr, i32, i32 } %3, i32 %load18, 2
-  call void @string.new(ptr %t, { ptr, i32, i32 } %array_copy24)
-  %load25 = load %string, ptr %t, align 8
-  %call26 = call i1 @string.equals(ptr %s, %string %load25)
-  br i1 %call26, label %if.true, label %if.continuation2
+  %element = getelementptr i8, ptr %call, i32 0
+  store i8 72, ptr %element, align 1
+  %element5 = getelementptr i8, ptr %call, i32 1
+  store i8 101, ptr %element5, align 1
+  %load = load { ptr, i32, i32 }, ptr %temp, align 8
+  call void @string.new(ptr %s, { ptr, i32, i32 } %load)
+  %call6 = call ptr @calloc(i64 8, i64 1)
+  %data7 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp3, i32 0, i32 0
+  store ptr %call6, ptr %data7, align 8
+  %length8 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp3, i32 0, i32 1
+  store i32 2, ptr %length8, align 4
+  %capacity9 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp3, i32 0, i32 2
+  store i32 8, ptr %capacity9, align 4
+  %element10 = getelementptr i8, ptr %call6, i32 0
+  store i8 72, ptr %element10, align 1
+  %element11 = getelementptr i8, ptr %call6, i32 1
+  store i8 101, ptr %element11, align 1
+  %load12 = load { ptr, i32, i32 }, ptr %temp3, align 8
+  call void @string.new(ptr %t, { ptr, i32, i32 } %load12)
+  %call13 = call ptr @calloc(i64 8, i64 1)
+  %data14 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp4, i32 0, i32 0
+  store ptr %call13, ptr %data14, align 8
+  %length15 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp4, i32 0, i32 1
+  store i32 0, ptr %length15, align 4
+  %capacity16 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %temp4, i32 0, i32 2
+  store i32 8, ptr %capacity16, align 4
+  %load17 = load { ptr, i32, i32 }, ptr %temp4, align 8
+  call void @string.new(ptr %u, { ptr, i32, i32 } %load17)
+  %load18 = load %string, ptr %t, align 8
+  %call19 = call i1 @string.equals(ptr %s, %string %load18)
+  br i1 %call19, label %if.true, label %if.continuation2
 
 if.true:                                          ; preds = %entry
-  %load27 = load %string, ptr %s, align 8
-  %call28 = call i1 @string.notEquals(ptr %t, %string %load27)
-  br i1 %call28, label %if.true1, label %if.continuation
+  %load20 = load %string, ptr %u, align 8
+  %call21 = call i1 @string.notEquals(ptr %s, %string %load20)
+  br i1 %call21, label %if.true1, label %if.continuation
 
 if.true1:                                         ; preds = %if.true
-  ret i32 1
+  ret i32 42
 
 if.continuation:                                  ; preds = %if.true
-  ret i32 42
+  ret i32 3
 
 if.continuation2:                                 ; preds = %entry
   ret i32 2
@@ -167,4 +160,4 @@ entry:
 }
 
 ; uselistorder directives
-uselistorder ptr @string.new, { 1, 0 }
+uselistorder ptr @string.new, { 2, 1, 0 }

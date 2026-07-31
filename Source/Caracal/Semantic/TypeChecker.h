@@ -110,6 +110,7 @@ namespace Caracal
         [[nodiscard]] i32 convertToI32(NumberLiteral* literal, const TokenBuffer& tokens);
         [[nodiscard]] Type coerceConditionType(Type conditionType, Expression* conditionExpression);
         [[nodiscard]] bool isAssignableTo(Type sourceType, Type targetType) const noexcept;
+        [[nodiscard]] std::optional<Type> contextualTypeForExpectedType(Type expectedType) const noexcept;
         [[nodiscard]] bool tryAddArrayLengthMismatchError(const TokenBuffer& tokens, const SourceLocation& location, Type expectedType, Type actualType);
         [[nodiscard]] bool areComparableTypes(Type leftType, Type rightType);
         [[nodiscard]] const TokenBuffer& tokensFor(const Statement* statement) const;

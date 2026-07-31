@@ -1,0 +1,319 @@
+TypeDefinitionStatement: {
+    Type: Box
+    Name: Box
+    ParametersNode(0): {
+    }
+    BlockNode(2): {
+        TypeFieldDeclaration: {
+            IsConstant: false
+            Left: {
+                NameExpression: {
+                    Type: u8
+                    Name: v
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: u8
+                    Lexeme: u8
+                }
+            }
+            Right: {
+                NumberLiteral: 72
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (ref Box) -> u8
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: value
+            }
+            ParametersNode(0): {
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: u8
+                    Lexeme: u8
+                }
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    Type: u8
+                    MemberAccessExpression: {
+                        NameExpression: {
+                            Type: u8
+                            Name: v
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (i64) -> i64
+    Name: take
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: value
+            TypeNameNode: {
+                Type: i64
+                Lexeme: i64
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i64
+            Lexeme: i64
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i64
+            NameExpression: {
+                Type: i64
+                Name: value
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(9): {
+        VariableDeclaration: {
+            Type: u8
+            Left: {
+                NameExpression: {
+                    Type: u8
+                    Name: x
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: u8
+                    Lexeme: u8
+                }
+            }
+            Right: {
+                NumberLiteral: 72
+            }
+        }
+        VariableDeclaration: {
+            Type: u8
+            Left: {
+                NameExpression: {
+                    Type: u8
+                    Name: y
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: u8
+                    Lexeme: u8
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        AssignmentStatement: {
+            Left: {
+                NameExpression: {
+                    Type: u8
+                    Name: y
+                }
+            }
+            Right: {
+                NumberLiteral: 101
+            }
+        }
+        VariableDeclaration: {
+            Type: Box
+            Left: {
+                NameExpression: {
+                    Type: Box
+                    Name: b
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: Box
+                    Left: {
+                        NameExpression: {
+                            Type: Box
+                            Name: Box
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: Box
+                            Function type: (ref Box) -> void
+                            NameExpression: {
+                                Type: (ref Box) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: u8
+                            Name: x
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 72
+                        TypeNameNode: {
+                            Type: u8
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: u8
+                            Name: y
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 101
+                        TypeNameNode: {
+                            Type: u8
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 3
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        BinaryExpression: {
+                            Type: u8
+                            Left: {
+                                NameExpression: {
+                                    Type: Box
+                                    Name: b
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: u8
+                                    Function type: (ref Box) -> u8
+                                    NameExpression: {
+                                        Type: (ref Box) -> u8
+                                        Name: value
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 72
+                        TypeNameNode: {
+                            Type: u8
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 4
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        FunctionCallExpression: {
+                            Type: i64
+                            Function type: (i64) -> i64
+                            NameExpression: {
+                                Type: (i64) -> i64
+                                Name: take
+                            }
+                            ArgumentsNode(1): {
+                                NumberLiteral: 9
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 9
+                        TypeNameNode: {
+                            Type: i64
+                            Lexeme: i64
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 5
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 42
+        }
+    }
+}

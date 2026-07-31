@@ -11,56 +11,89 @@ extern C.memmove(%0: rawptr "destination", %1: rawptr "source", %2: i64 "size") 
 
 define main() i32
 block entry(0):
-    %slot0 = allocate_local : [u8; _] "a"
-    %slot1 = allocate_local : [u8; _] "b"
-    %slot2 = allocate_local : string "s"
-    %slot3 = allocate_local : string "t"
-    %0 = address_of %slot0 : ref [u8; _]
-    %1 = const 8 : i64
-    %2 = size_of u8 : i64
-    %3 = call C.calloc(%1, %2) : rawptr
-    %4 = address_of_field %0.0 : ref u8 "data"
-    store_value %3, %4 : ref u8
-    %5 = const 0 : i32
-    %6 = address_of_field %0.1 : ref i32 "length"
-    store_value %5, %6 : i32
-    %7 = const 8 : i32
-    %8 = address_of_field %0.2 : ref i32 "capacity"
-    store_value %7, %8 : i32
-    %9 = address_of %slot1 : ref [u8; _]
-    %10 = const 8 : i64
-    %11 = size_of u8 : i64
-    %12 = call C.calloc(%10, %11) : rawptr
-    %13 = address_of_field %9.0 : ref u8 "data"
-    store_value %12, %13 : ref u8
-    %14 = const 0 : i32
-    %15 = address_of_field %9.1 : ref i32 "length"
-    store_value %14, %15 : i32
-    %16 = const 8 : i32
-    %17 = address_of_field %9.2 : ref i32 "capacity"
-    store_value %16, %17 : i32
-    %18 = address_of %slot2 : ref string
-    %19 = array_copy %0 : [u8; _]
-    call string.new(%18, %19)
-    %20 = address_of %slot3 : ref string
-    %21 = array_copy %9 : [u8; _]
-    call string.new(%20, %21)
-    %22 = load_value %20 : string
-    %23 = call string.equals(%18, %22) : bool
-    branch if %23, if.true(1), if.continuation(2)
+    %slot0 = allocate_local : string "s"
+    %slot1 = allocate_local : [u8; _] "temp"
+    %slot2 = allocate_local : string "t"
+    %slot3 = allocate_local : [u8; _] "temp"
+    %slot4 = allocate_local : string "u"
+    %slot5 = allocate_local : [u8; _] "temp"
+    %0 = address_of %slot0 : ref string
+    %1 = address_of %slot1 : ref [u8; _]
+    %2 = const 8 : i64
+    %3 = size_of u8 : i64
+    %4 = call C.calloc(%2, %3) : rawptr
+    %5 = address_of_field %1.0 : ref u8 "data"
+    store_value %4, %5 : ref u8
+    %6 = const 2 : i32
+    %7 = address_of_field %1.1 : ref i32 "length"
+    store_value %6, %7 : i32
+    %8 = const 8 : i32
+    %9 = address_of_field %1.2 : ref i32 "capacity"
+    store_value %8, %9 : i32
+    %10 = const 0 : i32
+    %11 = element_address %4[%10] : u8
+    %12 = const 72 : u8
+    store_value %12, %11 : u8
+    %13 = const 1 : i32
+    %14 = element_address %4[%13] : u8
+    %15 = const 101 : u8
+    store_value %15, %14 : u8
+    %16 = load_value %1 : [u8; _]
+    call string.new(%0, %16)
+    %17 = address_of %slot2 : ref string
+    %18 = address_of %slot3 : ref [u8; _]
+    %19 = const 8 : i64
+    %20 = size_of u8 : i64
+    %21 = call C.calloc(%19, %20) : rawptr
+    %22 = address_of_field %18.0 : ref u8 "data"
+    store_value %21, %22 : ref u8
+    %23 = const 2 : i32
+    %24 = address_of_field %18.1 : ref i32 "length"
+    store_value %23, %24 : i32
+    %25 = const 8 : i32
+    %26 = address_of_field %18.2 : ref i32 "capacity"
+    store_value %25, %26 : i32
+    %27 = const 0 : i32
+    %28 = element_address %21[%27] : u8
+    %29 = const 72 : u8
+    store_value %29, %28 : u8
+    %30 = const 1 : i32
+    %31 = element_address %21[%30] : u8
+    %32 = const 101 : u8
+    store_value %32, %31 : u8
+    %33 = load_value %18 : [u8; _]
+    call string.new(%17, %33)
+    %34 = address_of %slot4 : ref string
+    %35 = address_of %slot5 : ref [u8; _]
+    %36 = const 8 : i64
+    %37 = size_of u8 : i64
+    %38 = call C.calloc(%36, %37) : rawptr
+    %39 = address_of_field %35.0 : ref u8 "data"
+    store_value %38, %39 : ref u8
+    %40 = const 0 : i32
+    %41 = address_of_field %35.1 : ref i32 "length"
+    store_value %40, %41 : i32
+    %42 = const 8 : i32
+    %43 = address_of_field %35.2 : ref i32 "capacity"
+    store_value %42, %43 : i32
+    %44 = load_value %35 : [u8; _]
+    call string.new(%34, %44)
+    %45 = load_value %17 : string
+    %46 = call string.equals(%0, %45) : bool
+    branch if %46, if.true(1), if.continuation(2)
 block if.true(1):
-    %24 = load_value %18 : string
-    %25 = call string.notEquals(%20, %24) : bool
-    branch if %25, if.true(3), if.continuation(4)
+    %47 = load_value %34 : string
+    %48 = call string.notEquals(%0, %47) : bool
+    branch if %48, if.true(3), if.continuation(4)
 block if.true(3):
-    %26 = const 1 : i32
-    return %26
+    %49 = const 42 : i32
+    return %49
 block if.continuation(4):
-    %27 = const 42 : i32
-    return %27
+    %50 = const 3 : i32
+    return %50
 block if.continuation(2):
-    %28 = const 2 : i32
-    return %28
+    %51 = const 2 : i32
+    return %51
 
 define string.new(%0: ref string ".this", %1: [u8; _] "bytes") void
 block entry(0):
