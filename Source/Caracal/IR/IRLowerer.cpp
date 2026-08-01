@@ -1358,6 +1358,9 @@ namespace Caracal
         if (tryLowerArrayLiteralIntoAddress(expression, addressId.value(), valueType))
             return addressId;
 
+        if (tryLowerStringLiteralIntoAddress(expression, addressId.value()))
+            return addressId;
+
         const auto loweredValue = lowerValueExpressionExpecting(expression, valueType);
         if (!loweredValue.has_value())
             return std::nullopt;
@@ -1367,6 +1370,71 @@ namespace Caracal
             addressId.value(),
             valueType));
         return addressId;
+    }
+
+    void IRLowerer::emitDynamicArrayDescriptor(ValueRef destinationAddress, Type arrayType, ValueRef dataPointer, i32 length, i32 capacity) noexcept
+    {
+        const auto elementType = m_semanticContext.getArrayElementType(arrayType);
+
+        const auto dataFieldAddress = emitFieldAddress(destinationAddress, arrayType, "data", 0, elementType.toReference());
+        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
+            dataPointer,
+            dataFieldAddress,
+            elementType.toReference()));
+
+        const auto lengthId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+            lengthId,
+            ConstantValue::FromI32(length),
+            m_semanticContext.wellKnown().i32));
+        const auto lengthFieldAddress = emitFieldAddress(destinationAddress, arrayType, "length", 1, m_semanticContext.wellKnown().i32);
+        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
+            ValueRef{ lengthId },
+            lengthFieldAddress,
+            m_semanticContext.wellKnown().i32));
+
+        const auto capacityId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+            capacityId,
+            ConstantValue::FromI32(capacity),
+            m_semanticContext.wellKnown().i32));
+        const auto capacityFieldAddress = emitFieldAddress(destinationAddress, arrayType, "capacity", 2, m_semanticContext.wellKnown().i32);
+        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
+            ValueRef{ capacityId },
+            capacityFieldAddress,
+            m_semanticContext.wellKnown().i32));
+    }
+
+    bool IRLowerer::tryLowerStringLiteralIntoAddress(const Expression* expression, ValueRef destinationAddress) noexcept
+    {
+        const auto* stripped = StripGroupings(expression);
+        if (stripped == nullptr || stripped->kind() != NodeKind::StringLiteral)
+            return false;
+
+        const auto stringType = m_semanticContext.wellKnown().string;
+        if (stripped->type() != stringType)
+            return false;
+
+        const auto* literal = static_cast<const StringLiteral*>(stripped);
+        const auto& typeDefinition = m_semanticContext.getTypeDefinition(stringType);
+        const auto& bytesField = typeDefinition.tryGetFieldByName("_bytes");
+        if (bytesField.type() == Type::Undefined())
+            return false;
+
+        const auto bytesType = bytesField.type();
+        const auto bytesAddress = emitFieldAddress(destinationAddress, stringType, "_bytes", 0, bytesType);
+
+        // the literal bytes live in a NUL-terminated data global, the descriptor borrows it without allocating
+        const auto dataId = m_nextTemporaryId++;
+        m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
+            dataId,
+            ConstantValue::FromString(literal->escapedContent()),
+            m_semanticContext.wellKnown().cstring));
+
+        const auto length = static_cast<i32>(literal->escapedContent().size());
+        emitDynamicArrayDescriptor(bytesAddress, bytesType, ValueRef{ dataId }, length, length);
+
+        return true;
     }
 
     bool IRLowerer::tryLowerArrayLiteralIntoAddress(const Expression* expression, ValueRef destinationAddress, Type arrayType) noexcept
@@ -1449,33 +1517,7 @@ namespace Caracal
             std::vector<ValueRef>{ ValueRef{ capacityArgumentId }, ValueRef{ elementSizeId } },
             m_semanticContext.wellKnown().rawptr));
 
-        const auto dataFieldAddress = emitFieldAddress(destinationAddress, arrayType, "data", 0, elementType.toReference());
-        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
-            ValueRef{ dataPointerId },
-            dataFieldAddress,
-            elementType.toReference()));
-
-        const auto lengthId = m_nextTemporaryId++;
-        m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
-            lengthId,
-            ConstantValue::FromI32(count),
-            m_semanticContext.wellKnown().i32));
-        const auto lengthFieldAddress = emitFieldAddress(destinationAddress, arrayType, "length", 1, m_semanticContext.wellKnown().i32);
-        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
-            ValueRef{ lengthId },
-            lengthFieldAddress,
-            m_semanticContext.wellKnown().i32));
-
-        const auto capacityId = m_nextTemporaryId++;
-        m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
-            capacityId,
-            ConstantValue::FromI32(capacity),
-            m_semanticContext.wellKnown().i32));
-        const auto capacityFieldAddress = emitFieldAddress(destinationAddress, arrayType, "capacity", 2, m_semanticContext.wellKnown().i32);
-        m_currentBlock->addInstruction(std::make_unique<StoreValueInstruction>(
-            ValueRef{ capacityId },
-            capacityFieldAddress,
-            m_semanticContext.wellKnown().i32));
+        emitDynamicArrayDescriptor(destinationAddress, arrayType, ValueRef{ dataPointerId }, count, capacity);
 
         const auto& elements = literal->elements();
         for (size_t index = 0; index < elements.size(); ++index)
@@ -1544,6 +1586,18 @@ namespace Caracal
                 return false;
 
             return tryLowerConstructorCallIntoAddress(rightExpression, destinationAddress.value());
+        }
+
+        const auto* strippedRight = StripGroupings(rightExpression);
+        if (strippedRight != nullptr
+            && strippedRight->kind() == NodeKind::StringLiteral
+            && strippedRight->type() == m_semanticContext.wellKnown().string)
+        {
+            const auto destinationAddress = lowerAddressExpression(leftExpression);
+            if (!destinationAddress.has_value())
+                return false;
+
+            return tryLowerStringLiteralIntoAddress(rightExpression, destinationAddress.value());
         }
 
         const auto loweredValue = lowerValueExpressionExpecting(rightExpression, leftExpression->type().toValue());
@@ -2276,6 +2330,18 @@ namespace Caracal
             case NodeKind::StringLiteral:
             {
                 const auto* literal = static_cast<const StringLiteral*>(expression);
+                if (literal->type() == m_semanticContext.wellKnown().string)
+                {
+                    const auto slotAddress = allocateLocalSlot("temp", literal->type());
+                    if (!slotAddress.has_value())
+                        return std::nullopt;
+
+                    if (!tryLowerStringLiteralIntoAddress(literal, slotAddress.value()))
+                        return std::nullopt;
+
+                    return emitLoad(slotAddress.value(), literal->type());
+                }
+
                 const auto temporaryId = m_nextTemporaryId++;
                 m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
                     temporaryId,

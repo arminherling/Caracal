@@ -5,7 +5,9 @@ def escapedBackslashes() cstring
 
 def main() i32
 {
-    if "\\n" == "\\\n"
+    left : cstring = "\\n";
+    right : cstring = "\\\n";
+    if left == right
     {
         return 1;
     }

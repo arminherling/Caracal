@@ -5,7 +5,43 @@ FunctionDefinitionStatement: {
     }
     ReturnTypesNode(0): {
     }
-    BlockNode(1): {
+    BlockNode(3): {
+        VariableDeclaration: {
+            Type: cstring
+            Left: {
+                NameExpression: {
+                    Type: cstring
+                    Name: left
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: cstring
+                    Lexeme: cstring
+                }
+            }
+            Right: {
+                StringLiteral: "123"
+            }
+        }
+        VariableDeclaration: {
+            Type: cstring
+            Left: {
+                NameExpression: {
+                    Type: cstring
+                    Name: right
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: cstring
+                    Lexeme: cstring
+                }
+            }
+            Right: {
+                StringLiteral: "123"
+            }
+        }
         ConstantDeclaration: {
             Type: bool
             Left: {
@@ -18,11 +54,17 @@ FunctionDefinitionStatement: {
                 BinaryExpression: {
                     Type: bool
                     Left: {
-                        StringLiteral: "123"
+                        NameExpression: {
+                            Type: cstring
+                            Name: left
+                        }
                     }
                     Operation: Equal
                     Right: {
-                        StringLiteral: "123"
+                        NameExpression: {
+                            Type: cstring
+                            Name: right
+                        }
                     }
                 }
             }

@@ -2,7 +2,7 @@
     ,-[Diagnostics/Input/defaultParameterTypeMismatch.cara:1:29]
   1 | def withBadDefault(x: i32 = "hello") i32
     .                             -------
-    .                                `-- Default value of type 'cstring' does not match parameter type 'i32'.
+    .                                `-- Default value of type 'string' does not match parameter type 'i32'.
   2 | {
   3 |     return x;
   4 | }

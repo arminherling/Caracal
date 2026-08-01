@@ -6,6 +6,12 @@ ConstantDeclaration: {
             Name: world
         }
     }
+    ExplicitType: {
+        TypeNameNode: {
+            Type: cstring
+            Lexeme: cstring
+        }
+    }
     Right: {
         StringLiteral: "Hello, World!"
     }

@@ -1,0 +1,40 @@
+def main() i32
+{
+    s := "Hello";
+    if s.length() != 5
+    {
+        return 2;
+    }
+
+    if s.byteAt(0) != 72'u8
+    {
+        return 3;
+    }
+
+    u := "grüße 🐈";
+    if u.length() != 12
+    {
+        return 4;
+    }
+
+    e := "";
+    if !e.isEmpty()
+    {
+        return 5;
+    }
+
+    t := "Hello";
+    if !s.equals(t)
+    {
+        return 6;
+    }
+
+    t = "World";
+    if s.equals(t)
+    {
+        return 7;
+    }
+    
+    C.puts("done");
+    return 42;
+}

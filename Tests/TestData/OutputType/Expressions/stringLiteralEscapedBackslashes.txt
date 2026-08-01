@@ -27,17 +27,59 @@ FunctionDefinitionStatement: {
             Lexeme: i32
         }
     }
-    BlockNode(2): {
+    BlockNode(4): {
+        VariableDeclaration: {
+            Type: cstring
+            Left: {
+                NameExpression: {
+                    Type: cstring
+                    Name: left
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: cstring
+                    Lexeme: cstring
+                }
+            }
+            Right: {
+                StringLiteral: "\\n"
+            }
+        }
+        VariableDeclaration: {
+            Type: cstring
+            Left: {
+                NameExpression: {
+                    Type: cstring
+                    Name: right
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: cstring
+                    Lexeme: cstring
+                }
+            }
+            Right: {
+                StringLiteral: "\\\n"
+            }
+        }
         IfStatement: {
             Condition: {
                 BinaryExpression: {
                     Type: bool
                     Left: {
-                        StringLiteral: "\\n"
+                        NameExpression: {
+                            Type: cstring
+                            Name: left
+                        }
                     }
                     Operation: Equal
                     Right: {
-                        StringLiteral: "\\\n"
+                        NameExpression: {
+                            Type: cstring
+                            Name: right
+                        }
                     }
                 }
             }

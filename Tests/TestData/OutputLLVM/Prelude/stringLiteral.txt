@@ -1,0 +1,202 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%string = type { { ptr, i32, i32 } }
+
+@0 = private unnamed_addr constant [6 x i8] c"Hello\00", align 1
+@1 = private unnamed_addr constant [13 x i8] c"gr\C3\BC\C3\9Fe \F0\9F\90\88\00", align 1
+@2 = private unnamed_addr constant [1 x i8] zeroinitializer, align 1
+@3 = private unnamed_addr constant [6 x i8] c"Hello\00", align 1
+@4 = private unnamed_addr constant [6 x i8] c"World\00", align 1
+@5 = private unnamed_addr constant [5 x i8] c"done\00", align 1
+
+declare i32 @strcmp(ptr %0, ptr %1)
+
+declare ptr @calloc(i64 %0, i64 %1)
+
+declare ptr @realloc(ptr %0, i64 %1)
+
+declare ptr @memmove(ptr %0, ptr %1, i64 %2)
+
+declare i32 @puts(ptr %0)
+
+define i32 @main() {
+entry:
+  %s = alloca %string, align 8
+  %_bytes = getelementptr inbounds nuw %string, ptr %s, i32 0, i32 0
+  %data = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes, i32 0, i32 0
+  store ptr @0, ptr %data, align 8
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes, i32 0, i32 1
+  store i32 5, ptr %length, align 4
+  %capacity = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes, i32 0, i32 2
+  store i32 5, ptr %capacity, align 4
+  %call = call i32 @string.length(ptr %s)
+  %not_equal = icmp ne i32 %call, 5
+  %u = alloca %string, align 8
+  %e = alloca %string, align 8
+  %t = alloca %string, align 8
+  %temp = alloca %string, align 8
+  br i1 %not_equal, label %if.true, label %if.continuation
+
+if.true:                                          ; preds = %entry
+  ret i32 2
+
+if.continuation:                                  ; preds = %entry
+  %call11 = call i8 @string.byteAt(ptr %s, i32 0)
+  %not_equal12 = icmp ne i8 %call11, 72
+  br i1 %not_equal12, label %if.true1, label %if.continuation2
+
+if.true1:                                         ; preds = %if.continuation
+  ret i32 3
+
+if.continuation2:                                 ; preds = %if.continuation
+  %_bytes13 = getelementptr inbounds nuw %string, ptr %u, i32 0, i32 0
+  %data14 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes13, i32 0, i32 0
+  store ptr @1, ptr %data14, align 8
+  %length15 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes13, i32 0, i32 1
+  store i32 12, ptr %length15, align 4
+  %capacity16 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes13, i32 0, i32 2
+  store i32 12, ptr %capacity16, align 4
+  %call17 = call i32 @string.length(ptr %u)
+  %not_equal18 = icmp ne i32 %call17, 12
+  br i1 %not_equal18, label %if.true3, label %if.continuation4
+
+if.true3:                                         ; preds = %if.continuation2
+  ret i32 4
+
+if.continuation4:                                 ; preds = %if.continuation2
+  %_bytes19 = getelementptr inbounds nuw %string, ptr %e, i32 0, i32 0
+  %data20 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes19, i32 0, i32 0
+  store ptr @2, ptr %data20, align 8
+  %length21 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes19, i32 0, i32 1
+  store i32 0, ptr %length21, align 4
+  %capacity22 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes19, i32 0, i32 2
+  store i32 0, ptr %capacity22, align 4
+  %call23 = call i1 @string.isEmpty(ptr %e)
+  %0 = xor i1 %call23, true
+  br i1 %0, label %if.true5, label %if.continuation6
+
+if.true5:                                         ; preds = %if.continuation4
+  ret i32 5
+
+if.continuation6:                                 ; preds = %if.continuation4
+  %_bytes24 = getelementptr inbounds nuw %string, ptr %t, i32 0, i32 0
+  %data25 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes24, i32 0, i32 0
+  store ptr @3, ptr %data25, align 8
+  %length26 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes24, i32 0, i32 1
+  store i32 5, ptr %length26, align 4
+  %capacity27 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes24, i32 0, i32 2
+  store i32 5, ptr %capacity27, align 4
+  %load = load %string, ptr %t, align 8
+  %call28 = call i1 @string.equals(ptr %s, %string %load)
+  %1 = xor i1 %call28, true
+  br i1 %1, label %if.true7, label %if.continuation8
+
+if.true7:                                         ; preds = %if.continuation6
+  ret i32 6
+
+if.continuation8:                                 ; preds = %if.continuation6
+  %_bytes29 = getelementptr inbounds nuw %string, ptr %temp, i32 0, i32 0
+  %data30 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes29, i32 0, i32 0
+  store ptr @4, ptr %data30, align 8
+  %length31 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes29, i32 0, i32 1
+  store i32 5, ptr %length31, align 4
+  %capacity32 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes29, i32 0, i32 2
+  store i32 5, ptr %capacity32, align 4
+  %load33 = load %string, ptr %temp, align 8
+  store %string %load33, ptr %t, align 8
+  %load34 = load %string, ptr %t, align 8
+  %call35 = call i1 @string.equals(ptr %s, %string %load34)
+  br i1 %call35, label %if.true9, label %if.continuation10
+
+if.true9:                                         ; preds = %if.continuation8
+  ret i32 7
+
+if.continuation10:                                ; preds = %if.continuation8
+  %call36 = call i32 @puts(ptr @5)
+  ret i32 42
+}
+
+define i32 @string.length(ptr nonnull %0) {
+entry:
+  %_bytes = getelementptr inbounds nuw %string, ptr %0, i32 0, i32 0
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes, i32 0, i32 1
+  %load = load i32, ptr %length, align 4
+  ret i32 %load
+}
+
+define i8 @string.byteAt(ptr nonnull %0, i32 %1) {
+entry:
+  %_bytes = getelementptr inbounds nuw %string, ptr %0, i32 0, i32 0
+  %data = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes, i32 0, i32 0
+  %load = load ptr, ptr %data, align 8
+  %element = getelementptr i8, ptr %load, i32 %1
+  %load1 = load i8, ptr %element, align 1
+  ret i8 %load1
+}
+
+define i1 @string.isEmpty(ptr nonnull %0) {
+entry:
+  %_bytes = getelementptr inbounds nuw %string, ptr %0, i32 0, i32 0
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes, i32 0, i32 1
+  %load = load i32, ptr %length, align 4
+  %equal = icmp eq i32 %load, 0
+  ret i1 %equal
+}
+
+define i1 @string.equals(ptr nonnull %0, %string %1) {
+entry:
+  %other = alloca %string, align 8
+  store %string %1, ptr %other, align 8
+  %_bytes = getelementptr inbounds nuw %string, ptr %0, i32 0, i32 0
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes, i32 0, i32 1
+  %load = load i32, ptr %length, align 4
+  %_bytes3 = getelementptr inbounds nuw %string, ptr %other, i32 0, i32 0
+  %length4 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes3, i32 0, i32 1
+  %load5 = load i32, ptr %length4, align 4
+  %not_equal = icmp ne i32 %load, %load5
+  br i1 %not_equal, label %if.true, label %if.continuation
+
+if.true:                                          ; preds = %entry
+  ret i1 false
+
+if.continuation:                                  ; preds = %entry
+  br label %while.condition
+
+while.condition:                                  ; preds = %if.continuation2, %if.continuation
+  %phi = phi i32 [ 0, %if.continuation ], [ %add, %if.continuation2 ]
+  %_bytes6 = getelementptr inbounds nuw %string, ptr %0, i32 0, i32 0
+  %length7 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes6, i32 0, i32 1
+  %load8 = load i32, ptr %length7, align 4
+  %less_than = icmp slt i32 %phi, %load8
+  br i1 %less_than, label %while.body, label %while.continuation
+
+while.body:                                       ; preds = %while.condition
+  %_bytes9 = getelementptr inbounds nuw %string, ptr %0, i32 0, i32 0
+  %data = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes9, i32 0, i32 0
+  %load10 = load ptr, ptr %data, align 8
+  %element = getelementptr i8, ptr %load10, i32 %phi
+  %load11 = load i8, ptr %element, align 1
+  %_bytes12 = getelementptr inbounds nuw %string, ptr %other, i32 0, i32 0
+  %data13 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes12, i32 0, i32 0
+  %load14 = load ptr, ptr %data13, align 8
+  %element15 = getelementptr i8, ptr %load14, i32 %phi
+  %load16 = load i8, ptr %element15, align 1
+  %not_equal17 = icmp ne i8 %load11, %load16
+  br i1 %not_equal17, label %if.true1, label %if.continuation2
+
+if.true1:                                         ; preds = %while.body
+  ret i1 false
+
+if.continuation2:                                 ; preds = %while.body
+  %add = add i32 %phi, 1
+  br label %while.condition
+
+while.continuation:                               ; preds = %while.condition
+  ret i1 true
+}
+
+; uselistorder directives
+uselistorder ptr @string.length, { 1, 0 }
+uselistorder ptr @string.equals, { 1, 0 }

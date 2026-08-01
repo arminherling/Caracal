@@ -4,7 +4,7 @@
   2 | {
   3 |     return -"hello";
     .            --------
-    .                `-- Operator '-' cannot be applied to 'cstring'
+    .                `-- Operator '-' cannot be applied to 'string'
   4 | }
   5 | 
     `----

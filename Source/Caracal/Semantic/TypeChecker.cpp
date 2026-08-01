@@ -1636,7 +1636,12 @@ namespace Caracal
         }
 
         auto rightExpression = statement->rightExpression().get();
-        auto rightType = typeCheckExpression(rightExpression, tokens);
+        auto rightType = Type::Undefined();
+        {
+            // use the explicit type for the initializer
+            const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualTypeForExpectedType(declaredType) };
+            rightType = typeCheckExpression(rightExpression, tokens);
+        }
 
         // the declared type wins for the binding, the initializer only has to be assignable to it
         auto bindingType = rightType;
@@ -2219,6 +2224,11 @@ namespace Caracal
                 {
                     contextualType = baseType;
                 }
+                else if (expression->kind() == NodeKind::StringLiteral)
+                {
+                    // TODO enum string values are cstrings for now until enums can handle any types
+                    contextualType = m_module.wellKnown().cstring;
+                }
 
                 auto fieldValueType = Type::Undefined();
                 {
@@ -2485,6 +2495,8 @@ namespace Caracal
                 auto* requiredExpression = argument.value().get();
                 if (requiredExpression->kind() != NodeKind::BoolLiteral)
                 {
+                    // annotation arguments are compiler metadata, string literals are cstrings
+                    const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, m_module.wellKnown().cstring };
                     const auto requiredArgumentType = typeCheckExpression(requiredExpression, tokens);
                     m_diagnostics.addAnnotationArgumentTypeMismatchError(
                         tokens.source(),
@@ -2510,7 +2522,12 @@ namespace Caracal
             }
 
             auto* value = argument.value().get();
-            const auto argumentType = typeCheckExpression(value, tokens);
+            auto argumentType = Type::Undefined();
+            {
+                // annotation arguments are compiler metadata, string literals are cstrings
+                const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, m_module.wellKnown().cstring };
+                argumentType = typeCheckExpression(value, tokens);
+            }
             if (argumentType == Type::Undefined())
             {
                 return false;
@@ -2613,7 +2630,12 @@ namespace Caracal
         {
             const auto expectedType = m_module.wellKnown().i32;
             auto* argument = firstPositionalArgument;
-            auto argumentType = typeCheckExpression(argument, tokens);
+            auto argumentType = Type::Undefined();
+            {
+                // annotation arguments are compiler metadata, string literals are cstrings
+                const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, m_module.wellKnown().cstring };
+                argumentType = typeCheckExpression(argument, tokens);
+            }
             if (argumentType == Type::Undefined())
             {
                 return false;
@@ -2904,7 +2926,11 @@ namespace Caracal
 
         if (statement->expression().has_value())
         {
-            auto type = typeCheckExpression(statement->expression().value().get(), tokens);
+            auto type = Type::Undefined();
+            {
+                const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualTypeForExpectedType(declaredReturnType) };
+                type = typeCheckExpression(statement->expression().value().get(), tokens);
+            }
             if (type.isReference())
             {
                 // returning a ref is now allowed, so we need to coerce it to a value
@@ -2953,7 +2979,20 @@ namespace Caracal
         {
             case NodeKind::StringLiteral:
             {
-                expression->setType(m_module.wellKnown().cstring);
+                auto literalType = m_module.wellKnown().string;
+                if (literalType == Type::Undefined()
+                    || (m_contextualNumberType.has_value() && m_contextualNumberType.value() == m_module.wellKnown().cstring))
+                {
+                    // string literals are cstrings for FFI function calls
+                    literalType = m_module.wellKnown().cstring;
+                }
+
+                if (!m_options.isPreludePass && literalType == m_module.wellKnown().string)
+                {
+                    m_module.markPreludeTypeRequired(literalType);
+                }
+
+                expression->setType(literalType);
                 return expression->type();
             }
             case NodeKind::BoolLiteral:
@@ -3737,6 +3776,7 @@ namespace Caracal
             // use the bound parameter type for the argument if needed, variadic arguments have no expected type
             auto* argumentExpression = argument.value().get();
             auto contextualType = std::optional<Type>{};
+            auto isVariadicArgument = true;
             for (size_t i = 0; i < binding.ordered.size(); ++i)
             {
                 if (binding.ordered[i] != argumentExpression)
@@ -3745,11 +3785,19 @@ namespace Caracal
                 }
 
                 contextualType = contextualTypeForExpectedType(parameterTypes[i + parameterOffset].type());
+                isVariadicArgument = false;
                 break;
             }
 
+            // variadic arguments of extern functions go to C, string literals there must stay cstring
+            if (isVariadicArgument
+                && m_module.tryGetExternFunctionByFullName(functionDefinition.fullName()) != Type::Undefined())
+            {
+                contextualType = m_module.wellKnown().cstring;
+            }
+
             const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, contextualType };
-            typeCheckExpression(argumentExpression, tokens);
+            static_cast<void>(typeCheckExpression(argumentExpression, tokens));
         }
 
         const auto expectedArgumentCount = parameterCount - parameterOffset;
@@ -4244,6 +4292,12 @@ namespace Caracal
 
         const auto* description = m_module.tryGetBuiltinTypeDescription(expectedType);
         if (description != nullptr && description->kind == BuiltinTypeKind::Int)
+        {
+            return expectedType;
+        }
+
+        // string literals stay cstrings for FFI
+        if (expectedType == m_module.wellKnown().cstring)
         {
             return expectedType;
         }
