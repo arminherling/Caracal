@@ -1,0 +1,70 @@
+def main() i32
+{
+    ascii := "Hello";
+    if ascii.runeCount() != 5
+    {
+        return 2;
+    }
+    if ascii.runeAt(0) != 72'rune
+    {
+        return 3;
+    }
+    if ascii.runeLengthAt(0) != 1
+    {
+        return 4;
+    }
+
+    mixed := "grüße 🐈";
+    if mixed.length() != 12
+    {
+        return 5;
+    }
+    if mixed.runeCount() != 7
+    {
+        return 6;
+    }
+    if mixed.runeLengthAt(2) != 2
+    {
+        return 7;
+    }
+    if mixed.runeAt(2) != 252'rune
+    {
+        return 8;
+    }
+    if mixed.runeLengthAt(8) != 4
+    {
+        return 9;
+    }
+    if mixed.runeAt(8) != 128008'rune
+    {
+        return 10;
+    }
+
+    euro := "€";
+    if euro.length() != 3
+    {
+        return 11;
+    }
+    if euro.runeCount() != 1
+    {
+        return 12;
+    }
+    if euro.runeAt(0) != 8364'rune
+    {
+        return 13;
+    }
+
+    walked := 0;
+    i := 0;
+    while i < mixed.length()
+    {
+        i = i %+ mixed.runeLengthAt(i);
+        walked = walked %+ 1;
+    }
+    if walked != 7
+    {
+        return 14;
+    }
+
+    return 42;
+}

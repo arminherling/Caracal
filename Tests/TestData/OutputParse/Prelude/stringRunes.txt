@@ -1,0 +1,755 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(20): {
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: ascii
+                }
+            }
+            Right: {
+                StringLiteral: "Hello"
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: ascii
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: runeCount
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 5
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: ascii
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: runeAt
+                                    }
+                                    ArgumentsNode(1): {
+                                        NumberLiteral: 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 72
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: rune
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 3
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: ascii
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: runeLengthAt
+                                    }
+                                    ArgumentsNode(1): {
+                                        NumberLiteral: 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 1
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 4
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: mixed
+                }
+            }
+            Right: {
+                StringLiteral: "grüße 🐈"
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: mixed
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: length
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 12
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 5
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: mixed
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: runeCount
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 7
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 6
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: mixed
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: runeLengthAt
+                                    }
+                                    ArgumentsNode(1): {
+                                        NumberLiteral: 2
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 2
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 7
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: mixed
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: runeAt
+                                    }
+                                    ArgumentsNode(1): {
+                                        NumberLiteral: 2
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 252
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: rune
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 8
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: mixed
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: runeLengthAt
+                                    }
+                                    ArgumentsNode(1): {
+                                        NumberLiteral: 8
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 4
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 9
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: mixed
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: runeAt
+                                    }
+                                    ArgumentsNode(1): {
+                                        NumberLiteral: 8
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 128008
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: rune
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 10
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: euro
+                }
+            }
+            Right: {
+                StringLiteral: "€"
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: euro
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: length
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 3
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 11
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: euro
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: runeCount
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 1
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 12
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: euro
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: runeAt
+                                    }
+                                    ArgumentsNode(1): {
+                                        NumberLiteral: 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 8364
+                        TypeNameNode: {
+                            Type: undefined
+                            Lexeme: rune
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 13
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: walked
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: i
+                }
+            }
+            Right: {
+                NumberLiteral: 0
+            }
+        }
+        WhileStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: i
+                        }
+                    }
+                    Operation: LessThan
+                    Right: {
+                        BinaryExpression: {
+                            Type: undefined
+                            Left: {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: mixed
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: undefined
+                                    Function type: undefined
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: length
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(2): {
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: i
+                            }
+                        }
+                        Right: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: i
+                                    }
+                                }
+                                Operation: AdditionWrapping
+                                Right: {
+                                    BinaryExpression: {
+                                        Type: undefined
+                                        Left: {
+                                            NameExpression: {
+                                                Type: undefined
+                                                Name: mixed
+                                            }
+                                        }
+                                        Operation: MemberAccess
+                                        Right: {
+                                            FunctionCallExpression: {
+                                                Type: undefined
+                                                Function type: undefined
+                                                NameExpression: {
+                                                    Type: undefined
+                                                    Name: runeLengthAt
+                                                }
+                                                ArgumentsNode(1): {
+                                                    NameExpression: {
+                                                        Type: undefined
+                                                        Name: i
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    AssignmentStatement: {
+                        Left: {
+                            NameExpression: {
+                                Type: undefined
+                                Name: walked
+                            }
+                        }
+                        Right: {
+                            BinaryExpression: {
+                                Type: undefined
+                                Left: {
+                                    NameExpression: {
+                                        Type: undefined
+                                        Name: walked
+                                    }
+                                }
+                                Operation: AdditionWrapping
+                                Right: {
+                                    NumberLiteral: 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: walked
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 7
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 14
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 42
+        }
+    }
+}
