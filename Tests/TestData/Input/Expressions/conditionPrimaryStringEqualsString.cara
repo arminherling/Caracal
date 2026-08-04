@@ -1,8 +1,6 @@
 def func()
 {
-    left : cstring = "123";
-    right : cstring = "123";
-    if left == right
+    if "123" == "123"
     {
         return;
     }

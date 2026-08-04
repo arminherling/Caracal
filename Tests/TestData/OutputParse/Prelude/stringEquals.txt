@@ -132,7 +132,7 @@ FunctionDefinitionStatement: {
                     Left: {
                         NameExpression: {
                             Type: undefined
-                            Name: s
+                            Name: string
                         }
                     }
                     Operation: MemberAccess
@@ -144,7 +144,11 @@ FunctionDefinitionStatement: {
                                 Type: undefined
                                 Name: equals
                             }
-                            ArgumentsNode(1): {
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: undefined
+                                    Name: s
+                                }
                                 NameExpression: {
                                     Type: undefined
                                     Name: t
@@ -163,7 +167,7 @@ FunctionDefinitionStatement: {
                                 Left: {
                                     NameExpression: {
                                         Type: undefined
-                                        Name: s
+                                        Name: string
                                     }
                                 }
                                 Operation: MemberAccess
@@ -175,7 +179,11 @@ FunctionDefinitionStatement: {
                                             Type: undefined
                                             Name: notEquals
                                         }
-                                        ArgumentsNode(1): {
+                                        ArgumentsNode(2): {
+                                            NameExpression: {
+                                                Type: undefined
+                                                Name: s
+                                            }
                                             NameExpression: {
                                                 Type: undefined
                                                 Name: u

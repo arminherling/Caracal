@@ -20,6 +20,7 @@ namespace Caracal
         Type resultType;
         BinaryFoldFunction binaryFold = nullptr;
         UnaryFoldFunction unaryFold = nullptr;
+        Type callee = Type::Undefined();
     };
 
     class TypeDefinition

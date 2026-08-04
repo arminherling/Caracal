@@ -1,6 +1,4 @@
 def func()
 {
-    left : cstring = "123";
-    right : cstring = "123";
-    x :: left == right;
+    x :: "123" == "123";
 }

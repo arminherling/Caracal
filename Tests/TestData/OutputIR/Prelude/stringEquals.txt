@@ -78,22 +78,24 @@ block entry(0):
     store_value %42, %43 : i32
     %44 = load_value %35 : [u8; _]
     call string.new(%34, %44)
-    %45 = load_value %17 : string
-    %46 = call string.equals(%0, %45) : bool
-    branch if %46, if.true(1), if.continuation(2)
+    %45 = load_value %0 : string
+    %46 = load_value %17 : string
+    %47 = call string.equals(%45, %46) : bool
+    branch if %47, if.true(1), if.continuation(2)
 block if.true(1):
-    %47 = load_value %34 : string
-    %48 = call string.notEquals(%0, %47) : bool
-    branch if %48, if.true(3), if.continuation(4)
+    %48 = load_value %0 : string
+    %49 = load_value %34 : string
+    %50 = call string.notEquals(%48, %49) : bool
+    branch if %50, if.true(3), if.continuation(4)
 block if.true(3):
-    %49 = const 42 : i32
-    return %49
-block if.continuation(4):
-    %50 = const 3 : i32
-    return %50
-block if.continuation(2):
-    %51 = const 2 : i32
+    %51 = const 42 : i32
     return %51
+block if.continuation(4):
+    %52 = const 3 : i32
+    return %52
+block if.continuation(2):
+    %53 = const 2 : i32
+    return %53
 
 define string.new(%0: ref string ".this", %1: [u8; _] "bytes") void
 block entry(0):
@@ -107,66 +109,73 @@ block entry(0):
     store_value %3, %4 : [u8; _]
     return
 
-define string.equals(%0: ref string ".this", %1: string "other") bool
+define string.equals(%0: string "lhs", %1: string "rhs") bool
 block entry(0):
-    %0 = parameter 0 : ref string ".this"
-    %1 = parameter 1 : string "other"
-    %slot0 = allocate_local : string "other"
-    %2 = address_of %slot0 : ref string
-    store_value %1, %2 : string
-    %3 = address_of_field %0.0 : ref [u8; _] "_bytes"
-    %4 = address_of_field %3.1 : ref i32 "length"
-    %5 = load_value %4 : i32
-    %6 = address_of_field %2.0 : ref [u8; _] "_bytes"
-    %7 = address_of_field %6.1 : ref i32 "length"
-    %8 = load_value %7 : i32
-    %9 = not_equal %5, %8 : bool
-    branch if %9, if.true(1), if.continuation(2)
+    %0 = parameter 0 : string "lhs"
+    %slot0 = allocate_local : string "lhs"
+    %slot1 = allocate_local : string "rhs"
+    %1 = address_of %slot0 : ref string
+    store_value %0, %1 : string
+    %2 = parameter 1 : string "rhs"
+    %3 = address_of %slot1 : ref string
+    store_value %2, %3 : string
+    %4 = address_of_field %1.0 : ref [u8; _] "_bytes"
+    %5 = address_of_field %4.1 : ref i32 "length"
+    %6 = load_value %5 : i32
+    %7 = address_of_field %3.0 : ref [u8; _] "_bytes"
+    %8 = address_of_field %7.1 : ref i32 "length"
+    %9 = load_value %8 : i32
+    %10 = not_equal %6, %9 : bool
+    branch if %10, if.true(1), if.continuation(2)
 block if.true(1):
-    %10 = const false : bool
-    return %10
+    %11 = const false : bool
+    return %11
 block if.continuation(2):
-    %11 = const 0 : i32
+    %12 = const 0 : i32
     jump while.condition(3)
 block while.condition(3):
-    %12 = phi [if.continuation(2): %11], [if.continuation(7): %30] : i32
-    %13 = address_of_field %0.0 : ref [u8; _] "_bytes"
-    %14 = address_of_field %13.1 : ref i32 "length"
-    %15 = load_value %14 : i32
-    %16 = less_than %12, %15 : bool
-    branch if %16, while.body(4), while.continuation(5)
+    %13 = phi [if.continuation(2): %12], [if.continuation(7): %31] : i32
+    %14 = address_of_field %1.0 : ref [u8; _] "_bytes"
+    %15 = address_of_field %14.1 : ref i32 "length"
+    %16 = load_value %15 : i32
+    %17 = less_than %13, %16 : bool
+    branch if %17, while.body(4), while.continuation(5)
 block while.body(4):
-    %17 = address_of_field %0.0 : ref [u8; _] "_bytes"
-    %18 = address_of_field %17.0 : ref u8 "data"
-    %19 = load_value %18 : ref u8
-    %20 = element_address %19[%12] : u8
-    %21 = load_value %20 : u8
-    %22 = address_of_field %2.0 : ref [u8; _] "_bytes"
-    %23 = address_of_field %22.0 : ref u8 "data"
-    %24 = load_value %23 : ref u8
-    %25 = element_address %24[%12] : u8
-    %26 = load_value %25 : u8
-    %27 = not_equal %21, %26 : bool
-    branch if %27, if.true(6), if.continuation(7)
+    %18 = address_of_field %1.0 : ref [u8; _] "_bytes"
+    %19 = address_of_field %18.0 : ref u8 "data"
+    %20 = load_value %19 : ref u8
+    %21 = element_address %20[%13] : u8
+    %22 = load_value %21 : u8
+    %23 = address_of_field %3.0 : ref [u8; _] "_bytes"
+    %24 = address_of_field %23.0 : ref u8 "data"
+    %25 = load_value %24 : ref u8
+    %26 = element_address %25[%13] : u8
+    %27 = load_value %26 : u8
+    %28 = not_equal %22, %27 : bool
+    branch if %28, if.true(6), if.continuation(7)
 block if.true(6):
-    %28 = const false : bool
-    return %28
+    %29 = const false : bool
+    return %29
 block if.continuation(7):
-    %29 = const 1 : i32
-    %30 = add %12, %29 : i32
+    %30 = const 1 : i32
+    %31 = add %13, %30 : i32
     jump while.condition(3)
 block while.continuation(5):
-    %31 = const true : bool
-    return %31
+    %32 = const true : bool
+    return %32
 
-define string.notEquals(%0: ref string ".this", %1: string "other") bool
+define string.notEquals(%0: string "lhs", %1: string "rhs") bool
 block entry(0):
-    %0 = parameter 0 : ref string ".this"
-    %1 = parameter 1 : string "other"
-    %slot0 = allocate_local : string "other"
-    %2 = address_of %slot0 : ref string
-    store_value %1, %2 : string
-    %3 = load_value %2 : string
-    %4 = call string.equals(%0, %3) : bool
-    %5 = logical_negate %4 : bool
-    return %5
+    %0 = parameter 0 : string "lhs"
+    %slot0 = allocate_local : string "lhs"
+    %slot1 = allocate_local : string "rhs"
+    %1 = address_of %slot0 : ref string
+    store_value %0, %1 : string
+    %2 = parameter 1 : string "rhs"
+    %3 = address_of %slot1 : ref string
+    store_value %2, %3 : string
+    %4 = load_value %1 : string
+    %5 = load_value %3 : string
+    %6 = call string.equals(%4, %5) : bool
+    %7 = logical_negate %6 : bool
+    return %7

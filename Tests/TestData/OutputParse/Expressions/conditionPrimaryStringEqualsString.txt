@@ -5,59 +5,17 @@ FunctionDefinitionStatement: {
     }
     ReturnTypesNode(0): {
     }
-    BlockNode(4): {
-        VariableDeclaration: {
-            Type: undefined
-            Left: {
-                NameExpression: {
-                    Type: undefined
-                    Name: left
-                }
-            }
-            ExplicitType: {
-                TypeNameNode: {
-                    Type: undefined
-                    Lexeme: cstring
-                }
-            }
-            Right: {
-                StringLiteral: "123"
-            }
-        }
-        VariableDeclaration: {
-            Type: undefined
-            Left: {
-                NameExpression: {
-                    Type: undefined
-                    Name: right
-                }
-            }
-            ExplicitType: {
-                TypeNameNode: {
-                    Type: undefined
-                    Lexeme: cstring
-                }
-            }
-            Right: {
-                StringLiteral: "123"
-            }
-        }
+    BlockNode(2): {
         IfStatement: {
             Condition: {
                 BinaryExpression: {
                     Type: undefined
                     Left: {
-                        NameExpression: {
-                            Type: undefined
-                            Name: left
-                        }
+                        StringLiteral: "123"
                     }
                     Operation: Equal
                     Right: {
-                        NameExpression: {
-                            Type: undefined
-                            Name: right
-                        }
+                        StringLiteral: "123"
                     }
                 }
             }

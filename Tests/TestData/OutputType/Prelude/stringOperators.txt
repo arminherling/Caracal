@@ -1,0 +1,176 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(9): {
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        StringLiteral: "abc"
+                    }
+                    Operation: Equal
+                    Right: {
+                        StringLiteral: "abd"
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        StringLiteral: "abc"
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        StringLiteral: "abc"
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 3
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: string
+            Left: {
+                NameExpression: {
+                    Type: string
+                    Name: s
+                }
+            }
+            Right: {
+                StringLiteral: "grüße 🐈"
+            }
+        }
+        VariableDeclaration: {
+            Type: string
+            Left: {
+                NameExpression: {
+                    Type: string
+                    Name: t
+                }
+            }
+            Right: {
+                StringLiteral: "grüße 🐈"
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: string
+                            Name: s
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NameExpression: {
+                            Type: string
+                            Name: t
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 4
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: string
+            Left: {
+                NameExpression: {
+                    Type: string
+                    Name: e
+                }
+            }
+            Right: {
+                StringLiteral: ""
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: string
+                            Name: s
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NameExpression: {
+                            Type: string
+                            Name: e
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 5
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        StringLiteral: ""
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        StringLiteral: ""
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 6
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 42
+        }
+    }
+}

@@ -234,35 +234,19 @@ FunctionDefinitionStatement: {
         }
         IfStatement: {
             Condition: {
-                UnaryExpression: {
+                BinaryExpression: {
                     Type: undefined
-                    Operation: LogicalNegation
-                    Expression: {
-                        BinaryExpression: {
+                    Left: {
+                        NameExpression: {
                             Type: undefined
-                            Left: {
-                                NameExpression: {
-                                    Type: undefined
-                                    Name: s
-                                }
-                            }
-                            Operation: MemberAccess
-                            Right: {
-                                FunctionCallExpression: {
-                                    Type: undefined
-                                    Function type: undefined
-                                    NameExpression: {
-                                        Type: undefined
-                                        Name: equals
-                                    }
-                                    ArgumentsNode(1): {
-                                        NameExpression: {
-                                            Type: undefined
-                                            Name: t
-                                        }
-                                    }
-                                }
-                            }
+                            Name: s
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: t
                         }
                     }
                 }
@@ -297,21 +281,11 @@ FunctionDefinitionStatement: {
                             Name: s
                         }
                     }
-                    Operation: MemberAccess
+                    Operation: Equal
                     Right: {
-                        FunctionCallExpression: {
+                        NameExpression: {
                             Type: undefined
-                            Function type: undefined
-                            NameExpression: {
-                                Type: undefined
-                                Name: equals
-                            }
-                            ArgumentsNode(1): {
-                                NameExpression: {
-                                    Type: undefined
-                                    Name: t
-                                }
-                            }
+                            Name: t
                         }
                     }
                 }

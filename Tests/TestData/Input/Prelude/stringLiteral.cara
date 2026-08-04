@@ -24,13 +24,13 @@ def main() i32
     }
 
     t := "Hello";
-    if !s.equals(t)
+    if s != t
     {
         return 6;
     }
 
     t = "World";
-    if s.equals(t)
+    if s == t
     {
         return 7;
     }

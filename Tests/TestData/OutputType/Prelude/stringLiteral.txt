@@ -234,35 +234,19 @@ FunctionDefinitionStatement: {
         }
         IfStatement: {
             Condition: {
-                UnaryExpression: {
+                BinaryExpression: {
                     Type: bool
-                    Operation: LogicalNegation
-                    Expression: {
-                        BinaryExpression: {
-                            Type: bool
-                            Left: {
-                                NameExpression: {
-                                    Type: string
-                                    Name: s
-                                }
-                            }
-                            Operation: MemberAccess
-                            Right: {
-                                FunctionCallExpression: {
-                                    Type: bool
-                                    Function type: (ref string, string) -> bool
-                                    NameExpression: {
-                                        Type: (ref string, string) -> bool
-                                        Name: equals
-                                    }
-                                    ArgumentsNode(1): {
-                                        NameExpression: {
-                                            Type: string
-                                            Name: t
-                                        }
-                                    }
-                                }
-                            }
+                    Left: {
+                        NameExpression: {
+                            Type: string
+                            Name: s
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NameExpression: {
+                            Type: string
+                            Name: t
                         }
                     }
                 }
@@ -297,21 +281,11 @@ FunctionDefinitionStatement: {
                             Name: s
                         }
                     }
-                    Operation: MemberAccess
+                    Operation: Equal
                     Right: {
-                        FunctionCallExpression: {
-                            Type: bool
-                            Function type: (ref string, string) -> bool
-                            NameExpression: {
-                                Type: (ref string, string) -> bool
-                                Name: equals
-                            }
-                            ArgumentsNode(1): {
-                                NameExpression: {
-                                    Type: string
-                                    Name: t
-                                }
-                            }
+                        NameExpression: {
+                            Type: string
+                            Name: t
                         }
                     }
                 }

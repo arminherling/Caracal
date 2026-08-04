@@ -118,6 +118,7 @@ namespace Caracal
         [[nodiscard]] bool lowerDynamicArrayLiteralIntoAddress(const ArrayLiteral* literal, ValueRef destinationAddress, Type arrayType) noexcept;
         [[nodiscard]] bool tryLowerStringLiteralIntoAddress(const Expression* expression, ValueRef destinationAddress) noexcept;
         void emitDynamicArrayDescriptor(ValueRef destinationAddress, Type arrayType, ValueRef dataPointer, i32 length, i32 capacity) noexcept;
+        void markPreludeFunction(Type functionType) noexcept;
         [[nodiscard]] std::optional<ValueRef> allocateSlotFromExpression(std::string localName, const Expression* expression, Type valueType) noexcept;
         [[nodiscard]] std::optional<ValueRef> spillValueToTempSlot(const Expression* expression, ValueRef value) noexcept;
         [[nodiscard]] std::optional<ValueRef> lowerMethodReceiverAddress(const Expression* receiverExpression) noexcept;

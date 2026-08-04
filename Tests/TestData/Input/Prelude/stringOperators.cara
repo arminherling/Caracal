@@ -1,0 +1,32 @@
+def main() i32
+{
+    if "abc" == "abd"
+    {
+        return 2;
+    }
+
+    if "abc" != "abc"
+    {
+        return 3;
+    }
+
+    s := "grüße 🐈";
+    t := "grüße 🐈";
+    if s != t
+    {
+        return 4;
+    }
+
+    e := "";
+    if s == e
+    {
+        return 5;
+    }
+
+    if "" != ""
+    {
+        return 6;
+    }
+
+    return 42;
+}

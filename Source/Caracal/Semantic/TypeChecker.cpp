@@ -1003,8 +1003,57 @@ namespace Caracal
             else
             {
                 validateStaticMethodTypeName(methodStatement, typeDefinition, tokens);
+                registerOperatorMethod(methodStatement, typeDefinition, typeType);
             }
         }
+    }
+
+    void TypeChecker::registerOperatorMethod(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType)
+    {
+        // only allow static equals/notEquals on types with the correct shape for operators
+        if (methodStatement->modifier() != MethodModifier::Static
+            || !methodStatement->methodNameNode()->hasTypeName()
+            || methodStatement->methodNameNode()->typeName().value() != typeDefinition.name())
+        {
+            return;
+        }
+
+        const auto& methodName = methodStatement->methodNameNode()->methodName();
+        auto binaryOperator = BinaryOperatorKind::Invalid;
+        if (methodName == BuiltinEqualsMethodName)
+        {
+            binaryOperator = BinaryOperatorKind::Equal;
+        }
+        else if (methodName == BuiltinNotEqualsMethodName)
+        {
+            binaryOperator = BinaryOperatorKind::NotEqual;
+        }
+        else
+        {
+            return;
+        }
+
+        const auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
+        if (methodType == Type::Undefined())
+        {
+            return;
+        }
+
+        const auto& methodDefinition = m_module.getFunctionDefinition(methodType);
+        const auto& parameters = methodDefinition.parameters();
+        const auto& returnTypes = methodDefinition.returnTypes();
+        if (parameters.size() != 2
+            || parameters[0].type() != typeType
+            || parameters[1].type() != typeType
+            || returnTypes.size() != 1
+            || returnTypes.front() != m_module.wellKnown().boolean)
+        {
+            return;
+        }
+
+        typeDefinition.addOperatorSignature(
+            binaryOperator,
+            OperatorSignature{ typeType, typeType, returnTypes.front(), nullptr, nullptr, methodType });
     }
 
     void TypeChecker::validateStaticMethodTypeName(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, const TokenBuffer& tokens)

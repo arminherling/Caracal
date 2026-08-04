@@ -132,19 +132,23 @@ FunctionDefinitionStatement: {
                     Left: {
                         NameExpression: {
                             Type: string
-                            Name: s
+                            Name: string
                         }
                     }
                     Operation: MemberAccess
                     Right: {
                         FunctionCallExpression: {
                             Type: bool
-                            Function type: (ref string, string) -> bool
+                            Function type: (string, string) -> bool
                             NameExpression: {
-                                Type: (ref string, string) -> bool
+                                Type: (string, string) -> bool
                                 Name: equals
                             }
-                            ArgumentsNode(1): {
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: string
+                                    Name: s
+                                }
                                 NameExpression: {
                                     Type: string
                                     Name: t
@@ -163,19 +167,23 @@ FunctionDefinitionStatement: {
                                 Left: {
                                     NameExpression: {
                                         Type: string
-                                        Name: s
+                                        Name: string
                                     }
                                 }
                                 Operation: MemberAccess
                                 Right: {
                                     FunctionCallExpression: {
                                         Type: bool
-                                        Function type: (ref string, string) -> bool
+                                        Function type: (string, string) -> bool
                                         NameExpression: {
-                                            Type: (ref string, string) -> bool
+                                            Type: (string, string) -> bool
                                             Name: notEquals
                                         }
-                                        ArgumentsNode(1): {
+                                        ArgumentsNode(2): {
+                                            NameExpression: {
+                                                Type: string
+                                                Name: s
+                                            }
                                             NameExpression: {
                                                 Type: string
                                                 Name: u

@@ -789,6 +789,17 @@ namespace Caracal
         return methodType.id();
     }
 
+    void IRLowerer::markPreludeFunction(Type functionType) noexcept
+    {
+        const auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
+        if (!functionDefinition.symbolName().has_value()
+            && m_semanticContext.isPreludeFunctionDefinition(functionType)
+            && m_queuedPreludeFunctionIds.insert(functionDefinition.type().id()).second)
+        {
+            m_requiredPreludeFunctions.push_back(functionType);
+        }
+    }
+
     ValueRef IRLowerer::emitLoad(ValueRef address, Type valueType) noexcept
     {
         const auto temporaryId = m_nextTemporaryId++;
@@ -2575,6 +2586,19 @@ namespace Caracal
                     case BinaryOperatorKind::Equal:
                     case BinaryOperatorKind::NotEqual:
                     {
+                        // we lower == / != operators to static Type.x(lhs, rhs) function calls
+                        const auto* operatorSignature = m_semanticContext.tryGetOperatorSignature(comparisonOperandType, binaryExpression->binaryOperator());
+                        if (operatorSignature != nullptr && operatorSignature->callee != Type::Undefined())
+                        {
+                            markPreludeFunction(operatorSignature->callee);
+                            m_currentBlock->addInstruction(std::make_unique<CallInstruction>(
+                                temporaryId,
+                                operatorSignature->callee.id(),
+                                std::vector<ValueRef>{ leftValue.value(), rightValue.value() },
+                                expression->type()));
+                            break;
+                        }
+
                         // we use strcmp for comparing cstrings
                         auto lhs = leftValue.value();
                         auto rhs = rightValue.value();
@@ -2692,13 +2716,7 @@ namespace Caracal
         auto& functionDefinition = m_semanticContext.getFunctionDefinition(functionType);
         const auto functionId = functionDefinition.type().id();
 
-        // we need to mark required prelude functions for later
-        if (!functionDefinition.symbolName().has_value()
-            && m_semanticContext.isPreludeFunctionDefinition(functionType)
-            && m_queuedPreludeFunctionIds.insert(functionId).second)
-        {
-            m_requiredPreludeFunctions.push_back(functionType);
-        }
+        markPreludeFunction(functionType);
 
         const auto& parameterTypes = functionDefinition.parameters();
         const size_t parameterOffset = implicitArgument.has_value() ? 1 : 0;

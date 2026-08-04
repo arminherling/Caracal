@@ -1,0 +1,176 @@
+FunctionDefinitionStatement: {
+    Type: undefined
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: undefined
+            Lexeme: i32
+        }
+    }
+    BlockNode(9): {
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        StringLiteral: "abc"
+                    }
+                    Operation: Equal
+                    Right: {
+                        StringLiteral: "abd"
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        StringLiteral: "abc"
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        StringLiteral: "abc"
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 3
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: s
+                }
+            }
+            Right: {
+                StringLiteral: "grüße 🐈"
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: t
+                }
+            }
+            Right: {
+                StringLiteral: "grüße 🐈"
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: s
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: t
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 4
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: undefined
+            Left: {
+                NameExpression: {
+                    Type: undefined
+                    Name: e
+                }
+            }
+            Right: {
+                StringLiteral: ""
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: s
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NameExpression: {
+                            Type: undefined
+                            Name: e
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 5
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: undefined
+                    Left: {
+                        StringLiteral: ""
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        StringLiteral: ""
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: undefined
+                        NumberLiteral: 6
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: undefined
+            NumberLiteral: 42
+        }
+    }
+}

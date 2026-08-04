@@ -17,27 +17,22 @@ type string(bytes: [u8; _])
         return ._bytes.at(index);
     }
 
-    def equals(other: string) bool
+    def string.equals(lhs: string, rhs: string) bool
     {
-        if ._bytes.length != other._bytes.length
-        {
-            return false;
-        }
+        return false if lhs._bytes.length != rhs._bytes.length;
 
         i := 0;
-        while i < ._bytes.length
+        while i < lhs._bytes.length
         {
-            if ._bytes.at(i) != other._bytes.at(i)
-            {
-                return false;
-            }
+            return false if lhs._bytes.at(i) != rhs._bytes.at(i);
+
             i = i %+ 1;
         }
         return true;
     }
 
-    def notEquals(other: string) bool
+    def string.notEquals(lhs: string, rhs: string) bool
     {
-        return !.equals(other);
+        return !string.equals(lhs, rhs);
     }
 }
