@@ -1,0 +1,11 @@
+def main() i32
+{
+    xs := [1, 2, ...];
+    v := xs.slice();
+    v.set(0, 40);
+    if xs.at(0) != 40
+    {
+        return 2;
+    }
+    return xs.at(0) %+ xs.at(1);
+}
