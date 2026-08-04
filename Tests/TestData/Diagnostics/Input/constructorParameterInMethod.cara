@@ -1,0 +1,15 @@
+type Box(value: i32)
+{
+    _value : i32 : value
+
+    def readParam() i32
+    {
+        return value;
+    }
+}
+
+def main() i32
+{
+    b := Box.new(42);
+    return b.readParam();
+}

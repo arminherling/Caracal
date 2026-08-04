@@ -1,0 +1,16 @@
+type Box(value: i32)
+{
+    _value : i32 : value
+
+    def sum() i32
+    {
+        value := 2;
+        return ._value %+ value;
+    }
+}
+
+def main() i32
+{
+    b := Box.new(40);
+    return b.sum();
+}

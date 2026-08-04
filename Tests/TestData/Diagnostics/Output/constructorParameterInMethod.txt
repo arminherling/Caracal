@@ -1,0 +1,13 @@
+ Error T0007 Unknown name
+     ,-[Diagnostics/Input/constructorParameterInMethod.cara:7:16]
+   4 | 
+   5 |     def readParam() i32
+   6 |     {
+   7 |         return value;
+     .                -----
+     .                  `-- Unknown name 'value'
+   8 |     }
+   9 | }
+  10 | 
+     `----
+  Fix: Declare this name before using it, or rename it to an existing symbol.

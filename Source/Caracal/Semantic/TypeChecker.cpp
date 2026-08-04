@@ -1354,11 +1354,6 @@ namespace Caracal
         const ScopedValue<Type> currentTypeScope{ m_currentType, typeType };
         pushScope(ScopeKind::Type);
 
-        if (statement->constructorParameters().has_value())
-        {
-            static_cast<void>(typeCheckParametersNode(statement->constructorParameters().value().get(), tokens));
-        }
-
         auto& typeDefinition = m_module.getTypeDefinition(typeType);
         for (const auto& fieldDefinition : typeDefinition.fields())
         {
