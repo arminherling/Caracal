@@ -392,6 +392,8 @@ namespace Caracal
             return false;
 
         const auto& typeDefinition = m_semanticContext.getTypeDefinition(definition.parentType());
+        // string construction reserves a NUL byte behind the copied bytes, toCString depends on it
+        m_reserveNulOnArrayCopy = definition.parentType() == m_semanticContext.wellKnown().string;
         for (const auto& fieldDefinition : typeDefinition.fields())
         {
             const auto loweredValue = lowerValueExpressionExpecting(fieldDefinition.expression(), fieldDefinition.type());
@@ -409,6 +411,7 @@ namespace Caracal
                 fieldAddress,
                 fieldDefinition.type()));
         }
+        m_reserveNulOnArrayCopy = false;
 
         return true;
     }
@@ -1661,7 +1664,8 @@ namespace Caracal
                 sourceAddress.value(),
                 targetType,
                 resolveExternFunctionId("C.calloc"),
-                resolveExternFunctionId("C.memmove")));
+                resolveExternFunctionId("C.memmove"),
+                m_reserveNulOnArrayCopy));
             return ValueRef{ copyId };
         }
 
@@ -1721,7 +1725,8 @@ namespace Caracal
                 || functionDefinition.intrinsicKind() == IntrinsicKind::ArraySet
                 || functionDefinition.intrinsicKind() == IntrinsicKind::ArraySlice
                 || functionDefinition.intrinsicKind() == IntrinsicKind::ArrayAdd
-                || functionDefinition.intrinsicKind() == IntrinsicKind::ArrayRemove)
+                || functionDefinition.intrinsicKind() == IntrinsicKind::ArrayRemove
+                || functionDefinition.intrinsicKind() == IntrinsicKind::StringToCString)
             {
                 return lowerArrayIntrinsicCall(expression, receiverExpression, functionDefinition);
             }
@@ -1812,6 +1817,24 @@ namespace Caracal
                     resolveExternFunctionId("C.memmove")));
             }
             return ValueRef{};
+        }
+
+        if (functionDefinition.intrinsicKind() == IntrinsicKind::StringToCString)
+        {
+            const auto receiverType = receiverExpression->type().toValue();
+            const auto receiverAddress = lowerMethodReceiverAddress(receiverExpression);
+            if (!receiverAddress.has_value())
+                return std::nullopt;
+
+            const auto& typeDefinition = m_semanticContext.getTypeDefinition(receiverType);
+            const auto& bytesField = typeDefinition.tryGetFieldByName("_bytes");
+            if (bytesField.type() == Type::Undefined())
+                return std::nullopt;
+
+            const auto elementType = m_semanticContext.getArrayElementType(bytesField.type());
+            const auto bytesAddress = emitFieldAddress(receiverAddress.value(), receiverType, "_bytes", 0, bytesField.type());
+            const auto dataPointerAddress = emitFieldAddress(bytesAddress, bytesField.type(), "data", 0, elementType.toReference());
+            return emitLoad(dataPointerAddress, m_semanticContext.wellKnown().cstring);
         }
 
         if (functionDefinition.intrinsicKind() == IntrinsicKind::ArraySlice)

@@ -566,19 +566,34 @@ namespace Caracal
                 auto* length = m_irBuilder->CreateLoad(i32Type, lengthAddress, "load");
                 auto* capacity = m_irBuilder->CreateLoad(i32Type, capacityAddress, "load");
 
-                // a copy keeps the source capacity, every dynamic array is created with at least capacity 8
+                // a copy keeps the source capacity, every dynamic array is created with at least capacity 8;
+                // a NUL-reserving copy allocates length + 1 zeroed bytes instead
                 const auto elementSize = m_llvmModule.getDataLayout().getTypeAllocSize(elementType);
                 auto* elementSizeValue = llvm::ConstantInt::get(i64Type, elementSize.getFixedValue());
-                auto* capacity64 = m_irBuilder->CreateSExt(capacity, i64Type, "widened");
-                auto* newData = m_irBuilder->CreateCall(callocCallee, { capacity64, elementSizeValue }, "copy");
-                auto* length64 = m_irBuilder->CreateSExt(length, i64Type, "widened");
+                llvm::Value* newData = nullptr;
+                llvm::Value* length64 = nullptr;
+                llvm::Value* descriptorCapacity = nullptr;
+                if (arrayCopy.reserveNulByte())
+                {
+                    length64 = m_irBuilder->CreateSExt(length, i64Type, "widened");
+                    auto* callocCount = m_irBuilder->CreateAdd(length64, llvm::ConstantInt::get(i64Type, 1), "nul_reserved");
+                    newData = m_irBuilder->CreateCall(callocCallee, { callocCount, elementSizeValue }, "copy");
+                    descriptorCapacity = length;
+                }
+                else
+                {
+                    auto* capacity64 = m_irBuilder->CreateSExt(capacity, i64Type, "widened");
+                    newData = m_irBuilder->CreateCall(callocCallee, { capacity64, elementSizeValue }, "copy");
+                    length64 = m_irBuilder->CreateSExt(length, i64Type, "widened");
+                    descriptorCapacity = capacity;
+                }
                 auto* byteCount = m_irBuilder->CreateMul(length64, elementSizeValue, "bytes");
                 m_irBuilder->CreateCall(memmoveCallee, { newData, sourceData, byteCount }, "copied");
 
                 llvm::Value* descriptor = llvm::PoisonValue::get(descriptorType);
                 descriptor = m_irBuilder->CreateInsertValue(descriptor, newData, { 0 });
                 descriptor = m_irBuilder->CreateInsertValue(descriptor, length, { 1 });
-                descriptor = m_irBuilder->CreateInsertValue(descriptor, capacity, { 2 }, "array_copy");
+                descriptor = m_irBuilder->CreateInsertValue(descriptor, descriptorCapacity, { 2 }, "array_copy");
                 defineValue(arrayCopy.resultId(), descriptor);
                 return true;
             }

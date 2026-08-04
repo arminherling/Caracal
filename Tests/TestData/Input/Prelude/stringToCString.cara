@@ -1,0 +1,17 @@
+def main() i32
+{
+    s := "Hello";
+    C.puts(s.toCString());
+
+    t := string.new([72, 73, 74, 75, 76, 77, 78, 79, ...]);
+    if t.length() != 8
+    {
+        return 2;
+    }
+    C.puts(t.toCString());
+
+    e := "";
+    C.puts(e.toCString());
+
+    return 42;
+}

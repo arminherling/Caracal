@@ -1,0 +1,268 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(8): {
+        VariableDeclaration: {
+            Type: string
+            Left: {
+                NameExpression: {
+                    Type: string
+                    Name: s
+                }
+            }
+            Right: {
+                StringLiteral: "Hello"
+            }
+        }
+        ExpressionStatement: {
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: C
+                        Name: C
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: i32
+                        Function type: (cstring) -> i32
+                        NameExpression: {
+                            Type: (cstring) -> i32
+                            Name: puts
+                        }
+                        ArgumentsNode(1): {
+                            BinaryExpression: {
+                                Type: cstring
+                                Left: {
+                                    NameExpression: {
+                                        Type: string
+                                        Name: s
+                                    }
+                                }
+                                Operation: MemberAccess
+                                Right: {
+                                    FunctionCallExpression: {
+                                        Type: cstring
+                                        Function type: (ref string) -> cstring
+                                        NameExpression: {
+                                            Type: (ref string) -> cstring
+                                            Name: toCString
+                                        }
+                                        ArgumentsNode(0): {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: string
+            Left: {
+                NameExpression: {
+                    Type: string
+                    Name: t
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: string
+                    Left: {
+                        NameExpression: {
+                            Type: string
+                            Name: string
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: string
+                            Function type: (ref string, [u8; _]) -> void
+                            NameExpression: {
+                                Type: (ref string, [u8; _]) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(1): {
+                                ArrayLiteral(8): {
+                                    Type: [u8; _]
+                                    Dynamic: true
+                                    NumberLiteral: 72
+                                    NumberLiteral: 73
+                                    NumberLiteral: 74
+                                    NumberLiteral: 75
+                                    NumberLiteral: 76
+                                    NumberLiteral: 77
+                                    NumberLiteral: 78
+                                    NumberLiteral: 79
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        BinaryExpression: {
+                            Type: i32
+                            Left: {
+                                NameExpression: {
+                                    Type: string
+                                    Name: t
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: i32
+                                    Function type: (ref string) -> i32
+                                    NameExpression: {
+                                        Type: (ref string) -> i32
+                                        Name: length
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 8
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+        ExpressionStatement: {
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: C
+                        Name: C
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: i32
+                        Function type: (cstring) -> i32
+                        NameExpression: {
+                            Type: (cstring) -> i32
+                            Name: puts
+                        }
+                        ArgumentsNode(1): {
+                            BinaryExpression: {
+                                Type: cstring
+                                Left: {
+                                    NameExpression: {
+                                        Type: string
+                                        Name: t
+                                    }
+                                }
+                                Operation: MemberAccess
+                                Right: {
+                                    FunctionCallExpression: {
+                                        Type: cstring
+                                        Function type: (ref string) -> cstring
+                                        NameExpression: {
+                                            Type: (ref string) -> cstring
+                                            Name: toCString
+                                        }
+                                        ArgumentsNode(0): {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: string
+            Left: {
+                NameExpression: {
+                    Type: string
+                    Name: e
+                }
+            }
+            Right: {
+                StringLiteral: ""
+            }
+        }
+        ExpressionStatement: {
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: C
+                        Name: C
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: i32
+                        Function type: (cstring) -> i32
+                        NameExpression: {
+                            Type: (cstring) -> i32
+                            Name: puts
+                        }
+                        ArgumentsNode(1): {
+                            BinaryExpression: {
+                                Type: cstring
+                                Left: {
+                                    NameExpression: {
+                                        Type: string
+                                        Name: e
+                                    }
+                                }
+                                Operation: MemberAccess
+                                Right: {
+                                    FunctionCallExpression: {
+                                        Type: cstring
+                                        Function type: (ref string) -> cstring
+                                        NameExpression: {
+                                            Type: (ref string) -> cstring
+                                            Name: toCString
+                                        }
+                                        ArgumentsNode(0): {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 42
+        }
+    }
+}

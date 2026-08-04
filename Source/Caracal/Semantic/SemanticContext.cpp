@@ -170,6 +170,13 @@ namespace Caracal
             auto& sliceDefinition = module.createMethod(stringDefinition, MethodModifier::Public, "slice", sliceParameters, { immutableByteSlice }, nullptr);
             sliceDefinition.setFunctionType(FunctionType::Intrinsic);
             sliceDefinition.setIntrinsicKind(IntrinsicKind::ArraySlice);
+
+            // toCString() hands out the NUL-terminated data pointer for FFI, construction guarantees the NUL
+            auto toCStringParameters = std::vector<Parameter>{};
+            toCStringParameters.emplace_back(ImplicitThisName, wellKnownTypes.string.toReference());
+            auto& toCStringDefinition = module.createMethod(stringDefinition, MethodModifier::Public, "toCString", toCStringParameters, { wellKnownTypes.cstring }, nullptr);
+            toCStringDefinition.setFunctionType(FunctionType::Intrinsic);
+            toCStringDefinition.setIntrinsicKind(IntrinsicKind::StringToCString);
         }
 
         // prelude definitions only lower on demand, the boundary lets the lowerer skip them

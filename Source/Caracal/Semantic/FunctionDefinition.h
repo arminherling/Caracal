@@ -29,6 +29,7 @@ namespace Caracal
         ArrayAdd,
         ArrayRemove,
         ArraySlice,
+        StringToCString,
         BitAnd,
         BitOr,
         BitXor,

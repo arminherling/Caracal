@@ -86,14 +86,14 @@ entry:
   %load = load ptr, ptr %data, align 8
   %load1 = load i32, ptr %length, align 4
   %load2 = load i32, ptr %capacity, align 4
-  %widened = sext i32 %load2 to i64
-  %copy = call ptr @calloc(i64 %widened, i64 1)
-  %widened3 = sext i32 %load1 to i64
-  %bytes = mul i64 %widened3, 1
+  %widened = sext i32 %load1 to i64
+  %nul_reserved = add i64 %widened, 1
+  %copy = call ptr @calloc(i64 %nul_reserved, i64 1)
+  %bytes = mul i64 %widened, 1
   %copied = call ptr @memmove(ptr %copy, ptr %load, i64 %bytes)
   %2 = insertvalue { ptr, i32, i32 } poison, ptr %copy, 0
   %3 = insertvalue { ptr, i32, i32 } %2, i32 %load1, 1
-  %array_copy = insertvalue { ptr, i32, i32 } %3, i32 %load2, 2
+  %array_copy = insertvalue { ptr, i32, i32 } %3, i32 %load1, 2
   %_bytes = getelementptr inbounds nuw %string, ptr %0, i32 0, i32 0
   store { ptr, i32, i32 } %array_copy, ptr %_bytes, align 8
   ret void

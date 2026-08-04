@@ -146,6 +146,7 @@ namespace Caracal
         void mergeLocalValues(BasicBlock& block, const std::vector<IncomingLocalValues>& incomingValues) noexcept;
 
         SemanticContext& m_semanticContext;
+        bool m_reserveNulOnArrayCopy = false;
         std::unordered_map<std::string, FunctionId> m_externFunctionIdCache;
         std::vector<Type> m_requiredPreludeFunctions;
         std::unordered_set<i32> m_queuedPreludeFunctionIds;

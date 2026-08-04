@@ -585,6 +585,10 @@ namespace Caracal
                 appendValue(arrayCopy.sourceAddress());
                 m_builder.append(" : ");
                 appendType(arrayCopy.arrayType());
+                if (arrayCopy.reserveNulByte())
+                {
+                    m_builder.append(" nul");
+                }
                 m_builder.appendLine("");
                 break;
             }
