@@ -1,5 +1,5 @@
 FunctionDefinitionStatement: {
-    Type: ([i32]) -> i32
+    Type: (const [i32]) -> i32
     Name: sum
     ParametersNode(1): {
         ParameterNode: {
@@ -33,7 +33,7 @@ FunctionDefinitionStatement: {
                         Type: i32
                         Left: {
                             NameExpression: {
-                                Type: [i32]
+                                Type: const [i32]
                                 Name: values
                             }
                         }
@@ -41,9 +41,9 @@ FunctionDefinitionStatement: {
                         Right: {
                             FunctionCallExpression: {
                                 Type: i32
-                                Function type: (ref [i32], i32) -> i32
+                                Function type: (ref const [i32], i32) -> i32
                                 NameExpression: {
-                                    Type: (ref [i32], i32) -> i32
+                                    Type: (ref const [i32], i32) -> i32
                                     Name: at
                                 }
                                 ArgumentsNode(1): {
@@ -59,7 +59,7 @@ FunctionDefinitionStatement: {
                         Type: i32
                         Left: {
                             NameExpression: {
-                                Type: [i32]
+                                Type: const [i32]
                                 Name: values
                             }
                         }
@@ -67,9 +67,9 @@ FunctionDefinitionStatement: {
                         Right: {
                             FunctionCallExpression: {
                                 Type: i32
-                                Function type: (ref [i32], i32) -> i32
+                                Function type: (ref const [i32], i32) -> i32
                                 NameExpression: {
-                                    Type: (ref [i32], i32) -> i32
+                                    Type: (ref const [i32], i32) -> i32
                                     Name: at
                                 }
                                 ArgumentsNode(1): {
@@ -116,9 +116,9 @@ FunctionDefinitionStatement: {
             Type: i32
             FunctionCallExpression: {
                 Type: i32
-                Function type: ([i32]) -> i32
+                Function type: (const [i32]) -> i32
                 NameExpression: {
-                    Type: ([i32]) -> i32
+                    Type: (const [i32]) -> i32
                     Name: sum
                 }
                 ArgumentsNode(1): {

@@ -1,0 +1,51 @@
+type Counter()
+{
+    def count(bytes: [u8]) i32
+    {
+        total := 0;
+        i := 0;
+        while i < bytes.length
+        {
+            total = total %+ 1;
+            i = i %+ 1;
+        }
+        return total;
+    }
+
+    def Counter.tally(bytes: [u8]) i32
+    {
+        return bytes.length;
+    }
+}
+
+def takeNamed(values: [u8]) i32
+{
+    return values.length;
+}
+
+def relay(bytes: [u8]) i32
+{
+    return Counter.tally(bytes);
+}
+
+def relayNamed(bytes: [u8]) i32
+{
+    return takeNamed(values = bytes);
+}
+
+def use(c: Counter, bytes: [u8]) i32
+{
+    return c.count(bytes);
+}
+
+def main() i32
+{
+    c := Counter.new();
+    s := "Hello";
+    a := c.count(s.slice());
+    b := Counter.tally(s.slice());
+    r := relay(s.slice());
+    n := relayNamed(s.slice());
+    u := use(c, s.slice());
+    return a %+ b %+ r %+ n %+ u %+ 17;
+}

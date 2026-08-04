@@ -3,6 +3,7 @@
 #include <Caracal/Constants.h>
 #include <Caracal/ScopedValue.h>
 #include <Caracal/Semantic/ArgumentBinder.h>
+#include <Caracal/Semantic/SliceParameterPromotion.h>
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/BreakStatement.h>
 #include <Caracal/Syntax/GroupingExpression.h>
@@ -502,6 +503,7 @@ namespace Caracal
 
         typeCheckFunctionSignatures();
         typeCheckTypeSignatures();
+        promoteReadOnlySliceParameters(m_functionDeclarations, m_typeDeclarations, m_module);
         typeCheckEnumDefinitions();
         typeCheckGlobalConstants();
         typeCheckTypeFieldDefinitions();

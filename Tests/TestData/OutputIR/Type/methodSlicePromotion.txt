@@ -1,0 +1,147 @@
+type string
+    const _bytes: [u8; _]
+
+type Counter
+
+extern C.strcmp(%0: cstring "left", %1: cstring "right") i32 symbol "strcmp"
+
+extern C.calloc(%0: i64 "count", %1: i64 "size") rawptr symbol "calloc"
+
+extern C.realloc(%0: rawptr "pointer", %1: i64 "size") rawptr symbol "realloc"
+
+extern C.memmove(%0: rawptr "destination", %1: rawptr "source", %2: i64 "size") rawptr symbol "memmove"
+
+define takeNamed(%0: const [u8] "values") i32
+block entry(0):
+    %0 = parameter 0 : const [u8] "values"
+    %slot0 = allocate_local : const [u8] "temp"
+    %1 = address_of %slot0 : ref const [u8]
+    store_value %0, %1 : const [u8]
+    %2 = address_of_field %1.1 : ref i32 "length"
+    %3 = load_value %2 : i32
+    return %3
+
+define relay(%0: const [u8] "bytes") i32
+block entry(0):
+    %0 = parameter 0 : const [u8] "bytes"
+    %1 = call Counter.tally(%0) : i32
+    return %1
+
+define relayNamed(%0: const [u8] "bytes") i32
+block entry(0):
+    %0 = parameter 0 : const [u8] "bytes"
+    %1 = call takeNamed(%0) : i32
+    return %1
+
+define use(%0: Counter "c", %1: const [u8] "bytes") i32
+block entry(0):
+    %0 = parameter 0 : Counter "c"
+    %slot0 = allocate_local : Counter "c"
+    %1 = address_of %slot0 : ref Counter
+    store_value %0, %1 : Counter
+    %2 = parameter 1 : const [u8] "bytes"
+    %3 = call Counter.count(%1, %2) : i32
+    return %3
+
+define main() i32
+block entry(0):
+    %slot0 = allocate_local : Counter "c"
+    %slot1 = allocate_local : string "s"
+    %0 = address_of %slot0 : ref Counter
+    call Counter.new(%0)
+    %1 = address_of %slot1 : ref string
+    %2 = address_of_field %1.0 : ref [u8; _] "_bytes"
+    %3 = const "Hello\0" : cstring
+    %4 = address_of_field %2.0 : ref u8 "data"
+    store_value %3, %4 : ref u8
+    %5 = const 5 : i32
+    %6 = address_of_field %2.1 : ref i32 "length"
+    store_value %5, %6 : i32
+    %7 = const 5 : i32
+    %8 = address_of_field %2.2 : ref i32 "capacity"
+    store_value %7, %8 : i32
+    %9 = address_of_field %1.0 : ref [u8; _] "_bytes"
+    %10 = address_of_field %9.0 : ref u8 "data"
+    %11 = load_value %10 : ref u8
+    %12 = address_of_field %9.1 : ref i32 "length"
+    %13 = load_value %12 : i32
+    %14 = make_slice %11, %13 : const [u8]
+    %15 = call Counter.count(%0, %14) : i32
+    %16 = address_of_field %1.0 : ref [u8; _] "_bytes"
+    %17 = address_of_field %16.0 : ref u8 "data"
+    %18 = load_value %17 : ref u8
+    %19 = address_of_field %16.1 : ref i32 "length"
+    %20 = load_value %19 : i32
+    %21 = make_slice %18, %20 : const [u8]
+    %22 = call Counter.tally(%21) : i32
+    %23 = address_of_field %1.0 : ref [u8; _] "_bytes"
+    %24 = address_of_field %23.0 : ref u8 "data"
+    %25 = load_value %24 : ref u8
+    %26 = address_of_field %23.1 : ref i32 "length"
+    %27 = load_value %26 : i32
+    %28 = make_slice %25, %27 : const [u8]
+    %29 = call relay(%28) : i32
+    %30 = address_of_field %1.0 : ref [u8; _] "_bytes"
+    %31 = address_of_field %30.0 : ref u8 "data"
+    %32 = load_value %31 : ref u8
+    %33 = address_of_field %30.1 : ref i32 "length"
+    %34 = load_value %33 : i32
+    %35 = make_slice %32, %34 : const [u8]
+    %36 = call relayNamed(%35) : i32
+    %37 = load_value %0 : Counter
+    %38 = address_of_field %1.0 : ref [u8; _] "_bytes"
+    %39 = address_of_field %38.0 : ref u8 "data"
+    %40 = load_value %39 : ref u8
+    %41 = address_of_field %38.1 : ref i32 "length"
+    %42 = load_value %41 : i32
+    %43 = make_slice %40, %42 : const [u8]
+    %44 = call use(%37, %43) : i32
+    %45 = add %15, %22 : i32
+    %46 = add %45, %29 : i32
+    %47 = add %46, %36 : i32
+    %48 = add %47, %44 : i32
+    %49 = const 17 : i32
+    %50 = add %48, %49 : i32
+    return %50
+
+define Counter.count(%0: ref Counter ".this", %1: const [u8] "bytes") i32
+block entry(0):
+    %0 = parameter 0 : ref Counter ".this"
+    %1 = parameter 1 : const [u8] "bytes"
+    %2 = const 0 : i32
+    %3 = const 0 : i32
+    jump while.condition(1)
+block while.condition(1):
+    %slot0 = allocate_local : const [u8] "temp"
+    %4 = phi [entry(0): %1], [while.body(2): %4] : const [u8]
+    %5 = phi [entry(0): %3], [while.body(2): %14] : i32
+    %6 = phi [entry(0): %2], [while.body(2): %12] : i32
+    %7 = address_of %slot0 : ref const [u8]
+    store_value %4, %7 : const [u8]
+    %8 = address_of_field %7.1 : ref i32 "length"
+    %9 = load_value %8 : i32
+    %10 = less_than %5, %9 : bool
+    branch if %10, while.body(2), while.continuation(3)
+block while.body(2):
+    %11 = const 1 : i32
+    %12 = add %6, %11 : i32
+    %13 = const 1 : i32
+    %14 = add %5, %13 : i32
+    jump while.condition(1)
+block while.continuation(3):
+    return %6
+
+define Counter.tally(%0: const [u8] "bytes") i32
+block entry(0):
+    %0 = parameter 0 : const [u8] "bytes"
+    %slot0 = allocate_local : const [u8] "temp"
+    %1 = address_of %slot0 : ref const [u8]
+    store_value %0, %1 : const [u8]
+    %2 = address_of_field %1.1 : ref i32 "length"
+    %3 = load_value %2 : i32
+    return %3
+
+define Counter.new(%0: ref Counter ".this") void
+block entry(0):
+    %0 = parameter 0 : ref Counter ".this"
+    return

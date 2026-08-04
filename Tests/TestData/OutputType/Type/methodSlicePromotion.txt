@@ -1,0 +1,784 @@
+TypeDefinitionStatement: {
+    Type: Counter
+    Name: Counter
+    ParametersNode(0): {
+    }
+    BlockNode(2): {
+        MethodDefinitionStatement: {
+            Type: (ref Counter, const [u8]) -> i32
+            Modifier: Public
+            MethodNameNode: {
+                MethodName: count
+            }
+            ParametersNode(1): {
+                ParameterNode: {
+                    Name: bytes
+                    ArrayTypeNameNode: {
+                        Type: [u8]
+                        Lexeme: [u8]
+                        Kind: Slice
+                        DataType: {
+                            TypeNameNode: {
+                                Type: u8
+                                Lexeme: u8
+                            }
+                        }
+                    }
+                }
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            BlockNode(4): {
+                VariableDeclaration: {
+                    Type: i32
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: total
+                        }
+                    }
+                    Right: {
+                        NumberLiteral: 0
+                    }
+                }
+                VariableDeclaration: {
+                    Type: i32
+                    Left: {
+                        NameExpression: {
+                            Type: i32
+                            Name: i
+                        }
+                    }
+                    Right: {
+                        NumberLiteral: 0
+                    }
+                }
+                WhileStatement: {
+                    Condition: {
+                        BinaryExpression: {
+                            Type: bool
+                            Left: {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: i
+                                }
+                            }
+                            Operation: LessThan
+                            Right: {
+                                BinaryExpression: {
+                                    Type: i32
+                                    Left: {
+                                        NameExpression: {
+                                            Type: const [u8]
+                                            Name: bytes
+                                        }
+                                    }
+                                    Operation: MemberAccess
+                                    Right: {
+                                        NameExpression: {
+                                            Type: i32
+                                            Name: length
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    True: {
+                        BlockNode(2): {
+                            AssignmentStatement: {
+                                Left: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: total
+                                    }
+                                }
+                                Right: {
+                                    BinaryExpression: {
+                                        Type: i32
+                                        Left: {
+                                            NameExpression: {
+                                                Type: i32
+                                                Name: total
+                                            }
+                                        }
+                                        Operation: AdditionWrapping
+                                        Right: {
+                                            NumberLiteral: 1
+                                        }
+                                    }
+                                }
+                            }
+                            AssignmentStatement: {
+                                Left: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: i
+                                    }
+                                }
+                                Right: {
+                                    BinaryExpression: {
+                                        Type: i32
+                                        Left: {
+                                            NameExpression: {
+                                                Type: i32
+                                                Name: i
+                                            }
+                                        }
+                                        Operation: AdditionWrapping
+                                        Right: {
+                                            NumberLiteral: 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                ReturnStatement: {
+                    Type: i32
+                    NameExpression: {
+                        Type: i32
+                        Name: total
+                    }
+                }
+            }
+        }
+        MethodDefinitionStatement: {
+            Type: (const [u8]) -> i32
+            Modifier: Static
+            MethodNameNode: {
+                MethodName: Counter.tally
+            }
+            ParametersNode(1): {
+                ParameterNode: {
+                    Name: bytes
+                    ArrayTypeNameNode: {
+                        Type: [u8]
+                        Lexeme: [u8]
+                        Kind: Slice
+                        DataType: {
+                            TypeNameNode: {
+                                Type: u8
+                                Lexeme: u8
+                            }
+                        }
+                    }
+                }
+            }
+            ReturnTypesNode(1): {
+                TypeNameNode: {
+                    Type: i32
+                    Lexeme: i32
+                }
+            }
+            BlockNode(1): {
+                ReturnStatement: {
+                    Type: i32
+                    BinaryExpression: {
+                        Type: i32
+                        Left: {
+                            NameExpression: {
+                                Type: const [u8]
+                                Name: bytes
+                            }
+                        }
+                        Operation: MemberAccess
+                        Right: {
+                            NameExpression: {
+                                Type: i32
+                                Name: length
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (const [u8]) -> i32
+    Name: takeNamed
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: values
+            ArrayTypeNameNode: {
+                Type: [u8]
+                Lexeme: [u8]
+                Kind: Slice
+                DataType: {
+                    TypeNameNode: {
+                        Type: u8
+                        Lexeme: u8
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: const [u8]
+                        Name: values
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    NameExpression: {
+                        Type: i32
+                        Name: length
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (const [u8]) -> i32
+    Name: relay
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: bytes
+            ArrayTypeNameNode: {
+                Type: [u8]
+                Lexeme: [u8]
+                Kind: Slice
+                DataType: {
+                    TypeNameNode: {
+                        Type: u8
+                        Lexeme: u8
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: Counter
+                        Name: Counter
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: i32
+                        Function type: (const [u8]) -> i32
+                        NameExpression: {
+                            Type: (const [u8]) -> i32
+                            Name: tally
+                        }
+                        ArgumentsNode(1): {
+                            NameExpression: {
+                                Type: const [u8]
+                                Name: bytes
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (const [u8]) -> i32
+    Name: relayNamed
+    ParametersNode(1): {
+        ParameterNode: {
+            Name: bytes
+            ArrayTypeNameNode: {
+                Type: [u8]
+                Lexeme: [u8]
+                Kind: Slice
+                DataType: {
+                    TypeNameNode: {
+                        Type: u8
+                        Lexeme: u8
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            FunctionCallExpression: {
+                Type: i32
+                Function type: (const [u8]) -> i32
+                NameExpression: {
+                    Type: (const [u8]) -> i32
+                    Name: takeNamed
+                }
+                ArgumentsNode(1): {
+                    NamedArgument: {
+                        Name: values
+                        NameExpression: {
+                            Type: const [u8]
+                            Name: bytes
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: (Counter, const [u8]) -> i32
+    Name: use
+    ParametersNode(2): {
+        ParameterNode: {
+            Name: c
+            TypeNameNode: {
+                Type: Counter
+                Lexeme: Counter
+            }
+        }
+        ParameterNode: {
+            Name: bytes
+            ArrayTypeNameNode: {
+                Type: [u8]
+                Lexeme: [u8]
+                Kind: Slice
+                DataType: {
+                    TypeNameNode: {
+                        Type: u8
+                        Lexeme: u8
+                    }
+                }
+            }
+        }
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(1): {
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    NameExpression: {
+                        Type: Counter
+                        Name: c
+                    }
+                }
+                Operation: MemberAccess
+                Right: {
+                    FunctionCallExpression: {
+                        Type: i32
+                        Function type: (ref Counter, const [u8]) -> i32
+                        NameExpression: {
+                            Type: (ref Counter, const [u8]) -> i32
+                            Name: count
+                        }
+                        ArgumentsNode(1): {
+                            NameExpression: {
+                                Type: const [u8]
+                                Name: bytes
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(8): {
+        VariableDeclaration: {
+            Type: Counter
+            Left: {
+                NameExpression: {
+                    Type: Counter
+                    Name: c
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: Counter
+                    Left: {
+                        NameExpression: {
+                            Type: Counter
+                            Name: Counter
+                        }
+                    }
+                    Operation: ConstructorCall
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: Counter
+                            Function type: (ref Counter) -> void
+                            NameExpression: {
+                                Type: (ref Counter) -> void
+                                Name: new
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: string
+            Left: {
+                NameExpression: {
+                    Type: string
+                    Name: s
+                }
+            }
+            Right: {
+                StringLiteral: "Hello"
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: a
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: i32
+                    Left: {
+                        NameExpression: {
+                            Type: Counter
+                            Name: c
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: i32
+                            Function type: (ref Counter, const [u8]) -> i32
+                            NameExpression: {
+                                Type: (ref Counter, const [u8]) -> i32
+                                Name: count
+                            }
+                            ArgumentsNode(1): {
+                                BinaryExpression: {
+                                    Type: const [u8]
+                                    Left: {
+                                        NameExpression: {
+                                            Type: string
+                                            Name: s
+                                        }
+                                    }
+                                    Operation: MemberAccess
+                                    Right: {
+                                        FunctionCallExpression: {
+                                            Type: const [u8]
+                                            Function type: (ref string) -> const [u8]
+                                            NameExpression: {
+                                                Type: (ref string) -> const [u8]
+                                                Name: slice
+                                            }
+                                            ArgumentsNode(0): {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: b
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: i32
+                    Left: {
+                        NameExpression: {
+                            Type: Counter
+                            Name: Counter
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: i32
+                            Function type: (const [u8]) -> i32
+                            NameExpression: {
+                                Type: (const [u8]) -> i32
+                                Name: tally
+                            }
+                            ArgumentsNode(1): {
+                                BinaryExpression: {
+                                    Type: const [u8]
+                                    Left: {
+                                        NameExpression: {
+                                            Type: string
+                                            Name: s
+                                        }
+                                    }
+                                    Operation: MemberAccess
+                                    Right: {
+                                        FunctionCallExpression: {
+                                            Type: const [u8]
+                                            Function type: (ref string) -> const [u8]
+                                            NameExpression: {
+                                                Type: (ref string) -> const [u8]
+                                                Name: slice
+                                            }
+                                            ArgumentsNode(0): {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: r
+                }
+            }
+            Right: {
+                FunctionCallExpression: {
+                    Type: i32
+                    Function type: (const [u8]) -> i32
+                    NameExpression: {
+                        Type: (const [u8]) -> i32
+                        Name: relay
+                    }
+                    ArgumentsNode(1): {
+                        BinaryExpression: {
+                            Type: const [u8]
+                            Left: {
+                                NameExpression: {
+                                    Type: string
+                                    Name: s
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: const [u8]
+                                    Function type: (ref string) -> const [u8]
+                                    NameExpression: {
+                                        Type: (ref string) -> const [u8]
+                                        Name: slice
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: n
+                }
+            }
+            Right: {
+                FunctionCallExpression: {
+                    Type: i32
+                    Function type: (const [u8]) -> i32
+                    NameExpression: {
+                        Type: (const [u8]) -> i32
+                        Name: relayNamed
+                    }
+                    ArgumentsNode(1): {
+                        BinaryExpression: {
+                            Type: const [u8]
+                            Left: {
+                                NameExpression: {
+                                    Type: string
+                                    Name: s
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: const [u8]
+                                    Function type: (ref string) -> const [u8]
+                                    NameExpression: {
+                                        Type: (ref string) -> const [u8]
+                                        Name: slice
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: i32
+            Left: {
+                NameExpression: {
+                    Type: i32
+                    Name: u
+                }
+            }
+            Right: {
+                FunctionCallExpression: {
+                    Type: i32
+                    Function type: (Counter, const [u8]) -> i32
+                    NameExpression: {
+                        Type: (Counter, const [u8]) -> i32
+                        Name: use
+                    }
+                    ArgumentsNode(2): {
+                        NameExpression: {
+                            Type: Counter
+                            Name: c
+                        }
+                        BinaryExpression: {
+                            Type: const [u8]
+                            Left: {
+                                NameExpression: {
+                                    Type: string
+                                    Name: s
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: const [u8]
+                                    Function type: (ref string) -> const [u8]
+                                    NameExpression: {
+                                        Type: (ref string) -> const [u8]
+                                        Name: slice
+                                    }
+                                    ArgumentsNode(0): {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            BinaryExpression: {
+                Type: i32
+                Left: {
+                    BinaryExpression: {
+                        Type: i32
+                        Left: {
+                            BinaryExpression: {
+                                Type: i32
+                                Left: {
+                                    BinaryExpression: {
+                                        Type: i32
+                                        Left: {
+                                            BinaryExpression: {
+                                                Type: i32
+                                                Left: {
+                                                    NameExpression: {
+                                                        Type: i32
+                                                        Name: a
+                                                    }
+                                                }
+                                                Operation: AdditionWrapping
+                                                Right: {
+                                                    NameExpression: {
+                                                        Type: i32
+                                                        Name: b
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        Operation: AdditionWrapping
+                                        Right: {
+                                            NameExpression: {
+                                                Type: i32
+                                                Name: r
+                                            }
+                                        }
+                                    }
+                                }
+                                Operation: AdditionWrapping
+                                Right: {
+                                    NameExpression: {
+                                        Type: i32
+                                        Name: n
+                                    }
+                                }
+                            }
+                        }
+                        Operation: AdditionWrapping
+                        Right: {
+                            NameExpression: {
+                                Type: i32
+                                Name: u
+                            }
+                        }
+                    }
+                }
+                Operation: AdditionWrapping
+                Right: {
+                    NumberLiteral: 17
+                }
+            }
+        }
+    }
+}

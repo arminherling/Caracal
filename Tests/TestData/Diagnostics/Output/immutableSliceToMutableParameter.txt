@@ -1,0 +1,13 @@
+ Error T0016 Argument type mismatch
+     ,-[Diagnostics/Input/immutableSliceToMutableParameter.cara:10:15]
+   7 | def main() i32
+   8 | {
+   9 |     s := "Hello";
+  10 |     x := take(s.slice());
+     .               ---------
+     .                   `-- Argument 1 of 'take' expects '[u8]', but got 'const [u8]'
+  11 |     return x;
+  12 | }
+  13 | 
+     `----
+  Fix: Change the mismatched argument to match the parameter type.

@@ -6,27 +6,27 @@ extern C.realloc(%0: rawptr "pointer", %1: i64 "size") rawptr symbol "realloc"
 
 extern C.memmove(%0: rawptr "destination", %1: rawptr "source", %2: i64 "size") rawptr symbol "memmove"
 
-define sum(%0: [i32] "values") i32
+define sum(%0: const [i32] "values") i32
 block entry(0):
-    %0 = parameter 0 : [i32] "values"
+    %0 = parameter 0 : const [i32] "values"
     %1 = const 0 : i32
     %2 = const 0 : i32
     jump while.condition(1)
 block while.condition(1):
-    %slot0 = allocate_local : [i32] "temp"
+    %slot0 = allocate_local : const [i32] "temp"
     %3 = phi [entry(0): %2], [while.body(2): %17] : i32
     %4 = phi [entry(0): %1], [while.body(2): %15] : i32
-    %5 = phi [entry(0): %0], [while.body(2): %5] : [i32]
-    %6 = address_of %slot0 : ref [i32]
-    store_value %5, %6 : [i32]
+    %5 = phi [entry(0): %0], [while.body(2): %5] : const [i32]
+    %6 = address_of %slot0 : ref const [i32]
+    store_value %5, %6 : const [i32]
     %7 = address_of_field %6.1 : ref i32 "length"
     %8 = load_value %7 : i32
     %9 = less_than %3, %8 : bool
     branch if %9, while.body(2), while.continuation(3)
 block while.body(2):
-    %slot1 = allocate_local : [i32] "temp"
-    %10 = address_of %slot1 : ref [i32]
-    store_value %5, %10 : [i32]
+    %slot1 = allocate_local : const [i32] "temp"
+    %10 = address_of %slot1 : ref const [i32]
+    store_value %5, %10 : const [i32]
     %11 = address_of_field %10.0 : ref i32 "data"
     %12 = load_value %11 : ref i32
     %13 = element_address %12[%3] : i32

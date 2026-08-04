@@ -1,5 +1,5 @@
 FunctionDefinitionStatement: {
-    Type: ([i32]) -> i32
+    Type: (const [i32]) -> i32
     Name: total
     ParametersNode(1): {
         ParameterNode: {
@@ -30,7 +30,7 @@ FunctionDefinitionStatement: {
                 Type: i32
                 Left: {
                     NameExpression: {
-                        Type: [i32]
+                        Type: const [i32]
                         Name: values
                     }
                 }
@@ -78,9 +78,9 @@ FunctionDefinitionStatement: {
             Type: i32
             FunctionCallExpression: {
                 Type: i32
-                Function type: ([i32]) -> i32
+                Function type: (const [i32]) -> i32
                 NameExpression: {
-                    Type: ([i32]) -> i32
+                    Type: (const [i32]) -> i32
                     Name: total
                 }
                 ArgumentsNode(1): {

@@ -1,5 +1,5 @@
 FunctionDefinitionStatement: {
-    Type: ([i32]) -> i32
+    Type: (const [i32]) -> i32
     Name: sum
     ParametersNode(1): {
         ParameterNode: {
