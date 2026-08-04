@@ -1,0 +1,13 @@
+ Error T0096 Field access is missing the leading dot
+     ,-[Diagnostics/Input/bareFieldAccess.cara:7:16]
+   4 | 
+   5 |     def bare() i32
+   6 |     {
+   7 |         return _value;
+     .                ------
+     .                   `-- '_value' is a field, not a local variable
+   8 |     }
+   9 | }
+  10 | 
+     `----
+  Fix: Write '._value' to access the field.

@@ -3657,6 +3657,14 @@ namespace Caracal
         auto optionalVariableType = currentScope()->tryGetVariableBinding(name);
         if (optionalVariableType.has_value())
         {
+            const auto isLeadingDotRoot = m_leadingDotRootPending;
+            m_leadingDotRootPending = false;
+            if (!isLeadingDotRoot && currentScope()->tryGetVariableBindingKind(name) == VariableBindingKind::Field)
+            {
+                m_diagnostics.addFieldAccessMissingDotError(tokens.source(), expression->sourceLocation(tokens), name);
+                return Type::Undefined();
+            }
+
             static_cast<void>(currentScope()->markVariableBindingRead(name));
             auto type = optionalVariableType.value();
             expression->setType(type);
@@ -3791,7 +3799,9 @@ namespace Caracal
             return type;
         }
 
+        m_leadingDotRootPending = true;
         auto type = typeCheckExpression(memberAccessExpression->expression().get(), tokens);
+        m_leadingDotRootPending = false;
         memberAccessExpression->setType(type);
 
         return type;

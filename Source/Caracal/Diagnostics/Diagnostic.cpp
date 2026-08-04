@@ -253,6 +253,8 @@ namespace Caracal
                 return "T0094";
             case DiagnosticKind::T0095_MutatingMethodOnImmutableSlice:
                 return "T0095";
+            case DiagnosticKind::T0096_FieldAccessMissingDot:
+                return "T0096";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -504,6 +506,8 @@ namespace Caracal
                 return "Private fields cannot be accessed from outside their type";
             case DiagnosticKind::T0095_MutatingMethodOnImmutableSlice:
                 return "Immutable slices cannot be mutated";
+            case DiagnosticKind::T0096_FieldAccessMissingDot:
+                return "Field access is missing the leading dot";
             case DiagnosticKind::T0075_DuplicateMethodDeclaration:
                 return "Duplicate method declaration";
             case DiagnosticKind::T0076_MemberAccessInDefaultParameter:

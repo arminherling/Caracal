@@ -983,6 +983,19 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addFieldAccessMissingDotError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& fieldName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0096_FieldAccessMissingDot,
+            source,
+            location,
+            "Write '." + fieldName + "' to access the field.");
+        diagnostic.addPrimaryLabel(location, "'" + fieldName + "' is a field, not a local variable");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addMethodCallMissingDotError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& methodName, const std::string& typeName)
     {
         auto diagnostic = Diagnostic(

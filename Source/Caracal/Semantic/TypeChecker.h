@@ -139,6 +139,7 @@ namespace Caracal
         Type m_currentReturnType;
         Type m_currentType;
         std::optional<Type> m_contextualNumberType;
+        bool m_leadingDotRootPending = false;
         bool m_negatedLiteralContext{ false };
         bool m_negatedLiteralSignConsumed{ false };
         std::vector<std::unique_ptr<Scope>> m_scopes;

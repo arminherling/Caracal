@@ -53,6 +53,7 @@ namespace Caracal
         T0093_MemberAccessInStaticMethod,
         T0094_PrivateFieldAccessOutsideType,
         T0095_MutatingMethodOnImmutableSlice,
+        T0096_FieldAccessMissingDot,
 
         // Call diagnostics
         T0015_ArgumentCountMismatch,
