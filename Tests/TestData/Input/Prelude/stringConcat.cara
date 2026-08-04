@@ -1,0 +1,25 @@
+def main() i32
+{
+    s := "Hello";
+    t := s.concat(" world");
+    C.puts(t.toCString());
+    if t.length() != 11
+    {
+        return 2;
+    }
+    if t != "Hello world"
+    {
+        return 3;
+    }
+    e := "".concat("x");
+    if e != "x"
+    {
+        return 4;
+    }
+    f := "y".concat("");
+    if f != "y"
+    {
+        return 5;
+    }
+    return 42;
+}
