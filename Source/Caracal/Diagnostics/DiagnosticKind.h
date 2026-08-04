@@ -50,6 +50,7 @@ namespace Caracal
         T0077_PrivateMethodCallOutsideType,
         T0093_MemberAccessInStaticMethod,
         T0094_PrivateFieldAccessOutsideType,
+        T0095_MutatingMethodOnImmutableSlice,
 
         // Call diagnostics
         T0015_ArgumentCountMismatch,

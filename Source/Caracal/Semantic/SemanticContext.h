@@ -45,7 +45,8 @@ namespace Caracal
         [[nodiscard]] Type tryGetTypeByName(std::string_view name) const noexcept;
         [[nodiscard]] std::string_view getNameByType(Type type) const noexcept;
 
-        [[nodiscard]] Type getOrCreateArrayType(TypeKind arrayKind, Type elementType, i32 length) noexcept;
+        [[nodiscard]] Type getOrCreateArrayType(TypeKind arrayKind, Type elementType, i32 length, bool immutableSlice = false) noexcept;
+        [[nodiscard]] bool isImmutableSlice(Type type) const noexcept;
         [[nodiscard]] Type getArrayElementType(Type type) const noexcept;
         [[nodiscard]] i32 getArrayLength(Type type) const noexcept;
         [[nodiscard]] const std::vector<Type>& arrayTypes() const noexcept { return m_arrayTypes; }
@@ -107,6 +108,7 @@ namespace Caracal
         {
             Type elementType;
             i32 length;
+            bool isImmutableSlice = false;
         };
 
         std::vector<TypeDefinition> m_typeDefinitions;

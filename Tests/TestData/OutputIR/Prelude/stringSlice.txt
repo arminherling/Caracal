@@ -1,0 +1,60 @@
+type string
+    const _bytes: [u8; _]
+
+extern C.strcmp(%0: cstring "left", %1: cstring "right") i32 symbol "strcmp"
+
+extern C.calloc(%0: i64 "count", %1: i64 "size") rawptr symbol "calloc"
+
+extern C.realloc(%0: rawptr "pointer", %1: i64 "size") rawptr symbol "realloc"
+
+extern C.memmove(%0: rawptr "destination", %1: rawptr "source", %2: i64 "size") rawptr symbol "memmove"
+
+define main() i32
+block entry(0):
+    %slot0 = allocate_local : string "s"
+    %slot1 = allocate_local : const [u8] "temp"
+    %0 = address_of %slot0 : ref string
+    %1 = address_of_field %0.0 : ref [u8; _] "_bytes"
+    %2 = const "Hello\0" : cstring
+    %3 = address_of_field %1.0 : ref u8 "data"
+    store_value %2, %3 : ref u8
+    %4 = const 5 : i32
+    %5 = address_of_field %1.1 : ref i32 "length"
+    store_value %4, %5 : i32
+    %6 = const 5 : i32
+    %7 = address_of_field %1.2 : ref i32 "capacity"
+    store_value %6, %7 : i32
+    %8 = address_of_field %0.0 : ref [u8; _] "_bytes"
+    %9 = address_of_field %8.0 : ref u8 "data"
+    %10 = load_value %9 : ref u8
+    %11 = address_of_field %8.1 : ref i32 "length"
+    %12 = load_value %11 : i32
+    %13 = make_slice %10, %12 : const [u8]
+    %14 = address_of %slot1 : ref const [u8]
+    store_value %13, %14 : const [u8]
+    %15 = address_of_field %14.1 : ref i32 "length"
+    %16 = load_value %15 : i32
+    %17 = const 5 : i32
+    %18 = not_equal %16, %17 : bool
+    branch if %18, if.true(1), if.continuation(2)
+block if.true(1):
+    %19 = const 2 : i32
+    return %19
+block if.continuation(2):
+    %slot2 = allocate_local : const [u8] "temp"
+    %20 = address_of %slot2 : ref const [u8]
+    store_value %13, %20 : const [u8]
+    %21 = const 0 : i32
+    %22 = address_of_field %20.0 : ref u8 "data"
+    %23 = load_value %22 : ref u8
+    %24 = element_address %23[%21] : u8
+    %25 = load_value %24 : u8
+    %26 = const 72 : u8
+    %27 = not_equal %25, %26 : bool
+    branch if %27, if.true(3), if.continuation(4)
+block if.true(3):
+    %28 = const 3 : i32
+    return %28
+block if.continuation(4):
+    %29 = const 42 : i32
+    return %29

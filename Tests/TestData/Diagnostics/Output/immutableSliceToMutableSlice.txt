@@ -1,0 +1,13 @@
+ Error T0023 Explicit variable type mismatch
+    ,-[Diagnostics/Input/immutableSliceToMutableSlice.cara:4:16]
+  1 | def main() i32
+  2 | {
+  3 |     s := "Hello";
+  4 |     w : [u8] = s.slice();
+    .                ---------
+    .                    `-- Variable is declared as '[u8]', but its initializer has type 'const [u8]'
+  5 |     return 0;
+  6 | }
+  7 | 
+    `----
+  Fix: Initialize this variable with a value of type '[u8]' or change its explicit type.

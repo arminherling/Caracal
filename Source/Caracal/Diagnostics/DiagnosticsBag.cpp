@@ -1642,6 +1642,22 @@ namespace Caracal
         m_diagnostics.push_back(std::move(diagnostic));
     }
 
+    void DiagnosticsBag::addMutatingMethodOnImmutableSliceError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& methodName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::T0095_MutatingMethodOnImmutableSlice,
+            source,
+            location,
+            "Immutable slices provide read-only access. Copy the bytes into a new array to modify them.");
+        diagnostic.addPrimaryLabel(location, "'" + methodName + "' mutates an immutable slice");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
     void DiagnosticsBag::addPrivateFieldAccessOutsideTypeError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location,

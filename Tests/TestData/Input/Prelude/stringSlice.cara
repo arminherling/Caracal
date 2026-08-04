@@ -1,0 +1,14 @@
+def main() i32
+{
+    s := "Hello";
+    v := s.slice();
+    if v.length != 5
+    {
+        return 2;
+    }
+    if v.at(0) != 72'u8
+    {
+        return 3;
+    }
+    return 42;
+}

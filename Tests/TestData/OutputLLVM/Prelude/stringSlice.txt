@@ -1,0 +1,59 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+%string = type { { ptr, i32, i32 } }
+
+@0 = private unnamed_addr constant [6 x i8] c"Hello\00", align 1
+
+declare i32 @strcmp(ptr %0, ptr %1)
+
+declare ptr @calloc(i64 %0, i64 %1)
+
+declare ptr @realloc(ptr %0, i64 %1)
+
+declare ptr @memmove(ptr %0, ptr %1, i64 %2)
+
+define i32 @main() {
+entry:
+  %s = alloca %string, align 8
+  %temp = alloca { ptr, i32 }, align 8
+  %_bytes = getelementptr inbounds nuw %string, ptr %s, i32 0, i32 0
+  %data = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes, i32 0, i32 0
+  store ptr @0, ptr %data, align 8
+  %length = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes, i32 0, i32 1
+  store i32 5, ptr %length, align 4
+  %capacity = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes, i32 0, i32 2
+  store i32 5, ptr %capacity, align 4
+  %_bytes3 = getelementptr inbounds nuw %string, ptr %s, i32 0, i32 0
+  %data4 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes3, i32 0, i32 0
+  %load = load ptr, ptr %data4, align 8
+  %length5 = getelementptr inbounds nuw { ptr, i32, i32 }, ptr %_bytes3, i32 0, i32 1
+  %load6 = load i32, ptr %length5, align 4
+  %0 = insertvalue { ptr, i32 } poison, ptr %load, 0
+  %slice = insertvalue { ptr, i32 } %0, i32 %load6, 1
+  store { ptr, i32 } %slice, ptr %temp, align 8
+  %length7 = getelementptr inbounds nuw { ptr, i32 }, ptr %temp, i32 0, i32 1
+  %load8 = load i32, ptr %length7, align 4
+  %not_equal = icmp ne i32 %load8, 5
+  %temp9 = alloca { ptr, i32 }, align 8
+  br i1 %not_equal, label %if.true, label %if.continuation
+
+if.true:                                          ; preds = %entry
+  ret i32 2
+
+if.continuation:                                  ; preds = %entry
+  store { ptr, i32 } %slice, ptr %temp9, align 8
+  %data10 = getelementptr inbounds nuw { ptr, i32 }, ptr %temp9, i32 0, i32 0
+  %load11 = load ptr, ptr %data10, align 8
+  %element = getelementptr i8, ptr %load11, i32 0
+  %load12 = load i8, ptr %element, align 1
+  %not_equal13 = icmp ne i8 %load12, 72
+  br i1 %not_equal13, label %if.true1, label %if.continuation2
+
+if.true1:                                         ; preds = %if.continuation
+  ret i32 3
+
+if.continuation2:                                 ; preds = %if.continuation
+  ret i32 42
+}

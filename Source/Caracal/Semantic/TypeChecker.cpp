@@ -3398,6 +3398,15 @@ namespace Caracal
                             || methodDefinition.intrinsicKind() == IntrinsicKind::ArrayAdd
                             || methodDefinition.intrinsicKind() == IntrinsicKind::ArrayRemove))
                         {
+                            if (m_module.isImmutableSlice(receiverType))
+                            {
+                                m_diagnostics.addMutatingMethodOnImmutableSliceError(
+                                    tokens.source(),
+                                    binaryExpression->leftExpression()->sourceLocation(tokens),
+                                    name);
+                                return Type::Undefined();
+                            }
+
                             auto rootName = std::string{};
                             auto rootReferencesConstant = false;
                             if (receiverChainIsConstant(binaryExpression->leftExpression().get(), rootName, rootReferencesConstant))
@@ -4303,6 +4312,16 @@ namespace Caracal
     bool TypeChecker::isAssignableTo(Type sourceType, Type targetType) const noexcept
     {
         if (sourceType == targetType)
+        {
+            return true;
+        }
+
+        // assigning mutable to immutable slice is allowed
+        // assigning immutable to mutable slice is not allowed
+        if (sourceType.kind() == TypeKind::Slice && targetType.kind() == TypeKind::Slice
+            && !sourceType.isReference() && !targetType.isReference()
+            && m_module.isImmutableSlice(targetType) && !m_module.isImmutableSlice(sourceType)
+            && m_module.getArrayElementType(sourceType) == m_module.getArrayElementType(targetType))
         {
             return true;
         }

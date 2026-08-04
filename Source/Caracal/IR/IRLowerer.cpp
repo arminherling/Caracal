@@ -1822,23 +1822,37 @@ namespace Caracal
                 return std::nullopt;
 
             auto baseAddress = receiverAddress.value();
+            auto sourceArrayType = receiverType;
+            if (receiverType.kind() == TypeKind::Type)
+            {
+                // a string's view borrows its private _bytes storage
+                const auto& typeDefinition = m_semanticContext.getTypeDefinition(receiverType);
+                const auto& bytesField = typeDefinition.tryGetFieldByName("_bytes");
+                if (bytesField.type() == Type::Undefined())
+                    return std::nullopt;
+
+                baseAddress = emitFieldAddress(baseAddress, receiverType, "_bytes", 0, bytesField.type());
+                sourceArrayType = bytesField.type();
+            }
+
             auto length = ValueRef{};
-            if (receiverType.kind() == TypeKind::FixedArray)
+            if (sourceArrayType.kind() == TypeKind::FixedArray)
             {
                 const auto lengthId = m_nextTemporaryId++;
                 m_currentBlock->addInstruction(std::make_unique<ConstantInstruction>(
                     lengthId,
-                    ConstantValue::FromI32(m_semanticContext.getArrayLength(receiverType)),
+                    ConstantValue::FromI32(m_semanticContext.getArrayLength(sourceArrayType)),
                     m_semanticContext.wellKnown().i32));
                 length = ValueRef{ lengthId };
             }
             else
             {
                 // a dynamic array's slice view loads the data pointer and the runtime length
-                const auto elementType = m_semanticContext.getArrayElementType(receiverType);
-                const auto dataPointerAddress = emitFieldAddress(baseAddress, receiverType, "data", 0, elementType.toReference());
+                const auto elementType = m_semanticContext.getArrayElementType(sourceArrayType);
+                const auto dataPointerAddress = emitFieldAddress(baseAddress, sourceArrayType, "data", 0, elementType.toReference());
+                const auto arrayAddress = baseAddress;
                 baseAddress = emitLoad(dataPointerAddress, elementType.toReference());
-                const auto lengthAddress = emitFieldAddress(receiverAddress.value(), receiverType, ArrayLengthMemberName, 1, m_semanticContext.wellKnown().i32);
+                const auto lengthAddress = emitFieldAddress(arrayAddress, sourceArrayType, ArrayLengthMemberName, 1, m_semanticContext.wellKnown().i32);
                 length = emitLoad(lengthAddress, m_semanticContext.wellKnown().i32);
             }
 

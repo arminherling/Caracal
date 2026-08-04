@@ -1,0 +1,148 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(5): {
+        VariableDeclaration: {
+            Type: string
+            Left: {
+                NameExpression: {
+                    Type: string
+                    Name: s
+                }
+            }
+            Right: {
+                StringLiteral: "Hello"
+            }
+        }
+        VariableDeclaration: {
+            Type: const [u8]
+            Left: {
+                NameExpression: {
+                    Type: const [u8]
+                    Name: v
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: const [u8]
+                    Left: {
+                        NameExpression: {
+                            Type: string
+                            Name: s
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: const [u8]
+                            Function type: (ref string) -> const [u8]
+                            NameExpression: {
+                                Type: (ref string) -> const [u8]
+                                Name: slice
+                            }
+                            ArgumentsNode(0): {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        BinaryExpression: {
+                            Type: i32
+                            Left: {
+                                NameExpression: {
+                                    Type: const [u8]
+                                    Name: v
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                NameExpression: {
+                                    Type: i32
+                                    Name: length
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 5
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        BinaryExpression: {
+                            Type: u8
+                            Left: {
+                                NameExpression: {
+                                    Type: const [u8]
+                                    Name: v
+                                }
+                            }
+                            Operation: MemberAccess
+                            Right: {
+                                FunctionCallExpression: {
+                                    Type: u8
+                                    Function type: (ref const [u8], i32) -> u8
+                                    NameExpression: {
+                                        Type: (ref const [u8], i32) -> u8
+                                        Name: at
+                                    }
+                                    ArgumentsNode(1): {
+                                        NumberLiteral: 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 72
+                        TypeNameNode: {
+                            Type: u8
+                            Lexeme: u8
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 3
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 42
+        }
+    }
+}

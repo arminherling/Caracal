@@ -161,6 +161,15 @@ namespace Caracal
             ValidateCompilerEmittedCall(module, "realloc", { wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
             ValidateCompilerEmittedCall(module, "memmove", { wellKnownTypes.rawptr, wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
             ValidateCompilerEmittedCall(module, "strcmp", { wellKnownTypes.cstring, wellKnownTypes.cstring }, wellKnownTypes.i32);
+
+            // slice() hands out a read-only view of the string's bytes, intrinsic-blessed like the array methods
+            auto& stringDefinition = module.getTypeDefinition(wellKnownTypes.string);
+            const auto immutableByteSlice = module.getOrCreateArrayType(TypeKind::Slice, wellKnownTypes.u8, 0, true);
+            auto sliceParameters = std::vector<Parameter>{};
+            sliceParameters.emplace_back(ImplicitThisName, wellKnownTypes.string.toReference());
+            auto& sliceDefinition = module.createMethod(stringDefinition, MethodModifier::Public, "slice", sliceParameters, { immutableByteSlice }, nullptr);
+            sliceDefinition.setFunctionType(FunctionType::Intrinsic);
+            sliceDefinition.setIntrinsicKind(IntrinsicKind::ArraySlice);
         }
 
         // prelude definitions only lower on demand, the boundary lets the lowerer skip them
@@ -285,7 +294,8 @@ namespace Caracal
         const SemanticContext& module,
         TypeKind arrayKind,
         Type elementType,
-        i32 length)
+        i32 length,
+        bool immutableSlice)
     {
         auto elementName = std::string(module.getNameByType(elementType));
         if (elementType.isReference())
@@ -294,6 +304,10 @@ namespace Caracal
         }
 
         auto name = "[" + elementName;
+        if (immutableSlice)
+        {
+            name = "const " + name;
+        }
         if (arrayKind == TypeKind::FixedArray)
         {
             name += "; " + std::to_string(length);
@@ -307,9 +321,9 @@ namespace Caracal
         return name;
     }
 
-    Type SemanticContext::getOrCreateArrayType(TypeKind arrayKind, Type elementType, i32 length) noexcept
+    Type SemanticContext::getOrCreateArrayType(TypeKind arrayKind, Type elementType, i32 length, bool immutableSlice) noexcept
     {
-        auto arrayName = BuildArrayTypeName(*this, arrayKind, elementType, length);
+        auto arrayName = BuildArrayTypeName(*this, arrayKind, elementType, length, immutableSlice);
         if (const auto existing = m_nameToTypes.find(arrayName); existing != m_nameToTypes.end())
         {
             return existing->second;
@@ -319,10 +333,21 @@ namespace Caracal
         auto arrayType = Type{ arrayId, arrayKind };
         m_typeNames.try_emplace(arrayId, arrayName);
         m_nameToTypes.try_emplace(arrayName, arrayType);
-        m_arrayTypeInfoById.try_emplace(arrayId, ArrayTypeInfo{ elementType, length });
+        m_arrayTypeInfoById.try_emplace(arrayId, ArrayTypeInfo{ elementType, length, immutableSlice });
         m_arrayTypes.push_back(arrayType);
 
         return arrayType;
+    }
+
+    bool SemanticContext::isImmutableSlice(Type type) const noexcept
+    {
+        const auto id = type.toBaseType().id();
+        if (const auto info = m_arrayTypeInfoById.find(id); info != m_arrayTypeInfoById.end())
+        {
+            return info->second.isImmutableSlice;
+        }
+
+        return false;
     }
 
     Type SemanticContext::getArrayElementType(Type type) const noexcept

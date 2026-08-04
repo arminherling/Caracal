@@ -247,6 +247,8 @@ namespace Caracal
                 return "T0093";
             case DiagnosticKind::T0094_PrivateFieldAccessOutsideType:
                 return "T0094";
+            case DiagnosticKind::T0095_MutatingMethodOnImmutableSlice:
+                return "T0095";
             case DiagnosticKind::Unknown:
             default:
                 return "?????";
@@ -492,6 +494,8 @@ namespace Caracal
                 return "Member access is not allowed in static methods";
             case DiagnosticKind::T0094_PrivateFieldAccessOutsideType:
                 return "Private fields cannot be accessed from outside their type";
+            case DiagnosticKind::T0095_MutatingMethodOnImmutableSlice:
+                return "Immutable slices cannot be mutated";
             case DiagnosticKind::T0075_DuplicateMethodDeclaration:
                 return "Duplicate method declaration";
             case DiagnosticKind::T0076_MemberAccessInDefaultParameter:

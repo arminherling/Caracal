@@ -1,0 +1,7 @@
+def main() i32
+{
+    s := "Hello";
+    v := s.slice();
+    v.set(0, 74'u8);
+    return 0;
+}
