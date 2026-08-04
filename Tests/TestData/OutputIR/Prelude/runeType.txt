@@ -1,0 +1,58 @@
+extern C.strcmp(%0: cstring "left", %1: cstring "right") i32 symbol "strcmp"
+
+extern C.calloc(%0: i64 "count", %1: i64 "size") rawptr symbol "calloc"
+
+extern C.realloc(%0: rawptr "pointer", %1: i64 "size") rawptr symbol "realloc"
+
+extern C.memmove(%0: rawptr "destination", %1: rawptr "source", %2: i64 "size") rawptr symbol "memmove"
+
+define main() i32
+block entry(0):
+    %0 = const 82 : rune
+    %1 = const 82 : rune
+    %2 = const 90 : rune
+    %3 = not_equal %0, %1 : bool
+    branch if %3, if.true(1), if.continuation(2)
+block if.true(1):
+    %4 = const 2 : i32
+    return %4
+block if.continuation(2):
+    %5 = equal %0, %2 : bool
+    branch if %5, if.true(3), if.continuation(4)
+block if.true(3):
+    %6 = const 3 : i32
+    return %6
+block if.continuation(4):
+    %7 = less_than %2, %0 : bool
+    branch if %7, if.true(5), if.continuation(6)
+block if.true(5):
+    %8 = const 4 : i32
+    return %8
+block if.continuation(6):
+    %9 = greater_than %0, %2 : bool
+    branch if %9, if.true(7), if.continuation(8)
+block if.true(7):
+    %10 = const 5 : i32
+    return %10
+block if.continuation(8):
+    %11 = const 65 : u8
+    %12 = int_widen %11 : u8 -> rune
+    %13 = const 65 : rune
+    %14 = not_equal %12, %13 : bool
+    branch if %14, if.true(9), if.continuation(10)
+block if.true(9):
+    %15 = const 6 : i32
+    return %15
+block if.continuation(10):
+    %16 = const 64 : rune
+    %17 = const 2 : rune
+    %18 = bit_or %16, %17 : rune
+    %19 = const 66 : rune
+    %20 = not_equal %18, %19 : bool
+    branch if %20, if.true(11), if.continuation(12)
+block if.true(11):
+    %21 = const 7 : i32
+    return %21
+block if.continuation(12):
+    %22 = const 42 : i32
+    return %22

@@ -1,0 +1,354 @@
+FunctionDefinitionStatement: {
+    Type: () -> i32
+    Name: main
+    ParametersNode(0): {
+    }
+    ReturnTypesNode(1): {
+        TypeNameNode: {
+            Type: i32
+            Lexeme: i32
+        }
+    }
+    BlockNode(14): {
+        VariableDeclaration: {
+            Type: rune
+            Left: {
+                NameExpression: {
+                    Type: rune
+                    Name: r
+                }
+            }
+            Right: {
+                NumberLiteral: 82
+                TypeNameNode: {
+                    Type: rune
+                    Lexeme: rune
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: rune
+            Left: {
+                NameExpression: {
+                    Type: rune
+                    Name: s
+                }
+            }
+            Right: {
+                NumberLiteral: 82
+                TypeNameNode: {
+                    Type: rune
+                    Lexeme: rune
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: rune
+            Left: {
+                NameExpression: {
+                    Type: rune
+                    Name: t
+                }
+            }
+            Right: {
+                NumberLiteral: 90
+                TypeNameNode: {
+                    Type: rune
+                    Lexeme: rune
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: rune
+                            Name: r
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NameExpression: {
+                            Type: rune
+                            Name: s
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 2
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: rune
+                            Name: r
+                        }
+                    }
+                    Operation: Equal
+                    Right: {
+                        NameExpression: {
+                            Type: rune
+                            Name: t
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 3
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: rune
+                            Name: t
+                        }
+                    }
+                    Operation: LessThan
+                    Right: {
+                        NameExpression: {
+                            Type: rune
+                            Name: r
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 4
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: rune
+                            Name: r
+                        }
+                    }
+                    Operation: GreaterThan
+                    Right: {
+                        NameExpression: {
+                            Type: rune
+                            Name: t
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 5
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: u8
+            Left: {
+                NameExpression: {
+                    Type: u8
+                    Name: b
+                }
+            }
+            Right: {
+                NumberLiteral: 65
+                TypeNameNode: {
+                    Type: u8
+                    Lexeme: u8
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: rune
+            Left: {
+                NameExpression: {
+                    Type: rune
+                    Name: c
+                }
+            }
+            ExplicitType: {
+                TypeNameNode: {
+                    Type: rune
+                    Lexeme: rune
+                }
+            }
+            Right: {
+                NameExpression: {
+                    Type: u8
+                    Name: b
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: rune
+                            Name: c
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 65
+                        TypeNameNode: {
+                            Type: rune
+                            Lexeme: rune
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 6
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: rune
+            Left: {
+                NameExpression: {
+                    Type: rune
+                    Name: shifted
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: rune
+                    Left: {
+                        NameExpression: {
+                            Type: rune
+                            Name: rune
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: rune
+                            Function type: (rune, i32) -> rune
+                            NameExpression: {
+                                Type: (rune, i32) -> rune
+                                Name: shiftLeft
+                            }
+                            ArgumentsNode(2): {
+                                NumberLiteral: 1
+                                TypeNameNode: {
+                                    Type: rune
+                                    Lexeme: rune
+                                }
+                                NumberLiteral: 6
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        VariableDeclaration: {
+            Type: rune
+            Left: {
+                NameExpression: {
+                    Type: rune
+                    Name: masked
+                }
+            }
+            Right: {
+                BinaryExpression: {
+                    Type: rune
+                    Left: {
+                        NameExpression: {
+                            Type: rune
+                            Name: rune
+                        }
+                    }
+                    Operation: MemberAccess
+                    Right: {
+                        FunctionCallExpression: {
+                            Type: rune
+                            Function type: (rune, rune) -> rune
+                            NameExpression: {
+                                Type: (rune, rune) -> rune
+                                Name: bitOr
+                            }
+                            ArgumentsNode(2): {
+                                NameExpression: {
+                                    Type: rune
+                                    Name: shifted
+                                }
+                                NumberLiteral: 2
+                                TypeNameNode: {
+                                    Type: rune
+                                    Lexeme: rune
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        IfStatement: {
+            Condition: {
+                BinaryExpression: {
+                    Type: bool
+                    Left: {
+                        NameExpression: {
+                            Type: rune
+                            Name: masked
+                        }
+                    }
+                    Operation: NotEqual
+                    Right: {
+                        NumberLiteral: 66
+                        TypeNameNode: {
+                            Type: rune
+                            Lexeme: rune
+                        }
+                    }
+                }
+            }
+            True: {
+                BlockNode(1): {
+                    ReturnStatement: {
+                        Type: i32
+                        NumberLiteral: 7
+                    }
+                }
+            }
+        }
+        ReturnStatement: {
+            Type: i32
+            NumberLiteral: 42
+        }
+    }
+}

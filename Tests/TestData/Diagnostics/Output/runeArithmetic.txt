@@ -1,0 +1,13 @@
+ Error T0010 Unknown method
+    ,-[Diagnostics/Input/runeArithmetic.cara:4:15]
+  1 | def main() i32
+  2 | {
+  3 |     r := 82'rune;
+  4 |     x := rune.add(r, r);
+    .               ---------
+    .                   `-- Type 'rune' has no method 'add'
+  5 |     return 0;
+  6 | }
+  7 | 
+    `----
+  Fix: Add this method to the type, or rename the call to an existing method.

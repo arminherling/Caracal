@@ -1,0 +1,38 @@
+def main() i32
+{
+    r := 82'rune;
+    s := 82'rune;
+    t := 90'rune;
+    if r != s
+    {
+        return 2;
+    }
+    if r == t
+    {
+        return 3;
+    }
+    if t < r
+    {
+        return 4;
+    }
+    if r > t
+    {
+        return 5;
+    }
+
+    b := 65'u8;
+    c : rune = b;
+    if c != 65'rune
+    {
+        return 6;
+    }
+
+    shifted := rune.shiftLeft(1'rune, 6);
+    masked := rune.bitOr(shifted, 2'rune);
+    if masked != 66'rune
+    {
+        return 7;
+    }
+
+    return 42;
+}

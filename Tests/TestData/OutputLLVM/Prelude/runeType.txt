@@ -1,0 +1,52 @@
+; ModuleID = 'CaracalModule'
+source_filename = "CaracalModule"
+target triple = "x86_64-unknown-none"
+
+declare i32 @strcmp(ptr %0, ptr %1)
+
+declare ptr @calloc(i64 %0, i64 %1)
+
+declare ptr @realloc(ptr %0, i64 %1)
+
+declare ptr @memmove(ptr %0, ptr %1, i64 %2)
+
+define i32 @main() {
+entry:
+  br i1 false, label %if.true, label %if.continuation
+
+if.true:                                          ; preds = %entry
+  ret i32 2
+
+if.continuation:                                  ; preds = %entry
+  br i1 false, label %if.true1, label %if.continuation2
+
+if.true1:                                         ; preds = %if.continuation
+  ret i32 3
+
+if.continuation2:                                 ; preds = %if.continuation
+  br i1 false, label %if.true3, label %if.continuation4
+
+if.true3:                                         ; preds = %if.continuation2
+  ret i32 4
+
+if.continuation4:                                 ; preds = %if.continuation2
+  br i1 false, label %if.true5, label %if.continuation6
+
+if.true5:                                         ; preds = %if.continuation4
+  ret i32 5
+
+if.continuation6:                                 ; preds = %if.continuation4
+  br i1 false, label %if.true7, label %if.continuation8
+
+if.true7:                                         ; preds = %if.continuation6
+  ret i32 6
+
+if.continuation8:                                 ; preds = %if.continuation6
+  br i1 false, label %if.true9, label %if.continuation10
+
+if.true9:                                         ; preds = %if.continuation8
+  ret i32 7
+
+if.continuation10:                                ; preds = %if.continuation8
+  ret i32 42
+}

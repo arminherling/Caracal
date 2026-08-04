@@ -1,0 +1,17 @@
+#builtin(kind = int, bits = 32, signed = false)
+type rune
+{
+    def rune.bitAnd(lhs: rune, rhs: rune) rune {}
+    def rune.bitOr(lhs: rune, rhs: rune) rune {}
+    def rune.bitXor(lhs: rune, rhs: rune) rune {}
+    def rune.bitNot(value: rune) rune {}
+    def rune.shiftLeft(value: rune, amount: i32) rune {}
+    def rune.shiftRight(value: rune, amount: i32) rune {}
+
+    def rune.equals(lhs: rune, rhs: rune) bool {}
+    def rune.notEquals(lhs: rune, rhs: rune) bool {}
+    def rune.lessThan(lhs: rune, rhs: rune) bool {}
+    def rune.lessOrEqual(lhs: rune, rhs: rune) bool {}
+    def rune.greaterThan(lhs: rune, rhs: rune) bool {}
+    def rune.greaterOrEqual(lhs: rune, rhs: rune) bool {}
+}

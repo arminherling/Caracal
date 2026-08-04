@@ -1,0 +1,13 @@
+ Error T0026 Comparison operand type mismatch
+    ,-[Diagnostics/Input/runeMixedWithInteger.cara:4:10]
+  1 | def main() i32
+  2 | {
+  3 |     r := 82'rune;
+  4 |     if r == 82
+    .          --
+    .           `-- Operator '==' cannot compare 'rune' and 'i32'
+  5 |     {
+  6 |         return 1;
+  7 |     }
+    `----
+  Fix: Use comparable operand types for this comparison.
