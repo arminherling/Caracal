@@ -1,0 +1,4 @@
+def grüße() i32
+{
+    return 42;
+}

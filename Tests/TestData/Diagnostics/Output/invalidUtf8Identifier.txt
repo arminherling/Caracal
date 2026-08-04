@@ -1,0 +1,10 @@
+ Error L0003 Invalid UTF-8 in source file
+    ,-[Diagnostics/Input/invalidUtf8Identifier.cara:1:7]
+  1 | def grüße() i32
+    .       -
+    .       `-- The byte 0xFC is not valid UTF-8.
+  2 | {
+  3 |     return 42;
+  4 | }
+    `----
+  Fix: Save the file with UTF-8 encoding.

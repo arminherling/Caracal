@@ -1,6 +1,7 @@
 #include <CaraTest.h>
 
 #include <Caracal/Compiler.h>
+#include <Caracal/Text/SourceEncoding.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Semantic/TypeChecker.h>
@@ -28,6 +29,9 @@ static void FileTests(
 
     const auto source = std::make_shared<Caracal::SourceText>(input.value());
     Caracal::DiagnosticsBag diagnostics;
+
+    if (!Caracal::validateSourceEncoding(source, diagnostics))
+        CaraTest::fail();
 
     const auto tokens = Caracal::lex(source, diagnostics);
     auto parseTree = Caracal::parse(tokens, diagnostics);

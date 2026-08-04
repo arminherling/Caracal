@@ -1,0 +1,5 @@
+def main() i32
+{
+    s := "grüße";
+    return 0;
+}

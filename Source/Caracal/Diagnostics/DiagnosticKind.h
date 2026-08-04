@@ -9,6 +9,8 @@ namespace Caracal
         // Lexer diagnostics
         L0001_IllegalCharacter,
         L0002_UnterminatedString,
+        L0003_InvalidUtf8Source,
+        L0004_UnsupportedSourceEncoding,
 
         // Parser syntax diagnostics
         P0001_UnexpectedToken,

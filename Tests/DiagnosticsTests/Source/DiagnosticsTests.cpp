@@ -2,6 +2,7 @@
 
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
+#include <Caracal/Text/SourceEncoding.h>
 #include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Semantic/Type.h>
 #include <Caracal/Semantic/TypeChecker.h>
@@ -89,6 +90,9 @@ namespace
             throw std::runtime_error("Could not read input file: " + filePath.string());
 
         const auto source = std::make_shared<Caracal::SourceText>(input.value(), MakeRepositoryRelativePath(filePath));
+        if (!Caracal::validateSourceEncoding(source, diagnostics))
+            return;
+
         const auto diagnosticCount = diagnostics.diagnostics().size();
         const auto tokens = Caracal::lex(source, diagnostics);
         if (diagnostics.diagnostics().size() != diagnosticCount)
@@ -145,12 +149,15 @@ namespace
         std::vector<Caracal::ParseTreeUPtr> parseTrees{};
 
         const auto source = std::make_shared<Caracal::SourceText>(input, MakeRepositoryRelativePath(filePath));
-        const auto diagnosticCount = diagnostics.diagnostics().size();
-        const auto tokens = Caracal::lex(source, diagnostics);
-        if (diagnostics.diagnostics().size() == diagnosticCount)
+        if (Caracal::validateSourceEncoding(source, diagnostics))
         {
-            auto parseTree = Caracal::parse(tokens, diagnostics);
-            parseTrees.push_back(std::move(parseTree));
+            const auto diagnosticCount = diagnostics.diagnostics().size();
+            const auto tokens = Caracal::lex(source, diagnostics);
+            if (diagnostics.diagnostics().size() == diagnosticCount)
+            {
+                auto parseTree = Caracal::parse(tokens, diagnostics);
+                parseTrees.push_back(std::move(parseTree));
+            }
         }
 
         const Caracal::DiagnosticOptions diagnosticOptions{

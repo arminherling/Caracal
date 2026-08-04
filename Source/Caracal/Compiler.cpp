@@ -3,6 +3,7 @@
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Debug/IRPrinter.h>
 #include <Caracal/Text/File.h>
+#include <Caracal/Text/SourceEncoding.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Optimization/ConstantFolder.h>
@@ -130,6 +131,11 @@ namespace Caracal
             }
 
             auto source = std::make_shared<Caracal::SourceText>(content.value(), caraFilePath);
+            if (!Caracal::validateSourceEncoding(source, diagnostics))
+            {
+                continue;
+            }
+
             const auto diagnosticCount = diagnostics.diagnostics().size();
             const auto tokens = Caracal::lex(source, diagnostics);
             if (diagnostics.diagnostics().size() != diagnosticCount)
@@ -150,12 +156,15 @@ namespace Caracal
         }
 
         auto source = std::make_shared<Caracal::SourceText>(fileContent.value(), filePath);
-        const auto diagnosticCount = diagnostics.diagnostics().size();
-        const auto tokens = Caracal::lex(source, diagnostics);
-        if (diagnostics.diagnostics().size() == diagnosticCount)
+        if (Caracal::validateSourceEncoding(source, diagnostics))
         {
-            auto parseTree = Caracal::parse(tokens, diagnostics);
-            parseTrees.push_back(std::move(parseTree));
+            const auto diagnosticCount = diagnostics.diagnostics().size();
+            const auto tokens = Caracal::lex(source, diagnostics);
+            if (diagnostics.diagnostics().size() == diagnosticCount)
+            {
+                auto parseTree = Caracal::parse(tokens, diagnostics);
+                parseTrees.push_back(std::move(parseTree));
+            }
         }
 
         if (diagnostics.hasErrors())

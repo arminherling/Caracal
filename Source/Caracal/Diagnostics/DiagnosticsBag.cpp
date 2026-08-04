@@ -110,6 +110,15 @@ namespace Caracal
         return stringify(kind);
     }
 
+    static std::string FormatByteValue(u8 value)
+    {
+        constexpr const char* HexDigits = "0123456789ABCDEF";
+        auto result = std::string("0x");
+        result += HexDigits[(value >> 4) & 0xF];
+        result += HexDigits[value & 0xF];
+        return result;
+    }
+
     void DiagnosticsBag::addIllegalCharacterError(
         const SourceTextSharedPtr& source,
         const SourceLocation& location)
@@ -121,6 +130,38 @@ namespace Caracal
             location,
             "Remove the unsupported character.");
         diagnostic.addPrimaryLabel(location, "This character is not part of the Caracal syntax.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addInvalidUtf8SourceError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        u8 byteValue)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::L0003_InvalidUtf8Source,
+            source,
+            location,
+            "Save the file with UTF-8 encoding.");
+        diagnostic.addPrimaryLabel(location, "The byte " + FormatByteValue(byteValue) + " is not valid UTF-8.");
+
+        m_diagnostics.push_back(std::move(diagnostic));
+    }
+
+    void DiagnosticsBag::addUnsupportedSourceEncodingError(
+        const SourceTextSharedPtr& source,
+        const SourceLocation& location,
+        const std::string& encodingName)
+    {
+        auto diagnostic = Diagnostic(
+            DiagnosticLevel::Error,
+            DiagnosticKind::L0004_UnsupportedSourceEncoding,
+            source,
+            location,
+            "Save the file with UTF-8 encoding.");
+        diagnostic.addPrimaryLabel(location, "This file is " + encodingName + " encoded, Caracal reads UTF-8 only.");
 
         m_diagnostics.push_back(std::move(diagnostic));
     }

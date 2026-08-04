@@ -19,6 +19,8 @@ namespace Caracal
         // Lexer diagnostics
         void addIllegalCharacterError(const SourceTextSharedPtr& source, const SourceLocation& location);
         void addUnterminatedStringError(const SourceTextSharedPtr& source, const SourceLocation& location);
+        void addInvalidUtf8SourceError(const SourceTextSharedPtr& source, const SourceLocation& location, u8 byteValue);
+        void addUnsupportedSourceEncodingError(const SourceTextSharedPtr& source, const SourceLocation& location, const std::string& encodingName);
 
         // Parser syntax diagnostics
         void addExpectedTokenError(const SourceTextSharedPtr& source, const SourceLocation& location, TokenKind expectedKind, TokenKind actualKind);

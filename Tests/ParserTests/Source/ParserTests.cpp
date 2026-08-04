@@ -1,5 +1,6 @@
 #include <CaraTest.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
+#include <Caracal/Text/SourceEncoding.h>
 #include <Caracal/Debug/ParseTreePrinter.h>
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Syntax/Parser.h>
@@ -22,6 +23,9 @@ static void FileTests(
 
     const auto source = std::make_shared<Caracal::SourceText>(input.value());
     Caracal::DiagnosticsBag diagnostics;
+
+    if (!Caracal::validateSourceEncoding(source, diagnostics))
+        CaraTest::fail();
 
     const auto tokens = Caracal::lex(source, diagnostics);
 

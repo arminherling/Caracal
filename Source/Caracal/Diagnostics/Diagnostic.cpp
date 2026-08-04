@@ -11,6 +11,10 @@ namespace Caracal
                 return "L0001";
             case DiagnosticKind::L0002_UnterminatedString:
                 return "L0002";
+            case DiagnosticKind::L0003_InvalidUtf8Source:
+                return "L0003";
+            case DiagnosticKind::L0004_UnsupportedSourceEncoding:
+                return "L0004";
 
             // Parser syntax diagnostics
             case DiagnosticKind::P0001_UnexpectedToken:
@@ -264,6 +268,10 @@ namespace Caracal
                 return "Illegal character";
             case DiagnosticKind::L0002_UnterminatedString:
                 return "Unterminated string";
+            case DiagnosticKind::L0003_InvalidUtf8Source:
+                return "Invalid UTF-8 in source file";
+            case DiagnosticKind::L0004_UnsupportedSourceEncoding:
+                return "Unsupported source file encoding";
 
             // Parser syntax diagnostics
             case DiagnosticKind::P0001_UnexpectedToken:
