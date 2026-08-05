@@ -1,4 +1,5 @@
 #include <Caracal/Optimization/DeadCodeElimination.h>
+#include <Caracal/Profiling.h>
 
 #include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/AddressOfFieldInstruction.h>
@@ -582,6 +583,7 @@ namespace Caracal
 
     void eliminateDeadCode(Module& module) noexcept
     {
+        CARACAL_ZONE_NAMED("deadCodeElimination");
         for (auto& function : module.functions())
         {
             // removing an instruction can strand its operands, so run to a fixed point

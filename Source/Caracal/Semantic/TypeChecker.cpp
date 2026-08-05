@@ -1,4 +1,5 @@
 ﻿#include "TypeChecker.h"
+#include <Caracal/Profiling.h>
 
 #include <Caracal/Constants.h>
 #include <Caracal/ScopedValue.h>
@@ -88,6 +89,7 @@ namespace Caracal
         SemanticContext& module,
         DiagnosticsBag& diagnostics) noexcept
     {
+        CARACAL_ZONE_NAMED("typeCheck");
         TypeChecker typeChecker{ parseTrees, options, module, diagnostics };
         return typeChecker.typeCheck();
     }

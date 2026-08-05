@@ -1,4 +1,5 @@
 #include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Profiling.h>
 
 #include <algorithm>
 #include <unordered_map>
@@ -229,6 +230,8 @@ namespace Caracal
 
     [[nodiscard]] TokenBuffer lex(const SourceTextSharedPtr& sourceText, DiagnosticsBag& diagnostics) noexcept
     {
+        CARACAL_ZONE_NAMED("lex");
+
         TokenBuffer tokenBuffer{ sourceText };
         const auto source = std::string_view(sourceText->text);
         i32 currentIndex = 0;

@@ -1,4 +1,5 @@
 #include <Caracal/Compiler.h>
+#include <Caracal/Profiling.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Debug/IRPrinter.h>
@@ -106,6 +107,7 @@ namespace Caracal
             return false;
 
         // catch malformed IR before it is emitted or snapshotted, verifyModule returns true when broken
+        CARACAL_ZONE_NAMED("verify");
         if (llvm::verifyModule(llvmModule, &llvm::errs()))
             return false;
 
@@ -116,6 +118,7 @@ namespace Caracal
         const std::filesystem::path& filePath,
         const DiagnosticOptions& diagnosticOptions)
     {
+        CARACAL_ZONE_NAMED("compileFile");
         const auto coreDirectoryPath = ResolveCoreDirectory();
         auto caraFiles = CollectCaraFiles(coreDirectoryPath);
 
@@ -257,7 +260,10 @@ namespace Caracal
             llvm::errs() << "TargetMachine cant emit a file of this type\n";
             return 1;
         }
-        passManager.run(*llvmModule);
+        {
+            CARACAL_ZONE_NAMED("emitObject");
+            passManager.run(*llvmModule);
+        }
         objectFile.flush();
 
         const auto lldPathOrError = llvm::sys::findProgramByName("lld-link");
@@ -271,6 +277,7 @@ namespace Caracal
         // TODO support linux
         std::string linkError;
         const auto exeFileName = inputFileName + ".exe";
+        CARACAL_ZONE_NAMED_VAR(linkZone, "link");
         const auto linkingResult = llvm::sys::ExecuteAndWait(
             lldPath,
             { "lld-link", "-flavor", "link", "/out:" + exeFileName, objectFileName, "/subsystem:console", "/defaultlib:msvcrt.lib", "/defaultlib:legacy_stdio_definitions.lib","/defaultlib:ucrt.lib" },

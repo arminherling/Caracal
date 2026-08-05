@@ -1,4 +1,5 @@
 #include <Caracal/Optimization/ConstantFolder.h>
+#include <Caracal/Profiling.h>
 
 #include <Caracal/Constants.h>
 #include <Caracal/Syntax/ArrayLiteral.h>
@@ -586,6 +587,7 @@ namespace Caracal
         const SemanticContext& module,
         DiagnosticsBag& diagnostics) noexcept
     {
+        CARACAL_ZONE_NAMED("constantFold");
         const auto diagnosticCountBefore = diagnostics.diagnostics().size();
 
         ConstantFolder folder{ module, diagnostics };

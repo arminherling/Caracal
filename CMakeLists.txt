@@ -16,6 +16,7 @@ if(WIN32)
 endif()
 
 include(LLVM)
+include(Tracy)
 include(CaraReport)
 include(CaraTest)
 include(CTest)

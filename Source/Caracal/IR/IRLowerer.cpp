@@ -1,4 +1,5 @@
 ﻿#include <Caracal/IR/IRLowerer.h>
+#include <Caracal/Profiling.h>
 
 #include <Caracal/Constants.h>
 #include <Caracal/IR/AddInstruction.h>
@@ -217,6 +218,7 @@ namespace Caracal
 
     bool IRLowerer::lower(Module& module) noexcept
     {
+        CARACAL_ZONE_NAMED("lower");
         m_externFunctionIdCache.clear();
         m_requiredPreludeFunctions.clear();
         m_queuedPreludeFunctionIds.clear();

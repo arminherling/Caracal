@@ -1,4 +1,5 @@
 #include <Caracal/CodeGen/LLVMCodeGenerator.h>
+#include <Caracal/Profiling.h>
 
 #include <Caracal/IR/AddInstruction.h>
 #include <Caracal/IR/AddressOfFieldInstruction.h>
@@ -80,6 +81,7 @@ namespace Caracal
 
     bool LLVMCodeGenerator::generate()
     {
+        CARACAL_ZONE_NAMED("codegen");
         if (!lowerTypes())
             return false;
 
