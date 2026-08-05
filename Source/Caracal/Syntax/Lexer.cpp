@@ -6,69 +6,6 @@
 
 namespace Caracal
 {
-    [[nodiscard]] static auto InitializeTokenSizes() noexcept
-    {
-        return std::unordered_map<TokenKind, i32>{
-            { TokenKind::Plus,              1 },
-            { TokenKind::PercentPlus,       2 },
-            { TokenKind::Minus,             1 },
-            { TokenKind::PercentMinus,      2 },
-            { TokenKind::Star,              1 },
-            { TokenKind::PercentStar,       2 },
-            { TokenKind::Slash,             1 },
-            { TokenKind::Dot,               1 },
-            { TokenKind::Ellipsis,          3 },
-            { TokenKind::Comma,             1 },
-            { TokenKind::Colon,             1 },
-            { TokenKind::Semicolon,         1 },
-            { TokenKind::Underscore,        1 },
-            { TokenKind::Equal,             1 },
-            { TokenKind::EqualEqual,        2 },
-            { TokenKind::Bang,              1 },
-            { TokenKind::BangEqual,         2 },
-            { TokenKind::LessThan,          1 },
-            { TokenKind::LessThanEqual,     2 },
-            { TokenKind::GreaterThan,       1 },
-            { TokenKind::GreaterThanEqual,  2 },
-            { TokenKind::OpenParenthesis,   1 },
-            { TokenKind::CloseParenthesis,  1 },
-            { TokenKind::OpenBrace,         1 },
-            { TokenKind::CloseBrace,        1 },
-            { TokenKind::OpenBracket,       1 },
-            { TokenKind::CloseBracket,      1 },
-            { TokenKind::EndOfFile,         0 },
-        };
-    }
-
-    [[nodiscard]] static auto InitializeKeywords() noexcept
-    {
-        return std::unordered_map<std::string_view, TokenKind>{
-            { std::string_view("def"),      TokenKind::DefKeyword},
-            { std::string_view("enum"),     TokenKind::EnumKeyword },
-            { std::string_view("type"),     TokenKind::TypeKeyword },
-            { std::string_view("if"),       TokenKind::IfKeyword },
-            { std::string_view("else"),     TokenKind::ElseKeyword },
-            { std::string_view("while"),    TokenKind::WhileKeyword },
-            { std::string_view("break"),    TokenKind::BreakKeyword },
-            { std::string_view("skip"),     TokenKind::SkipKeyword },
-            { std::string_view("return"),   TokenKind::ReturnKeyword },
-            { std::string_view("true"),     TokenKind::TrueKeyword },
-            { std::string_view("false"),    TokenKind::FalseKeyword },
-            { std::string_view("and"),      TokenKind::AndKeyword },
-            { std::string_view("or"),       TokenKind::OrKeyword },
-            { std::string_view("ref"),      TokenKind::RefKeyword },
-        };
-    }
-
-    [[nodiscard]] static auto TokenSize(TokenKind kind) noexcept
-    {
-        static const auto tokenSizes = InitializeTokenSizes();
-        if (const auto result = tokenSizes.find(kind); result != tokenSizes.end())
-            return result->second;
-
-        return 1;
-    }
-
     [[nodiscard]] static auto IsLetter(char c) noexcept
     {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
@@ -94,16 +31,6 @@ namespace Caracal
         return (c == '_') || IsLetter(c) || IsNumber(c);
     }
 
-    [[nodiscard]] static auto PeekCurrentChar(std::string_view source, i32 charIndex) noexcept
-    {
-        if (charIndex >= source.length())
-            return '\0';
-
-        return source[charIndex];
-    }
-
-    [[nodiscard]] static auto PeekNextChar(std::string_view source, i32& currentIndex) noexcept { return PeekCurrentChar(source, currentIndex + 1); }
-
     [[nodiscard]] static auto CaptureTrivia(TokenBuffer& tokenBuffer, std::string_view source, i32 currentIndex, i32 triviaStartIndex) noexcept
     {
         const auto sourceLength = static_cast<i32>(source.length());
@@ -114,42 +41,62 @@ namespace Caracal
         return tokenBuffer.addTrivia(trivia);
     }
 
-    static void AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, std::string_view source, i32& currentIndex, i32& triviaStartIndex, TokenKind tokenKind) noexcept
+    static void AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex, i32& triviaStartIndex, TokenKind tokenKind, i32 tokenSize) noexcept
     {
-        const auto tokenSize = TokenSize(tokenKind);
+        const auto startIndex = static_cast<i32>(currentIndex - source.data());
         const auto locationIndex = tokenBuffer.addSourceLocation(
             {
-                .startIndex = currentIndex,
-                .endIndex = currentIndex + tokenSize
+                .startIndex = startIndex,
+                .endIndex = startIndex + tokenSize
             });
-        const auto triviaIndex = CaptureTrivia(tokenBuffer, source, currentIndex, triviaStartIndex);
+        const auto triviaIndex = CaptureTrivia(tokenBuffer, source, startIndex, triviaStartIndex);
 
-        currentIndex++;
-        triviaStartIndex = currentIndex;
+        currentIndex += tokenSize;
+        triviaStartIndex = startIndex + tokenSize;
 
         tokenBuffer.addToken({ .kind = tokenKind, .locationIndex = locationIndex, .triviaIndex = triviaIndex });
     };
 
-    static void AddKindAndLexeme(TokenBuffer& tokenBuffer, std::string_view source, i32 currentIndex, i32& triviaStartIndex, TokenKind tokenKind, i32 startIndex) noexcept
+    static void AddKindAndLexeme(TokenBuffer& tokenBuffer, std::string_view source, const char* currentIndex, i32& triviaStartIndex, TokenKind tokenKind, i32 startIndex) noexcept
     {
-        const auto length = currentIndex - startIndex;
+        const auto endIndex = static_cast<i32>(currentIndex - source.data());
+        const auto length = endIndex - startIndex;
         const auto identifierIndex = tokenBuffer.addLexeme(source.substr(startIndex, length));
         const auto locationIndex = tokenBuffer.addSourceLocation(
             {
                 .startIndex = startIndex,
-                .endIndex = currentIndex
+                .endIndex = endIndex
             });
         const auto triviaIndex = CaptureTrivia(tokenBuffer, source, startIndex, triviaStartIndex);
-        triviaStartIndex = currentIndex;
+        triviaStartIndex = endIndex;
 
         tokenBuffer.addToken({ .kind = tokenKind, .lexemeIndex = identifierIndex, .locationIndex = locationIndex, .triviaIndex = triviaIndex });
     };
 
-    static auto IdentifierKind(std::string_view source, i32 currentIndex, i32 startIndex) noexcept
+    [[nodiscard]] static auto InitializeKeywords() noexcept
+    {
+        return std::unordered_map<std::string_view, TokenKind>{
+            { std::string_view("def"),      TokenKind::DefKeyword},
+            { std::string_view("enum"),     TokenKind::EnumKeyword },
+            { std::string_view("type"),     TokenKind::TypeKeyword },
+            { std::string_view("if"),       TokenKind::IfKeyword },
+            { std::string_view("else"),     TokenKind::ElseKeyword },
+            { std::string_view("while"),    TokenKind::WhileKeyword },
+            { std::string_view("break"),    TokenKind::BreakKeyword },
+            { std::string_view("skip"),     TokenKind::SkipKeyword },
+            { std::string_view("return"),   TokenKind::ReturnKeyword },
+            { std::string_view("true"),     TokenKind::TrueKeyword },
+            { std::string_view("false"),    TokenKind::FalseKeyword },
+            { std::string_view("and"),      TokenKind::AndKeyword },
+            { std::string_view("or"),       TokenKind::OrKeyword },
+            { std::string_view("ref"),      TokenKind::RefKeyword },
+        };
+    }
+
+    static TokenKind IdentifierKind(const char* start, i32 length) noexcept
     {
         static const auto keywords = InitializeKeywords();
-        const auto length = currentIndex - startIndex;
-        const auto lexeme = source.substr(startIndex, length);
+        const auto lexeme = std::string_view(start, static_cast<size_t>(length));
 
         if (const auto result = keywords.find(lexeme); result != keywords.end())
             return result->second;
@@ -157,33 +104,31 @@ namespace Caracal
         return TokenKind::Identifier;
     }
 
-    static void LexIdentifier(TokenBuffer& tokenBuffer, std::string_view source, i32& currentIndex, i32& triviaStartIndex) noexcept
+    static void LexIdentifier(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex, i32& triviaStartIndex) noexcept
     {
-        const auto startIndex = currentIndex;
-        while (IsUnderscoreOrLetterOrNumber(PeekCurrentChar(source, currentIndex)))
+        const char* start = currentIndex;
+        while (IsUnderscoreOrLetterOrNumber(*currentIndex))
             currentIndex++;
 
-        const auto maybeKeywordKind = IdentifierKind(source, currentIndex, startIndex);
+        const auto startIndex = static_cast<i32>(start - source.data());
+        const auto maybeKeywordKind = IdentifierKind(start, static_cast<i32>(currentIndex - start));
 
         AddKindAndLexeme(tokenBuffer, source, currentIndex, triviaStartIndex, maybeKeywordKind, startIndex);
     };
 
-    static void LexNumber(TokenBuffer& tokenBuffer, std::string_view source, i32& currentIndex, i32& triviaStartIndex) noexcept
+    static void LexNumber(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex, i32& triviaStartIndex) noexcept
     {
-        const auto startIndex = currentIndex;
+        const auto startIndex = static_cast<i32>(currentIndex - source.data());
 
-        auto current = PeekCurrentChar(source, currentIndex);
-        while (IsNumber(current) || (current == '_' && PeekNextChar(source, currentIndex) != '.'))
-        {
+        // checking the char after underscore is safe, it is EOF terminator in the worst case
+        while (IsNumber(*currentIndex) || (*currentIndex == '_' && currentIndex[1] != '.'))
             currentIndex++;
-            current = PeekCurrentChar(source, currentIndex);
-        }
 
-        if (current == '.' && IsNumber(PeekNextChar(source, currentIndex)))
+        if (*currentIndex == '.' && IsNumber(currentIndex[1]))
         {
             currentIndex++;
 
-            while (IsUnderscoreOrNumber(PeekCurrentChar(source, currentIndex)))
+            while (IsUnderscoreOrNumber(*currentIndex))
                 currentIndex++;
         }
 
@@ -195,25 +140,24 @@ namespace Caracal
         DiagnosticsBag& diagnostics,
         const SourceTextSharedPtr& sourceText,
         std::string_view source,
-        i32& currentIndex,
+        const char*& currentIndex,
         i32& triviaStartIndex) noexcept
     {
-        const auto startIndex = currentIndex;
+        const auto startIndex = static_cast<i32>(currentIndex - source.data());
 
         // Consume opening quotation mark
         currentIndex++;
-        auto current = PeekCurrentChar(source, currentIndex);
-        while (current != '"' && current != '\r' && current != '\n' && current != '\0')
+        while (*currentIndex != '"' && *currentIndex != '\r' && *currentIndex != '\n' && *currentIndex != '\0')
         {
-            if (current == '\\' && PeekNextChar(source, currentIndex) != '\0')
+            // backslash consumes the next char unless we are at EOF
+            if (*currentIndex == '\\' && currentIndex[1] != '\0')
             {
                 currentIndex++;
             }
             currentIndex++;
-            current = PeekCurrentChar(source, currentIndex);
         }
 
-        if (current == '\"')
+        if (*currentIndex == '\"')
         {
             // Consume closing quotation mark
             currentIndex++;
@@ -234,7 +178,7 @@ namespace Caracal
 
         TokenBuffer tokenBuffer{ sourceText };
         const auto source = std::string_view(sourceText->text);
-        i32 currentIndex = 0;
+        const char* currentIndex = source.data();
         i32 triviaStartIndex = 0;
 
         // skip optional BOM at start of file
@@ -243,18 +187,18 @@ namespace Caracal
             static_cast<u8>(source[1]) == 0xBB &&
             static_cast<u8>(source[2]) == 0xBF)
         {
-            currentIndex = 3;
+            currentIndex += 3;
             triviaStartIndex = 3;
         }
 
         while (true)
         {
-            const auto current = PeekCurrentChar(source, currentIndex);
+            const auto current = *currentIndex;
             switch (current)
             {
                 case '\r':
                 {
-                    if (PeekNextChar(source, currentIndex) == '\n')
+                    if (currentIndex[1] == '\n')
                         currentIndex++;
 
                     currentIndex++;
@@ -273,48 +217,45 @@ namespace Caracal
                 }
                 case '\0':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::EndOfFile);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::EndOfFile, 0);
                     return tokenBuffer;
                 }
                 case '+':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Plus);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Plus, 1);
                     break;
                 }
                 case '-':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Minus);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Minus, 1);
                     break;
                 }
                 case '*':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Star);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Star, 1);
                     break;
                 }
                 case '%':
                 {
-                    const auto nextChar = PeekNextChar(source, currentIndex);
+                    const auto nextChar = currentIndex[1];
                     if (nextChar == '+')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentPlus);
-                        currentIndex += 1;
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentPlus, 2);
                         break;
                     }
                     if (nextChar == '-')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentMinus);
-                        currentIndex += 1;
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentMinus, 2);
                         break;
                     }
                     if (nextChar == '*')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentStar);
-                        currentIndex += 1;
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentStar, 2);
                         break;
                     }
 
                     // % is not a valid operator
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Unknown);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Unknown, 1);
                     const auto& lastToken = tokenBuffer.getLastToken();
                     const auto& location = tokenBuffer.getSourceLocation(lastToken);
                     diagnostics.addIllegalCharacterError(sourceText, location);
@@ -322,16 +263,14 @@ namespace Caracal
                 }
                 case '/':
                 {
-                    const auto nextChar = PeekNextChar(source, currentIndex);
+                    const auto nextChar = currentIndex[1];
                     if (nextChar == '/')
                     {
                         // Consume comment until end of line
                         currentIndex += 2;
-                        auto currentChar = PeekCurrentChar(source, currentIndex);
-                        while (currentChar != '\n' && currentChar != '\0')
+                        while (*currentIndex != '\n' && *currentIndex != '\0')
                         {
                             currentIndex++;
-                            currentChar = PeekCurrentChar(source, currentIndex);
                         }
                         break;
                     }
@@ -341,13 +280,12 @@ namespace Caracal
                         currentIndex += 2;
                         while (true)
                         {
-                            const auto currentChar = PeekCurrentChar(source, currentIndex);
-                            if (currentChar == '\0')
+                            if (*currentIndex == '\0')
                             {
                                 break;
                             }
                             // check for the end of block comment
-                            if (currentChar == '*' && PeekNextChar(source, currentIndex) == '/')
+                            if (*currentIndex == '*' && currentIndex[1] == '/')
                             {
                                 currentIndex += 2;
                                 break;
@@ -358,128 +296,123 @@ namespace Caracal
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Slash);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Slash, 1);
                         break;
                     }
                 }
                 case '.':
                 {
-                    if (PeekNextChar(source, currentIndex) == '.' && PeekCurrentChar(source, currentIndex + 2) == '.')
+                    if (currentIndex[1] == '.' && currentIndex[2] == '.')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Ellipsis);
-                        currentIndex += 2; // advance for the second and third '.'
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Ellipsis, 3);
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Dot);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Dot, 1);
                     }
                     break;
                 }
                 case ':':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Colon);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Colon, 1);
                     break;
                 }
                 case ';':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Semicolon);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Semicolon, 1);
                     break;
                 }
                 case '\'':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::SingleQuote);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::SingleQuote, 1);
                     break;
                 }
                 case '#':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Hash);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Hash, 1);
                     break;
                 }
                 case ',':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Comma);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Comma, 1);
                     break;
                 }
                 case '=':
                 {
-                    if (PeekNextChar(source, currentIndex) == '=')
+                    if (currentIndex[1] == '=')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::EqualEqual);
-                        currentIndex++; // advance for the second '='
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::EqualEqual, 2);
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Equal);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Equal, 1);
                     }
                     break;
                 }
                 case '!':
                 {
-                    if (PeekNextChar(source, currentIndex) == '=')
+                    if (currentIndex[1] == '=')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::BangEqual);
-                        currentIndex++; // advance for the '='
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::BangEqual, 2);
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Bang);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Bang, 1);
                     }
                     break;
                 }
                 case '<':
                 {
-                    if (PeekNextChar(source, currentIndex) == '=')
+                    if (currentIndex[1] == '=')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::LessThanEqual);
-                        currentIndex++; // advance for the '='
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::LessThanEqual, 2);
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::LessThan);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::LessThan, 1);
                     }
                     break;
                 }
                 case '>':
                 {
-                    if (PeekNextChar(source, currentIndex) == '=')
+                    if (currentIndex[1] == '=')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::GreaterThanEqual);
-                        currentIndex++; // advance for the '='
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::GreaterThanEqual, 2);
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::GreaterThan);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::GreaterThan, 1);
                     }
                     break;
                 }
                 case '(':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenParenthesis);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenParenthesis, 1);
                     break;
                 }
                 case ')':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseParenthesis);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseParenthesis, 1);
                     break;
                 }
                 case '{':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenBrace);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenBrace, 1);
                     break;
                 }
                 case '}':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseBrace);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseBrace, 1);
                     break;
                 }
                 case '[':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenBracket);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenBracket, 1);
                     break;
                 }
                 case ']':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseBracket);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseBracket, 1);
                     break;
                 }
                 case '\"':
@@ -489,9 +422,9 @@ namespace Caracal
                 }
                 default:
                 {
-                    if (current == '_' && !IsUnderscoreOrLetterOrNumber(PeekNextChar(source, currentIndex)))
+                    if (current == '_' && !IsUnderscoreOrLetterOrNumber(currentIndex[1]))
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Underscore);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Underscore, 1);
                         break;
                     }
                     else if (IsUnderscoreOrLetter(current))
@@ -505,7 +438,7 @@ namespace Caracal
                         break;
                     }
 
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Unknown);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Unknown, 1);
                     const auto& lastToken = tokenBuffer.getLastToken();
                     const auto& location = tokenBuffer.getSourceLocation(lastToken);
                     diagnostics.addIllegalCharacterError(sourceText, location);

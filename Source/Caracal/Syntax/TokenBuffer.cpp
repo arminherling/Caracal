@@ -11,6 +11,7 @@ namespace Caracal
         const auto initialSize = static_cast<i32>(source->text.size());
         m_tokens.reserve(initialSize);
         m_lexemes.reserve(initialSize);
+        m_trivias.reserve(initialSize);
         m_sourceLocations.reserve(initialSize);
     }
 
