@@ -7,6 +7,8 @@
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/StringLiteral.h>
 
+#include <algorithm>
+
 namespace Caracal
 {
     struct AnnotationDefinition
