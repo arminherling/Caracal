@@ -74,7 +74,6 @@ namespace Caracal
         void typeCheckTypeFieldDefinition(TypeDefinitionStatement* statement, const TokenBuffer& tokens);
         void typeCheckTypeMethodDefinition(TypeDefinitionStatement* statement, const TokenBuffer& tokens);
         void typeCheckMethodSignature(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens);
-        void validateBuiltinMethod(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens);
         void validateStaticMethodTypeName(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, const TokenBuffer& tokens);
         void typeCheckConstructorSignature(const TypeDefinitionStatement* typeDefinitionStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens);
         void typeCheckStatement(Statement* statement, const TokenBuffer& tokens);
@@ -117,7 +116,6 @@ namespace Caracal
         [[nodiscard]] const TokenBuffer* tryTokensFor(const Statement* statement) const;
         [[nodiscard]] bool validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue = nullptr, std::optional<std::string>* stringArgumentValue = nullptr, bool* requiredValue = nullptr);
         [[nodiscard]] bool receiverChainIsConstant(const Expression* expression, std::string& rootName, bool& referencesConstant);
-        void registerOperatorMethod(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType);
         [[nodiscard]] bool validateNamedAnnotationArguments(const AnnotationNode* annotation, std::string_view namedStringArgument, const TokenBuffer& tokens, std::optional<std::string>* stringArgumentValue, bool* requiredValue = nullptr);
         [[nodiscard]] bool validateBuiltinAnnotationArguments(const AnnotationNode* annotation, const TokenBuffer& tokens);
         [[nodiscard]] bool validateCallableAnnotations(const std::vector<AnnotationNodeUPtr>& annotations, const TokenBuffer& tokens, std::optional<std::string>& symbolName, bool& isRequired);

@@ -4,6 +4,9 @@
 #include <Caracal/ScopedValue.h>
 #include <Caracal/Semantic/ArgumentBinder.h>
 #include <Caracal/Semantic/SliceParameterPromotion.h>
+#include <Caracal/Diagnostics/DiagnosticFormatting.h>
+#include <Caracal/Semantic/NumberLiteralParsing.h>
+#include <Caracal/Semantic/OperatorRegistration.h>
 #include <Caracal/Syntax/BoolLiteral.h>
 #include <Caracal/Syntax/BreakStatement.h>
 #include <Caracal/Syntax/GroupingExpression.h>
@@ -17,158 +20,6 @@
 
 namespace Caracal
 {
-    struct AnnotationDefinition
-    {
-        AnnotationKind kind;
-        std::string_view name;
-        TokenKind targetKind;
-        i32 requiredArgumentCount;
-        bool requiresIntegerArgument;
-        std::string_view namedStringArgument;
-    };
-
-    static const AnnotationDefinition* GetAnnotationDefinition(AnnotationKind kind)
-    {
-        static const AnnotationDefinition Definitions[] = {
-            { AnnotationKind::Extern, ExternAnnotationName, TokenKind::DefKeyword, 0, false, SymbolAnnotationArgumentName },
-            { AnnotationKind::Flag, FlagAnnotationName, TokenKind::EnumKeyword, 0, false, "" },
-            { AnnotationKind::Step, StepAnnotationName, TokenKind::EnumKeyword, 1, true, "" },
-            { AnnotationKind::Builtin, BuiltinAnnotationName, TokenKind::TypeKeyword, 0, false, "" },
-        };
-
-        for (const auto& definition : Definitions)
-        {
-            if (definition.kind == kind)
-            {
-                return &definition;
-            }
-        }
-
-        return nullptr;
-    }
-
-    struct BuiltinOperatorDefinition
-    {
-        std::string_view methodName;
-        bool isUnary;
-        BinaryOperatorKind binaryOperator;
-        UnaryOperatorKind unaryOperator;
-        BinaryFoldFunction binaryFold;
-        UnaryFoldFunction unaryFold;
-    };
-
-    static const BuiltinOperatorDefinition* TryGetBuiltinOperatorDefinition(std::string_view methodName)
-    {
-        static constexpr BuiltinOperatorDefinition Definitions[] = {
-            { BuiltinAddMethodName, false, BinaryOperatorKind::AdditionWrapping, UnaryOperatorKind::Invalid, &FoldAddition, nullptr },
-            { BuiltinSubtractMethodName, false, BinaryOperatorKind::SubtractionWrapping, UnaryOperatorKind::Invalid, &FoldSubtraction, nullptr },
-            { BuiltinMultiplyMethodName, false, BinaryOperatorKind::MultiplicationWrapping, UnaryOperatorKind::Invalid, &FoldMultiplication, nullptr },
-            { BuiltinDivideMethodName, false, BinaryOperatorKind::Division, UnaryOperatorKind::Invalid, &FoldDivision, nullptr },
-            { BuiltinEqualsMethodName, false, BinaryOperatorKind::Equal, UnaryOperatorKind::Invalid, &FoldEqual, nullptr },
-            { BuiltinNotEqualsMethodName, false, BinaryOperatorKind::NotEqual, UnaryOperatorKind::Invalid, &FoldNotEqual, nullptr },
-            { BuiltinLessThanMethodName, false, BinaryOperatorKind::LessThan, UnaryOperatorKind::Invalid, &FoldLessThan, nullptr },
-            { BuiltinLessOrEqualMethodName, false, BinaryOperatorKind::LessOrEqual, UnaryOperatorKind::Invalid, &FoldLessOrEqual, nullptr },
-            { BuiltinGreaterThanMethodName, false, BinaryOperatorKind::GreaterThan, UnaryOperatorKind::Invalid, &FoldGreaterThan, nullptr },
-            { BuiltinGreaterOrEqualMethodName, false, BinaryOperatorKind::GreaterOrEqual, UnaryOperatorKind::Invalid, &FoldGreaterOrEqual, nullptr },
-            { BuiltinLogicalAndMethodName, false, BinaryOperatorKind::LogicalAnd, UnaryOperatorKind::Invalid, &FoldLogicalAnd, nullptr },
-            { BuiltinLogicalOrMethodName, false, BinaryOperatorKind::LogicalOr, UnaryOperatorKind::Invalid, &FoldLogicalOr, nullptr },
-            { BuiltinNegateMethodName, true, BinaryOperatorKind::Invalid, UnaryOperatorKind::ValueNegation, nullptr, &FoldValueNegation },
-            { BuiltinLogicalNegateMethodName, true, BinaryOperatorKind::Invalid, UnaryOperatorKind::LogicalNegation, nullptr, &FoldLogicalNegation },
-        };
-
-        for (const auto& definition : Definitions)
-        {
-            if (definition.methodName == methodName)
-            {
-                return &definition;
-            }
-        }
-
-        return nullptr;
-    }
-
-    enum class BuiltinIntrinsicShape
-    {
-        Binary,
-        Unary,
-        Shift,
-    };
-
-    struct BuiltinIntrinsicDefinition
-    {
-        std::string_view methodName;
-        BuiltinIntrinsicShape shape;
-        IntrinsicKind kind;
-    };
-
-    static const BuiltinIntrinsicDefinition* TryGetBuiltinIntrinsicDefinition(std::string_view methodName)
-    {
-        static constexpr BuiltinIntrinsicDefinition Definitions[] = {
-            { BuiltinBitAndMethodName, BuiltinIntrinsicShape::Binary, IntrinsicKind::BitAnd },
-            { BuiltinBitOrMethodName, BuiltinIntrinsicShape::Binary, IntrinsicKind::BitOr },
-            { BuiltinBitXorMethodName, BuiltinIntrinsicShape::Binary, IntrinsicKind::BitXor },
-            { BuiltinBitNotMethodName, BuiltinIntrinsicShape::Unary, IntrinsicKind::BitNot },
-            { BuiltinShiftLeftMethodName, BuiltinIntrinsicShape::Shift, IntrinsicKind::ShiftLeft },
-            { BuiltinShiftRightMethodName, BuiltinIntrinsicShape::Shift, IntrinsicKind::ShiftRight },
-        };
-
-        for (const auto& definition : Definitions)
-        {
-            if (definition.methodName == methodName)
-            {
-                return &definition;
-            }
-        }
-
-        return nullptr;
-    }
-
-    static std::string FormatAnnotationArgumentValue(const Expression* expression, const TokenBuffer& tokens)
-    {
-        const auto location = expression->sourceLocation(tokens);
-        const auto& text = tokens.source()->text;
-        if (location.startIndex < 0 || location.endIndex > static_cast<i32>(text.size()) || location.endIndex <= location.startIndex)
-        {
-            return {};
-        }
-
-        return text.substr(location.startIndex, location.endIndex - location.startIndex);
-    }
-
-    static std::optional<SourceLocation> GetTypeFieldLocation(const TypeDefinition& typeDefinition, const FieldDefinition& fieldDefinition, const TokenBuffer& tokens)
-    {
-        const auto fieldIndex = static_cast<size_t>(fieldDefinition.index());
-        const auto& statements = typeDefinition.statement()->bodyNode()->statements();
-        if (fieldIndex >= statements.size())
-        {
-            return std::nullopt;
-        }
-
-        auto* fieldStatement = static_cast<TypeFieldDeclaration*>(statements[fieldIndex].get());
-        return fieldStatement->nameExpression()->sourceLocation(tokens);
-    }
-
-    static std::string FormatTypeName(SemanticContext& module, Type type)
-    {
-        if (type == Type::Undefined())
-        {
-            return "undefined";
-        }
-
-        if (type == Type::Void())
-        {
-            return "void";
-        }
-
-        auto name = std::string(module.getNameByType(type));
-        if (type.isReference())
-        {
-            return "ref " + name;
-        }
-
-        return name;
-    }
-
     static bool ShouldIgnoreUnusedVariableWarning(std::string_view name)
     {
         return name == "_" || name == ImplicitThisName;
@@ -177,116 +28,6 @@ namespace Caracal
     static bool IsInitConstantAssignmentSite(std::string_view functionName)
     {
         return functionName == EntryPointFunctionName || functionName == UserMainFunctionName;
-    }
-
-    static std::string FormatBinaryOperator(BinaryOperatorKind binaryOperator)
-    {
-        switch (binaryOperator)
-        {
-            case BinaryOperatorKind::AdditionWrapping:
-                return "%+";
-            case BinaryOperatorKind::SubtractionWrapping:
-                return "%-";
-            case BinaryOperatorKind::MultiplicationWrapping:
-                return "%*";
-            case BinaryOperatorKind::Division:
-                return "/";
-            case BinaryOperatorKind::Equal:
-                return "==";
-            case BinaryOperatorKind::NotEqual:
-                return "!=";
-            case BinaryOperatorKind::LessThan:
-                return "<";
-            case BinaryOperatorKind::LessOrEqual:
-                return "<=";
-            case BinaryOperatorKind::GreaterThan:
-                return ">";
-            case BinaryOperatorKind::GreaterOrEqual:
-                return ">=";
-            case BinaryOperatorKind::LogicalAnd:
-                return "and";
-            case BinaryOperatorKind::LogicalOr:
-                return "or";
-            default:
-                return stringify(binaryOperator);
-        }
-    }
-
-    static std::optional<i32> TryParseI32Literal(std::string_view lexeme)
-    {
-        i32 value = 0;
-        const auto* begin = lexeme.data();
-        const auto* end = begin + lexeme.size();
-        const auto result = std::from_chars(begin, end, value);
-        if (result.ec != std::errc{} || result.ptr != end)
-        {
-            return std::nullopt;
-        }
-
-        return value;
-    }
-
-    static std::optional<i32> TryParseNegatedI32Literal(std::string_view lexeme)
-    {
-        std::int64_t magnitude = 0;
-        const auto* begin = lexeme.data();
-        const auto* end = begin + lexeme.size();
-        const auto result = std::from_chars(begin, end, magnitude);
-        if (result.ec != std::errc{} || result.ptr != end)
-        {
-            return std::nullopt;
-        }
-
-        const auto negated = -magnitude;
-        if (negated < static_cast<std::int64_t>(std::numeric_limits<i32>::min())
-            || negated > static_cast<std::int64_t>(std::numeric_limits<i32>::max()))
-        {
-            return std::nullopt;
-        }
-
-        return static_cast<i32>(negated);
-    }
-
-    static std::optional<u8> TryParseU8Literal(std::string_view lexeme)
-    {
-        unsigned int value = 0;
-        const auto* begin = lexeme.data();
-        const auto* end = begin + lexeme.size();
-        const auto result = std::from_chars(begin, end, value);
-        if (result.ec != std::errc{} || result.ptr != end || value > std::numeric_limits<u8>::max())
-        {
-            return std::nullopt;
-        }
-
-        return static_cast<u8>(value);
-    }
-
-    static std::optional<f64> TryParseF64Literal(std::string_view lexeme)
-    {
-        f64 value = 0.0;
-        const auto* begin = lexeme.data();
-        const auto* end = begin + lexeme.size();
-        const auto result = std::from_chars(begin, end, value);
-        if (result.ec != std::errc{} || result.ptr != end || !std::isfinite(value))
-        {
-            return std::nullopt;
-        }
-
-        return value;
-    }
-
-    static std::optional<float> TryParseF32Literal(std::string_view lexeme)
-    {
-        float value = 0.0f;
-        const auto* begin = lexeme.data();
-        const auto* end = begin + lexeme.size();
-        const auto result = std::from_chars(begin, end, value);
-        if (result.ec != std::errc{} || result.ptr != end || !std::isfinite(value))
-        {
-            return std::nullopt;
-        }
-
-        return value;
     }
 
     static BuiltinTypeDescription ExtractBuiltinTypeDescription(const std::vector<AnnotationNodeUPtr>& annotations)
@@ -325,7 +66,7 @@ namespace Caracal
                 }
                 else if (argument.name() == BitsAnnotationArgumentName && value->kind() == NodeKind::NumberLiteral)
                 {
-                    const auto parsed = TryParseI32Literal(static_cast<const NumberLiteral*>(value)->literalLexeme());
+                    const auto parsed = tryParseI32Literal(static_cast<const NumberLiteral*>(value)->literalLexeme());
                     if (parsed.has_value())
                     {
                         description.bits = parsed.value();
@@ -339,129 +80,6 @@ namespace Caracal
         }
 
         return description;
-    }
-
-    static std::optional<NumberLiteral::ParsedValue> TryParseNumberLiteralValue(std::string_view lexeme, Type type, const SemanticContext& module)
-    {
-        const auto* description = module.tryGetBuiltinTypeDescription(type);
-        if (description == nullptr)
-        {
-            return std::nullopt;
-        }
-
-        if (description->kind == BuiltinTypeKind::Float)
-        {
-            if (description->bits == 32)
-            {
-                const auto value = TryParseF32Literal(lexeme);
-                if (!value.has_value())
-                {
-                    return std::nullopt;
-                }
-
-                return NumberLiteral::ParsedValue{ value.value() };
-            }
-
-            const auto value = TryParseF64Literal(lexeme);
-            if (!value.has_value())
-            {
-                return std::nullopt;
-            }
-
-            return NumberLiteral::ParsedValue{ value.value() };
-        }
-
-        if (description->kind != BuiltinTypeKind::Int)
-        {
-            return std::nullopt;
-        }
-
-        u64 magnitude = 0;
-        const auto* begin = lexeme.data();
-        const auto* end = begin + lexeme.size();
-        const auto result = std::from_chars(begin, end, magnitude);
-        if (result.ec != std::errc{} || result.ptr != end)
-        {
-            return std::nullopt;
-        }
-
-        auto maxValue = u64{ 0 };
-        if (description->isSigned)
-        {
-            maxValue = (u64{ 1 } << (description->bits - 1)) - 1;
-        }
-        else if (description->bits == 64)
-        {
-            maxValue = std::numeric_limits<u64>::max();
-        }
-        else
-        {
-            maxValue = (u64{ 1 } << description->bits) - 1;
-        }
-
-        if (magnitude > maxValue)
-        {
-            return std::nullopt;
-        }
-
-        if (description->isSigned)
-        {
-            if (description->bits <= 8)
-            {
-                return NumberLiteral::ParsedValue{ static_cast<i8>(magnitude) };
-            }
-            if (description->bits <= 16)
-            {
-                return NumberLiteral::ParsedValue{ static_cast<i16>(magnitude) };
-            }
-            if (description->bits <= 32)
-            {
-                return NumberLiteral::ParsedValue{ static_cast<i32>(magnitude) };
-            }
-            return NumberLiteral::ParsedValue{ static_cast<i64>(magnitude) };
-        }
-
-        if (description->bits <= 8)
-        {
-            return NumberLiteral::ParsedValue{ static_cast<u8>(magnitude) };
-        }
-        if (description->bits <= 16)
-        {
-            return NumberLiteral::ParsedValue{ static_cast<u16>(magnitude) };
-        }
-        if (description->bits <= 32)
-        {
-            return NumberLiteral::ParsedValue{ static_cast<u32>(magnitude) };
-        }
-        return NumberLiteral::ParsedValue{ static_cast<u64>(magnitude) };
-    }
-
-    static std::optional<i32> TryConvertEnumFieldLiteralValue(const NumberLiteral& literal)
-    {
-        if (!literal.hasParsedValue())
-        {
-            return std::nullopt;
-        }
-
-        return std::visit([](const auto value) -> std::optional<i32>
-            {
-                using Payload = std::decay_t<decltype(value)>;
-                if constexpr (std::is_integral_v<Payload> && !std::is_same_v<Payload, bool>)
-                {
-                    // the EnumDefinition stores field values as i32
-                    if (static_cast<i64>(value) < std::numeric_limits<i32>::min()
-                        || static_cast<i64>(value) > std::numeric_limits<i32>::max())
-                    {
-                        return std::nullopt;
-                    }
-
-                    return static_cast<i32>(value);
-                }
-                else
-                {
-                    return std::nullopt;
-                }
-            }, literal.parsedValue().value());
     }
 
     bool typeCheck(
@@ -1000,62 +618,14 @@ namespace Caracal
 
             if (statement->isBuiltin())
             {
-                validateBuiltinMethod(methodStatement, typeDefinition, typeType, tokens);
+                validateBuiltinMethod(methodStatement, typeDefinition, typeType, tokens, m_module, m_diagnostics);
             }
             else
             {
                 validateStaticMethodTypeName(methodStatement, typeDefinition, tokens);
-                registerOperatorMethod(methodStatement, typeDefinition, typeType);
+                registerOperatorMethod(methodStatement, typeDefinition, typeType, m_module);
             }
         }
-    }
-
-    void TypeChecker::registerOperatorMethod(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType)
-    {
-        // only allow static equals/notEquals on types with the correct shape for operators
-        if (methodStatement->modifier() != MethodModifier::Static
-            || !methodStatement->methodNameNode()->hasTypeName()
-            || methodStatement->methodNameNode()->typeName().value() != typeDefinition.name())
-        {
-            return;
-        }
-
-        const auto& methodName = methodStatement->methodNameNode()->methodName();
-        auto binaryOperator = BinaryOperatorKind::Invalid;
-        if (methodName == BuiltinEqualsMethodName)
-        {
-            binaryOperator = BinaryOperatorKind::Equal;
-        }
-        else if (methodName == BuiltinNotEqualsMethodName)
-        {
-            binaryOperator = BinaryOperatorKind::NotEqual;
-        }
-        else
-        {
-            return;
-        }
-
-        const auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
-        if (methodType == Type::Undefined())
-        {
-            return;
-        }
-
-        const auto& methodDefinition = m_module.getFunctionDefinition(methodType);
-        const auto& parameters = methodDefinition.parameters();
-        const auto& returnTypes = methodDefinition.returnTypes();
-        if (parameters.size() != 2
-            || parameters[0].type() != typeType
-            || parameters[1].type() != typeType
-            || returnTypes.size() != 1
-            || returnTypes.front() != m_module.wellKnown().boolean)
-        {
-            return;
-        }
-
-        typeDefinition.addOperatorSignature(
-            binaryOperator,
-            OperatorSignature{ typeType, typeType, returnTypes.front(), nullptr, nullptr, methodType });
     }
 
     void TypeChecker::validateStaticMethodTypeName(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, const TokenBuffer& tokens)
@@ -1077,197 +647,6 @@ namespace Caracal
             methodNameNode->typeName().value(),
             typeDefinition.name(),
             methodNameNode->methodName());
-    }
-
-    void TypeChecker::validateBuiltinMethod(const MethodDefinitionStatement* methodStatement, TypeDefinition& typeDefinition, Type typeType, const TokenBuffer& tokens)
-    {
-        const auto& methodName = methodStatement->methodNameNode()->methodName();
-        const auto methodLocation = tokens.getSourceLocation(methodStatement->methodNameNode()->methodNameToken());
-
-        const auto* operatorDefinition = TryGetBuiltinOperatorDefinition(methodName);
-        const auto* intrinsicDefinition = TryGetBuiltinIntrinsicDefinition(methodName);
-        const auto* typeDescription = m_module.tryGetBuiltinTypeDescription(typeType);
-        const auto isIntegerType = typeDescription != nullptr && typeDescription->kind == BuiltinTypeKind::Int;
-        if (intrinsicDefinition != nullptr && !isIntegerType)
-        {
-            m_diagnostics.addBitwiseMethodOnNonIntegerTypeError(
-                tokens.source(),
-                methodLocation,
-                methodName,
-                typeDefinition.name());
-            return;
-        }
-
-        if (operatorDefinition == nullptr && intrinsicDefinition == nullptr)
-        {
-            m_diagnostics.addUnknownBuiltinMethodIgnoredWarning(
-                tokens.source(),
-                methodLocation,
-                methodName,
-                typeDefinition.name());
-            return;
-        }
-
-        const auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
-        if (methodType == Type::Undefined())
-        {
-            return;
-        }
-
-        if (intrinsicDefinition != nullptr)
-        {
-            auto& methodDefinition = m_module.getFunctionDefinition(methodType);
-            const auto& parameters = methodDefinition.parameters();
-            const auto& returnTypes = methodDefinition.returnTypes();
-
-            for (const auto& parameter : parameters)
-            {
-                if (parameter.type() == Type::Undefined())
-                {
-                    return;
-                }
-            }
-
-            auto isValidSignature = returnTypes.size() == 1 && returnTypes.front() == typeType;
-            if (isValidSignature)
-            {
-                isValidSignature = methodStatement->modifier() == MethodModifier::Static
-                    && methodStatement->methodNameNode()->hasTypeName()
-                    && methodStatement->methodNameNode()->typeName().value() == typeDefinition.name();
-            }
-
-            if (isValidSignature)
-            {
-                switch (intrinsicDefinition->shape)
-                {
-                    case BuiltinIntrinsicShape::Binary:
-                    {
-                        isValidSignature = parameters.size() == 2
-                            && parameters[0].type() == typeType
-                            && parameters[1].type() == typeType;
-                        break;
-                    }
-                    case BuiltinIntrinsicShape::Unary:
-                    {
-                        isValidSignature = parameters.size() == 1
-                            && parameters[0].type() == typeType;
-                        break;
-                    }
-                    case BuiltinIntrinsicShape::Shift:
-                    {
-                        isValidSignature = parameters.size() == 2
-                            && parameters[0].type() == typeType
-                            && parameters[1].type() == m_module.wellKnown().i32;
-                        break;
-                    }
-                }
-            }
-
-            if (!isValidSignature)
-            {
-                const auto typeName = FormatTypeName(m_module, typeType);
-                auto expectedSignature = std::string{};
-                switch (intrinsicDefinition->shape)
-                {
-                    case BuiltinIntrinsicShape::Binary:
-                    {
-                        expectedSignature = typeName + "." + methodDefinition.name() + "(lhs: " + typeName + ", rhs: " + typeName + ") " + typeName;
-                        break;
-                    }
-                    case BuiltinIntrinsicShape::Unary:
-                    {
-                        expectedSignature = typeName + "." + methodDefinition.name() + "(value: " + typeName + ") " + typeName;
-                        break;
-                    }
-                    case BuiltinIntrinsicShape::Shift:
-                    {
-                        expectedSignature = typeName + "." + methodDefinition.name() + "(value: " + typeName + ", amount: i32) " + typeName;
-                        break;
-                    }
-                }
-
-                m_diagnostics.addInvalidOperatorMethodSignatureError(
-                    tokens.source(),
-                    methodLocation,
-                    methodName,
-                    expectedSignature);
-                return;
-            }
-
-            // the lowerer is gonna emit instructions instead of calls for intrinsics
-            methodDefinition.setFunctionType(FunctionType::Intrinsic);
-            methodDefinition.setIntrinsicKind(intrinsicDefinition->kind);
-            return;
-        }
-
-        const auto& methodDefinition = m_module.getFunctionDefinition(methodType);
-        const auto& parameters = methodDefinition.parameters();
-        const auto& returnTypes = methodDefinition.returnTypes();
-
-        for (const auto& parameter : parameters)
-        {
-            if (parameter.type() == Type::Undefined())
-            {
-                return;
-            }
-        }
-
-        auto isValidSignature = returnTypes.size() == 1 && returnTypes.front() != Type::Void();
-        if (isValidSignature)
-        {
-            isValidSignature = methodStatement->modifier() == MethodModifier::Static
-                && methodStatement->methodNameNode()->hasTypeName()
-                && methodStatement->methodNameNode()->typeName().value() == typeDefinition.name();
-        }
-
-        if (isValidSignature)
-        {
-            if (operatorDefinition->isUnary)
-            {
-                isValidSignature = parameters.size() == 1
-                    && parameters[0].type() == typeType;
-            }
-            else
-            {
-                isValidSignature = parameters.size() == 2
-                    && parameters[0].type() == typeType
-                    && parameters[1].type() == typeType;
-            }
-        }
-
-        if (!isValidSignature)
-        {
-            const auto typeName = FormatTypeName(m_module, typeType);
-            auto expectedSignature = std::string{};
-            if (operatorDefinition->isUnary)
-            {
-                expectedSignature = typeName + "." + methodDefinition.name() + "(value: " + typeName + ")";
-            }
-            else
-            {
-                expectedSignature = typeName + "." + methodDefinition.name() + "(lhs: " + typeName + ", rhs: " + typeName + ")";
-            }
-
-            m_diagnostics.addInvalidOperatorMethodSignatureError(
-                tokens.source(),
-                methodLocation,
-                methodName,
-                expectedSignature);
-            return;
-        }
-
-        if (operatorDefinition->isUnary)
-        {
-            typeDefinition.addOperatorSignature(
-                operatorDefinition->unaryOperator,
-                OperatorSignature{ parameters[0].type(), Type::Undefined(), returnTypes.front(), nullptr, operatorDefinition->unaryFold });
-        }
-        else
-        {
-            typeDefinition.addOperatorSignature(
-                operatorDefinition->binaryOperator,
-                OperatorSignature{ parameters[0].type(), parameters[1].type(), returnTypes.front(), operatorDefinition->binaryFold, nullptr });
-        }
     }
 
     void TypeChecker::typeCheckTypeFieldDefinition(TypeDefinitionStatement* statement, const TokenBuffer& tokens)
@@ -1360,7 +739,7 @@ namespace Caracal
             currentScope()->addVariableBinding(
                 fieldDefinition.name(),
                 fieldDefinition.type(),
-                GetTypeFieldLocation(typeDefinition, fieldDefinition, tokens),
+                getTypeFieldLocation(typeDefinition, fieldDefinition, tokens),
                 tokens.source(),
                 VariableBindingKind::Field);
         }
@@ -1755,8 +1134,8 @@ namespace Caracal
                 m_diagnostics.addExplicitConstantTypeMismatchError(
                     tokens.source(),
                     location,
-                    FormatTypeName(m_module, declaredType),
-                    FormatTypeName(m_module, rightType));
+                    formatTypeName(m_module, declaredType),
+                    formatTypeName(m_module, rightType));
             }
         }
 
@@ -1854,8 +1233,8 @@ namespace Caracal
                 m_diagnostics.addExplicitVariableTypeMismatchError(
                     tokens.source(),
                     location,
-                    FormatTypeName(m_module, declaredType),
-                    FormatTypeName(m_module, rightType));
+                    formatTypeName(m_module, declaredType),
+                    formatTypeName(m_module, rightType));
             }
         }
 
@@ -2050,8 +1429,8 @@ namespace Caracal
                 m_diagnostics.addAssignmentTypeMismatchError(
                     tokens.source(),
                     location,
-                    FormatTypeName(m_module, leftType),
-                    FormatTypeName(m_module, rightType));
+                    formatTypeName(m_module, leftType),
+                    formatTypeName(m_module, rightType));
             }
         }
     }
@@ -2194,7 +1573,7 @@ namespace Caracal
                 tokens.source(),
                 tokens.getSourceLocation(statement->nameToken()),
                 functionDefinition.name(),
-                FormatTypeName(m_module, m_currentReturnType));
+                formatTypeName(m_module, m_currentReturnType));
         }
 
         popScope(!statement->isExtern());
@@ -2293,14 +1672,14 @@ namespace Caracal
                         m_diagnostics.addEnumFieldValueTypeMismatchError(
                             tokens.source(),
                             expression->sourceLocation(tokens),
-                            FormatTypeName(m_module, baseType),
-                            FormatTypeName(m_module, fieldValueType));
+                            formatTypeName(m_module, baseType),
+                            formatTypeName(m_module, fieldValueType));
                     }
                 }
 
                 if (expression->kind() == NodeKind::NumberLiteral)
                 {
-                    const auto value = TryConvertEnumFieldLiteralValue(*static_cast<NumberLiteral*>(expression));
+                    const auto value = tryConvertEnumFieldLiteralValue(*static_cast<NumberLiteral*>(expression));
                     if (value.has_value())
                     {
                         enumDefinition.addField(fieldName, value.value(), fieldLocation);
@@ -2331,483 +1710,6 @@ namespace Caracal
         }
     }
 
-    bool TypeChecker::validateBuiltinAnnotationArguments(const AnnotationNode* annotation, const TokenBuffer& tokens)
-    {
-        // builtins need to at least define their kind
-        if (annotation->arguments().empty())
-        {
-            m_diagnostics.addAnnotationMissingArgumentsError(
-                tokens.source(),
-                annotation->argumentsLocation(tokens),
-                annotation->kind(),
-                annotation->name(),
-                KindAnnotationArgumentName);
-            return false;
-        }
-
-        const Argument* kindArgument = nullptr;
-        const Argument* bitsArgument = nullptr;
-        const Argument* signedArgument = nullptr;
-        std::vector<std::string_view> seenArgumentNames;
-        for (const auto& argument : annotation->arguments())
-        {
-            if (!argument.isNamed())
-            {
-                m_diagnostics.addAnnotationArgumentTypeMismatchError(
-                    tokens.source(),
-                    argument.value()->sourceLocation(tokens),
-                    annotation->kind(),
-                    annotation->name(),
-                    "named arguments like 'kind = int'",
-                    "a positional argument");
-                return false;
-            }
-
-            const auto nameLocation = tokens.getSourceLocation(argument.nameToken().value());
-            if (std::find(seenArgumentNames.begin(), seenArgumentNames.end(), argument.name()) != seenArgumentNames.end())
-            {
-                m_diagnostics.addDuplicateAnnotationArgumentError(tokens.source(), nameLocation, annotation->name(), argument.name());
-                return false;
-            }
-            seenArgumentNames.push_back(argument.name());
-
-            if (argument.name() == KindAnnotationArgumentName)
-            {
-                kindArgument = &argument;
-            }
-            else if (argument.name() == BitsAnnotationArgumentName)
-            {
-                bitsArgument = &argument;
-            }
-            else if (argument.name() == SignedAnnotationArgumentName)
-            {
-                signedArgument = &argument;
-            }
-            else
-            {
-                m_diagnostics.addUnexpectedAnnotationArgumentError(tokens.source(), nameLocation, annotation->name(), argument.name());
-                return false;
-            }
-        }
-
-        if (kindArgument == nullptr)
-        {
-            m_diagnostics.addAnnotationMissingArgumentsError(
-                tokens.source(),
-                annotation->argumentsLocation(tokens),
-                annotation->kind(),
-                annotation->name(),
-                KindAnnotationArgumentName);
-            return false;
-        }
-
-        auto kindName = std::string_view();
-        const auto* kindValue = kindArgument->value().get();
-        if (kindValue->kind() == NodeKind::NameExpression)
-        {
-            kindName = static_cast<const NameExpression*>(kindValue)->name();
-        }
-
-        const auto isInt = kindName == BuiltinKindIntName;
-        const auto isFloat = kindName == BuiltinKindFloatName;
-        const auto isBool = kindName == BuiltinKindBoolName;
-        const auto isPointer = kindName == BuiltinKindPointerName;
-        if (!isInt && !isFloat && !isBool && !isPointer)
-        {
-            m_diagnostics.addAnnotationArgumentTypeMismatchError(
-                tokens.source(),
-                kindValue->sourceLocation(tokens),
-                annotation->kind(),
-                annotation->name(),
-                "one of 'int', 'float', 'bool' or 'pointer' for 'kind'",
-                "'" + FormatAnnotationArgumentValue(kindValue, tokens) + "'");
-            return false;
-        }
-
-        if (isInt || isFloat)
-        {
-            if (bitsArgument == nullptr)
-            {
-                m_diagnostics.addAnnotationMissingArgumentsError(
-                    tokens.source(),
-                    annotation->argumentsLocation(tokens),
-                    annotation->kind(),
-                    annotation->name(),
-                    BitsAnnotationArgumentName);
-                return false;
-            }
-
-            auto* bitsValue = bitsArgument->value().get();
-            auto bits = 0;
-            if (bitsValue->kind() == NodeKind::NumberLiteral)
-            {
-                const auto parsed = TryParseI32Literal(static_cast<const NumberLiteral*>(bitsValue)->literalLexeme());
-                if (parsed.has_value())
-                {
-                    bits = parsed.value();
-                }
-            }
-
-            // llvm supports integers up to 65k bits
-            if (isInt && !(bits >= 1 && bits <= 65535))
-            {
-                m_diagnostics.addAnnotationArgumentTypeMismatchError(
-                    tokens.source(),
-                    bitsValue->sourceLocation(tokens),
-                    annotation->kind(),
-                    annotation->name(),
-                    "a number between 1 and 65535 for 'bits'",
-                    "'" + FormatAnnotationArgumentValue(bitsValue, tokens) + "'");
-                return false;
-            }
-
-            if (isFloat && !(bits == 32 || bits == 64))
-            {
-                m_diagnostics.addUnsupportedFloatBitsError(
-                    tokens.source(),
-                    bitsValue->sourceLocation(tokens));
-                return false;
-            }
-        }
-        else if (bitsArgument != nullptr)
-        {
-            m_diagnostics.addUnsupportedAnnotationArgumentError(
-                tokens.source(),
-                tokens.getSourceLocation(bitsArgument->nameToken().value()),
-                std::string(bitsArgument->name()),
-                std::string(kindName));
-            return false;
-        }
-
-        if (isInt)
-        {
-            if (signedArgument == nullptr)
-            {
-                m_diagnostics.addAnnotationMissingArgumentsError(
-                    tokens.source(),
-                    annotation->argumentsLocation(tokens),
-                    annotation->kind(),
-                    annotation->name(),
-                    SignedAnnotationArgumentName);
-                return false;
-            }
-
-            if (signedArgument->value()->kind() != NodeKind::BoolLiteral)
-            {
-                m_diagnostics.addAnnotationArgumentTypeMismatchError(
-                    tokens.source(),
-                    signedArgument->value()->sourceLocation(tokens),
-                    annotation->kind(),
-                    annotation->name(),
-                    "'true' or 'false' for 'signed'",
-                    "'" + FormatAnnotationArgumentValue(signedArgument->value().get(), tokens) + "'");
-                return false;
-            }
-        }
-        else if (signedArgument != nullptr)
-        {
-            m_diagnostics.addUnsupportedAnnotationArgumentError(
-                tokens.source(),
-                tokens.getSourceLocation(signedArgument->nameToken().value()),
-                std::string(signedArgument->name()),
-                std::string(kindName));
-            return false;
-        }
-
-        return true;
-    }
-
-    bool TypeChecker::validateNamedAnnotationArguments(const AnnotationNode* annotation, std::string_view namedStringArgument, const TokenBuffer& tokens, std::optional<std::string>* stringArgumentValue, bool* requiredValue)
-    {
-        std::vector<std::string_view> seenArgumentNames;
-        for (const auto& argument : annotation->arguments())
-        {
-            if (!argument.isNamed())
-            {
-                continue;
-            }
-
-            const auto nameLocation = tokens.getSourceLocation(argument.nameToken().value());
-            if (std::find(seenArgumentNames.begin(), seenArgumentNames.end(), argument.name()) != seenArgumentNames.end())
-            {
-                m_diagnostics.addDuplicateAnnotationArgumentError(tokens.source(), nameLocation, annotation->name(), argument.name());
-                return false;
-            }
-            seenArgumentNames.push_back(argument.name());
-
-            // the extern annotation optionally marks bindings the compiler itself emits calls to
-            if (annotation->kind() == AnnotationKind::Extern && argument.name() == "required")
-            {
-                auto* requiredExpression = argument.value().get();
-                if (requiredExpression->kind() != NodeKind::BoolLiteral)
-                {
-                    // annotation arguments are compiler metadata, string literals are cstrings
-                    const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, m_module.wellKnown().cstring };
-                    const auto requiredArgumentType = typeCheckExpression(requiredExpression, tokens);
-                    m_diagnostics.addAnnotationArgumentTypeMismatchError(
-                        tokens.source(),
-                        requiredExpression->sourceLocation(tokens),
-                        annotation->kind(),
-                        annotation->name(),
-                        "a bool literal for 'required'",
-                        "an expression of type '" + FormatTypeName(m_module, requiredArgumentType) + "'");
-                    return false;
-                }
-
-                if (requiredValue != nullptr)
-                {
-                    *requiredValue = static_cast<const BoolLiteral*>(requiredExpression)->value();
-                }
-                continue;
-            }
-
-            if (namedStringArgument.empty() || argument.name() != namedStringArgument)
-            {
-                m_diagnostics.addUnexpectedAnnotationArgumentError(tokens.source(), nameLocation, annotation->name(), argument.name());
-                return false;
-            }
-
-            auto* value = argument.value().get();
-            auto argumentType = Type::Undefined();
-            {
-                // annotation arguments are compiler metadata, string literals are cstrings
-                const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, m_module.wellKnown().cstring };
-                argumentType = typeCheckExpression(value, tokens);
-            }
-            if (argumentType == Type::Undefined())
-            {
-                return false;
-            }
-
-            if (value->kind() != NodeKind::StringLiteral)
-            {
-                m_diagnostics.addAnnotationArgumentTypeMismatchError(
-                    tokens.source(),
-                    value->sourceLocation(tokens),
-                    annotation->kind(),
-                    annotation->name(),
-                    "a string literal for '" + std::string(namedStringArgument) + "'",
-                    "an expression of type '" + FormatTypeName(m_module, argumentType) + "'");
-                return false;
-            }
-
-            if (stringArgumentValue != nullptr)
-            {
-                *stringArgumentValue = static_cast<const StringLiteral*>(value)->escapedContent();
-            }
-        }
-
-        return true;
-    }
-
-    bool TypeChecker::validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue, std::optional<std::string>* stringArgumentValue, bool* requiredValue)
-    {
-        const auto annotationLocation = annotation->sourceLocation(tokens);
-        const auto* definition = GetAnnotationDefinition(annotation->kind());
-        if (definition == nullptr)
-        {
-            m_diagnostics.addUnknownAnnotationError(tokens.source(), annotationLocation, annotation->name(), targetKind);
-            return false;
-        }
-
-        if (definition->targetKind != targetKind)
-        {
-            m_diagnostics.addUnexpectedAnnotationTargetError(tokens.source(), annotationLocation);
-            return false;
-        }
-
-        if (annotation->kind() == AnnotationKind::Builtin)
-        {
-            return validateBuiltinAnnotationArguments(annotation, tokens);
-        }
-
-        if (!validateNamedAnnotationArguments(annotation, definition->namedStringArgument, tokens, stringArgumentValue, requiredValue))
-        {
-            return false;
-        }
-
-        Expression* firstPositionalArgument = nullptr;
-        i32 actualCount = 0;
-        for (const auto& argument : annotation->arguments())
-        {
-            if (argument.isNamed())
-            {
-                continue;
-            }
-
-            if (firstPositionalArgument == nullptr)
-            {
-                firstPositionalArgument = argument.value().get();
-            }
-            ++actualCount;
-        }
-
-        if (!definition->namedStringArgument.empty() && actualCount > 0
-            && firstPositionalArgument->kind() == NodeKind::StringLiteral)
-        {
-            m_diagnostics.addAnnotationMissingArgumentsError(
-                tokens.source(),
-                annotation->argumentsLocation(tokens),
-                annotation->kind(),
-                annotation->name(),
-                std::string(definition->namedStringArgument));
-            return false;
-        }
-
-        if (definition->requiredArgumentCount > 0 && !annotation->hasParentheses())
-        {
-            m_diagnostics.addAnnotationMissingArgumentsError(tokens.source(), annotationLocation, annotation->kind(), annotation->name());
-            return false;
-        }
-
-        if (actualCount != definition->requiredArgumentCount)
-        {
-            m_diagnostics.addAnnotationWrongNumberOfArgumentsError(
-                tokens.source(),
-                annotation->argumentsLocation(tokens),
-                annotation->kind(),
-                annotation->name(),
-                definition->requiredArgumentCount,
-                actualCount);
-            return false;
-        }
-
-        if (definition->requiresIntegerArgument)
-        {
-            const auto expectedType = m_module.wellKnown().i32;
-            auto* argument = firstPositionalArgument;
-            auto argumentType = Type::Undefined();
-            {
-                // annotation arguments are compiler metadata, string literals are cstrings
-                const ScopedValue<std::optional<Type>> contextualScope{ m_contextualNumberType, m_module.wellKnown().cstring };
-                argumentType = typeCheckExpression(argument, tokens);
-            }
-            if (argumentType == Type::Undefined())
-            {
-                return false;
-            }
-
-            if (argument->kind() != NodeKind::NumberLiteral)
-            {
-                m_diagnostics.addAnnotationArgumentTypeMismatchError(
-                    tokens.source(),
-                    argument->sourceLocation(tokens),
-                    annotation->kind(),
-                    annotation->name(),
-                    "a " + FormatTypeName(m_module, expectedType) + " number literal argument",
-                    "an expression of type '" + FormatTypeName(m_module, argumentType) + "'");
-                return false;
-            }
-
-            if (argumentType != expectedType)
-            {
-                m_diagnostics.addAnnotationArgumentTypeMismatchError(
-                    tokens.source(),
-                    argument->sourceLocation(tokens),
-                    annotation->kind(),
-                    annotation->name(),
-                    "a " + FormatTypeName(m_module, expectedType) + " number literal argument",
-                    "a number literal of type '" + FormatTypeName(m_module, argumentType) + "'");
-                return false;
-            }
-
-            if (i32ArgumentValue != nullptr)
-            {
-                *i32ArgumentValue = convertToI32(static_cast<NumberLiteral*>(argument), tokens);
-            }
-        }
-
-        return true;
-    }
-
-    bool TypeChecker::validateCallableAnnotations(const std::vector<AnnotationNodeUPtr>& annotations, const TokenBuffer& tokens, std::optional<std::string>& symbolName, bool& isRequired)
-    {
-        auto isExtern = false;
-        for (const auto& annotationNode : annotations)
-        {
-            const auto* annotation = annotationNode.get();
-            std::optional<std::string> annotationSymbolName;
-            if (!validateAnnotation(annotation, TokenKind::DefKeyword, tokens, nullptr, &annotationSymbolName, &isRequired))
-            {
-                continue;
-            }
-
-            if (annotation->kind() == AnnotationKind::Extern)
-            {
-                isExtern = true;
-                if (annotationSymbolName.has_value())
-                {
-                    symbolName = std::move(annotationSymbolName);
-                }
-            }
-        }
-
-        return isExtern;
-    }
-
-    void TypeChecker::validateEnumAnnotation(const EnumDefinitionStatement* statement, const TokenBuffer& tokens, bool& isFlag, std::optional<i32>& stepValue)
-    {
-        isFlag = false;
-        stepValue = std::nullopt;
-
-        const AnnotationNode* flagAnnotation = nullptr;
-        const AnnotationNode* stepAnnotation = nullptr;
-
-        for (const auto& annotationNode : statement->annotations())
-        {
-            const auto* annotation = annotationNode.get();
-            auto i32ArgumentValue = std::optional<i32>{};
-            if (!validateAnnotation(annotation, TokenKind::EnumKeyword, tokens, &i32ArgumentValue))
-            {
-                continue;
-            }
-
-            switch (annotation->kind())
-            {
-                case AnnotationKind::Flag:
-                    if (stepAnnotation != nullptr)
-                    {
-                        m_diagnostics.addConflictingEnumAnnotationsError(
-                            tokens.source(),
-                            annotation->sourceLocation(tokens),
-                            stepAnnotation->sourceLocation(tokens),
-                            annotation->name(),
-                            stepAnnotation->name());
-                        break;
-                    }
-
-                    isFlag = true;
-                    flagAnnotation = annotation;
-                    break;
-                case AnnotationKind::Step:
-                    if (flagAnnotation != nullptr)
-                    {
-                        m_diagnostics.addConflictingEnumAnnotationsError(
-                            tokens.source(),
-                            annotation->sourceLocation(tokens),
-                            flagAnnotation->sourceLocation(tokens),
-                            annotation->name(),
-                            flagAnnotation->name());
-                        break;
-                    }
-
-                    stepValue = i32ArgumentValue;
-                    stepAnnotation = annotation;
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    void TypeChecker::validateTypeAnnotation(const TypeDefinitionStatement* statement, const TokenBuffer& tokens)
-    {
-        for (const auto& annotationNode : statement->annotations())
-        {
-            static_cast<void>(validateAnnotation(annotationNode.get(), TokenKind::TypeKeyword, tokens));
-        }
-    }
-
     void TypeChecker::typeCheckTypeFieldDeclaration(TypeDefinition& typeDefinition, TypeFieldDeclaration* statement, i32 fieldIndex, const TokenBuffer& tokens)
     {
         const auto& fieldName = statement->nameExpression()->name();
@@ -2818,7 +1720,7 @@ namespace Caracal
                 tokens.source(),
                 statement->nameExpression()->sourceLocation(tokens),
                 fieldName,
-                GetTypeFieldLocation(typeDefinition, existingField, tokens));
+                getTypeFieldLocation(typeDefinition, existingField, tokens));
             return;
         }
 
@@ -2848,8 +1750,8 @@ namespace Caracal
                 m_diagnostics.addTypeFieldInitializerMismatchError(
                     tokens.source(),
                     location,
-                    FormatTypeName(m_module, fieldType),
-                    FormatTypeName(m_module, expressionType));
+                    formatTypeName(m_module, fieldType),
+                    formatTypeName(m_module, expressionType));
             }
         }
 
@@ -2925,7 +1827,7 @@ namespace Caracal
                 tokens.source(),
                 tokens.getSourceLocation(statement->methodNameNode()->methodNameToken()),
                 methodDefinition.name(),
-                FormatTypeName(m_module, m_currentReturnType));
+                formatTypeName(m_module, m_currentReturnType));
         }
 
         popScope(!statement->isExtern());
@@ -2940,7 +1842,7 @@ namespace Caracal
             m_diagnostics.addNonBoolIfConditionError(
                 tokens.source(),
                 statement->condition()->sourceLocation(tokens),
-                FormatTypeName(m_module, conditionType));
+                formatTypeName(m_module, conditionType));
         }
 
         typeCheckStatement(statement->trueStatement().get(), tokens);
@@ -2960,7 +1862,7 @@ namespace Caracal
             m_diagnostics.addNonBoolWhileConditionError(
                 tokens.source(),
                 statement->condition()->sourceLocation(tokens),
-                FormatTypeName(m_module, conditionType));
+                formatTypeName(m_module, conditionType));
         }
 
         typeCheckStatement(statement->trueStatement().get(), tokens);
@@ -2997,8 +1899,8 @@ namespace Caracal
                     m_diagnostics.addReturnTypeMismatchError(
                         tokens.source(),
                         location,
-                        FormatTypeName(m_module, declaredReturnType),
-                        FormatTypeName(m_module, type));
+                        formatTypeName(m_module, declaredReturnType),
+                        formatTypeName(m_module, type));
                 }
             }
         }
@@ -3013,8 +1915,8 @@ namespace Caracal
                 m_diagnostics.addReturnTypeMismatchError(
                     tokens.source(),
                     SourceLocation{ returnKeywordLocation.startIndex, semicolonLocation.endIndex },
-                    FormatTypeName(m_module, declaredReturnType),
-                    FormatTypeName(m_module, Type::Void()));
+                    formatTypeName(m_module, declaredReturnType),
+                    formatTypeName(m_module, Type::Void()));
             }
         }
     }
@@ -3114,7 +2016,7 @@ namespace Caracal
                         tokens.source(),
                         unaryExpression->sourceLocation(tokens),
                         "!",
-                        FormatTypeName(m_module, operandType),
+                        formatTypeName(m_module, operandType),
                         "a 'bool' operand");
 
                     unaryExpression->setType(Type::Undefined());
@@ -3149,7 +2051,7 @@ namespace Caracal
                         tokens.source(),
                         unaryExpression->sourceLocation(tokens),
                         "-",
-                        FormatTypeName(m_module, operandType),
+                        formatTypeName(m_module, operandType),
                         "a numeric operand");
 
                     unaryExpression->setType(Type::Undefined());
@@ -3372,11 +2274,11 @@ namespace Caracal
                             if (name == "add" || name == "remove")
                             {
                                 const auto elementType = m_module.getArrayElementType(receiverType);
-                                const auto dynamicTypeName = "[" + FormatTypeName(m_module, elementType) + "; _]";
+                                const auto dynamicTypeName = "[" + formatTypeName(m_module, elementType) + "; _]";
                                 m_diagnostics.addMethodRequiresDynamicArrayError(
                                     tokens.source(),
                                     functionCallExpression->sourceLocation(tokens),
-                                    FormatTypeName(m_module, receiverType),
+                                    formatTypeName(m_module, receiverType),
                                     dynamicTypeName);
                             }
                             else
@@ -3384,7 +2286,7 @@ namespace Caracal
                                 m_diagnostics.addUnknownMethodError(
                                     tokens.source(),
                                     functionCallExpression->sourceLocation(tokens),
-                                    FormatTypeName(m_module, receiverType),
+                                    formatTypeName(m_module, receiverType),
                                     name);
                             }
                             return Type::Undefined();
@@ -3459,7 +2361,7 @@ namespace Caracal
                         m_diagnostics.addUnknownFieldError(
                             tokens.source(),
                             memberNameExpression->sourceLocation(tokens),
-                            FormatTypeName(m_module, receiverType),
+                            formatTypeName(m_module, receiverType),
                             memberNameExpression->name());
                         return Type::Undefined();
                     }
@@ -3484,7 +2386,7 @@ namespace Caracal
                         m_diagnostics.addUnknownMethodError(
                             tokens.source(),
                             functionCallExpression->sourceLocation(tokens),
-                            FormatTypeName(m_module, leftType.toValue()),
+                            formatTypeName(m_module, leftType.toValue()),
                             name);
                         return Type::Undefined();
                     }
@@ -3514,7 +2416,7 @@ namespace Caracal
                     m_diagnostics.addInvalidMemberAccessReceiverError(
                         tokens.source(),
                         binaryExpression->sourceLocation(tokens),
-                        FormatTypeName(m_module, leftType));
+                        formatTypeName(m_module, leftType));
                 }
                 return Type::Undefined();
             }
@@ -3543,9 +2445,9 @@ namespace Caracal
                         m_diagnostics.addArithmeticOperandTypeMismatchError(
                             tokens.source(),
                             tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
-                            FormatBinaryOperator(binaryExpression->binaryOperator()),
-                            FormatTypeName(m_module, leftType),
-                            FormatTypeName(m_module, rightType));
+                            formatBinaryOperator(binaryExpression->binaryOperator()),
+                            formatTypeName(m_module, leftType),
+                            formatTypeName(m_module, rightType));
                     }
 
                     binaryExpression->setType(Type::Undefined());
@@ -3558,8 +2460,8 @@ namespace Caracal
                     m_diagnostics.addBinaryOperandTypeMismatchError(
                         tokens.source(),
                         tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
-                        FormatBinaryOperator(binaryExpression->binaryOperator()),
-                        FormatTypeName(m_module, leftType),
+                        formatBinaryOperator(binaryExpression->binaryOperator()),
+                        formatTypeName(m_module, leftType),
                         "numeric operands");
 
                     binaryExpression->setType(Type::Undefined());
@@ -3596,9 +2498,9 @@ namespace Caracal
                         m_diagnostics.addComparisonOperandTypeMismatchError(
                             tokens.source(),
                             tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
-                            FormatBinaryOperator(binaryExpression->binaryOperator()),
-                            FormatTypeName(m_module, leftType),
-                            FormatTypeName(m_module, rightType));
+                            formatBinaryOperator(binaryExpression->binaryOperator()),
+                            formatTypeName(m_module, leftType),
+                            formatTypeName(m_module, rightType));
                     }
 
                     binaryExpression->setType(Type::Undefined());
@@ -3629,8 +2531,8 @@ namespace Caracal
                     m_diagnostics.addBinaryOperandTypeMismatchError(
                         tokens.source(),
                         tokens.getSourceLocation(binaryExpression->binaryOperatorToken()),
-                        FormatBinaryOperator(operation),
-                        FormatTypeName(m_module, leftType),
+                        formatBinaryOperator(operation),
+                        formatTypeName(m_module, leftType),
                         expectedOperands);
 
                     binaryExpression->setType(Type::Undefined());
@@ -3877,8 +2779,8 @@ namespace Caracal
                 argumentTypeMismatches.push_back(ArgumentTypeMismatchInfo{
                     argument->sourceLocation(tokens),
                     static_cast<i32>(i + 1),
-                    FormatTypeName(m_module, expectedType),
-                    FormatTypeName(m_module, argumentType),
+                    formatTypeName(m_module, expectedType),
+                    formatTypeName(m_module, argumentType),
                     });
             }
         }
@@ -3894,7 +2796,7 @@ namespace Caracal
                     argument->sourceLocation(tokens),
                     functionDefinition.name(),
                     static_cast<i32>(expectedArgumentCount + j + 1),
-                    FormatTypeName(m_module, argumentType));
+                    formatTypeName(m_module, argumentType));
                 return false;
             }
         }
@@ -3951,11 +2853,11 @@ namespace Caracal
             && numberDescription != nullptr
             && (numberDescription->kind == BuiltinTypeKind::Int || numberDescription->kind == BuiltinTypeKind::Float))
         {
-            parsedValue = TryParseNumberLiteralValue(literal->literalLexeme(), numberType, m_module);
+            parsedValue = tryParseNumberLiteralValue(literal->literalLexeme(), numberType, m_module);
             if (!parsedValue.has_value() && m_negatedLiteralContext
                 && numberDescription->kind == BuiltinTypeKind::Int && numberDescription->isSigned && numberDescription->bits == 32)
             {
-                const auto negatedValue = TryParseNegatedI32Literal(literal->literalLexeme());
+                const auto negatedValue = tryParseNegatedI32Literal(literal->literalLexeme());
                 if (negatedValue.has_value())
                 {
                     parsedValue = NumberLiteral::ParsedValue{ negatedValue.value() };
@@ -3969,7 +2871,7 @@ namespace Caracal
                     tokens.source(),
                     literal->sourceLocation(tokens),
                     literal->literalLexeme(),
-                    FormatTypeName(m_module, numberType));
+                    formatTypeName(m_module, numberType));
                 numberType = Type::Undefined();
             }
         }
@@ -4037,8 +2939,8 @@ namespace Caracal
                         m_diagnostics.addArrayElementTypeMismatchError(
                             tokens.source(),
                             element->sourceLocation(tokens),
-                            FormatTypeName(m_module, elementType),
-                            FormatTypeName(m_module, type));
+                            formatTypeName(m_module, elementType),
+                            formatTypeName(m_module, type));
                         reportedElementMismatch = true;
                     }
                     hasElementError = true;
@@ -4215,8 +3117,8 @@ namespace Caracal
                         m_diagnostics.addDefaultParameterTypeMismatchError(
                             tokens.source(),
                             location,
-                            FormatTypeName(m_module, parameterType),
-                            FormatTypeName(m_module, defaultType));
+                            formatTypeName(m_module, parameterType),
+                            formatTypeName(m_module, defaultType));
                     }
                 }
                 defaultValue = defaultExpression;
@@ -4289,7 +3191,7 @@ namespace Caracal
                 tokens.source(),
                 literal->sourceLocation(tokens),
                 literal->literalLexeme(),
-                FormatTypeName(m_module, m_module.wellKnown().i32));
+                formatTypeName(m_module, m_module.wellKnown().i32));
             return 0;
         }
 
@@ -4400,7 +3302,7 @@ namespace Caracal
         m_diagnostics.addArrayLengthMismatchError(
             tokens.source(),
             location,
-            FormatTypeName(m_module, expectedType),
+            formatTypeName(m_module, expectedType),
             m_module.getArrayLength(expectedType),
             m_module.getArrayLength(actualType));
         return true;
