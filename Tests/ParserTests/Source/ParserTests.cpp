@@ -74,7 +74,9 @@ static std::vector<std::tuple<std::string, std::filesystem::path, std::filesyste
 
     for (const auto& entry : std::filesystem::recursive_directory_iterator(absolutePath))
     {
-        if (entry.is_regular_file() && entry.path().extension() == ".cara")
+        if (entry.is_regular_file() 
+            && entry.path().extension() == ".cara" 
+            && entry.path().filename() != "oneMilLines.cara")
         {
             const auto& inputFilePath = entry.path();
             const auto inputDirName = inputFilePath.parent_path().filename();
