@@ -7,17 +7,17 @@
 struct CARACAL_API Token
 {
     TokenKind kind = TokenKind::Unknown;
-    i32 lexemeIndex = -1;
-    i32 locationIndex = -1;
-    i32 triviaIndex = -1;
+    u16 fileId = 0;
+    i32 index = -1;
 
     [[nodiscard]] static Token ToError(const Token& token) noexcept
     {
         return {
             .kind = TokenKind::Error,
-            .lexemeIndex = token.lexemeIndex,
-            .locationIndex = token.locationIndex,
-            .triviaIndex = token.triviaIndex
+            .fileId = token.fileId,
+            .index = token.index
         };
     }
 };
+
+static_assert(sizeof(Token) == 8, "Token must stay a packed 8-byte handle");

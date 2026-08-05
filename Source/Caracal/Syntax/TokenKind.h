@@ -5,7 +5,7 @@
 
 #include <string>
 
-enum class TokenKind
+enum class TokenKind : u8
 {
     Unknown,
     Error,

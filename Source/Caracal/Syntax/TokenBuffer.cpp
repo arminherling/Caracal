@@ -2,16 +2,13 @@
 
 namespace Caracal
 {
-    TokenBuffer::TokenBuffer(const SourceTextSharedPtr& source)
+    TokenBuffer::TokenBuffer(const SourceTextSharedPtr& source, u16 fileId, i32 firstTokenStart)
         : m_source{ source }
-        , m_tokens{}
-        , m_lexemes{}
-        , m_sourceLocations{}
+        , m_fileId{ fileId }
+        , m_firstTokenStart{ firstTokenStart }
     {
         const auto initialSize = static_cast<i32>(source->text.size());
-        m_tokens.reserve(initialSize);
-        m_lexemes.reserve(initialSize);
-        m_trivias.reserve(initialSize);
+        m_kinds.reserve(initialSize);
         m_sourceLocations.reserve(initialSize);
     }
 
@@ -20,63 +17,28 @@ namespace Caracal
         return m_source;
     }
 
-    void TokenBuffer::addToken(const Token& token) noexcept
+    u16 TokenBuffer::fileId() const noexcept
     {
-        m_tokens.push_back(token);
+        return m_fileId;
     }
 
-    i32 TokenBuffer::addLexeme(std::string_view lexeme) noexcept
+    Token TokenBuffer::getLastToken() const noexcept
     {
-        m_lexemes.push_back(lexeme);
-        return m_lexemes.size() - 1;
-    }
-
-    i32 TokenBuffer::addTrivia(std::string_view trivia) noexcept
-    {
-        m_trivias.push_back(trivia);
-        return m_trivias.size() - 1;
-    }
-
-    i32 TokenBuffer::addSourceLocation(const SourceLocation& sourceLocation) noexcept
-    {
-        m_sourceLocations.push_back(sourceLocation);
-        return m_sourceLocations.size() - 1;
-    }
-
-    i32 TokenBuffer::size() const noexcept
-    {
-        return m_tokens.size();
-    }
-
-    const Token& TokenBuffer::getToken(i32 position) const noexcept
-    {
-        return m_tokens.at(position);
-    }
-
-    const Token& TokenBuffer::getLastToken() const noexcept
-    {
-        return m_tokens.at(m_tokens.size() - 1);
+        return getToken(static_cast<i32>(m_kinds.size()) - 1);
     }
 
     std::string_view TokenBuffer::getLexeme(const Token& token) const noexcept
     {
-        if (token.lexemeIndex < 0 || token.lexemeIndex >= static_cast<i32>(m_lexemes.size()))
+        if (token.index < 0 || token.index >= static_cast<i32>(m_sourceLocations.size()))
             return {};
 
-        return m_lexemes.at(token.lexemeIndex);
-    }
-
-    std::string_view TokenBuffer::getTrivia(const Token& token) const noexcept
-    {
-        if (token.triviaIndex < 0 || token.triviaIndex >= static_cast<i32>(m_trivias.size()))
-            return {};
-
-        return m_trivias.at(token.triviaIndex);
+        const auto& location = m_sourceLocations[token.index];
+        return std::string_view(m_source->text).substr(location.startIndex, location.endIndex - location.startIndex);
     }
 
     const SourceLocation& TokenBuffer::getSourceLocation(const Token& token) const noexcept
     {
-        if (token.locationIndex < 0 || token.locationIndex >= static_cast<i32>(m_sourceLocations.size()))
+        if (token.index < 0 || token.index >= static_cast<i32>(m_sourceLocations.size()))
         {
             if (!m_sourceLocations.empty())
                 return m_sourceLocations.back();
@@ -85,6 +47,25 @@ namespace Caracal
             return fallback;
         }
 
-        return m_sourceLocations.at(token.locationIndex);
+        return m_sourceLocations[token.index];
     }
+
+    std::string_view TokenBuffer::getTrivia(const Token& token) const noexcept
+    {
+        if (token.index < 0 || token.index >= static_cast<i32>(m_sourceLocations.size()))
+            return {};
+
+        auto start = m_firstTokenStart;
+        if (token.index > 0)
+        {
+            start = m_sourceLocations[token.index - 1].endIndex;
+        }
+
+        const auto end = m_sourceLocations[token.index].startIndex;
+        if (end <= start)
+            return {};
+
+        return std::string_view(m_source->text).substr(start, end - start);
+    }
+
 }

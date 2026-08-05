@@ -7,5 +7,5 @@
 
 namespace Caracal 
 {
-    CARACAL_API TokenBuffer lex(const SourceTextSharedPtr& source, DiagnosticsBag& diagnostics) noexcept;
+    CARACAL_API TokenBuffer lex(const SourceTextSharedPtr& source, DiagnosticsBag& diagnostics, u16 fileId = 0) noexcept;
 }

@@ -1,7 +1,6 @@
 #include <Caracal/Syntax/Lexer.h>
 #include <Caracal/Profiling.h>
 
-#include <algorithm>
 #include <unordered_map>
 
 namespace Caracal
@@ -31,46 +30,17 @@ namespace Caracal
         return (c == '_') || IsLetter(c) || IsNumber(c);
     }
 
-    [[nodiscard]] static auto CaptureTrivia(TokenBuffer& tokenBuffer, std::string_view source, i32 currentIndex, i32 triviaStartIndex) noexcept
-    {
-        const auto sourceLength = static_cast<i32>(source.length());
-        const auto start = std::clamp(triviaStartIndex, 0, sourceLength);
-        const auto end = std::clamp(currentIndex, start, sourceLength);
-        const auto trivia = source.substr(start, end - start);
-
-        return tokenBuffer.addTrivia(trivia);
-    }
-
-    static void AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex, i32& triviaStartIndex, TokenKind tokenKind, i32 tokenSize) noexcept
+    static void AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex, TokenKind tokenKind, i32 tokenSize) noexcept
     {
         const auto startIndex = static_cast<i32>(currentIndex - source.data());
-        const auto locationIndex = tokenBuffer.addSourceLocation(
-            {
-                .startIndex = startIndex,
-                .endIndex = startIndex + tokenSize
-            });
-        const auto triviaIndex = CaptureTrivia(tokenBuffer, source, startIndex, triviaStartIndex);
-
+        tokenBuffer.addToken(tokenKind, { .startIndex = startIndex, .endIndex = startIndex + tokenSize });
         currentIndex += tokenSize;
-        triviaStartIndex = startIndex + tokenSize;
-
-        tokenBuffer.addToken({ .kind = tokenKind, .locationIndex = locationIndex, .triviaIndex = triviaIndex });
     };
 
-    static void AddKindAndLexeme(TokenBuffer& tokenBuffer, std::string_view source, const char* currentIndex, i32& triviaStartIndex, TokenKind tokenKind, i32 startIndex) noexcept
+    static void AddTokenFromStart(TokenBuffer& tokenBuffer, std::string_view source, const char* currentIndex, TokenKind tokenKind, i32 startIndex) noexcept
     {
         const auto endIndex = static_cast<i32>(currentIndex - source.data());
-        const auto length = endIndex - startIndex;
-        const auto identifierIndex = tokenBuffer.addLexeme(source.substr(startIndex, length));
-        const auto locationIndex = tokenBuffer.addSourceLocation(
-            {
-                .startIndex = startIndex,
-                .endIndex = endIndex
-            });
-        const auto triviaIndex = CaptureTrivia(tokenBuffer, source, startIndex, triviaStartIndex);
-        triviaStartIndex = endIndex;
-
-        tokenBuffer.addToken({ .kind = tokenKind, .lexemeIndex = identifierIndex, .locationIndex = locationIndex, .triviaIndex = triviaIndex });
+        tokenBuffer.addToken(tokenKind, { .startIndex = startIndex, .endIndex = endIndex });
     };
 
     [[nodiscard]] static auto InitializeKeywords() noexcept
@@ -104,7 +74,7 @@ namespace Caracal
         return TokenKind::Identifier;
     }
 
-    static void LexIdentifier(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex, i32& triviaStartIndex) noexcept
+    static void LexIdentifier(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex) noexcept
     {
         const char* start = currentIndex;
         while (IsUnderscoreOrLetterOrNumber(*currentIndex))
@@ -113,10 +83,10 @@ namespace Caracal
         const auto startIndex = static_cast<i32>(start - source.data());
         const auto maybeKeywordKind = IdentifierKind(start, static_cast<i32>(currentIndex - start));
 
-        AddKindAndLexeme(tokenBuffer, source, currentIndex, triviaStartIndex, maybeKeywordKind, startIndex);
+        AddTokenFromStart(tokenBuffer, source, currentIndex, maybeKeywordKind, startIndex);
     };
 
-    static void LexNumber(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex, i32& triviaStartIndex) noexcept
+    static void LexNumber(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex) noexcept
     {
         const auto startIndex = static_cast<i32>(currentIndex - source.data());
 
@@ -132,7 +102,7 @@ namespace Caracal
                 currentIndex++;
         }
 
-        AddKindAndLexeme(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Number, startIndex);
+        AddTokenFromStart(tokenBuffer, source, currentIndex, TokenKind::Number, startIndex);
     };
 
     static void LexString(
@@ -140,8 +110,7 @@ namespace Caracal
         DiagnosticsBag& diagnostics,
         const SourceTextSharedPtr& sourceText,
         std::string_view source,
-        const char*& currentIndex,
-        i32& triviaStartIndex) noexcept
+        const char*& currentIndex) noexcept
     {
         const auto startIndex = static_cast<i32>(currentIndex - source.data());
 
@@ -161,25 +130,23 @@ namespace Caracal
         {
             // Consume closing quotation mark
             currentIndex++;
-            AddKindAndLexeme(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::String, startIndex);
+            AddTokenFromStart(tokenBuffer, source, currentIndex, TokenKind::String, startIndex);
         }
         else
         {
-            AddKindAndLexeme(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Error, startIndex);
+            AddTokenFromStart(tokenBuffer, source, currentIndex, TokenKind::Error, startIndex);
             const auto& lastToken = tokenBuffer.getLastToken();
             const auto& location = tokenBuffer.getSourceLocation(lastToken);
             diagnostics.addUnterminatedStringError(sourceText, location);
         }
     };
 
-    [[nodiscard]] TokenBuffer lex(const SourceTextSharedPtr& sourceText, DiagnosticsBag& diagnostics) noexcept
+    [[nodiscard]] TokenBuffer lex(const SourceTextSharedPtr& sourceText, DiagnosticsBag& diagnostics, u16 fileId) noexcept
     {
         CARACAL_ZONE_NAMED("lex");
 
-        TokenBuffer tokenBuffer{ sourceText };
         const auto source = std::string_view(sourceText->text);
         const char* currentIndex = source.data();
-        i32 triviaStartIndex = 0;
 
         // skip optional BOM at start of file
         if (source.length() >= 3 &&
@@ -188,8 +155,11 @@ namespace Caracal
             static_cast<u8>(source[2]) == 0xBF)
         {
             currentIndex += 3;
-            triviaStartIndex = 3;
         }
+
+        // first token's trivia starts where lexing starts
+        const auto firstTokenStart = static_cast<i32>(currentIndex - source.data());
+        TokenBuffer tokenBuffer{ sourceText, fileId, firstTokenStart };
 
         while (true)
         {
@@ -217,22 +187,22 @@ namespace Caracal
                 }
                 case '\0':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::EndOfFile, 0);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::EndOfFile, 0);
                     return tokenBuffer;
                 }
                 case '+':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Plus, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Plus, 1);
                     break;
                 }
                 case '-':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Minus, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Minus, 1);
                     break;
                 }
                 case '*':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Star, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Star, 1);
                     break;
                 }
                 case '%':
@@ -240,22 +210,22 @@ namespace Caracal
                     const auto nextChar = currentIndex[1];
                     if (nextChar == '+')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentPlus, 2);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::PercentPlus, 2);
                         break;
                     }
                     if (nextChar == '-')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentMinus, 2);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::PercentMinus, 2);
                         break;
                     }
                     if (nextChar == '*')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::PercentStar, 2);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::PercentStar, 2);
                         break;
                     }
 
                     // % is not a valid operator
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Unknown, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Unknown, 1);
                     const auto& lastToken = tokenBuffer.getLastToken();
                     const auto& location = tokenBuffer.getSourceLocation(lastToken);
                     diagnostics.addIllegalCharacterError(sourceText, location);
@@ -296,7 +266,7 @@ namespace Caracal
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Slash, 1);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Slash, 1);
                         break;
                     }
                 }
@@ -304,48 +274,48 @@ namespace Caracal
                 {
                     if (currentIndex[1] == '.' && currentIndex[2] == '.')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Ellipsis, 3);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Ellipsis, 3);
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Dot, 1);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Dot, 1);
                     }
                     break;
                 }
                 case ':':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Colon, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Colon, 1);
                     break;
                 }
                 case ';':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Semicolon, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Semicolon, 1);
                     break;
                 }
                 case '\'':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::SingleQuote, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::SingleQuote, 1);
                     break;
                 }
                 case '#':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Hash, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Hash, 1);
                     break;
                 }
                 case ',':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Comma, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Comma, 1);
                     break;
                 }
                 case '=':
                 {
                     if (currentIndex[1] == '=')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::EqualEqual, 2);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::EqualEqual, 2);
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Equal, 1);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Equal, 1);
                     }
                     break;
                 }
@@ -353,11 +323,11 @@ namespace Caracal
                 {
                     if (currentIndex[1] == '=')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::BangEqual, 2);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::BangEqual, 2);
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Bang, 1);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Bang, 1);
                     }
                     break;
                 }
@@ -365,11 +335,11 @@ namespace Caracal
                 {
                     if (currentIndex[1] == '=')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::LessThanEqual, 2);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::LessThanEqual, 2);
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::LessThan, 1);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::LessThan, 1);
                     }
                     break;
                 }
@@ -377,68 +347,68 @@ namespace Caracal
                 {
                     if (currentIndex[1] == '=')
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::GreaterThanEqual, 2);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::GreaterThanEqual, 2);
                     }
                     else
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::GreaterThan, 1);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::GreaterThan, 1);
                     }
                     break;
                 }
                 case '(':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenParenthesis, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::OpenParenthesis, 1);
                     break;
                 }
                 case ')':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseParenthesis, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::CloseParenthesis, 1);
                     break;
                 }
                 case '{':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenBrace, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::OpenBrace, 1);
                     break;
                 }
                 case '}':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseBrace, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::CloseBrace, 1);
                     break;
                 }
                 case '[':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::OpenBracket, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::OpenBracket, 1);
                     break;
                 }
                 case ']':
                 {
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::CloseBracket, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::CloseBracket, 1);
                     break;
                 }
                 case '\"':
                 {
-                    LexString(tokenBuffer, diagnostics, sourceText, source, currentIndex, triviaStartIndex);
+                    LexString(tokenBuffer, diagnostics, sourceText, source, currentIndex);
                     break;
                 }
                 default:
                 {
                     if (current == '_' && !IsUnderscoreOrLetterOrNumber(currentIndex[1]))
                     {
-                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Underscore, 1);
+                        AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Underscore, 1);
                         break;
                     }
                     else if (IsUnderscoreOrLetter(current))
                     {
-                        LexIdentifier(tokenBuffer, source, currentIndex, triviaStartIndex);
+                        LexIdentifier(tokenBuffer, source, currentIndex);
                         break;
                     }
                     else if (IsNumber(current))
                     {
-                        LexNumber(tokenBuffer, source, currentIndex, triviaStartIndex);
+                        LexNumber(tokenBuffer, source, currentIndex);
                         break;
                     }
 
-                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, triviaStartIndex, TokenKind::Unknown, 1);
+                    AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Unknown, 1);
                     const auto& lastToken = tokenBuffer.getLastToken();
                     const auto& location = tokenBuffer.getSourceLocation(lastToken);
                     diagnostics.addIllegalCharacterError(sourceText, location);

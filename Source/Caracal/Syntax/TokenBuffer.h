@@ -13,26 +13,35 @@ namespace Caracal
     class CARACAL_API TokenBuffer
     {
     public:
-        explicit TokenBuffer(const SourceTextSharedPtr& source);
+        explicit TokenBuffer(const SourceTextSharedPtr& source, u16 fileId = 0, i32 firstTokenStart = 0);
 
-        void addToken(const Token& token) noexcept;
-        [[nodiscard]] i32 addLexeme(std::string_view lexeme) noexcept;
-        [[nodiscard]] i32 addTrivia(std::string_view trivia) noexcept;
-        [[nodiscard]] i32 addSourceLocation(const SourceLocation& sourceLocation) noexcept;
+        inline void addToken(TokenKind kind, const SourceLocation& sourceLocation) noexcept
+        {
+            m_kinds.push_back(kind);
+            m_sourceLocations.push_back(sourceLocation);
+        }
 
         [[nodiscard]] const SourceTextSharedPtr& source() const noexcept;
-        [[nodiscard]] i32 size() const noexcept;
-        [[nodiscard]] const Token& getToken(i32 position) const noexcept;
-        [[nodiscard]] const Token& getLastToken() const noexcept;
+        [[nodiscard]] u16 fileId() const noexcept;
+        [[nodiscard]] inline i32 size() const noexcept
+        {
+            return m_kinds.size();
+        }
+
+        [[nodiscard]] inline Token getToken(i32 position) const noexcept
+        {
+            return { .kind = m_kinds.at(position), .fileId = m_fileId, .index = position };
+        }
+        [[nodiscard]] Token getLastToken() const noexcept;
         [[nodiscard]] std::string_view getLexeme(const Token& token) const noexcept;
         [[nodiscard]] std::string_view getTrivia(const Token& token) const noexcept;
         [[nodiscard]] const SourceLocation& getSourceLocation(const Token& token) const noexcept;
 
     private:
         SourceTextSharedPtr m_source;
-        std::vector<Token> m_tokens;
-        std::vector<std::string_view> m_lexemes;
-        std::vector<std::string_view> m_trivias;
+        u16 m_fileId;
+        i32 m_firstTokenStart;
+        std::vector<TokenKind> m_kinds;
         std::vector<SourceLocation> m_sourceLocations;
     };
 }

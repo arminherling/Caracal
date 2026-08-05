@@ -16,7 +16,7 @@ static void SingleSourceLocation(
 
     auto startTime = std::chrono::high_resolution_clock::now();
     auto tokens = Caracal::lex(input, diagnostics);
-    auto& token = tokens.getToken(0);
+    auto token = tokens.getToken(0);
 
     auto endTime = std::chrono::high_resolution_clock::now();
     std::cout << "      lex(): " << CaraTest::stringify(endTime - startTime) << std::endl;
