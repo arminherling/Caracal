@@ -485,6 +485,45 @@ static void ScanPrimitivesDifferential()
 #endif
 }
 
+static void CheckBlockEdge(const std::string& input, TokenKind expectedKind, const std::string& expectedLexeme)
+{
+    const auto source = std::make_shared<Caracal::SourceText>(input);
+    Caracal::DiagnosticsBag diagnostics;
+    const auto tokens = Caracal::lex(source, diagnostics);
+    const auto token = tokens.getToken(0);
+
+    CaraTest::areEqual(expectedKind, token.kind);
+    CaraTest::areEqual(std::string_view(expectedLexeme), tokens.getLexeme(token));
+    CaraTest::isTrue(diagnostics.diagnostics().empty());
+}
+
+static void LongRunBoundaries()
+{
+    // long whitespace run before a token
+    CheckBlockEdge(std::string(70, ' ') + "x", TokenKind::Identifier, "x");
+
+    // whitespace run ending right before a chunk boundary
+    CheckBlockEdge(std::string(63, ' ') + "ab", TokenKind::Identifier, "ab");
+
+    // identifier filling exactly four chunks
+    CheckBlockEdge(std::string(64, 'a'), TokenKind::Identifier, std::string(64, 'a'));
+
+    // identifier spanning many chunks
+    CheckBlockEdge(std::string(130, 'a'), TokenKind::Identifier, std::string(130, 'a'));
+
+    // long gap before a number run
+    CheckBlockEdge(std::string(62, ' ') + "1234", TokenKind::Number, "1234");
+
+    // a long string followed by another token
+    const auto stringInput = "\"" + std::string(80, 's') + "\" name";
+    const auto source = std::make_shared<Caracal::SourceText>(stringInput);
+    Caracal::DiagnosticsBag diagnostics;
+    const auto tokens = Caracal::lex(source, diagnostics);
+    CaraTest::areEqual(TokenKind::String, tokens.getToken(0).kind);
+    CaraTest::areEqual(TokenKind::Identifier, tokens.getToken(1).kind);
+    CaraTest::areEqual(std::string_view("name"), tokens.getLexeme(tokens.getToken(1)));
+}
+
 static void BenchmarkLexFile(const std::filesystem::path& absolutePath, const char* label)
 {
     if (!std::filesystem::exists(absolutePath))
@@ -535,8 +574,9 @@ static void OneMillionLinesTime()
 
     const auto currentFilePath = std::filesystem::path(__FILE__);
     const auto inputDirectory = currentFilePath.parent_path() / "../../TestData/Input";
-    BenchmarkLexFile(std::filesystem::absolute(inputDirectory / "oneMilLinesOld.txt"), "oneMilLinesOld");
-    BenchmarkLexFile(std::filesystem::absolute(inputDirectory / "oneMilLines.cara"), "oneMilLines   ");
+    BenchmarkLexFile(std::filesystem::absolute(inputDirectory / "oneMilLinesOld.txt"), "oneMilLinesOld  ");
+    BenchmarkLexFile(std::filesystem::absolute(inputDirectory / "oneMilLines.cara"), "oneMilLinesShort");
+    BenchmarkLexFile(std::filesystem::absolute(inputDirectory / "oneMilLinesLongIdents.cara"), "oneMilLinesLong ");
 }
 
 static const auto tests =
@@ -553,5 +593,6 @@ static const auto tests =
     CaraTest::addTest("WholeInput", WholeInput, WholeInput_Data),
     CaraTest::addTest("ScanPrimitives", ScanPrimitives),
     CaraTest::addTest("ScanPrimitivesDifferential", ScanPrimitivesDifferential),
+    CaraTest::addTest("LongRunBoundaries", LongRunBoundaries),
     CaraTest::addTest("OneMillionLinesTime", OneMillionLinesTime),
 };

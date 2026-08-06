@@ -98,7 +98,8 @@ static std::vector<std::tuple<std::string, std::filesystem::path, std::filesyste
     {
         if (entry.is_regular_file() 
             && entry.path().extension() == ".cara" 
-            && entry.path().filename() != "oneMilLines.cara")
+            && entry.path().filename() != "oneMilLines.cara"
+            && entry.path().filename() != "oneMilLinesLongIdents.cara")
         {
             const auto& inputFilePath = entry.path();
             const auto inputDirName = inputFilePath.parent_path().filename();
