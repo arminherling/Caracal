@@ -1,35 +1,11 @@
 #include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Syntax/LexerSimd.h>
 #include <Caracal/Profiling.h>
 
 #include <unordered_map>
 
 namespace Caracal
 {
-    [[nodiscard]] static auto IsLetter(char c) noexcept
-    {
-        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-    }
-
-    [[nodiscard]] static auto IsNumber(char c) noexcept
-    {
-        return (c >= '0' && c <= '9');
-    }
-
-    [[nodiscard]] static auto IsUnderscoreOrNumber(char c) noexcept
-    {
-        return (c == '_') || IsNumber(c);
-    }
-
-    [[nodiscard]] static auto IsUnderscoreOrLetter(char c) noexcept
-    {
-        return (c == '_') || IsLetter(c);
-    }
-
-    [[nodiscard]] static auto IsUnderscoreOrLetterOrNumber(char c) noexcept
-    {
-        return (c == '_') || IsLetter(c) || IsNumber(c);
-    }
-
     static void AddTokenKindAndAdvance(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex, TokenKind tokenKind, i32 tokenSize) noexcept
     {
         const auto startIndex = static_cast<i32>(currentIndex - source.data());
@@ -77,8 +53,7 @@ namespace Caracal
     static void LexIdentifier(TokenBuffer& tokenBuffer, std::string_view source, const char*& currentIndex) noexcept
     {
         const char* start = currentIndex;
-        while (IsUnderscoreOrLetterOrNumber(*currentIndex))
-            currentIndex++;
+        currentIndex += LexerScan::identifierRunLength(currentIndex);
 
         const auto startIndex = static_cast<i32>(start - source.data());
         const auto maybeKeywordKind = IdentifierKind(start, static_cast<i32>(currentIndex - start));
@@ -91,15 +66,33 @@ namespace Caracal
         const auto startIndex = static_cast<i32>(currentIndex - source.data());
 
         // checking the char after underscore is safe, it is EOF terminator in the worst case
-        while (IsNumber(*currentIndex) || (*currentIndex == '_' && currentIndex[1] != '.'))
-            currentIndex++;
+        while (true)
+        {
+            currentIndex += LexerScan::digitRunLength(currentIndex);
+            if (*currentIndex == '_' && currentIndex[1] != '.')
+            {
+                currentIndex++;
+                continue;
+            }
 
-        if (*currentIndex == '.' && IsNumber(currentIndex[1]))
+            break;
+        }
+
+        if (*currentIndex == '.' && LexerScan::isNumber(currentIndex[1]))
         {
             currentIndex++;
 
-            while (IsUnderscoreOrNumber(*currentIndex))
-                currentIndex++;
+            while (true)
+            {
+                currentIndex += LexerScan::digitRunLength(currentIndex);
+                if (*currentIndex == '_')
+                {
+                    currentIndex++;
+                    continue;
+                }
+
+                break;
+            }
         }
 
         AddTokenFromStart(tokenBuffer, source, currentIndex, TokenKind::Number, startIndex);
@@ -116,14 +109,23 @@ namespace Caracal
 
         // Consume opening quotation mark
         currentIndex++;
-        while (*currentIndex != '"' && *currentIndex != '\r' && *currentIndex != '\n' && *currentIndex != '\0')
+        while (true)
         {
-            // backslash consumes the next char unless we are at EOF
-            if (*currentIndex == '\\' && currentIndex[1] != '\0')
+            currentIndex += LexerScan::findAnyOf<'"', '\\', '\r', '\n', '\0'>(currentIndex);
+            if (*currentIndex == '\\')
             {
+                // backslash consumes the next char unless we are at EOF
+                if (currentIndex[1] != '\0')
+                {
+                    currentIndex += 2;
+                    continue;
+                }
+
+                // a trailing backslash is part of the unterminated string
                 currentIndex++;
             }
-            currentIndex++;
+
+            break;
         }
 
         if (*currentIndex == '\"')
@@ -167,22 +169,11 @@ namespace Caracal
             switch (current)
             {
                 case '\r':
-                {
-                    if (currentIndex[1] == '\n')
-                        currentIndex++;
-
-                    currentIndex++;
-                    break;
-                }
                 case '\n':
-                {
-                    currentIndex++;
-                    break;
-                }
                 case '\t':
                 case ' ':
                 {
-                    currentIndex++;
+                    currentIndex += LexerScan::whitespaceRunLength(currentIndex);
                     break;
                 }
                 case '\0':
@@ -238,29 +229,17 @@ namespace Caracal
                     {
                         // Consume comment until end of line
                         currentIndex += 2;
-                        while (*currentIndex != '\n' && *currentIndex != '\0')
-                        {
-                            currentIndex++;
-                        }
+                        currentIndex += LexerScan::findAnyOf<'\n', '\0'>(currentIndex);
                         break;
                     }
                     else if (nextChar == '*')
                     {
                         // Consume multi-line comment until closing */
                         currentIndex += 2;
-                        while (true)
+                        currentIndex += LexerScan::findStarSlashOrEOF(currentIndex);
+                        if (*currentIndex != '\0')
                         {
-                            if (*currentIndex == '\0')
-                            {
-                                break;
-                            }
-                            // check for the end of block comment
-                            if (*currentIndex == '*' && currentIndex[1] == '/')
-                            {
-                                currentIndex += 2;
-                                break;
-                            }
-                            currentIndex++;
+                            currentIndex += 2;
                         }
                         break;
                     }
@@ -392,17 +371,17 @@ namespace Caracal
                 }
                 default:
                 {
-                    if (current == '_' && !IsUnderscoreOrLetterOrNumber(currentIndex[1]))
+                    if (current == '_' && !LexerScan::isUnderscoreOrLetterOrNumber(currentIndex[1]))
                     {
                         AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::Underscore, 1);
                         break;
                     }
-                    else if (IsUnderscoreOrLetter(current))
+                    else if (LexerScan::isUnderscoreOrLetter(current))
                     {
                         LexIdentifier(tokenBuffer, source, currentIndex);
                         break;
                     }
-                    else if (IsNumber(current))
+                    else if (LexerScan::isNumber(current))
                     {
                         LexNumber(tokenBuffer, source, currentIndex);
                         break;

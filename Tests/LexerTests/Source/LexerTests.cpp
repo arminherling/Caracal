@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Syntax/LexerSimd.h>
 #include <Caracal/Syntax/Token.h>
 #include <Caracal/Syntax/TokenKind.h>
 #include <Caracal/Syntax/TokenBuffer.h>
@@ -328,6 +329,162 @@ static std::vector<std::tuple<std::string, i32>> WholeInput_Data()
     };
 }
 
+template<typename Primitive>
+static void CheckScanCases(Primitive primitive, const std::vector<std::pair<std::string, i32>>& cases)
+{
+    for (const auto& [input, expected] : cases)
+    {
+        const auto source = std::make_shared<Caracal::SourceText>(input);
+        CaraTest::areEqual(expected, primitive(source->text.data()));
+    }
+}
+
+static void ScanPrimitives()
+{
+    namespace Scan = Caracal::LexerScan;
+
+    const std::vector<std::pair<std::string, i32>> identifierCases = {
+        { "", 0 },
+        { "+abc", 0 },
+        { "a+", 1 },
+        { "abc_123", 7 },
+        { std::string(15, 'a') + "+", 15 },
+        { std::string(16, 'a') + "+", 16 },
+        { std::string(40, 'a'), 40 },
+    };
+    CheckScanCases(Scan::Scalar::identifierRunLength, identifierCases);
+
+    const std::vector<std::pair<std::string, i32>> digitCases = {
+        { "", 0 },
+        { "a1", 0 },
+        { "1a", 1 },
+        { "1234567890", 10 },
+        { std::string(15, '7') + "_", 15 },
+        { std::string(16, '7') + "_", 16 },
+        { std::string(40, '7'), 40 },
+    };
+    CheckScanCases(Scan::Scalar::digitRunLength, digitCases);
+
+    const std::vector<std::pair<std::string, i32>> whitespaceCases = {
+        { "", 0 },
+        { "a ", 0 },
+        { " \t\r\nx", 4 },
+        { "\v", 0 },
+        { std::string(15, ' ') + "x", 15 },
+        { std::string(16, ' ') + "x", 16 },
+        { std::string(40, ' '), 40 },
+    };
+    CheckScanCases(Scan::Scalar::whitespaceRunLength, whitespaceCases);
+
+    const std::vector<std::pair<std::string, i32>> stringBodyCases = {
+        { "", 0 },
+        { "abc", 3 },
+        { "\"tail", 0 },
+        { "ab\\cd\"", 2 },
+        { "ab\ncd", 2 },
+        { std::string(15, 'a') + "\"", 15 },
+        { std::string(16, 'a') + "\"", 16 },
+        { std::string(40, 'a'), 40 },
+    };
+    CheckScanCases(Scan::Scalar::findAnyOf<'"', '\\', '\r', '\n', '\0'>, stringBodyCases);
+
+    const std::vector<std::pair<std::string, i32>> starSlashCases = {
+        { "", 0 },
+        { "*/", 0 },
+        { "**/", 1 },
+        { "* /", 3 },
+        { "***", 3 },
+        { "*a*/", 2 },
+        { std::string(15, 'a') + "*/", 15 },
+        { std::string(16, 'a') + "*/", 16 },
+    };
+    CheckScanCases(Scan::Scalar::findStarSlashOrEOF, starSlashCases);
+
+#if defined(CARACAL_LEXER_SSE2)
+    CheckScanCases(Scan::Sse2::identifierRunLength, identifierCases);
+    CheckScanCases(Scan::Sse2::digitRunLength, digitCases);
+    CheckScanCases(Scan::Sse2::whitespaceRunLength, whitespaceCases);
+    CheckScanCases(Scan::Sse2::findAnyOf<'"', '\\', '\r', '\n', '\0'>, stringBodyCases);
+    CheckScanCases(Scan::Sse2::findStarSlashOrEOF, starSlashCases);
+#endif
+}
+
+#if defined(CARACAL_LEXER_SSE2)
+template<typename ScalarPrimitive, typename SimdPrimitive>
+static i32 CountJumpWalkMismatches(const char* base, i32 size, ScalarPrimitive scalarPrimitive, SimdPrimitive simdPrimitive)
+{
+    i32 mismatches = 0;
+    i32 position = 0;
+    while (position <= size)
+    {
+        const auto scalarResult = scalarPrimitive(base + position);
+        const auto simdResult = simdPrimitive(base + position);
+        if (scalarResult != simdResult)
+        {
+            mismatches++;
+        }
+
+        position += scalarResult + 1;
+    }
+
+    return mismatches;
+}
+
+static void CheckFileDifferential(const std::filesystem::path& absolutePath)
+{
+    namespace Scan = Caracal::LexerScan;
+
+    const auto data = Caracal::File::readText(absolutePath);
+    if (!data.has_value())
+    {
+        CaraTest::fail();
+    }
+
+    const auto source = std::make_shared<Caracal::SourceText>(data.value());
+    const char* base = source->text.data();
+    const auto size = static_cast<i32>(source->text.size());
+
+    i32 mismatches = 0;
+    mismatches += CountJumpWalkMismatches(base, size, Scan::Scalar::identifierRunLength, Scan::Sse2::identifierRunLength);
+    mismatches += CountJumpWalkMismatches(base, size, Scan::Scalar::digitRunLength, Scan::Sse2::digitRunLength);
+    mismatches += CountJumpWalkMismatches(base, size, Scan::Scalar::whitespaceRunLength, Scan::Sse2::whitespaceRunLength);
+    mismatches += CountJumpWalkMismatches(base, size,
+        Scan::Scalar::findAnyOf<'"', '\\', '\r', '\n', '\0'>, Scan::Sse2::findAnyOf<'"', '\\', '\r', '\n', '\0'>);
+    mismatches += CountJumpWalkMismatches(base, size,
+        Scan::Scalar::findAnyOf<'\n', '\0'>, Scan::Sse2::findAnyOf<'\n', '\0'>);
+    mismatches += CountJumpWalkMismatches(base, size, Scan::Scalar::findStarSlashOrEOF, Scan::Sse2::findStarSlashOrEOF);
+
+    CaraTest::areEqual(0, mismatches);
+}
+#endif
+
+static void ScanPrimitivesDifferential()
+{
+#if !defined(CARACAL_LEXER_SSE2)
+    CaraTest::skip();
+#else
+    const auto currentFilePath = std::filesystem::path(__FILE__);
+    const auto inputDirectory = std::filesystem::absolute(currentFilePath.parent_path() / "../../TestData/Input");
+
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(inputDirectory))
+    {
+        if (!entry.is_regular_file() || entry.path().extension() != ".cara")
+        {
+            continue;
+        }
+        if (entry.path().filename() == "oneMilLines.cara")
+        {
+            continue;
+        }
+
+        CheckFileDifferential(entry.path());
+    }
+
+    CheckFileDifferential(inputDirectory / "oneMilLines.cara");
+    CheckFileDifferential(inputDirectory / "oneMilLinesOld.txt");
+#endif
+}
+
 static void BenchmarkLexFile(const std::filesystem::path& absolutePath, const char* label, bool mustLexClean)
 {
     if (!std::filesystem::exists(absolutePath))
@@ -394,5 +551,7 @@ static const auto tests =
     CaraTest::addTest("Keywords", ExpectedTokenKind, Keyword_Data),
     CaraTest::addTest("WhiteSpaceTrivia", WhiteSpaceTrivia, WhiteSpaceTrivia_Data),
     CaraTest::addTest("WholeInput", WholeInput, WholeInput_Data),
+    CaraTest::addTest("ScanPrimitives", ScanPrimitives),
+    CaraTest::addTest("ScanPrimitivesDifferential", ScanPrimitivesDifferential),
     CaraTest::addTest("OneMillionLinesTime", OneMillionLinesTime),
 };

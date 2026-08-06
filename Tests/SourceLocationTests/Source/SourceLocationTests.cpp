@@ -4,6 +4,7 @@
 #include <Caracal/Syntax/Token.h>
 #include <Caracal/Syntax/TokenBuffer.h>
 #include <Caracal/Syntax/TokenKind.h>
+#include <Caracal/Text/File.h>
 #include <Caracal/Text/SourceLocation.h>
 #include <Caracal/Text/SourceText.h>
 
@@ -108,8 +109,80 @@ static void MultipleSourceLocations()
     }
 }
 
+static void CheckLineColumn(Caracal::SourceText& source, i32 offset, i32 expectedLine, i32 expectedColumn)
+{
+    const auto lineColumn = source.lineColumnAt(offset);
+    CaraTest::areEqual(expectedLine, lineColumn.line);
+    CaraTest::areEqual(expectedColumn, lineColumn.column);
+}
+
+static void LineStartsAndColumns()
+{
+    // empty file: one line, offset 0 is line 1 column 1
+    Caracal::SourceText empty{ "" };
+    CaraTest::areEqual(size_t{ 1 }, empty.lineStarts().size());
+    CheckLineColumn(empty, 0, 1, 1);
+
+    // LF only, final line without a trailing newline
+    Caracal::SourceText plain{ "ab\ncd" };
+    CaraTest::areEqual(size_t{ 2 }, plain.lineStarts().size());
+    CheckLineColumn(plain, 0, 1, 1);
+    CheckLineColumn(plain, 2, 1, 3);  // the newline itself belongs to line 1
+    CheckLineColumn(plain, 3, 2, 1);
+    CheckLineColumn(plain, 5, 2, 3);  // end-of-file offset is one past the last character
+
+    // CRLF: the line starts after the LF, the CR belongs to the previous line
+    Caracal::SourceText crlf{ "a\r\nbb\r\n" };
+    CaraTest::areEqual(size_t{ 3 }, crlf.lineStarts().size());
+    CheckLineColumn(crlf, 1, 1, 2);
+    CheckLineColumn(crlf, 3, 2, 1);
+    CheckLineColumn(crlf, 4, 2, 2);
+    CheckLineColumn(crlf, 7, 3, 1);
+
+    // BOM bytes count as columns of line 1
+    Caracal::SourceText bom{ "\xEF\xBB\xBF" "abc\ndef" };
+    CaraTest::areEqual(size_t{ 2 }, bom.lineStarts().size());
+    CheckLineColumn(bom, 3, 1, 4);
+    CheckLineColumn(bom, 7, 2, 1);
+}
+
+static void LineStartsMatchNaiveCount()
+{
+    const auto currentFilePath = std::filesystem::path(__FILE__);
+    const auto inputDirectory = std::filesystem::absolute(currentFilePath.parent_path() / "../../TestData/Input");
+
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(inputDirectory))
+    {
+        if (!entry.is_regular_file() || entry.path().extension() != ".cara")
+        {
+            continue;
+        }
+
+        const auto data = Caracal::File::readText(entry.path());
+        if (!data.has_value())
+        {
+            CaraTest::fail();
+        }
+
+        Caracal::SourceText source{ data.value() };
+
+        std::vector<i32> naiveStarts{ 0 };
+        for (size_t index = 0; index < data.value().size(); index++)
+        {
+            if (data.value()[index] == '\n')
+            {
+                naiveStarts.push_back(static_cast<i32>(index) + 1);
+            }
+        }
+
+        CaraTest::isTrue(source.lineStarts() == naiveStarts);
+    }
+}
+
 static auto tests =
 {
     CaraTest::addTest("SingleSourceLocation", SingleSourceLocation, SingleSourceLocation_Data),
     CaraTest::addTest("MultipleSourceLocations", MultipleSourceLocations),
+    CaraTest::addTest("LineStartsAndColumns", LineStartsAndColumns),
+    CaraTest::addTest("LineStartsMatchNaiveCount", LineStartsMatchNaiveCount),
 };
