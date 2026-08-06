@@ -6,6 +6,10 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Caracal/*.h")
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 add_dependencies(${PROJECT_NAME} copy_core_files_buildstep)
 
+# /Ob2 refuses to inline the one-byte vector push_back, /Ob3 inlines all of them
+set_source_files_properties("${PROJECT_SOURCE_DIR}/Caracal/Syntax/Lexer.cpp"
+    PROPERTIES COMPILE_OPTIONS "$<$<CXX_COMPILER_ID:MSVC>:/Ob3>")
+
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>

@@ -166,16 +166,22 @@ namespace Caracal
         while (true)
         {
             const auto current = *currentIndex;
+
+            // eating all whitespaces before the switch is slightly faster
+            if (LexerScan::isWhitespace(current))
+            {
+                if (current == ' ' && !LexerScan::isWhitespace(currentIndex[1]))
+                {
+                    currentIndex++;
+                    continue;
+                }
+
+                currentIndex += LexerScan::whitespaceRunLength(currentIndex);
+                continue;
+            }
+
             switch (current)
             {
-                case '\r':
-                case '\n':
-                case '\t':
-                case ' ':
-                {
-                    currentIndex += LexerScan::whitespaceRunLength(currentIndex);
-                    break;
-                }
                 case '\0':
                 {
                     AddTokenKindAndAdvance(tokenBuffer, source, currentIndex, TokenKind::EndOfFile, 0);
