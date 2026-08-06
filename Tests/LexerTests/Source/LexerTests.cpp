@@ -485,7 +485,7 @@ static void ScanPrimitivesDifferential()
 #endif
 }
 
-static void BenchmarkLexFile(const std::filesystem::path& absolutePath, const char* label, bool mustLexClean)
+static void BenchmarkLexFile(const std::filesystem::path& absolutePath, const char* label)
 {
     if (!std::filesystem::exists(absolutePath))
     {
@@ -510,7 +510,7 @@ static void BenchmarkLexFile(const std::filesystem::path& absolutePath, const ch
         const auto tokens = Caracal::lex(source, diagnostics);
         const auto endTime = std::chrono::high_resolution_clock::now();
 
-        if (mustLexClean && !diagnostics.diagnostics().empty())
+        if (!diagnostics.diagnostics().empty())
         {
             CaraTest::fail();// ("benchmark input must lex without diagnostics");
         }
@@ -535,8 +535,8 @@ static void OneMillionLinesTime()
 
     const auto currentFilePath = std::filesystem::path(__FILE__);
     const auto inputDirectory = currentFilePath.parent_path() / "../../TestData/Input";
-    BenchmarkLexFile(std::filesystem::absolute(inputDirectory / "oneMilLinesOld.txt"), "oneMilLinesOld", false);
-    BenchmarkLexFile(std::filesystem::absolute(inputDirectory / "oneMilLines.cara"), "oneMilLines   ", true);
+    BenchmarkLexFile(std::filesystem::absolute(inputDirectory / "oneMilLinesOld.txt"), "oneMilLinesOld");
+    BenchmarkLexFile(std::filesystem::absolute(inputDirectory / "oneMilLines.cara"), "oneMilLines   ");
 }
 
 static const auto tests =
