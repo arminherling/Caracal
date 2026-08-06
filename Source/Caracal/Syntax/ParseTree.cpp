@@ -3,9 +3,9 @@
 namespace Caracal
 {
     ParseTree::ParseTree(
-        const TokenBuffer& tokens,
+        TokenBuffer tokens,
         std::vector<StatementUPtr>&& statements)
-        : m_tokens{ tokens }
+        : m_tokens{ std::move(tokens) }
         , m_statements{ std::move(statements) }
     {
     }

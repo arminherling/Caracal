@@ -11,7 +11,7 @@ namespace Caracal
     {
     public:
         ParseTree(
-            const TokenBuffer& tokens,
+            TokenBuffer tokens,
             std::vector<StatementUPtr>&& statements);
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(ParseTree)

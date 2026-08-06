@@ -2,7 +2,7 @@
 #include <Caracal/Syntax/LexerSimd.h>
 #include <Caracal/Profiling.h>
 
-#include <unordered_map>
+#include <cstring>
 
 namespace Caracal
 {
@@ -19,33 +19,100 @@ namespace Caracal
         tokenBuffer.addToken(tokenKind, { .startIndex = startIndex, .endIndex = endIndex });
     };
 
-    [[nodiscard]] static auto InitializeKeywords() noexcept
+    // use string literals as template parameter for compile-time constants in msvc
+    template<size_t N>
+    struct KeywordLiteral
     {
-        return std::unordered_map<std::string_view, TokenKind>{
-            { std::string_view("def"),      TokenKind::DefKeyword},
-            { std::string_view("enum"),     TokenKind::EnumKeyword },
-            { std::string_view("type"),     TokenKind::TypeKeyword },
-            { std::string_view("if"),       TokenKind::IfKeyword },
-            { std::string_view("else"),     TokenKind::ElseKeyword },
-            { std::string_view("while"),    TokenKind::WhileKeyword },
-            { std::string_view("break"),    TokenKind::BreakKeyword },
-            { std::string_view("skip"),     TokenKind::SkipKeyword },
-            { std::string_view("return"),   TokenKind::ReturnKeyword },
-            { std::string_view("true"),     TokenKind::TrueKeyword },
-            { std::string_view("false"),    TokenKind::FalseKeyword },
-            { std::string_view("and"),      TokenKind::AndKeyword },
-            { std::string_view("or"),       TokenKind::OrKeyword },
-            { std::string_view("ref"),      TokenKind::RefKeyword },
-        };
+        constexpr KeywordLiteral(const char (&text)[N]) noexcept
+        {
+            for (size_t index = 0; index < N; index++)
+            {
+                characters[index] = text[index];
+            }
+        }
+
+        char characters[N] = {};
+    };
+
+    template<size_t N>
+    [[nodiscard]] static constexpr u64 PackKeywordBits(const char (&text)[N]) noexcept
+    {
+        u64 bits = 0;
+        for (size_t index = 0; index + 1 < N; index++)
+        {
+            bits |= static_cast<u64>(static_cast<u8>(text[index])) << (8 * index);
+        }
+
+        return bits;
     }
 
+    template<KeywordLiteral Keyword>
+    [[nodiscard]] static bool EqualsKeyword(const char* start) noexcept
+    {
+        constexpr auto length = sizeof(Keyword.characters) - 1;
+        static_assert(length >= 2 && length <= 6, "keywords are 2 to 6 bytes long");
+        constexpr auto lengthMask = ~u64{ 0 } >> (8 * (8 - length));
+        constexpr auto keywordBits = PackKeywordBits(Keyword.characters);
+
+        u64 identifierBits = 0;
+        std::memcpy(&identifierBits, start, sizeof(identifierBits));
+        return (identifierBits & lengthMask) == keywordBits;
+    }
+
+    // switch on the length to reduce the possible keywords
     static TokenKind IdentifierKind(const char* start, i32 length) noexcept
     {
-        static const auto keywords = InitializeKeywords();
-        const auto lexeme = std::string_view(start, static_cast<size_t>(length));
-
-        if (const auto result = keywords.find(lexeme); result != keywords.end())
-            return result->second;
+        switch (length)
+        {
+            case 2:
+            {
+                if (EqualsKeyword<"if">(start))
+                    return TokenKind::IfKeyword;
+                if (EqualsKeyword<"or">(start))
+                    return TokenKind::OrKeyword;
+                break;
+            }
+            case 3:
+            {
+                if (EqualsKeyword<"def">(start))
+                    return TokenKind::DefKeyword;
+                if (EqualsKeyword<"and">(start))
+                    return TokenKind::AndKeyword;
+                if (EqualsKeyword<"ref">(start))
+                    return TokenKind::RefKeyword;
+                break;
+            }
+            case 4:
+            {
+                if (EqualsKeyword<"enum">(start))
+                    return TokenKind::EnumKeyword;
+                if (EqualsKeyword<"type">(start))
+                    return TokenKind::TypeKeyword;
+                if (EqualsKeyword<"else">(start))
+                    return TokenKind::ElseKeyword;
+                if (EqualsKeyword<"skip">(start))
+                    return TokenKind::SkipKeyword;
+                if (EqualsKeyword<"true">(start))
+                    return TokenKind::TrueKeyword;
+                break;
+            }
+            case 5:
+            {
+                if (EqualsKeyword<"while">(start))
+                    return TokenKind::WhileKeyword;
+                if (EqualsKeyword<"break">(start))
+                    return TokenKind::BreakKeyword;
+                if (EqualsKeyword<"false">(start))
+                    return TokenKind::FalseKeyword;
+                break;
+            }
+            case 6:
+            {
+                if (EqualsKeyword<"return">(start))
+                    return TokenKind::ReturnKeyword;
+                break;
+            }
+        }
 
         return TokenKind::Identifier;
     }
@@ -68,7 +135,7 @@ namespace Caracal
         // checking the char after underscore is safe, it is EOF terminator in the worst case
         while (true)
         {
-            currentIndex += LexerScan::digitRunLength(currentIndex);
+            currentIndex += LexerScan::Scalar::digitRunLength(currentIndex);
             if (*currentIndex == '_' && currentIndex[1] != '.')
             {
                 currentIndex++;
@@ -84,7 +151,7 @@ namespace Caracal
 
             while (true)
             {
-                currentIndex += LexerScan::digitRunLength(currentIndex);
+                currentIndex += LexerScan::Scalar::digitRunLength(currentIndex);
                 if (*currentIndex == '_')
                 {
                     currentIndex++;

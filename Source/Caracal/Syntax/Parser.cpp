@@ -162,7 +162,7 @@ namespace Caracal
             m_diagnostics.addExtraTokensRemainingError(m_tokens.source(), location);
         }
 
-        return std::make_unique<ParseTree>(m_tokens, std::move(statements));
+        return std::make_unique<ParseTree>(std::move(m_tokens), std::move(statements));
     }
 
     std::vector<StatementUPtr> Parser::parseStatements(StatementScope scope)
