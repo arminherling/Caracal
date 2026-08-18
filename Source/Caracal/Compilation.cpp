@@ -130,7 +130,7 @@ namespace Caracal
     bool typeCheck(CompilationContext& compilationContext, DiagnosticsBag& diagnostics, bool isPreludePass) noexcept
     {
         CARACAL_ZONE_NAMED("typeCheck");
-        TypeChecker typeChecker{ compilationContext.parseTreesFor(isPreludePass), compilationContext.options(), isPreludePass, compilationContext.semanticContext(), diagnostics };
+        TypeChecker typeChecker{ compilationContext, isPreludePass, diagnostics };
         return typeChecker.typeCheck();
     }
 

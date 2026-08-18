@@ -97,4 +97,24 @@ namespace Caracal
 
         return m_parseTrees;
     }
+
+    const TokenBuffer& CompilationContext::tokenBuffer(const Token& token) const noexcept
+    {
+        return m_units[token.fileId].parseTree->tokens();
+    }
+
+    std::string_view CompilationContext::getLexeme(const Token& token) const noexcept
+    {
+        return tokenBuffer(token).getLexeme(token);
+    }
+
+    const SourceLocation& CompilationContext::sourceLocation(const Token& token) const noexcept
+    {
+        return tokenBuffer(token).getSourceLocation(token);
+    }
+
+    const SourceTextSharedPtr& CompilationContext::source(const Token& token) const noexcept
+    {
+        return m_units[token.fileId].source;
+    }
 }

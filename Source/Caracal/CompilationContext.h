@@ -5,6 +5,9 @@
 #include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
 #include <Caracal/Syntax/ParseTree.h>
+#include <Caracal/Syntax/Token.h>
+#include <Caracal/Syntax/TokenBuffer.h>
+#include <Caracal/Text/SourceLocation.h>
 #include <Caracal/Text/SourceText.h>
 
 #include <filesystem>
@@ -55,6 +58,11 @@ namespace Caracal
         [[nodiscard]] const std::vector<ParseTreeUPtr>& parseTrees() const noexcept;
         [[nodiscard]] const std::vector<ParseTreeUPtr>& preludeParseTrees() const noexcept;
         [[nodiscard]] const std::vector<ParseTreeUPtr>& parseTreesFor(bool isPreludePass) const noexcept;
+
+        [[nodiscard]] const TokenBuffer& tokenBuffer(const Token& token) const noexcept;
+        [[nodiscard]] std::string_view getLexeme(const Token& token) const noexcept;
+        [[nodiscard]] const SourceLocation& sourceLocation(const Token& token) const noexcept;
+        [[nodiscard]] const SourceTextSharedPtr& source(const Token& token) const noexcept;
 
     private:
         std::vector<CompilationUnit> m_units;

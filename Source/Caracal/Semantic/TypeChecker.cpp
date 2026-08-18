@@ -84,15 +84,14 @@ namespace Caracal
     }
 
     TypeChecker::TypeChecker(
-        const std::vector<ParseTreeUPtr>& parseTrees,
-        const TypeCheckerOptions& options,
+        CompilationContext& compilationContext,
         bool isPreludePass,
-        SemanticContext& module,
         DiagnosticsBag& diagnostics)
-        : m_parseTrees(parseTrees)
-        , m_options{ options }
+        : m_compilationContext{ compilationContext }
+        , m_parseTrees(compilationContext.parseTreesFor(isPreludePass))
+        , m_options{ compilationContext.options() }
         , m_isPreludePass{ isPreludePass }
-        , m_module{ module }
+        , m_module{ compilationContext.semanticContext() }
         , m_diagnostics{ diagnostics }
         , m_currentReturnType{ Type::Void() }
         , m_currentType{ Type::Undefined() }
@@ -148,7 +147,6 @@ namespace Caracal
                     case NodeKind::ConstantDeclaration:
                     {
                         auto* constantDeclaration = static_cast<ConstantDeclaration*>(statement.get());
-                        m_statementTokens.emplace(constantDeclaration, &parseTree->tokens());
                         m_globalConstantDeclarations.push_back(constantDeclaration);
 
                         break;
@@ -171,7 +169,6 @@ namespace Caracal
                     case NodeKind::EnumDefinitionStatement:
                     {
                         auto* enumStatement = static_cast<EnumDefinitionStatement*>(statement.get());
-                        m_statementTokens.emplace(enumStatement, &parseTree->tokens());
                         const auto& enumName = enumStatement->name();
                         auto existingType = m_module.tryGetTypeByName(enumName);
                         if (existingType != Type::Undefined())
@@ -181,21 +178,19 @@ namespace Caracal
                             if (existingType.kind() == TypeKind::Enum)
                             {
                                 auto* otherStatement = m_module.getEnumDefinition(existingType).statement();
-                                if (otherStatement != nullptr && m_statementTokens.contains(otherStatement))
+                                if (otherStatement != nullptr)
                                 {
-                                    const auto& otherTokens = tokensFor(otherStatement);
-                                    otherSource = otherTokens.source();
-                                    otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
+                                    otherSource = m_compilationContext.source(otherStatement->nameToken());
+                                    otherLocation = m_compilationContext.sourceLocation(otherStatement->nameToken());
                                 }
                             }
                             else if (existingType.kind() == TypeKind::Type)
                             {
                                 auto* otherStatement = m_module.getTypeDefinition(existingType).statement();
-                                if (otherStatement != nullptr && m_statementTokens.contains(otherStatement))
+                                if (otherStatement != nullptr)
                                 {
-                                    const auto& otherTokens = tokensFor(otherStatement);
-                                    otherSource = otherTokens.source();
-                                    otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
+                                    otherSource = m_compilationContext.source(otherStatement->nameToken());
+                                    otherLocation = m_compilationContext.sourceLocation(otherStatement->nameToken());
                                 }
                             }
 
@@ -217,7 +212,6 @@ namespace Caracal
                     case NodeKind::TypeDefinitionStatement:
                     {
                         auto* typeStatement = static_cast<TypeDefinitionStatement*>(statement.get());
-                        m_statementTokens.emplace(typeStatement, &parseTree->tokens());
                         if (typeStatement->isBuiltin())
                         {
                             const auto builtinType = m_module.tryGetTypeByName(typeStatement->name());
@@ -246,11 +240,7 @@ namespace Caracal
                                 const auto* otherStatement = existingDefinition.statement();
                                 if (otherStatement != nullptr)
                                 {
-                                    const auto* otherTokens = tryTokensFor(otherStatement);
-                                    if (otherTokens != nullptr)
-                                    {
-                                        otherLocation = otherTokens->getSourceLocation(otherStatement->nameToken());
-                                    }
+                                    otherLocation = m_compilationContext.sourceLocation(otherStatement->nameToken());
                                 }
 
                                 m_diagnostics.addDuplicateBuiltinTypeBindingError(
@@ -275,21 +265,19 @@ namespace Caracal
                             if (existingType.kind() == TypeKind::Enum)
                             {
                                 auto* otherStatement = m_module.getEnumDefinition(existingType).statement();
-                                if (otherStatement != nullptr && m_statementTokens.contains(otherStatement))
+                                if (otherStatement != nullptr)
                                 {
-                                    const auto& otherTokens = tokensFor(otherStatement);
-                                    otherSource = otherTokens.source();
-                                    otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
+                                    otherSource = m_compilationContext.source(otherStatement->nameToken());
+                                    otherLocation = m_compilationContext.sourceLocation(otherStatement->nameToken());
                                 }
                             }
                             else if (existingType.kind() == TypeKind::Type)
                             {
                                 auto* otherStatement = m_module.getTypeDefinition(existingType).statement();
-                                if (otherStatement != nullptr && m_statementTokens.contains(otherStatement))
+                                if (otherStatement != nullptr)
                                 {
-                                    const auto& otherTokens = tokensFor(otherStatement);
-                                    otherSource = otherTokens.source();
-                                    otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
+                                    otherSource = m_compilationContext.source(otherStatement->nameToken());
+                                    otherLocation = m_compilationContext.sourceLocation(otherStatement->nameToken());
                                 }
                             }
 
@@ -311,7 +299,6 @@ namespace Caracal
                     case NodeKind::FunctionDefinitionStatement:
                     {
                         auto* functionStatement = static_cast<FunctionDefinitionStatement*>(statement.get());
-                        m_statementTokens.emplace(functionStatement, &parseTree->tokens());
                         const auto& functionName = functionStatement->name();
                         auto existingFunctionType = m_module.tryGetFunctionTypeByName(functionName);
                         if (existingFunctionType != Type::Undefined())
@@ -321,9 +308,8 @@ namespace Caracal
                             auto* otherStatement = static_cast<const FunctionDefinitionStatement*>(m_module.getFunctionDefinition(existingFunctionType).statement());
                             if (otherStatement != nullptr)
                             {
-                                const auto& otherTokens = tokensFor(otherStatement);
-                                otherSource = otherTokens.source();
-                                otherLocation = otherTokens.getSourceLocation(otherStatement->nameToken());
+                                otherSource = m_compilationContext.source(otherStatement->nameToken());
+                                otherLocation = m_compilationContext.sourceLocation(otherStatement->nameToken());
                             }
 
                             m_diagnostics.addDuplicateFunctionDeclarationError(
@@ -389,7 +375,7 @@ namespace Caracal
                 const auto& methodName = methodStatement->methodNameNode()->methodName();
                 if (methodStatement->specialFunctionType() == SpecialFunctionType::Constructor || methodName == "new")
                 {
-                    const auto& tokens = tokensFor(typeDefinitionStatement);
+                    const auto& tokens = m_compilationContext.tokenBuffer(typeDefinitionStatement->nameToken());
                     auto constructorLocation = tokens.getSourceLocation(typeDefinitionStatement->nameToken());
                     if (typeDefinitionStatement->constructorParameters().has_value())
                     {
@@ -419,7 +405,7 @@ namespace Caracal
                 auto methodType = typeDefinition.tryGetMethodTypeByName(methodName);
                 if (methodType != Type::Undefined())
                 {
-                    const auto& tokens = tokensFor(typeDefinitionStatement);
+                    const auto& tokens = m_compilationContext.tokenBuffer(typeDefinitionStatement->nameToken());
                     auto otherLocation = std::optional<SourceLocation>{};
                     const auto* otherStatement = static_cast<const MethodDefinitionStatement*>(m_module.getFunctionDefinition(methodType).statement());
                     if (otherStatement != nullptr)
@@ -466,7 +452,7 @@ namespace Caracal
         for (const auto* functionDefinitionStatement : m_functionDeclarations)
         {
             auto* statement = const_cast<FunctionDefinitionStatement*>(functionDefinitionStatement);
-            typeCheckFunctionSignature(statement, tokensFor(statement));
+            typeCheckFunctionSignature(statement, m_compilationContext.tokenBuffer(statement->nameToken()));
         }
     }
 
@@ -475,7 +461,7 @@ namespace Caracal
         for (const auto* typeDefinitionStatement : m_typeDeclarations)
         {
             auto* statement = const_cast<TypeDefinitionStatement*>(typeDefinitionStatement);
-            typeCheckTypeSignature(statement, tokensFor(statement));
+            typeCheckTypeSignature(statement, m_compilationContext.tokenBuffer(statement->nameToken()));
         }
     }
 
@@ -484,7 +470,7 @@ namespace Caracal
         for (const auto* constantDeclaration : m_globalConstantDeclarations)
         {
             auto* statement = const_cast<ConstantDeclaration*>(constantDeclaration);
-            typeCheckConstantDeclaration(statement, tokensFor(statement));
+            typeCheckConstantDeclaration(statement, m_compilationContext.tokenBuffer(statement->firstColonToken()));
         }
     }
 
@@ -493,7 +479,7 @@ namespace Caracal
         for (const auto* functionDefinitionStatement : m_functionDeclarations)
         {
             auto* statement = const_cast<FunctionDefinitionStatement*>(functionDefinitionStatement);
-            typeCheckFunctionDefinitionStatement(statement, tokensFor(statement));
+            typeCheckFunctionDefinitionStatement(statement, m_compilationContext.tokenBuffer(statement->nameToken()));
         }
     }
 
@@ -502,7 +488,7 @@ namespace Caracal
         for (const auto* enumDefinitionStatement : m_enumDeclarations)
         {
             auto* statement = const_cast<EnumDefinitionStatement*>(enumDefinitionStatement);
-            typeCheckEnumDefinitionStatement(statement, tokensFor(statement));
+            typeCheckEnumDefinitionStatement(statement, m_compilationContext.tokenBuffer(statement->nameToken()));
         }
     }
 
@@ -511,7 +497,7 @@ namespace Caracal
         for (const auto* typeDefinitionStatement : m_typeDeclarations)
         {
             auto* statement = const_cast<TypeDefinitionStatement*>(typeDefinitionStatement);
-            typeCheckTypeFieldDefinition(statement, tokensFor(statement));
+            typeCheckTypeFieldDefinition(statement, m_compilationContext.tokenBuffer(statement->nameToken()));
         }
     }
 
@@ -520,7 +506,7 @@ namespace Caracal
         for (const auto* typeDefinitionStatement : m_typeDeclarations)
         {
             auto* statement = const_cast<TypeDefinitionStatement*>(typeDefinitionStatement);
-            typeCheckTypeMethodDefinition(statement, tokensFor(statement));
+            typeCheckTypeMethodDefinition(statement, m_compilationContext.tokenBuffer(statement->nameToken()));
         }
     }
 
@@ -3327,28 +3313,6 @@ namespace Caracal
         }
 
         return false;
-    }
-
-    const TokenBuffer* TypeChecker::tryTokensFor(const Statement* statement) const
-    {
-        const auto it = m_statementTokens.find(statement);
-        if (it == m_statementTokens.end())
-        {
-            return nullptr;
-        }
-
-        return it->second;
-    }
-
-    const TokenBuffer& TypeChecker::tokensFor(const Statement* statement) const
-    {
-        const auto it = m_statementTokens.find(statement);
-        if (it == m_statementTokens.end())
-        {
-            TODO("Missing token buffer for statement");
-        }
-
-        return *it->second;
     }
 
     static bool IsTerminatingStatement(const Statement* statement)

@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <Caracal/Compilation.h>
+#include <Caracal/CompilationContext.h>
 #include <Caracal/Syntax/LexerSimd.h>
 #include <Caracal/Syntax/Token.h>
 #include <Caracal/Syntax/TokenKind.h>
@@ -579,6 +580,38 @@ static void OneMillionLinesTime()
     BenchmarkLexFile(std::filesystem::absolute(inputDirectory / "oneMilLinesLongIdents.cara"), "oneMilLinesLong ");
 }
 
+static void TokenResolutionAcrossUnits()
+{
+    Caracal::DiagnosticsBag diagnostics;
+    Caracal::CompilationContext compilationContext;
+    compilationContext.addSource("one :: 1;", "one.cara", Caracal::UnitOrigin::User);
+    compilationContext.addSource("\ntwotwo :: 22;", "twotwo.cara", Caracal::UnitOrigin::User);
+    Caracal::lexAndParse(compilationContext, diagnostics);
+
+    CaraTest::isTrue(!diagnostics.hasErrors());
+
+    const auto& units = compilationContext.units();
+    const auto firstToken = units[0].parseTree->tokens().getToken(0);
+    const auto secondToken = units[1].parseTree->tokens().getToken(0);
+
+    CaraTest::areEqual(u16{ 0 }, firstToken.fileId);
+    CaraTest::areEqual(u16{ 1 }, secondToken.fileId);
+
+    CaraTest::isTrue(compilationContext.getLexeme(firstToken) == "one");
+    CaraTest::isTrue(compilationContext.getLexeme(secondToken) == "twotwo");
+
+    const auto& firstLocation = compilationContext.sourceLocation(firstToken);
+    CaraTest::areEqual(0, firstLocation.startIndex);
+    CaraTest::areEqual(3, firstLocation.endIndex);
+
+    const auto& secondLocation = compilationContext.sourceLocation(secondToken);
+    CaraTest::areEqual(1, secondLocation.startIndex);
+    CaraTest::areEqual(7, secondLocation.endIndex);
+
+    CaraTest::isTrue(compilationContext.source(firstToken)->filePath == "one.cara");
+    CaraTest::isTrue(compilationContext.source(secondToken)->filePath == "twotwo.cara");
+}
+
 static const auto tests =
 {
     CaraTest::addTest("SingleCharacter", ExpectedTokenKind, Symbols_Data),
@@ -594,5 +627,6 @@ static const auto tests =
     CaraTest::addTest("ScanPrimitives", ScanPrimitives),
     CaraTest::addTest("ScanPrimitivesDifferential", ScanPrimitivesDifferential),
     CaraTest::addTest("LongRunBoundaries", LongRunBoundaries),
+    CaraTest::addTest("TokenResolutionAcrossUnits", TokenResolutionAcrossUnits),
     CaraTest::addTest("OneMillionLinesTime", OneMillionLinesTime),
 };

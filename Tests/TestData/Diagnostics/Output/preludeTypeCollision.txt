@@ -8,3 +8,14 @@
   4 | }
     `----
   Fix: Rename this type declaration, or remove the duplicate.
+
+ Info Related Previous type declaration
+    ,-[<prelude>:2:6]
+  1 | // Caracal extern C declarations
+  2 | type C
+    .      -
+    .      `-- Previous type declaration of 'C' is here.
+  3 | {
+  4 |     // writes the message to stdout and adds a newline at the end
+  5 |     #extern(symbol = "puts")
+    `----

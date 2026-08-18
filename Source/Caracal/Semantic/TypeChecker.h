@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <Caracal/API.h>
+#include <Caracal/CompilationContext.h>
 #include <Caracal/Defines.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Semantic/AnnotationKind.h>
@@ -47,10 +48,8 @@ namespace Caracal
     {
     public:
         TypeChecker(
-            const std::vector<ParseTreeUPtr>& parseTrees,
-            const TypeCheckerOptions& options,
+            CompilationContext& compilationContext,
             bool isPreludePass,
-            SemanticContext& module,
             DiagnosticsBag& diagnostics);
 
         CARACAL_DELETE_COPY_DELETE_MOVE(TypeChecker)
@@ -113,8 +112,6 @@ namespace Caracal
         [[nodiscard]] std::optional<Type> contextualTypeForExpectedType(Type expectedType) const noexcept;
         [[nodiscard]] bool tryAddArrayLengthMismatchError(const TokenBuffer& tokens, const SourceLocation& location, Type expectedType, Type actualType);
         [[nodiscard]] bool areComparableTypes(Type leftType, Type rightType);
-        [[nodiscard]] const TokenBuffer& tokensFor(const Statement* statement) const;
-        [[nodiscard]] const TokenBuffer* tryTokensFor(const Statement* statement) const;
         [[nodiscard]] bool validateAnnotation(const AnnotationNode* annotation, TokenKind targetKind, const TokenBuffer& tokens, std::optional<i32>* i32ArgumentValue = nullptr, std::optional<std::string>* stringArgumentValue = nullptr, bool* requiredValue = nullptr);
         [[nodiscard]] bool receiverChainIsConstant(const Expression* expression, std::string& rootName, bool& referencesConstant);
         [[nodiscard]] bool validateNamedAnnotationArguments(const AnnotationNode* annotation, std::string_view namedStringArgument, const TokenBuffer& tokens, std::optional<std::string>* stringArgumentValue, bool* requiredValue = nullptr);
@@ -128,6 +125,7 @@ namespace Caracal
         void popScope(bool emitUnusedWarnings = false);
         [[nodiscard]] Scope* currentScope() const noexcept;
         
+        const CompilationContext& m_compilationContext;
         const std::vector<ParseTreeUPtr>& m_parseTrees;
         TypeCheckerOptions m_options;
         bool m_isPreludePass = false;
@@ -143,7 +141,6 @@ namespace Caracal
         bool m_negatedLiteralContext{ false };
         bool m_negatedLiteralSignConsumed{ false };
         std::vector<std::unique_ptr<Scope>> m_scopes;
-        std::unordered_map<const Statement*, const TokenBuffer*> m_statementTokens;
         std::vector<const ConstantDeclaration*> m_globalConstantDeclarations;
         std::vector<const EnumDefinitionStatement*> m_enumDeclarations;
         std::vector<const TypeDefinitionStatement*> m_typeDeclarations;
