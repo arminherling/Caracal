@@ -1,5 +1,4 @@
 #include <Caracal/Constants.h>
-#include <Caracal/Profiling.h>
 #include <Caracal/Syntax/AssignmentStatement.h>
 #include <Caracal/Syntax/BinaryExpression.h>
 #include <Caracal/Syntax/BoolLiteral.h>
@@ -1327,13 +1326,6 @@ namespace Caracal
             return Token{ .kind = TokenKind::EndOfFile };
 
         return m_tokens.getToken(index);
-    }
-
-    ParseTreeUPtr parse(const TokenBuffer& tokens, DiagnosticsBag& diagnostics) noexcept
-    {
-        CARACAL_ZONE_NAMED("parse");
-        Parser parser{ tokens, diagnostics };
-        return parser.parse();
     }
 }
 

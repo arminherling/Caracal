@@ -1,4 +1,4 @@
-#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Compilation.h>
 #include <Caracal/Syntax/LexerSimd.h>
 #include <Caracal/Profiling.h>
 

@@ -49,6 +49,7 @@ namespace Caracal
         TypeChecker(
             const std::vector<ParseTreeUPtr>& parseTrees,
             const TypeCheckerOptions& options,
+            bool isPreludePass,
             SemanticContext& module,
             DiagnosticsBag& diagnostics);
 
@@ -129,6 +130,7 @@ namespace Caracal
         
         const std::vector<ParseTreeUPtr>& m_parseTrees;
         TypeCheckerOptions m_options;
+        bool m_isPreludePass = false;
         Type m_defaultIntegerType = Type::Undefined();
         Type m_defaultFloatingType = Type::Undefined();
         Type m_defaultEnumBaseType = Type::Undefined();
@@ -150,11 +152,4 @@ namespace Caracal
         std::unordered_map<std::string, InitConstantDeclaration> m_initConstants;
         std::unordered_map<std::string, SourceLocation> m_initConstantAssignments;
     };
-
-    // we modify the parse trees in place and add type information to the nodes
-    CARACAL_API bool typeCheck(
-        const std::vector<ParseTreeUPtr>& parseTrees, 
-        const TypeCheckerOptions& options, 
-        SemanticContext& module, 
-        DiagnosticsBag& diagnostics) noexcept;
 };

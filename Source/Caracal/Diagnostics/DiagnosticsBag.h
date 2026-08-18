@@ -163,6 +163,7 @@ namespace Caracal
         const std::vector<Diagnostic>& diagnostics() const;
         [[nodiscard]] bool hasErrors() const noexcept;
         [[nodiscard]] bool hasWarnings() const noexcept;
+        [[nodiscard]] int errorCount() const noexcept;
 
     private:
         std::vector<Diagnostic> m_diagnostics;

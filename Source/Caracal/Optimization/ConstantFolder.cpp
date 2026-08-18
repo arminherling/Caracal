@@ -583,15 +583,15 @@ namespace Caracal
     }
 
     bool foldConstants(
-        const std::vector<ParseTreeUPtr>& parseTrees,
-        const SemanticContext& module,
-        DiagnosticsBag& diagnostics) noexcept
+        const CompilationContext& compilationContext,
+        DiagnosticsBag& diagnostics,
+        bool isPreludePass) noexcept
     {
         CARACAL_ZONE_NAMED("constantFold");
         const auto diagnosticCountBefore = diagnostics.diagnostics().size();
 
-        ConstantFolder folder{ module, diagnostics };
-        for (const auto& parseTree : parseTrees)
+        ConstantFolder folder{ compilationContext.semanticContext(), diagnostics };
+        for (const auto& parseTree : compilationContext.parseTreesFor(isPreludePass))
         {
             folder.foldTree(*parseTree);
         }

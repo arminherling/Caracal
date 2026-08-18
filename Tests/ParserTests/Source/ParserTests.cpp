@@ -1,9 +1,9 @@
 #include <CaraTest.h>
+#include <Caracal/Compilation.h>
+#include <Caracal/CompilationContext.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Text/SourceEncoding.h>
 #include <Caracal/Debug/ParseTreePrinter.h>
-#include <Caracal/Syntax/Lexer.h>
-#include <Caracal/Syntax/Parser.h>
 #include <Caracal/Text/File.h>
 #include <iostream>
 
@@ -34,17 +34,11 @@ static void FileTests(
     const auto endTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "      parse(): " << CaraTest::stringify(endTime - startTime) << std::endl;
-
-    Caracal::TypeCheckerOptions options{
-        .defaultIntegerType = "i32",
-        .defaultFloatingType = "f32",
-        .defaultEnumBaseType = "u8"
-    };
     const auto preludePath = std::filesystem::path(__FILE__).parent_path() / "../../../Prelude";
-    const auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(preludePath);
-    Caracal::SemanticContext module = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
+    Caracal::CompilationContext preludeContext;
+    Caracal::loadPrelude(preludeContext, preludePath);
     
-    Caracal::ParseTreePrinter printer{ *parseTree, &module };
+    Caracal::ParseTreePrinter printer{ *parseTree, &preludeContext.semanticContext() };
     const auto output = printer.prettyPrint();
 
     CaraTest::isTrue(diagnostics.diagnostics().empty());

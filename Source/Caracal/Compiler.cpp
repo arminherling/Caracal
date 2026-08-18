@@ -1,16 +1,13 @@
 #include <Caracal/Compiler.h>
+#include <Caracal/Compilation.h>
+#include <Caracal/CompilationContext.h>
 #include <Caracal/Profiling.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
-#include <Caracal/Semantic/TypeChecker.h>
 #include <Caracal/Debug/IRPrinter.h>
 #include <Caracal/Text/File.h>
-#include <Caracal/Text/SourceEncoding.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
-#include <Caracal/Optimization/ConstantFolder.h>
 #include <Caracal/Optimization/DeadCodeElimination.h>
-#include <Caracal/Syntax/Lexer.h>
-#include <Caracal/Syntax/Parser.h>
 #include <Caracal/CodeGen/LLVMCodeGenerator.h>
 #include <Caracal/IR/IRLowerer.h>
 
@@ -47,7 +44,7 @@ namespace Caracal
             if (!file.is_regular_file() || file.path().extension() != ".cara")
                 continue;
 
-            // the prelude is loaded separately through WithBuiltins
+            // the prelude is loaded separately through loadPrelude
             if (file.path().parent_path().filename() == "Prelude")
                 continue;
 
@@ -123,7 +120,7 @@ namespace Caracal
         auto caraFiles = CollectCaraFiles(coreDirectoryPath);
 
         Caracal::DiagnosticsBag diagnostics;
-        std::vector<Caracal::ParseTreeUPtr> parseTrees;
+        Caracal::CompilationContext compilationContext;
         for (const auto& caraFilePath : caraFiles)
         {
             auto content = Caracal::File::readText(caraFilePath);
@@ -133,22 +130,7 @@ namespace Caracal
                 continue;
             }
 
-            auto source = std::make_shared<Caracal::SourceText>(content.value(), caraFilePath);
-            if (!Caracal::validateSourceEncoding(source, diagnostics))
-            {
-                continue;
-            }
-
-            const auto diagnosticCount = diagnostics.diagnostics().size();
-            const auto tokens = Caracal::lex(source, diagnostics);
-            if (diagnostics.diagnostics().size() != diagnosticCount)
-            {
-                // skip parsing if there were lexing errors
-                continue;
-            }
-
-            auto parseTree = Caracal::parse(tokens, diagnostics);
-            parseTrees.push_back(std::move(parseTree));
+            compilationContext.addSource(std::move(content.value()), caraFilePath, Caracal::UnitOrigin::Core);
         }
 
         auto fileContent = Caracal::File::readText(filePath);
@@ -158,17 +140,8 @@ namespace Caracal
             return 1;
         }
 
-        auto source = std::make_shared<Caracal::SourceText>(fileContent.value(), filePath);
-        if (Caracal::validateSourceEncoding(source, diagnostics))
-        {
-            const auto diagnosticCount = diagnostics.diagnostics().size();
-            const auto tokens = Caracal::lex(source, diagnostics);
-            if (diagnostics.diagnostics().size() == diagnosticCount)
-            {
-                auto parseTree = Caracal::parse(tokens, diagnostics);
-                parseTrees.push_back(std::move(parseTree));
-            }
-        }
+        compilationContext.addSource(std::move(fileContent.value()), filePath, Caracal::UnitOrigin::User);
+        Caracal::lexAndParse(compilationContext, diagnostics);
 
         if (diagnostics.hasErrors())
         {
@@ -176,25 +149,18 @@ namespace Caracal
             return 1;
         }
 
-        auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(ResolvePreludeDirectory());
+        auto preludeSources = Caracal::collectPreludeSources(ResolvePreludeDirectory());
         if (preludeSources.empty())
             std::cout << "Warning: no prelude found!! operators will not type check!!\n";
 
-        Caracal::TypeCheckerOptions options{
-            .defaultIntegerType = "i32",
-            .defaultFloatingType = "f32",
-            .defaultEnumBaseType = "u8"
-        };
-        Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
+        Caracal::loadPrelude(compilationContext, preludeSources);
 
-        auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
-        if (!wasSuccessful)
+        auto wasSuccessful = typeCheck(compilationContext, diagnostics);
+        if (wasSuccessful)
         {
-            Caracal::writeDiagnostics(std::cout, diagnostics, diagnosticOptions);
-            return 1;
+            wasSuccessful = optimize(compilationContext, diagnostics);
         }
 
-        wasSuccessful = Caracal::foldConstants(parseTrees, semanticContext, diagnostics);
         if (!wasSuccessful)
         {
             Caracal::writeDiagnostics(std::cout, diagnostics, diagnosticOptions);
@@ -231,7 +197,7 @@ namespace Caracal
         llvmModule->setDataLayout(targetMachine->createDataLayout());
         llvmModule->setTargetTriple(triple);
 
-        wasSuccessful = PopulateModule(semanticContext, *llvmModule);
+        wasSuccessful = PopulateModule(compilationContext.semanticContext(), *llvmModule);
         if (!wasSuccessful)
         {
             std::cout << "Module not generated!";

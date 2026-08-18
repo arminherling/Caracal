@@ -1,14 +1,12 @@
 #include <CaraTest.h>
 
+#include <Caracal/Compilation.h>
+#include <Caracal/CompilationContext.h>
+#include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Compiler.h>
-#include <Caracal/Text/SourceEncoding.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Semantic/SemanticContext.h>
-#include <Caracal/Semantic/TypeChecker.h>
-#include <Caracal/Optimization/ConstantFolder.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
-#include <Caracal/Syntax/Lexer.h>
-#include <Caracal/Syntax/Parser.h>
 #include <Caracal/Text/File.h>
 
 #include <iostream>
@@ -27,31 +25,26 @@ static void FileTests(
     if (!input.has_value())
         CaraTest::fail();
 
-    const auto source = std::make_shared<Caracal::SourceText>(input.value());
     Caracal::DiagnosticsBag diagnostics;
+    Caracal::CompilationContext compilationContext;
+    compilationContext.addSource(std::move(input.value()), std::filesystem::path{}, Caracal::UnitOrigin::User);
+    Caracal::lexAndParse(compilationContext, diagnostics);
 
-    if (!Caracal::validateSourceEncoding(source, diagnostics))
+    const auto& parseTrees = compilationContext.parseTrees();
+    if (parseTrees.empty())
+    {
+        Caracal::writeDiagnostics(std::cout, diagnostics);
         CaraTest::fail();
-
-    const auto tokens = Caracal::lex(source, diagnostics);
-    auto parseTree = Caracal::parse(tokens, diagnostics);
-    std::vector<Caracal::ParseTreeUPtr> parseTrees;
-    parseTrees.push_back(std::move(parseTree));
-
-    Caracal::TypeCheckerOptions options{
-        .defaultIntegerType = "i32",
-        .defaultFloatingType = "f32",
-        .defaultEnumBaseType = "u8"
-    };
+    }
     const auto preludePath = std::filesystem::path(__FILE__).parent_path() / "../../../Prelude";
-    const auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(preludePath);
-    Caracal::SemanticContext module = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
+    Caracal::loadPrelude(compilationContext, preludePath);
 
-    auto wasSuccessful = Caracal::typeCheck(parseTrees, options, module, diagnostics);
+    auto wasSuccessful = Caracal::typeCheck(compilationContext, diagnostics);
     if (wasSuccessful)
     {
-        wasSuccessful = Caracal::foldConstants(parseTrees, module, diagnostics);
+        wasSuccessful = Caracal::optimize(compilationContext, diagnostics);
     }
+
     if (!wasSuccessful)
     {
         std::cout << "Type checking failed!";
@@ -59,7 +52,7 @@ static void FileTests(
     }
 
     const auto startTime = std::chrono::high_resolution_clock::now();
-    const auto [irGenerated, output] = Caracal::generateIRText(module);
+    const auto [irGenerated, output] = Caracal::generateIRText(compilationContext.semanticContext());
     const auto endTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "      generateIRText(): " << CaraTest::stringify(endTime - startTime) << std::endl;

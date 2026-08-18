@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Caracal/API.h>
+#include <Caracal/CompilationContext.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
 #include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Syntax/ParseTree.h>
@@ -10,7 +11,7 @@
 namespace Caracal
 {
     CARACAL_API bool foldConstants(
-        const std::vector<ParseTreeUPtr>& parseTrees,
-        const SemanticContext& module,
-        DiagnosticsBag& diagnostics) noexcept;
+        const CompilationContext& compilationContext,
+        DiagnosticsBag& diagnostics,
+        bool isPreludePass = false) noexcept;
 }

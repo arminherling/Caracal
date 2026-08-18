@@ -1,6 +1,6 @@
 ﻿#include <CaraTest.h>
 #include <iostream>
-#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Compilation.h>
 #include <Caracal/Syntax/Token.h>
 #include <Caracal/Syntax/TokenBuffer.h>
 #include <Caracal/Syntax/TokenKind.h>

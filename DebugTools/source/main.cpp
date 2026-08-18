@@ -3,7 +3,7 @@
 
 #include "TokenListView.h"
 #include <Caracal/Text/SourceText.h>
-#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Compilation.h>
 
 i32 main(i32 argc, char *argv[])
 {

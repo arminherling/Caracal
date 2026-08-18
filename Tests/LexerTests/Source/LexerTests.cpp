@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <vector>
 
-#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Compilation.h>
 #include <Caracal/Syntax/LexerSimd.h>
 #include <Caracal/Syntax/Token.h>
 #include <Caracal/Syntax/TokenKind.h>

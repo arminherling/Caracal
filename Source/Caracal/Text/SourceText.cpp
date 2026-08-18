@@ -7,9 +7,9 @@
 namespace Caracal
 {
     SourceText::SourceText(
-        const std::string& text_,
+        std::string text_,
         const std::filesystem::path& filePath_)
-        : text(text_)
+        : text(std::move(text_))
         , filePath(filePath_)
     {
         // add extra padding for the simd lexer

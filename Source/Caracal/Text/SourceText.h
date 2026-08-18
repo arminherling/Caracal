@@ -13,7 +13,7 @@ namespace Caracal
         // readable NUL bytes guaranteed past text.size() so 16-byte vector loads are safe
         static constexpr i32 TailPaddingSize = 32;
 
-        SourceText(const std::string& text, const std::filesystem::path& filePath = std::filesystem::path());
+        SourceText(std::string text, const std::filesystem::path& filePath = std::filesystem::path());
 
         struct LineColumn
         {

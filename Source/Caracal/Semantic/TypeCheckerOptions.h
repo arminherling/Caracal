@@ -7,9 +7,8 @@ namespace Caracal
 {
     struct CARACAL_API TypeCheckerOptions
     {
-        std::string defaultIntegerType;
-        std::string defaultFloatingType;
-        std::string defaultEnumBaseType;
-        bool isPreludePass{ false };
+        std::string defaultIntegerType{ "i32" };
+        std::string defaultFloatingType{ "f32" };
+        std::string defaultEnumBaseType{ "u8" };
     };
 }

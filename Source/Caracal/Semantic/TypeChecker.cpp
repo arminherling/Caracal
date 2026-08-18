@@ -83,24 +83,15 @@ namespace Caracal
         return description;
     }
 
-    bool typeCheck(
-        const std::vector<ParseTreeUPtr>& parseTrees,
-        const TypeCheckerOptions& options,
-        SemanticContext& module,
-        DiagnosticsBag& diagnostics) noexcept
-    {
-        CARACAL_ZONE_NAMED("typeCheck");
-        TypeChecker typeChecker{ parseTrees, options, module, diagnostics };
-        return typeChecker.typeCheck();
-    }
-
     TypeChecker::TypeChecker(
         const std::vector<ParseTreeUPtr>& parseTrees,
         const TypeCheckerOptions& options,
+        bool isPreludePass,
         SemanticContext& module,
         DiagnosticsBag& diagnostics)
         : m_parseTrees(parseTrees)
         , m_options{ options }
+        , m_isPreludePass{ isPreludePass }
         , m_module{ module }
         , m_diagnostics{ diagnostics }
         , m_currentReturnType{ Type::Void() }
@@ -1937,7 +1928,7 @@ namespace Caracal
                     literalType = m_module.wellKnown().cstring;
                 }
 
-                if (!m_options.isPreludePass && literalType == m_module.wellKnown().string)
+                if (!m_isPreludePass && literalType == m_module.wellKnown().string)
                 {
                     m_module.markPreludeTypeRequired(literalType);
                 }
@@ -2167,7 +2158,7 @@ namespace Caracal
                                 m_module.markExternRequired(methodType);
                             }
 
-                            if (!m_options.isPreludePass)
+                            if (!m_isPreludePass)
                             {
                                 m_module.markPreludeTypeRequired(leftType);
                                 for (const auto callReturnType : methodDefinition.returnTypes())
@@ -2627,7 +2618,7 @@ namespace Caracal
             m_module.markExternRequired(functionType);
         }
 
-        if (!m_options.isPreludePass)
+        if (!m_isPreludePass)
         {
             for (const auto callReturnType : functionDefinition.returnTypes())
             {
@@ -2995,7 +2986,7 @@ namespace Caracal
         auto type = m_module.tryGetTypeByName(name);
         if (type != Type::Undefined())
         {
-            if (!m_options.isPreludePass)
+            if (!m_isPreludePass)
             {
                 m_module.markPreludeTypeRequired(type);
             }

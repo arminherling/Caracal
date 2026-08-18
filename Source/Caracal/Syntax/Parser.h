@@ -100,6 +100,4 @@ namespace Caracal
 
         std::vector<AnnotationNodeUPtr> m_currentAnnotations;
     };
-
-    CARACAL_API ParseTreeUPtr parse(const TokenBuffer& tokens, DiagnosticsBag& diagnostics) noexcept;
 }

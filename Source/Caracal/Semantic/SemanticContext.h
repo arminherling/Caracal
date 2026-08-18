@@ -31,8 +31,8 @@ namespace Caracal
 
         CARACAL_DELETE_COPY_DEFAULT_MOVE(SemanticContext)
 
-        [[nodiscard]] static SemanticContext WithBuiltins(const std::vector<std::string>& preludeSources, const TypeCheckerOptions& options) noexcept;
-        [[nodiscard]] static std::vector<std::string> CollectPreludeSources(const std::filesystem::path& preludeDirectory) noexcept;
+        [[nodiscard]] static SemanticContext WithBuiltins() noexcept;
+        void finalizePrelude(bool preludeWasLoaded) noexcept;
 
         [[nodiscard]] Type tryGetFunctionTypeByName(std::string_view typeName) const noexcept;
         [[nodiscard]] EnumDefinition& getEnumDefinition(Type type) noexcept;
@@ -132,7 +132,5 @@ namespace Caracal
         std::unordered_map<i32, BuiltinTypeDescription> m_builtinTypeDescriptionsById;
         WellKnownTypes m_wellKnownTypes;
         i32 m_nextId = 0;
-        // TODO keep the parsetrees alive here for now
-        std::vector<ParseTreeUPtr> m_preludeParseTrees;
     };
 }

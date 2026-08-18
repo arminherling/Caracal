@@ -2152,6 +2152,20 @@ namespace Caracal
         return m_diagnostics;
     }
 
+    int DiagnosticsBag::errorCount() const noexcept
+    {
+        int count = 0;
+        for (const auto& diagnostic : m_diagnostics)
+        {
+            if (diagnostic.level() == DiagnosticLevel::Error)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
     bool DiagnosticsBag::hasErrors() const noexcept
     {
         for (const auto& diagnostic : m_diagnostics)

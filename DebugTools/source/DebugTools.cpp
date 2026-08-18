@@ -8,7 +8,7 @@
 #include <QHBoxLayout>
 
 #include <Caracal/Text/SourceText.h>
-#include <Caracal/Syntax/Lexer.h>
+#include <Caracal/Compilation.h>
 
 #include "TokenListView.h"
 

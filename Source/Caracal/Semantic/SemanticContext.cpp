@@ -1,11 +1,5 @@
 ﻿#include "SemanticContext.h"
 
-#include <Caracal/Diagnostics/DiagnosticPrinter.h>
-#include <Caracal/Optimization/ConstantFolder.h>
-#include <Caracal/Text/File.h>
-#include <Caracal/Semantic/TypeChecker.h>
-#include <Caracal/Syntax/Lexer.h>
-#include <Caracal/Syntax/Parser.h>
 
 #include <algorithm>
 #include <cstdlib>
@@ -79,31 +73,7 @@ namespace Caracal
         }
     }
 
-    std::vector<std::string> SemanticContext::CollectPreludeSources(const std::filesystem::path& preludeDirectory) noexcept
-    {
-        std::vector<std::filesystem::path> caraFilePaths{};
-        if (std::filesystem::exists(preludeDirectory) && std::filesystem::is_directory(preludeDirectory))
-        {
-            for (const auto& file : std::filesystem::directory_iterator(preludeDirectory))
-            {
-                if (file.is_regular_file() && file.path().extension() == ".cara")
-                    caraFilePaths.push_back(file.path());
-            }
-        }
-        std::sort(caraFilePaths.begin(), caraFilePaths.end());
-
-        std::vector<std::string> sources{};
-        for (const auto& caraFilePath : caraFilePaths)
-        {
-            auto content = File::readText(caraFilePath);
-            if (content.has_value())
-                sources.push_back(std::move(content.value()));
-        }
-
-        return sources;
-    }
-
-    SemanticContext SemanticContext::WithBuiltins(const std::vector<std::string>& preludeSources, const TypeCheckerOptions& options) noexcept
+    SemanticContext SemanticContext::WithBuiltins() noexcept
     {
         SemanticContext module{};
         module.createBuiltinType(Type::CVariadic(), "...", false);
@@ -112,81 +82,54 @@ namespace Caracal
         module.createBuiltinType(Type::Undefined(), "undefined", false);
         module.createBuiltinType(Type::Void(), "void", false);
 
-        // TODO we should move this part in the future
-        // prelude is core library code, we will abort if there are errors
-        DiagnosticsBag preludeDiagnostics{};
-        std::vector<ParseTreeUPtr> preludeTrees{};
-        for (const auto& preludeSource : preludeSources)
-        {
-            auto source = std::make_shared<SourceText>(preludeSource, std::filesystem::path("<prelude>"));
-            const auto tokens = lex(source, preludeDiagnostics);
-            preludeTrees.push_back(parse(tokens, preludeDiagnostics));
-        }
+        return module;
+    }
 
-        if (!preludeDiagnostics.hasErrors())
+    void SemanticContext::finalizePrelude(bool preludeWasLoaded) noexcept
+    {
+        if (preludeWasLoaded)
         {
-            auto preludeOptions = options;
-            preludeOptions.isPreludePass = true;
-            if (typeCheck(preludeTrees, preludeOptions, module, preludeDiagnostics))
-            {
-                static_cast<void>(foldConstants(preludeTrees, module, preludeDiagnostics));
-            }
-        }
-
-        if (!preludeDiagnostics.diagnostics().empty())
-        {
-            std::cerr << "error: the prelude failed to compile\n";
-            writeDiagnostics(std::cerr, preludeDiagnostics);
-            std::abort();
-        }
-
-        if (!preludeSources.empty())
-        {
-            const auto& wellKnown = module.wellKnown();
-            if (wellKnown.boolean == Type::Undefined()
-                || wellKnown.u8 == Type::Undefined()
-                || wellKnown.i32 == Type::Undefined()
-                || wellKnown.f32 == Type::Undefined()
-                || wellKnown.cstring == Type::Undefined()
-                || wellKnown.rawptr == Type::Undefined()
-                || wellKnown.string == Type::Undefined())
+            const auto& wellKnownTypes = wellKnown();
+            if (wellKnownTypes.boolean == Type::Undefined()
+                || wellKnownTypes.u8 == Type::Undefined()
+                || wellKnownTypes.i32 == Type::Undefined()
+                || wellKnownTypes.f32 == Type::Undefined()
+                || wellKnownTypes.cstring == Type::Undefined()
+                || wellKnownTypes.rawptr == Type::Undefined()
+                || wellKnownTypes.string == Type::Undefined())
             {
                 std::cerr << "error: the prelude did not define all builtin types\n";
                 std::abort();
             }
 
             // the compiler emits calls to these bindings itself, so their absence or a signature drift must fail fast
-            const auto& wellKnownTypes = module.wellKnown();
-            ValidateCompilerEmittedCall(module, "calloc", { wellKnownTypes.i64, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
-            ValidateCompilerEmittedCall(module, "realloc", { wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
-            ValidateCompilerEmittedCall(module, "memmove", { wellKnownTypes.rawptr, wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
-            ValidateCompilerEmittedCall(module, "strcmp", { wellKnownTypes.cstring, wellKnownTypes.cstring }, wellKnownTypes.i32);
+            ValidateCompilerEmittedCall(*this, "calloc", { wellKnownTypes.i64, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
+            ValidateCompilerEmittedCall(*this, "realloc", { wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
+            ValidateCompilerEmittedCall(*this, "memmove", { wellKnownTypes.rawptr, wellKnownTypes.rawptr, wellKnownTypes.i64 }, wellKnownTypes.rawptr);
+            ValidateCompilerEmittedCall(*this, "strcmp", { wellKnownTypes.cstring, wellKnownTypes.cstring }, wellKnownTypes.i32);
 
             // slice() hands out a read-only view of the string's bytes, intrinsic-blessed like the array methods
-            auto& stringDefinition = module.getTypeDefinition(wellKnownTypes.string);
-            const auto immutableByteSlice = module.getOrCreateArrayType(TypeKind::Slice, wellKnownTypes.u8, 0, true);
+            auto& stringDefinition = getTypeDefinition(wellKnownTypes.string);
+            const auto immutableByteSlice = getOrCreateArrayType(TypeKind::Slice, wellKnownTypes.u8, 0, true);
             auto sliceParameters = std::vector<Parameter>{};
             sliceParameters.emplace_back(ImplicitThisName, wellKnownTypes.string.toReference());
-            auto& sliceDefinition = module.createMethod(stringDefinition, MethodModifier::Public, "slice", sliceParameters, { immutableByteSlice }, nullptr);
+            auto& sliceDefinition = createMethod(stringDefinition, MethodModifier::Public, "slice", sliceParameters, { immutableByteSlice }, nullptr);
             sliceDefinition.setFunctionType(FunctionType::Intrinsic);
             sliceDefinition.setIntrinsicKind(IntrinsicKind::ArraySlice);
 
             // toCString() hands out the NUL-terminated data pointer for FFI, construction guarantees the NUL
             auto toCStringParameters = std::vector<Parameter>{};
             toCStringParameters.emplace_back(ImplicitThisName, wellKnownTypes.string.toReference());
-            auto& toCStringDefinition = module.createMethod(stringDefinition, MethodModifier::Public, "toCString", toCStringParameters, { wellKnownTypes.cstring }, nullptr);
+            auto& toCStringDefinition = createMethod(stringDefinition, MethodModifier::Public, "toCString", toCStringParameters, { wellKnownTypes.cstring }, nullptr);
             toCStringDefinition.setFunctionType(FunctionType::Intrinsic);
             toCStringDefinition.setIntrinsicKind(IntrinsicKind::StringToCString);
         }
 
         // prelude definitions only lower on demand, the boundary lets the lowerer skip them
-        module.m_preludeFunctionDefinitionCount = module.m_functionDefinitions.size();
-        module.m_preludeTypeDefinitionCount = module.m_typeDefinitions.size();
+        m_preludeFunctionDefinitionCount = m_functionDefinitions.size();
+        m_preludeTypeDefinitionCount = m_typeDefinitions.size();
 
-        module.m_nextId = std::max(module.m_nextId, 2000);
-        module.m_preludeParseTrees = std::move(preludeTrees);
-
-        return module;
+        m_nextId = std::max(m_nextId, 2000);
     }
 
     Type SemanticContext::tryGetFunctionTypeByName(std::string_view typeName) const noexcept

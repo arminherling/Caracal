@@ -1,15 +1,12 @@
 #include <CaraTest.h>
 
+#include <Caracal/Compilation.h>
+#include <Caracal/CompilationContext.h>
 #include <Caracal/Diagnostics/DiagnosticPrinter.h>
 #include <Caracal/Diagnostics/DiagnosticsBag.h>
-#include <Caracal/Text/SourceEncoding.h>
 #include <Caracal/Semantic/SemanticContext.h>
 #include <Caracal/Semantic/Type.h>
-#include <Caracal/Semantic/TypeChecker.h>
-#include <Caracal/Optimization/ConstantFolder.h>
 #include <Caracal/Semantic/TypeCheckerOptions.h>
-#include <Caracal/Syntax/Lexer.h>
-#include <Caracal/Syntax/Parser.h>
 #include <Caracal/Text/File.h>
 #include <Caracal/Text/SourceText.h>
 
@@ -80,34 +77,12 @@ namespace
         return relativePath;
     }
 
-    void AddParseTree(
-        const std::filesystem::path& filePath,
-        Caracal::DiagnosticsBag& diagnostics,
-        std::vector<Caracal::ParseTreeUPtr>& parseTrees)
-    {
-        const auto input = Caracal::File::readText(filePath);
-        if (!input.has_value())
-            throw std::runtime_error("Could not read input file: " + filePath.string());
-
-        const auto source = std::make_shared<Caracal::SourceText>(input.value(), MakeRepositoryRelativePath(filePath));
-        if (!Caracal::validateSourceEncoding(source, diagnostics))
-            return;
-
-        const auto diagnosticCount = diagnostics.diagnostics().size();
-        const auto tokens = Caracal::lex(source, diagnostics);
-        if (diagnostics.diagnostics().size() != diagnosticCount)
-            return;
-
-        auto parseTree = Caracal::parse(tokens, diagnostics);
-        parseTrees.push_back(std::move(parseTree));
-    }
-
-    std::string RenderDiagnosticsForFile(const std::filesystem::path& inputFilePath, bool withPrelude)
+    std::string RenderDiagnosticsForSource(const std::string& input, const std::filesystem::path& filePath, bool withPrelude = true)
     {
         Caracal::DiagnosticsBag diagnostics;
-        std::vector<Caracal::ParseTreeUPtr> parseTrees{};
-
-        AddParseTree(inputFilePath, diagnostics, parseTrees);
+        Caracal::CompilationContext compilationContext;
+        compilationContext.addSource(input, MakeRepositoryRelativePath(filePath), Caracal::UnitOrigin::User);
+        Caracal::lexAndParse(compilationContext, diagnostics);
 
         const Caracal::DiagnosticOptions diagnosticOptions{
             .contextLines = 3,
@@ -117,24 +92,18 @@ namespace
 
         if (!diagnostics.diagnostics().empty())
             return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
-
-        const Caracal::TypeCheckerOptions options{
-            .defaultIntegerType = "i32",
-            .defaultFloatingType = "f32",
-            .defaultEnumBaseType = "u8"
-        };
 
         auto preludeSources = std::vector<std::string>{};
         if (withPrelude)
         {
-            preludeSources = Caracal::SemanticContext::CollectPreludeSources(RepositoryRootDirectory() / "Prelude");
+            preludeSources = Caracal::collectPreludeSources(RepositoryRootDirectory() / "Prelude");
         }
-        Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
+        Caracal::loadPrelude(compilationContext, preludeSources);
 
-        auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
+        auto wasSuccessful = Caracal::typeCheck(compilationContext, diagnostics);
         if (wasSuccessful)
         {
-            wasSuccessful = Caracal::foldConstants(parseTrees, semanticContext, diagnostics);
+            wasSuccessful = Caracal::optimize(compilationContext, diagnostics);
         }
 
         if (!wasSuccessful || !diagnostics.diagnostics().empty())
@@ -143,50 +112,13 @@ namespace
         return {};
     }
 
-    std::string RenderDiagnosticsForSource(const std::string& input, const std::filesystem::path& filePath)
+    std::string RenderDiagnosticsForFile(const std::filesystem::path& inputFilePath, bool withPrelude)
     {
-        Caracal::DiagnosticsBag diagnostics;
-        std::vector<Caracal::ParseTreeUPtr> parseTrees{};
+        const auto input = Caracal::File::readText(inputFilePath);
+        if (!input.has_value())
+            throw std::runtime_error("Could not read input file: " + inputFilePath.string());
 
-        const auto source = std::make_shared<Caracal::SourceText>(input, MakeRepositoryRelativePath(filePath));
-        if (Caracal::validateSourceEncoding(source, diagnostics))
-        {
-            const auto diagnosticCount = diagnostics.diagnostics().size();
-            const auto tokens = Caracal::lex(source, diagnostics);
-            if (diagnostics.diagnostics().size() == diagnosticCount)
-            {
-                auto parseTree = Caracal::parse(tokens, diagnostics);
-                parseTrees.push_back(std::move(parseTree));
-            }
-        }
-
-        const Caracal::DiagnosticOptions diagnosticOptions{
-            .contextLines = 3,
-            .enableColors = false,
-            .enableUnicode = false
-        };
-
-        if (!diagnostics.diagnostics().empty())
-            return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
-
-        const Caracal::TypeCheckerOptions options{
-            .defaultIntegerType = "i32",
-            .defaultFloatingType = "f32",
-            .defaultEnumBaseType = "u8"
-        };
-        const auto preludeSources = Caracal::SemanticContext::CollectPreludeSources(RepositoryRootDirectory() / "Prelude");
-        Caracal::SemanticContext semanticContext = Caracal::SemanticContext::WithBuiltins(preludeSources, options);
-
-        auto wasSuccessful = Caracal::typeCheck(parseTrees, options, semanticContext, diagnostics);
-        if (wasSuccessful)
-        {
-            wasSuccessful = Caracal::foldConstants(parseTrees, semanticContext, diagnostics);
-        }
-
-        if (!wasSuccessful || !diagnostics.diagnostics().empty())
-            return Caracal::formatDiagnostics(diagnostics, diagnosticOptions);
-
-        return {};
+        return RenderDiagnosticsForSource(input.value(), inputFilePath, withPrelude);
     }
 
     void WriteTextFile(const std::filesystem::path& filePath, const std::string& content)
